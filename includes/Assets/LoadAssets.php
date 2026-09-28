@@ -22,6 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use RadiusTheme\RadiusHotelBooking\Admin\UpgradeNotice;
 use RadiusTheme\RadiusHotelBooking\Core\Permissions\Capabilities;
 use RadiusTheme\RadiusHotelBooking\Frontend\DashboardPage;
 use RadiusTheme\RadiusHotelBooking\Helpers\SettingsHelper;
@@ -371,9 +372,16 @@ class LoadAssets {
 					'email' => wp_get_current_user()->user_email,
 				),
 				'settings'      => array(
-					'general' => SettingsHelper::get_setting( 'general' ),
-					'display' => SettingsHelper::get_setting( 'display' ),
+					'general'       => SettingsHelper::get_setting( 'general' ),
+					'display'       => SettingsHelper::get_setting( 'display' ),
+					// The new-booking alert (poll interval, sound).
+					'notifications' => SettingsHelper::get_setting( 'notifications' ),
 				),
+				'notify_sound_url' => $this->notification_sound_url(),
+				// Settings → E-mail lists these with an on/off switch each.
+				'email_templates'  => $this->email_templates(),
+				// The one dismissible upsell, on Settings only (ADR-016).
+				'upgrade'          => UpgradeNotice::params(),
 				'timezone'      => wp_timezone_string(),
 				'format'        => $this->format_params(),
 				// The developer UI kit route (#/dev/ui): WP_DEBUG sites, admins only.
@@ -384,6 +392,42 @@ class LoadAssets {
 				'start_of_week' => (int) get_option( 'start_of_week' ),
 			)
 		);
+	}
+
+	/**
+	 * URL of the chosen notification sound; '' = the built-in chime (played
+	 * by src/lib/sound.js, no file).
+	 *
+	 * @return string
+	 */
+	private function notification_sound_url(): string {
+		$id = (int) rtbp_setting( 'notifications', 'soundId', 0 );
+		return $id ? (string) wp_get_attachment_url( $id ) : '';
+	}
+
+	/**
+	 * The registered e-mail templates, for Settings → E-mail.
+	 *
+	 * @return array<int, array{id:string,title:string,description:string,recipient:string,default:bool}>
+	 */
+	private function email_templates(): array {
+		$plugin  = function_exists( 'radius_hotel_booking' ) ? radius_hotel_booking() : null;
+		$manager = $plugin && isset( $plugin->emails ) ? $plugin->emails : null;
+		if ( ! $manager || ! method_exists( $manager, 'get_emails' ) ) {
+			return array();
+		}
+
+		$list = array();
+		foreach ( $manager->get_emails() as $email ) {
+			$list[] = array(
+				'id'          => (string) $email->get_id(),
+				'title'       => (string) $email->get_title(),
+				'description' => (string) $email->get_description(),
+				'recipient'   => (string) $email->recipient_type,
+				'default'     => $email->is_enabled_by_default(),
+			);
+		}
+		return $list;
 	}
 
 	/**

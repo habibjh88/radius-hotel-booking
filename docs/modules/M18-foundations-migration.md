@@ -11,7 +11,7 @@
 
 ## Goal
 
-Prove that the foundations hold across the whole product (French and English everywhere, CFA
+Prove that the foundations hold across the whole product (every string translatable, CFA
 everywhere, Abidjan time, every screen usable on a phone, no WooCommerce dependency). Bring the
 client's data across from the legacy system, run both in parallel, and cut over.
 
@@ -19,7 +19,7 @@ client's data across from the legacy system, run both in parallel, and cut over.
 
 | Feature | Summary | Task |
 |---|---|---|
-| 18.1 | Translation completeness: `make-pot`, `fr_FR` 100 %, legacy French labels mined from `class-react-app.php:268 i18n_strings()`, a per-user language switch in the avatar menu (user meta; no global `locale` filter) | T1 |
+| 18.1 | Translation completeness (ADR-019): `make-pot` finds every string, no hard-coded English in PHP or JS, and one screen checked translated through Loco Translate. French comes from a translation plugin, not bundled | T1 |
 | 18.2 | CFA audit: every amount on screen, in e-mails and on PDFs goes through `Money` (grep for raw `number_format` / `toFixed`) | T1 |
 | 18.3 | Time-zone audit: reports crossing midnight, DST-agnostic checks, the site time zone check on activation (warn if it is not `Africa/Abidjan`) | T1 |
 | 18.5 | Phone audit: every route at 360 px (a checklist in this doc, ticked per screen) | T1 |
@@ -49,7 +49,7 @@ Each module's **Migration notes** section is the source map for its entity.
 
 ## Tasks
 
-- [ ] T1 [Free] Foundations audit (i18n 100 %, money, time zone, 360 px checklist, a run with WooCommerce off) + the language switch + **Plugin Check** clean + the wordpress.org readme (screenshots, FAQ)
+- [ ] T1 [Free] Foundations audit (every string translatable, money, time zone, 360 px checklist, a run with WooCommerce off) + **Plugin Check** clean + the wordpress.org readme (screenshots, FAQ)
 - [ ] T2 [Client] Import framework: `import_map`, dry-run report, CLI + screen, source readers
 - [ ] T3 [Client] Inventory import: room types, floors, rooms, rate plans (dedupe), rates, calendar, pricing rules (into Pro), blocks, iCal (into Pro)
 - [ ] T4 [Client] People import: guests, staff/employees (Pro), access settings (Pro, PINs hashed), payroll data (client)

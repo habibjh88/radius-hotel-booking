@@ -28,7 +28,5 @@ return array(
 	StoredFileRepository::class => fn() => new StoredFileRepository(),
 
 	// Services.
-	SettingsService::class    => fn() => new SettingsService(
-		Container::resolve( SettingsRepository::class )
-	),
+	SettingsService::class    => fn() => new SettingsService(),
 );

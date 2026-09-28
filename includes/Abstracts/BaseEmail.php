@@ -14,6 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use RadiusTheme\RadiusHotelBooking\Emails\EmailSender;
 use RadiusTheme\RadiusHotelBooking\Emails\MergeTags;
 use RadiusTheme\RadiusHotelBooking\Emails\TemplateRenderer;
+use RadiusTheme\RadiusHotelBooking\Helpers\SettingsHelper;
 
 /**
  * Base Email Abstract Class
@@ -183,13 +184,35 @@ abstract class BaseEmail {
 	}
 
 	/**
-	 * Check if email is enabled.
+	 * Whether the template's own settings switch it on (the default shown in
+	 * Settings → E-mail).
+	 *
+	 * @return bool
+	 */
+	public function is_enabled_by_default(): bool {
+		$settings = $this->get_settings();
+		return isset( $settings['enabled'] ) && $settings['enabled'];
+	}
+
+	/**
+	 * Check if email is enabled: Settings → E-mail's master switch, then the
+	 * template's switch there, then the template's own default.
 	 *
 	 * @return bool
 	 */
 	public function is_enabled(): bool {
-		$settings = $this->get_settings();
-		return isset( $settings['enabled'] ) && $settings['enabled'];
+		$email = SettingsHelper::get_setting( 'email' );
+		$email = is_array( $email ) ? $email : array();
+		if ( array_key_exists( 'enabled', $email ) && ! $email['enabled'] ) {
+			return false;
+		}
+
+		$templates = is_array( $email['templates'] ?? null ) ? $email['templates'] : array();
+		if ( array_key_exists( $this->get_id(), $templates ) ) {
+			return (bool) $templates[ $this->get_id() ];
+		}
+
+		return $this->is_enabled_by_default();
 	}
 
 	/**

@@ -96,6 +96,15 @@ Longer labels on the dashboard and phone tab bar now wrap instead of being cut o
 Now requires WordPress 6.2 or later.
 Add-ons can now add screens, handle request errors, and reuse dialogs, menus and forms.
 Fixed add-on screens sometimes missing when the admin page loaded slowly.
+Settings are now checked before saving; invalid values are refused with a message per field.
+Redesigned Settings screen: side tabs, an unsaved-changes bar, and reset each tab to defaults.
+New Booking rules settings: booking window, same-day cut-off, manual approval, holds and cleaning time.
+General settings now include address, phone, logo, tax and CNPS numbers, with live previews.
+Fixed the hotel logo never appearing in e-mails.
+New Notifications settings: new-booking alert, check interval, and a built-in chime or your own sound.
+New E-mail settings: master switch, sender, reply-to, and an on/off switch for each e-mail.
+New General setting to delete all plugin data when the plugin is deleted (off by default).
+Added an Upgrade link and one dismissible Pro notice on the Settings screen.
 
 = 1.0.0 =
 Initial release.

@@ -44,7 +44,7 @@ which is a bug we do not copy.
 | 13.8 | Passcode validity in minutes (default 5) | T3 |
 | 13.9 | Passcode scope: `global` (one unlock covers everything until it expires) or `per_key` | T3 |
 | — | Brute-force limit: 5 wrong PINs → locked out for 15 min, logged (`security.passcode_failed`) | T3 |
-| 13.10 | Custom locked message (FR/EN) | T4 |
+| 13.10 | Custom locked message | T4 |
 | 13.4, 17.5 | Global default permission map: a matrix screen (groups × keys × three-way toggle) | T4 |
 | 13.13, 13.14 | Named access roles with editable templates: *Receptionist*, *Night receptionist*, *Supervisor*, *Housekeeping*, *Accountant*, *Manager* | T5 |
 | 13.5, 13.15 | Per-person: assign a role, override single keys, and see the effective map with the source of each value | T5 |
@@ -135,7 +135,7 @@ Until then, any user with the capability can be assigned an access role here.
 
 ## Settings (added to M17)
 
-Section `access`: `passcodeValidity` (5), `passcodeScope` (`global`), `lockedMessage` (FR/EN),
+Section `access`: `passcodeValidity` (5), `passcodeScope` (`global`), `lockedMessage` (text),
 `fallbackEnabled` (true), fallback PIN (write-only field). The permission-map and roles screens
 live under Settings → Permissions.
 

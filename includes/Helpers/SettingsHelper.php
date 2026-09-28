@@ -1,19 +1,23 @@
 <?php
 /**
- * Default settings configuration.
+ * Settings access.
  *
- * Every settings section the plugin knows about is declared here as a method
- * returning its defaults. `all()` assembles them; `get_setting()` reads one
- * section from wp_options (key: `rtbp_<section>_settings`) merged over its
+ * Every section is declared in Settings\SettingsSchema (types, defaults and
+ * limits; core sections in Settings\CoreSettings). This class is the read
+ * API: `all()` lists the sections with their defaults, `get_setting()` reads
+ * one section from wp_options (key: `rtbp_<section>_settings`) merged over its
  * defaults, so newly added keys are always present.
  *
- * BOILERPLATE: add a method per section, register it in all(), and the REST
- * settings endpoints + React settings page pick it up with no further wiring.
+ * Sections an add-on still declares only through the `rtbp_settings` defaults
+ * filter (no schema) keep working: they are read the same way, and saved
+ * with their own keys whitelisted (SettingsService).
  *
  * @package RadiusTheme\RadiusHotelBooking\Helpers
  */
 
 namespace RadiusTheme\RadiusHotelBooking\Helpers;
+
+use RadiusTheme\RadiusHotelBooking\Settings\SettingsSchema;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -30,18 +34,19 @@ class SettingsHelper {
 	 * @return array
 	 */
 	public static function all(): array {
-		$data = array(
-			'general' => self::general(),
-			'display' => self::display(),
-			'email'   => self::email(),
-		);
+		$data = array();
+		foreach ( array_keys( SettingsSchema::sections() ) as $section ) {
+			$data[ $section ] = SettingsSchema::defaults( $section );
+		}
 
 		/**
-		 * Filter the full settings map. Add-ons register their own sections here.
+		 * Filter the full settings map (section => defaults). Prefer
+		 * SettingsSchema::register(), which also sanitises; sections added here
+		 * without a schema are saved with their keys whitelisted only.
 		 *
 		 * @param array $data Section key => defaults.
 		 */
-		return apply_filters( 'rtbp_settings', $data );
+		return (array) apply_filters( 'rtbp_settings', $data );
 	}
 
 	/**
@@ -50,26 +55,7 @@ class SettingsHelper {
 	 * @return array
 	 */
 	public static function general(): array {
-		return array(
-			'companyName'       => get_bloginfo( 'name' ),
-			'contactEmail'      => get_option( 'admin_email' ),
-			// PHP date format for display; defaults to the WordPress setting.
-			'dateFormat'        => (string) get_option( 'date_format', 'Y-m-d' ),
-			// '24h' or '12h'; defaults from the WordPress time format.
-			'timeSystem'        => false !== strpbrk( (string) get_option( 'time_format', 'g:i a' ), 'GH' ) ? '24h' : '12h',
-			// Currency (Support\Money). A client add-on or Settings sets e.g.
-			// XOF / CFA / right_space / ' ' / ',' / 0 for "15 000 CFA".
-			'currencyCode'      => 'USD',
-			'currencySymbol'    => '$',
-			'currencyPosition'  => 'left', // left | right | left_space | right_space.
-			'thousandSeparator' => ',',
-			'decimalSeparator'  => '.',
-			'decimals'          => 2,
-			'perPage'           => 15,
-			'enableDebug'       => false,
-			// uninstall.php removes every table, option, role and file only when true.
-			'deleteDataOnUninstall' => false,
-		);
+		return SettingsSchema::defaults( 'general' );
 	}
 
 	/**
@@ -78,12 +64,7 @@ class SettingsHelper {
 	 * @return array
 	 */
 	public static function display(): array {
-		return array(
-			'primaryColor' => '#0040ff',
-			'cardRadius'   => '0.75rem',
-			'layout'       => 'grid',
-			'columns'      => 3,
-		);
+		return SettingsSchema::defaults( 'display' );
 	}
 
 	/**
@@ -92,44 +73,43 @@ class SettingsHelper {
 	 * @return array
 	 */
 	public static function email(): array {
-		return array(
-			'enabled'      => true,
-			'senderName'   => get_bloginfo( 'name' ),
-			'senderEmail'  => get_option( 'admin_email' ),
-			'replyToEmail' => '',
-			'use_queue'    => false,
-		);
+		return SettingsSchema::defaults( 'email' );
+	}
+
+	/**
+	 * Whether a section exists (with a schema or through the defaults filter).
+	 *
+	 * @param string $key Section key.
+	 * @return bool
+	 */
+	public static function exists( string $key ): bool {
+		return SettingsSchema::has( $key ) || array_key_exists( $key, self::all() );
 	}
 
 	/**
 	 * Retrieve one settings section, saved values merged over the defaults.
+	 * Keys no longer declared are left out.
 	 *
 	 * @param string $key Section key, e.g. 'general'.
 	 *
 	 * @return mixed
 	 */
 	public static function get_setting( $key ) {
-		if ( method_exists( static::class, $key ) ) {
-			$default = self::$key();
-		} else {
-			// Fallback to the filtered defaults, so add-on sections resolve too.
-			$all_defaults = self::all();
-			$default      = $all_defaults[ $key ] ?? array();
-		}
+		$default = SettingsSchema::has( $key ) ? SettingsSchema::defaults( $key ) : ( self::all()[ $key ] ?? array() );
 
-		$option_key = 'rtbp_' . $key . '_settings';
-		$saved      = get_option( $option_key, $default );
+		$saved = get_option( 'rtbp_' . $key . '_settings', $default );
 
 		// Merge saved values over defaults so newly added keys are always available.
 		if ( is_array( $default ) && is_array( $saved ) ) {
-			return wp_parse_args( $saved, $default );
+			return $default ? array_merge( $default, array_intersect_key( $saved, $default ) ) : $saved;
 		}
 
 		return $saved;
 	}
 
 	/**
-	 * Persist one settings section.
+	 * Persist one settings section as given. Callers that take user input go
+	 * through SettingsService::updateSection(), which validates first.
 	 *
 	 * @param string $key   Section key.
 	 * @param mixed  $value Section value.

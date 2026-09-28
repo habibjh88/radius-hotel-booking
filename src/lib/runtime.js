@@ -16,6 +16,7 @@ import * as ReactQuery from '@tanstack/react-query';
 
 import api from '@/api/client';
 import * as format from '@/lib/format';
+import * as sound from '@/lib/sound';
 import * as status from '@/lib/status';
 import { queryClient } from '@/lib/query-client';
 import { toast, toastError } from '@/lib/toast';
@@ -23,9 +24,11 @@ import { cn } from '@/lib/utils';
 import DateTime from '@/components/common/DateTime';
 import EmptyState from '@/components/common/EmptyState';
 import FilterTabs from '@/components/common/FilterTabs';
+import MediaField from '@/components/common/MediaField';
 import Money from '@/components/common/Money';
 import Panel from '@/components/common/Panel';
 import SegmentedControl from '@/components/common/SegmentedControl';
+import SettingsSection from '@/components/common/SettingsSection';
 import StatCard from '@/components/common/StatCard';
 import { Field, FormSection } from '@/components/common/Form';
 import StatusBadge from '@/components/common/StatusBadge';
@@ -177,8 +180,10 @@ export function publishRuntime() {
 			StatusBadge,
 			Switch,
 			EmptyState,
+			MediaField,
 			Panel,
 			SegmentedControl,
+			SettingsSection,
 			Skeleton,
 			StatCard,
 			Textarea,
@@ -187,6 +192,8 @@ export function publishRuntime() {
 			api,
 			cn,
 			format,
+			// The new-booking sound: sound.playNotificationSound( url ).
+			sound,
 			status,
 			toast,
 			toastError,

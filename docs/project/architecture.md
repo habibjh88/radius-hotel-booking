@@ -139,7 +139,7 @@ pay_schedules · work_shifts · payroll_runs ──► payroll_lines · statutor
 
 | Table | Columns |
 |---|---|
-| `rate_plans` | `id`, `name` (JSON FR/EN), `code`, `type` (fixed / flexible), `start_time`, `end_time` (fixed), `duration_minutes` (derived for fixed, set for flexible), `checkin_from`, `checkin_until` (flexible), `multi_unit` (bool: may span several days/nights), `features` (JSON FR/EN tags), `policy` (JSON FR/EN), `is_active`, `sort_order`, soft delete |
+| `rate_plans` | `id`, `name`, `code`, `type` (fixed / flexible), `start_time`, `end_time` (fixed), `duration_minutes` (derived for fixed, set for flexible), `checkin_from`, `checkin_until` (flexible), `multi_unit` (bool: may span several days/nights), `features` (JSON tag list), `policy` (text), `is_active`, `sort_order`, soft delete |
 | `room_type_rates` | `id`, `room_type_id`, `rate_plan_id`, `price`, `sale_price` (NULL = none), `min_units`, `max_units`, `enabled`, `sort_order`. UNIQUE `(room_type_id, rate_plan_id)` |
 | `pricing_templates` | `id`, `name`, `mode` (increase / decrease / set), `amount_type` (percent / fixed), `amount` |
 | `pricing_rules` | `id`, `kind` (seasonal / occupancy / early_bird / last_minute), `template_id` (seasonal) or `mode` + `amount_type` + `amount`, `room_type_ids` (JSON, empty = all), `rate_plan_ids` (JSON, empty = all), `date_from`, `date_to`, `threshold` (occupancy % or days ahead), `priority`, `is_active` |
@@ -157,7 +157,7 @@ pay_schedules · work_shifts · payroll_runs ──► payroll_lines · statutor
 
 | Table | Columns |
 |---|---|
-| `bookings` | `id`, `reference` UNIQUE (`RT-2026-000841`), `guest_id`, `source` (desk / web / import / ical), `status` (summary of the lines, §5 of the booking-engine doc), `payment_status`, `on_hold`, `subtotal`, `discount_total`, `tax_total`, `total`, `paid_total`, `balance_due`, `currency` (XOF), `payment_due_at`(+gmt), `adults`, `children`, `special_requests`, `language`, `public_token` (confirmation page), `created_by` (user or NULL for web), `approved_by`, `approved_at`, `cancelled_reason`, timestamps + `created_at_gmt`, soft delete. Indexes `(status)`, `(payment_status, payment_due_at_gmt)`, `(created_at_gmt)`, `(guest_id)` |
+| `bookings` | `id`, `reference` UNIQUE (`RT-2026-000841`), `guest_id`, `source` (desk / web / import / ical), `status` (summary of the lines, §5 of the booking-engine doc), `payment_status`, `on_hold`, `subtotal`, `discount_total`, `tax_total`, `total`, `paid_total`, `balance_due`, `currency` (XOF), `payment_due_at`(+gmt), `adults`, `children`, `special_requests`, `public_token` (confirmation page), `created_by` (user or NULL for web), `approved_by`, `approved_at`, `cancelled_reason`, timestamps + `created_at_gmt`, soft delete. Indexes `(status)`, `(payment_status, payment_due_at_gmt)`, `(created_at_gmt)`, `(guest_id)` |
 | `booking_rooms` | `id`, `booking_id`, `room_id`, `room_type_id` (snapshot), `rate_plan_id` (snapshot), `rate_plan_name` (snapshot), `room_number` (snapshot), `floor_name` (snapshot), `start_at`, `end_at`, `start_at_gmt`, `end_at_gmt`, `occupied_until_gmt` (= `end_at_gmt` until an early check-out), `units`, `adults`, `children`, `status` (pending / confirmed / checked_in / checked_out / cancelled / declined / no_show), `unit_price`, `total`, `price_breakdown` (JSON: each pricing step), `checked_in_at`, `checked_out_at`, `checked_in_by`, `checked_out_by`. Indexes **`(room_id, start_at_gmt, occupied_until_gmt)`**, `(start_at_gmt)`, `(end_at_gmt)`, `(status)`, `(booking_id)` |
 | `payments`, `invoices`, `invoice_versions` | see M05 |
 

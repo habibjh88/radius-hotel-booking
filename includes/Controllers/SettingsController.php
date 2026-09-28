@@ -1,383 +1,280 @@
 <?php
 /**
- * File: Controllers/SettingsController.php
- * Settings API controller
+ * Settings API controller.
+ *
+ * @package RadiusTheme\RadiusHotelBooking\Controllers
  */
 
 namespace RadiusTheme\RadiusHotelBooking\Controllers;
 
-use RadiusTheme\RadiusHotelBooking\Core\Api\Middleware\PermissionMiddleware;
-use RadiusTheme\RadiusHotelBooking\Core\Container\Container;
-use WP_REST_Request;
 use RadiusTheme\RadiusHotelBooking\Abstracts\BaseController;
 use RadiusTheme\RadiusHotelBooking\Core\Api\ApiResponse;
+use RadiusTheme\RadiusHotelBooking\Core\Api\Middleware\PermissionMiddleware;
+use RadiusTheme\RadiusHotelBooking\Core\Container\Container;
+use RadiusTheme\RadiusHotelBooking\Exceptions\DomainException;
 use RadiusTheme\RadiusHotelBooking\Repositories\SettingsRepository;
-use RadiusTheme\RadiusHotelBooking\Resources\SettingsResource;
+use RadiusTheme\RadiusHotelBooking\Services\SettingsService;
+use RadiusTheme\RadiusHotelBooking\Settings\SettingsSchema;
+use RadiusTheme\RadiusHotelBooking\Settings\SettingsValidator;
+use WP_REST_Request;
+
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit; // Exit if accessed directly.
 }
 
 /**
- * Api/Controllers/SettingsController.php
+ * Settings endpoints. Every write goes through SettingsService, which
+ * validates against the schema and fires `rtbp_settings_updated`.
+ *
+ * Access: `rtbp_manage_settings` until M13 replaces it with the
+ * `page.settings` / `settings.<section>` access keys.
  */
 class SettingsController extends BaseController {
 
 	/**
-	 * Initialize the class by resolving dependencies and calling the parent's constructor.
+	 * Settings service.
 	 *
-	 * @return void
+	 * @var SettingsService
+	 */
+	private SettingsService $settings;
+
+	/**
+	 * Resolve dependencies.
 	 */
 	public function __construct() {
 		parent::__construct( Container::resolve( SettingsRepository::class ) );
+		$this->settings     = Container::resolve( SettingsService::class );
 		$this->middleware[] = new PermissionMiddleware( 'rtbp_manage_settings' );
 	}
 
 	/**
-	 * Transforms a single item into an array format.
+	 * Settings are returned as stored; nothing to reshape.
 	 *
-	 * @param mixed $item The item to be transformed.
-	 *
-	 * @return array The transformed item as an array.
+	 * @param mixed $item Item.
+	 * @return array
 	 */
 	protected function transformItem( $item ): array {
-		return ( new SettingsResource() )->transform( $item );
+		return (array) $item;
 	}
 
 	/**
-	 * Transforms a collection of items into a specific format.
+	 * Settings are returned as stored; nothing to reshape.
 	 *
-	 * @param array $items The collection of items to be transformed.
-	 *
-	 * @return array The transformed collection.
+	 * @param array $items Items.
+	 * @return array
 	 */
 	protected function transformCollection( array $items ): array {
-		return SettingsResource::collection( $items );
+		return $items;
 	}
 
 	/**
-	 * Retrieves the type of the resource.
+	 * No request rules: values are validated against Settings\SettingsSchema
+	 * by SettingsService, which knows every key's type and limits.
 	 *
-	 * @return string The resource type.
+	 * @param WP_REST_Request $request Request.
+	 * @param string          $context Context.
+	 * @return array
+	 */
+	protected function getValidationRules( $request, string $context = 'create' ) {
+		unset( $request, $context );
+		return array();
+	}
+
+	/**
+	 * Resource type.
+	 *
+	 * @return string
 	 */
 	protected function getResourceType(): string {
 		return 'Settings';
 	}
 
 	/**
-	 * Retrieve settings
-	 * GET /settings
+	 * GET /settings: every section, sensitive keys removed.
 	 *
-	 * @param WP_REST_Request $request The REST request instance.
-	 *
-	 * @return ApiResponse The success or error response of the settings retrieval operation.
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
 	 */
 	public function index( WP_REST_Request $request ) {
-		return $this->applyMiddleware(
+		return $this->respond(
 			$request,
 			function () {
-				try {
-					$settings = $this->repository->getSettings();
-					$settings = apply_filters( 'rtbp_settings_data', $settings );
-					return ApiResponse::success(
-						array( 'settings' => $settings ),
-						__( 'Settings retrieved successfully.', 'radius-hotel-booking' )
-					)->send();
-				} catch ( \Exception $e ) {
-					return ApiResponse::error(
-						$e->getMessage(),
-						500
-					)->send();
-				}
+				/**
+				 * Filters the settings sent to the Settings screen.
+				 *
+				 * @param array $settings Section => values.
+				 */
+				$settings = apply_filters( 'rtbp_settings_data', $this->settings->all() );
+				return ApiResponse::success( array( 'settings' => $settings ), __( 'Settings retrieved successfully.', 'radius-hotel-booking' ) );
 			}
 		);
 	}
 
 	/**
-	 * Show specific settings section
-	 * GET /settings/show
+	 * GET /settings/schema: types, defaults, limits and options per key.
 	 *
-	 * @param WP_REST_Request $request The request object containing parameters for retrieving the settings section.
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function schema( WP_REST_Request $request ) {
+		return $this->respond(
+			$request,
+			static fn() => ApiResponse::success( array( 'schema' => SettingsSchema::for_client() ) )
+		);
+	}
+
+	/**
+	 * GET /settings/{section}.
 	 *
-	 * @return mixed A response indicating success or failure of the operation. On success, returns the settings section data; on failure, returns an error response.
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
 	 */
 	public function show( WP_REST_Request $request ) {
-		return $this->applyMiddleware(
+		return $this->respond(
 			$request,
 			function ( $request ) {
-				try {
-					$section = $request->get_param( 'section' );
-					$data    = $this->repository->getSection( $section );
-
-					if ( null === $data ) {
-						return ApiResponse::notFound(
-							__( 'Settings section not found.', 'radius-hotel-booking' )
-						)->send();
-					}
-
-					return ApiResponse::success(
-						array(
-							'section' => $section,
-							'data'    => $data,
-						)
-					)->send();
-				} catch ( \Exception $e ) {
-					return ApiResponse::error(
-						$e->getMessage(),
-						500
-					)->send();
+				$section = (string) $request->get_param( 'section' );
+				$data    = $this->settings->section( $section );
+				if ( null === $data ) {
+					// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+					throw DomainException::notFound( __( 'Settings section not found.', 'radius-hotel-booking' ) );
 				}
+				return ApiResponse::success(
+					array(
+						'section' => $section,
+						'data'    => $data,
+					)
+				);
 			}
 		);
 	}
 
 	/**
-	 * Update settings
-	 * POST /settings/update
+	 * PUT /settings/{section}: update some keys of one section.
 	 *
-	 * @param WP_REST_Request $request The request object containing settings to be updated.
-	 *
-	 * @return ApiResponse Returns success response with updated settings or error response on failure.
-	 */
-	public function update( WP_REST_Request $request ) {
-		return $this->applyMiddleware(
-			$request,
-			function ( $request ) {
-				try {
-					$data = $request->get_json_params();
-
-					// Save settings
-					$is_save = $this->repository->saveSettings( $data );
-					if ( is_wp_error( $is_save ) ) {
-						return ApiResponse::validationError(
-							$is_save->get_error_data(),
-							$is_save->get_error_message()
-						)->send();
-					}
-					return ApiResponse::success(
-						array(
-							'settings' => $this->repository->getSettings(),
-						),
-						__( 'Settings updated successfully.', 'radius-hotel-booking' )
-					)->send();
-				} catch ( \Exception $e ) {
-					return ApiResponse::error(
-						$e->getMessage(),
-						500
-					)->send();
-				}
-			}
-		);
-	}
-
-	/**
-	 * Update a specific settings section.
-	 *
-	 * @param WP_REST_Request $request The REST request containing the section identifier and updated data.
+	 * @param WP_REST_Request $request Request (JSON body: key => value).
+	 * @return mixed
 	 */
 	public function updateSection( WP_REST_Request $request ) {
-		return $this->applyMiddleware(
+		return $this->respond(
 			$request,
 			function ( $request ) {
-				try {
-					$section = $request->get_param( 'section' );
-					$data    = $request->get_json_params();
-
-					// Get current section data
-					$currentData = $this->repository->getSection( $section );
-					if ( null === $currentData ) {
-						return ApiResponse::notFound(
-							__( 'Settings section not found.', 'radius-hotel-booking' )
-						)->send();
-					}
-
-					// Merge with new data
-					$mergedData = array_replace_recursive( $currentData, $data );
-
-					// Save section
-					$this->repository->saveSection( $section, $mergedData );
-
-					return ApiResponse::success(
-						array(
-							'section' => $section,
-							'data'    => $this->transformItem( $mergedData ),
-						),
-						__( 'Settings section updated successfully.', 'radius-hotel-booking' )
-					)->send();
-				} catch ( \Exception $e ) {
-					return ApiResponse::error(
-						$e->getMessage(),
-						500
-					)->send();
-				}
+				$section = (string) $request->get_param( 'section' );
+				$data    = $this->settings->updateSection( $section, (array) $request->get_json_params() );
+				return ApiResponse::success(
+					array(
+						'section' => $section,
+						'data'    => $data,
+					),
+					__( 'Settings saved.', 'radius-hotel-booking' )
+				);
 			}
 		);
 	}
 
 	/**
-	 * Resets the settings to their default values and generates a response.
+	 * PUT /settings/{section}/reset: restore one section's defaults.
 	 *
-	 * @param WP_REST_Request $request The REST request instance containing request details.
-	 */
-	public function reset( WP_REST_Request $request ) {
-		return $this->applyMiddleware(
-			$request,
-			function ( $request ) {
-				try {
-					$sections = $request->get_param( 'sections' );
-
-					if ( is_array( $sections ) && ! empty( $sections ) ) {
-						// Reset only the requested sections (i.e. one settings
-						// tab), leaving every other tab untouched. Preserve the
-						// stored keys' camelCase (do NOT sanitize_key — it would
-						// lowercase a camelCase section key.); resetSections() only
-						// touches keys that exist in the defaults, so anything
-						// unrecognised is harmlessly ignored.
-						$sections = array_values(
-							array_filter(
-								array_map(
-									static function ( $section ) {
-										return preg_replace( '/[^A-Za-z0-9_]/', '', (string) $section );
-									},
-									$sections
-								)
-							)
-						);
-
-						$settings = $this->repository->resetSections( $sections );
-						$message  = __( 'Settings reset to defaults successfully.', 'radius-hotel-booking' );
-					} else {
-						// No sections given → full reset (backward compatible).
-						$settings = $this->repository->resetSettings();
-						$message  = __( 'All settings reset to defaults successfully.', 'radius-hotel-booking' );
-					}
-
-					return ApiResponse::success(
-						array( 'settings' => $settings ),
-						$message
-					)->send();
-				} catch ( \Exception $e ) {
-					return ApiResponse::error(
-						$e->getMessage(),
-						500
-					)->send();
-				}
-			}
-		);
-	}
-
-	/**
-	 * Resets a specific settings section to its default values.
-	 *
-	 * @param WP_REST_Request $request The REST request object containing request parameters, including the section to reset.
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
 	 */
 	public function resetSection( WP_REST_Request $request ) {
-		return $this->applyMiddleware(
+		return $this->respond(
 			$request,
 			function ( $request ) {
-				try {
-					$section = $request->get_param( 'section' );
-					$data    = $this->repository->resetSection( $section );
-
-					if ( null === $data ) {
-						return ApiResponse::notFound(
-							__( 'Settings section not found.', 'radius-hotel-booking' )
-						)->send();
-					}
-
-					return ApiResponse::success(
-						array(
-							'section' => $section,
-							'data'    => $this->transformItem( $data ),
-						),
-						__( 'Settings section reset to defaults successfully.', 'radius-hotel-booking' )
-					)->send();
-				} catch ( \Exception $e ) {
-					return ApiResponse::error(
-						$e->getMessage(),
-						500
-					)->send();
-				}
+				$section = (string) $request->get_param( 'section' );
+				$data    = $this->settings->resetSection( $section );
+				return ApiResponse::success(
+					array(
+						'section' => $section,
+						'data'    => $data,
+					),
+					__( 'Settings section reset to defaults successfully.', 'radius-hotel-booking' )
+				);
 			}
 		);
 	}
 
 	/**
-	 * Exports the settings data collected from the repository and generates a response.
+	 * PUT /settings: update several sections at once (section => key => value).
+	 * All sections are validated before anything is saved; field errors are
+	 * keyed `section.key`.
 	 *
-	 * @param WP_REST_Request $request The REST request instance containing request details.
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
 	 */
-	public function export( WP_REST_Request $request ) {
-		return $this->applyMiddleware(
-			$request,
-			function () {
-				try {
-					$settings = $this->repository->getSettings();
-
-					return ApiResponse::success(
-						array(
-							'settings'    => $this->transformCollection( $settings ),
-							'exported_at' => current_time( 'mysql' ),
-							'version'     => defined( 'RADIUS_HOTEL_BOOKING_VERSION' ) ? RADIUS_HOTEL_BOOKING_VERSION : '1.0.0',
-						),
-						__( 'Settings exported successfully.', 'radius-hotel-booking' )
-					)->send();
-				} catch ( \Exception $e ) {
-					return ApiResponse::error(
-						$e->getMessage(),
-						500
-					)->send();
-				}
-			}
-		);
-	}
-
-	/**
-	 * Imports settings data from the provided request, validates the data, and saves it to the repository.
-	 *
-	 * @param WP_REST_Request $request The REST request instance containing the import data and details.
-	 */
-	public function import( WP_REST_Request $request ) {
-		return $this->applyMiddleware(
+	public function update( WP_REST_Request $request ) {
+		return $this->respond(
 			$request,
 			function ( $request ) {
-				try {
-					$data = $request->get_json_params();
+				$input = (array) $request->get_json_params();
 
-					if ( ! isset( $data['settings'] ) || ! is_array( $data['settings'] ) ) {
-						return ApiResponse::validationError(
-							array( 'settings' => __( 'Settings data is required and must be an array.', 'radius-hotel-booking' ) ),
-							__( 'Invalid import data format.', 'radius-hotel-booking' )
-						)->send();
+				$errors = array();
+				foreach ( $input as $section => $values ) {
+					$schema = SettingsSchema::section( (string) $section );
+					if ( null === $schema || ! is_array( $values ) ) {
+						continue;
 					}
-
-					// Save imported settings
-					$this->repository->saveSettings( $data['settings'] );
-
-					return ApiResponse::success(
-						array( 'settings' => $this->transformCollection( $this->repository->getSettings() ) ),
-						__( 'Settings imported successfully.', 'radius-hotel-booking' )
-					)->send();
-				} catch ( \Exception $e ) {
-					return ApiResponse::error(
-						$e->getMessage(),
-						500
-					)->send();
+					list( , $section_errors ) = SettingsValidator::validate( $schema, $values );
+					foreach ( $section_errors as $key => $message ) {
+						$errors[ $section . '.' . $key ] = $message;
+					}
 				}
+				if ( $errors ) {
+					// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+					throw new DomainException( 'invalid_settings', __( 'Please correct the highlighted fields.', 'radius-hotel-booking' ), 422, $errors );
+				}
+
+				foreach ( $input as $section => $values ) {
+					if ( is_array( $values ) ) {
+						$this->settings->updateSection( (string) $section, $values );
+					}
+				}
+
+				return ApiResponse::success( array( 'settings' => $this->settings->all() ), __( 'Settings updated successfully.', 'radius-hotel-booking' ) );
 			}
 		);
 	}
 
 	/**
-	 * Generates validation rules based on the provided request and context.
+	 * PUT /settings/reset: restore the defaults of the given sections
+	 * (`sections` param), or of every section when none are given.
 	 *
-	 * @param mixed $request The request data to validate against.
-	 * @param string $context The context for the validation rules. Defaults to 'create'. Possible values include 'create' and 'update'.
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
 	 */
-	protected function getValidationRules( $request, string $context = 'create' ) {
-		$rules = array(
-			// Add your fields below
+	public function reset( WP_REST_Request $request ) {
+		return $this->respond(
+			$request,
+			function ( $request ) {
+				$sections = $request->get_param( 'sections' );
+				$sections = is_array( $sections ) && $sections ? $sections : array_keys( $this->settings->all() );
+				foreach ( $sections as $section ) {
+					$this->settings->resetSection( (string) $section );
+				}
+				return ApiResponse::success( array( 'settings' => $this->settings->all() ), __( 'Settings reset to defaults successfully.', 'radius-hotel-booking' ) );
+			}
 		);
+	}
 
-		return $rules;
+	/**
+	 * Run a handler behind the middleware and turn exceptions into the
+	 * ApiResponse envelope.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @param callable        $handler Returns an ApiResponse.
+	 * @return mixed
+	 */
+	private function respond( WP_REST_Request $request, callable $handler ) {
+		return $this->applyMiddleware(
+			$request,
+			static function ( $request ) use ( $handler ) {
+				try {
+					return $handler( $request )->send();
+				} catch ( \Throwable $e ) {
+					return ApiResponse::fromThrowable( $e )->send();
+				}
+			}
+		);
 	}
 }

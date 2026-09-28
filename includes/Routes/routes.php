@@ -31,9 +31,12 @@ $this->router->get( 'dashboard/summary', array( DashboardController::class, 'sum
 $this->router->get( 'files/(?P<token>[a-f0-9]{32})', array( FileController::class, 'download' ) );
 
 /** Settings routes. */
+// Fixed paths before the {section} pattern, which would also match them.
 $this->router->get( 'settings', array( SettingsController::class, 'index' ) );
 $this->router->put( 'settings', array( SettingsController::class, 'update' ) );
+$this->router->get( 'settings/schema', array( SettingsController::class, 'schema' ) );
 $this->router->put( 'settings/reset', array( SettingsController::class, 'reset' ) );
+$this->router->put( 'settings/(?P<section>[a-zA-Z0-9_-]+)/reset', array( SettingsController::class, 'resetSection' ) ); // phpcs:ignore
 $this->router->get( 'settings/(?P<section>[a-zA-Z0-9_-]+)', array( SettingsController::class, 'show' ) ); // phpcs:ignore
 $this->router->put( 'settings/(?P<section>[a-zA-Z0-9_-]+)', array( SettingsController::class, 'updateSection' ) ); // phpcs:ignore
 

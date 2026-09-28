@@ -25,6 +25,22 @@ function config() {
 	return params.format || {};
 }
 
+/**
+ * Update the format config in place, so amounts and dates follow Settings →
+ * General straight after a save, without a reload.
+ *
+ * @param {Object} changes Keys of the `format` block (currency, dateFormat, timeFormat).
+ */
+export function setFormatConfig( changes ) {
+	const params =
+		typeof window !== 'undefined' &&
+		( window.radius_hotel_booking_param ||
+			window.radius_hotel_booking_site_param );
+	if ( params ) {
+		params.format = { ...( params.format || {} ), ...changes };
+	}
+}
+
 /* ------------------------------------------------------------------ Money */
 
 /**
@@ -33,10 +49,15 @@ function config() {
  * @param {number|string} amount             Amount.
  * @param {Object}        options            Options.
  * @param {boolean}       options.symbol     Include the currency symbol.
+ * @param {Object}        options.currency   Currency config instead of the site's
+ *                                           (a Settings preview).
  * @return {string} Formatted amount.
  */
-export function formatMoney( amount, { symbol = true } = {} ) {
-	const currency = config().currency || {};
+export function formatMoney(
+	amount,
+	{ symbol = true, currency: custom } = {}
+) {
+	const currency = custom || config().currency || {};
 	const decimals = Number.isInteger( currency.decimals )
 		? currency.decimals
 		: 2;
@@ -242,6 +263,18 @@ function render( p, format ) {
 export function formatDate( value ) {
 	const parts = toParts( value );
 	return parts ? render( parts, config().dateFormat || 'Y-m-d' ) : '';
+}
+
+/**
+ * Date with a given PHP date format (a Settings preview).
+ *
+ * @param {Date|string} value  Date value.
+ * @param {string}      format PHP date format.
+ * @return {string} Formatted date.
+ */
+export function formatDateAs( value, format ) {
+	const parts = toParts( value );
+	return parts ? render( parts, format || 'Y-m-d' ) : '';
 }
 
 /**

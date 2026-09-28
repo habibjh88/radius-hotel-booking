@@ -35,7 +35,7 @@ system made them WooCommerce customers). A guest can optionally be linked to a W
 
 | Table | Key columns |
 |---|---|
-| `guests` | `id`, `reference` (Sequence `guest`), `first_name`, `last_name`, `name_search` (folded "first last"), `phone`, `phone_e164`, `email`, `email_is_placeholder`, `id_type`, `id_number`, `language` (fr/en), `standing` (normal/banned), `ban_reason`, `banned_at`, `banned_by`, `wp_user_id` (nullable), `stays_count`, `last_stay_at`, `created_by`, timestamps, soft delete. Unique: `phone_e164` (where not null), `email` (where not a placeholder). Indexes: `name_search`, `standing` |
+| `guests` | `id`, `reference` (Sequence `guest`), `first_name`, `last_name`, `name_search` (folded "first last"), `phone`, `phone_e164`, `email`, `email_is_placeholder`, `id_type`, `id_number`, `standing` (normal/banned), `ban_reason`, `banned_at`, `banned_by`, `wp_user_id` (nullable), `stays_count`, `last_stay_at`, `created_by`, timestamps, soft delete. Unique: `phone_e164` (where not null), `email` (where not a placeholder). Indexes: `name_search`, `standing` |
 | `notes` | Shared by bookings, guests and employees. `id`, `notable_type`, `notable_id`, `type` (general / caution / warning), `body`, `author_id`, `author_name`, timestamps, `edited_by`. Index `(notable_type, notable_id)`. **Built in this module** |
 
 Identity document types (keys → FR / EN labels): `cni` (Carte Nationale d'Identité / National ID),

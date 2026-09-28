@@ -346,6 +346,8 @@ final class RadiusHotelBooking {
 
 		TemplateHooks::init();
 
+		RadiusTheme\RadiusHotelBooking\Admin\UpgradeNotice::init();
+
 		/**
 		 * Lets an add-on plugin register its integrations once the free plugin
 		 * is fully booted.
@@ -393,7 +395,8 @@ final class RadiusHotelBooking {
 	public function plugin_action_links( $links ) {
 		$links[] = '<a href="' . esc_url( admin_url( 'admin.php?page=' . self::SLUG . '#/settings' ) ) . '">' . esc_html__( 'Settings', 'radius-hotel-booking' ) . '</a>';
 
-		return $links;
+		// "Upgrade", only while Pro is not active (ADR-016).
+		return RadiusTheme\RadiusHotelBooking\Admin\UpgradeNotice::action_link( $links );
 	}
 }
 

@@ -37,7 +37,10 @@ export default function BrandColorField( { value, onChange } ) {
 	return (
 		<div className="space-y-3">
 			<div>
-				<Label htmlFor="rtbp-color-hex" className="text-sm font-semibold text-heading">
+				<Label
+					htmlFor="rtbp-color-hex"
+					className="text-sm font-semibold text-heading"
+				>
 					{ __( 'Brand colour', 'radius-hotel-booking' ) }
 				</Label>
 				<p className="m-0 mt-0.5 text-[13px] text-muted-foreground">
@@ -66,12 +69,17 @@ export default function BrandColorField( { value, onChange } ) {
 							onClick={ () => pick( preset.value ) }
 							className={ cn(
 								'flex h-9 w-9 items-center justify-center rounded-full border-2 p-0 transition-transform hover:scale-110',
-								selected ? 'border-heading' : 'border-transparent'
+								selected
+									? 'border-heading'
+									: 'border-transparent'
 							) }
 							style={ { background: preset.value } }
 						>
 							{ selected ? (
-								<Check className="h-4 w-4 text-white" aria-hidden="true" />
+								<Check
+									className="h-4 w-4 text-white"
+									aria-hidden="true"
+								/>
 							) : null }
 						</button>
 					);
@@ -84,7 +92,10 @@ export default function BrandColorField( { value, onChange } ) {
 					value={ color }
 					onChange={ ( event ) => pick( event.target.value ) }
 					className="h-10 w-12 cursor-pointer rounded-lg border border-border bg-card p-1"
-					aria-label={ __( 'Pick a custom colour', 'radius-hotel-booking' ) }
+					aria-label={ __(
+						'Pick a custom colour',
+						'radius-hotel-booking'
+					) }
 				/>
 				<Input
 					id="rtbp-color-hex"

@@ -19,7 +19,7 @@ released automatically.
 
 ## Model
 
-- **Payment methods** are configured in Settings: key, label (FR/EN), instructions (FR/EN, with
+- **Payment methods** are configured in Settings: key, label, instructions (with
   merge tags `{amount}`, `{reference}`, `{deadline}`, `{hotel_name}`), account details, enabled,
   and sort order. The defaults are *Cash at desk*, *Wave*, *Orange Money* and *Bank transfer*.
   Nothing is hard-coded.
@@ -46,15 +46,15 @@ released automatically.
 | Feature | Summary | Task |
 |---|---|---|
 | 5.1 | A booking placed without payment keeps its room (holds become lines; `payment_status = unpaid`) | T1 |
-| 17.12, 5.3 | Settings → Payments: the methods list with FR/EN instructions and merge tags | T1 |
-| 17.13 | Settings → Invoices: prefix, starting number, logo, hotel details (from General), footer text FR/EN, tax label and rate | T1 |
+| 17.12, 5.3 | Settings → Payments: the methods list with instructions and merge tags | T1 |
+| 17.13 | Settings → Invoices: prefix, starting number, logo, hotel details (from General), footer text, tax label and rate | T1 |
 | 5.9, 5.10, 5.11 | Record a payment (amount prefilled with the balance, method, reference, date and time, note), partial payments, status from the ledger | T2 |
 | 5.13 | Payment history panel on the booking (who, when, method, reference; voids shown struck through with a reason) | T2 |
 | 3.3, 3.4 | Payment method shown; the cleaned-up payment statuses | T2 |
 | 5.4 | Deadline per booking, shown with a countdown on the booking and on the guest confirmation | T3 |
 | 5.5, 5.6, 5.8 | Invoice: sequential number, PDF (ADR-005), download and print from the booking | T4 |
 | 5.12 | Receipt PDF per payment; print and e-mail | T4 |
-| 5.2, 5.7 | Confirmation e-mail + screen: instructions for the enabled methods, the exact CFA amount, the reference to quote, the deadline, and the invoice attached (the guest's language) | T5 |
+| 5.2, 5.7 | Confirmation e-mail + screen: instructions for the enabled methods, the exact CFA amount, the reference to quote, the deadline, and the invoice attached | T5 |
 | 5.14 | Overdue list (a filter on the dashboard + its own screen) with *remind* (e-mail) and *release*; optional auto-release by cron after X hours past the deadline (a setting, off by default) | T6 |
 
 ## Data
@@ -100,7 +100,7 @@ switched on or off in Settings → E-mail.
 - [ ] T2 [Free] `PaymentService` (record, void, recalculate; verified on the Local site), the record-payment dialog, and the payment history panel
 - [ ] T3 [Free] Deadline computation + countdown UI + the `overdue` derived state
 - [ ] T4 [Free] Invoice + receipt: sequential numbering, versioning, an HTML print view (`templates/documents/`), and the `rtbp_document_renderers` registry
-- [ ] T5 [Free] Confirmation e-mail + public confirmation page with instructions (invoice link to the print view); guest language
+- [ ] T5 [Free] Confirmation e-mail + public confirmation page with instructions (invoice link to the print view)
 - [ ] T6 [Free] Overdue follow-up: list, remind, manual release
 - [ ] T7 [Pro] PDF renderer (dompdf, PHP-Scoper prefixed) registered in `rtbp_document_renderers`; PDFs attached to the confirmation and receipt e-mails
 - [ ] T8 [Pro] Auto-release cron for overdue bookings (idempotent, logged as `system`) + its setting

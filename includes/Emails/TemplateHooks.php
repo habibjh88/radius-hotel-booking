@@ -71,7 +71,8 @@ class TemplateHooks {
 	public static function email_header_content() {
 		$general   = SettingsHelper::get_setting( 'general' );
 		$site_name = ! empty( $general['companyName'] ) ? $general['companyName'] : get_bloginfo( 'name' );
-		$logo_url  = $general['logoUrl'] ?? '';
+		$logo_id   = (int) ( $general['logo'] ?? 0 );
+		$logo_url  = $logo_id ? (string) wp_get_attachment_image_url( $logo_id, 'medium' ) : '';
 		?>
 		<table width="100%" border="0" cellspacing="0" cellpadding="0">
 			<tr>

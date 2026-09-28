@@ -129,7 +129,7 @@ All task DoDs, plus:
       explicitly deferred in the module doc, with a reason
 - [ ] The module's settings are in the Settings panel (Module 17) with defaults in `SettingsHelper`
 - [ ] The module's access keys appear in the permission map (Module 13)
-- [ ] The acceptance script in the module doc passes on the Local site, in French and in English
+- [ ] The acceptance script in the module doc passes on the Local site (in English; ADR-019)
 - [ ] The `rtbp-critical-reviewer` agent has reviewed any availability, money, permission or payroll code
 - [ ] `docs/project/roadmap.md` shows the module as `done`
 - [ ] Free still works with Pro deactivated (smoke test of the module's screens)

@@ -141,7 +141,7 @@ state for UI only. No Redux, no `@wordpress/data` stores for domain data.
 
 | Plugin | Contains |
 |---|---|
-| **Free** `radius-hotel-booking` (wordpress.org) | The complete core hotel: inventory, rate plans at base, sale and date-override price, the availability engine, calendar and blocks, guests, desk and public booking, the booking record, manual payment with invoice numbers and a print view, the dashboard, basic reports, basic access control (open/locked per access key per role), settings, and FR/EN |
+| **Free** `radius-hotel-booking` (wordpress.org) | The complete core hotel: inventory, rate plans at base, sale and date-override price, the availability engine, calendar and blocks, guests, desk and public booking, the booking record, manual payment with invoice numbers and a print view, the dashboard, basic reports, basic access control (open/locked per access key per role), settings, and translatable strings |
 | **Pro** `radius-hotel-booking-pro` | Advanced pricing rules (seasonal, occupancy, early-bird, last-minute) · iCal sync · the **activity log** (M14) · the passcode level, PINs, custom access roles, per-person overrides and profile-field control · PDF invoices and receipts, and the overdue auto-release · advanced reports (occupancy %, revenue breakdowns, XLSX) · scheduled exports and archive-and-remove · staff records (M12) · staff self-service (M16) |
 | **Client add-on** `radius-hotel-booking-residencetata` | Côte d'Ivoire payroll (M15), the legacy data import (M18), and the client's defaults and branding |
 
@@ -266,3 +266,25 @@ scripts. PHPCS stays as the only linter.
 (`conventions.md` §4). That covers the booking-engine edge cases (§10), the concurrency check
 (ADR-008), pricing and payroll maths. The results are recorded in each module's Progress notes.
 Money, availability and payroll code still goes through the `rtbp-critical-reviewer` agent.
+
+## ADR-019: English only; languages come from translation plugins — Accepted (2026-09-28)
+
+The owner decided that the plugin is built in English only. Every string, in PHP and JS, is
+wrapped for translation (`__()` and friends, text domain `radius-hotel-booking`), and the `.pot`
+is kept current. French, or any other language, is added later by the client through a
+translation plugin (Loco Translate for the interface; WPML or Polylang for multilingual content).
+The plugin does not build its own language layer.
+
+*Consequences:*
+
+- **No per-language fields.** Room type and rate-plan names, rate-plan features and policy,
+  payment instructions, the invoice footer and the locked message are plain text columns and
+  settings, not `{ en, fr }` JSON. The `translatable` settings type and the planned
+  `TranslatableField` component are dropped (M17).
+- **No in-plugin language switch** and no `guests.language` column. The interface follows the
+  WordPress site or user locale; e-mails and PDFs use the site locale.
+- **No French catalogue maintained per module.** The `fr_FR` files shipped in M00 T8 stay as
+  they are, but modules no longer update them. Acceptance runs in English.
+- Layouts still leave room for longer translations (no fixed-width buttons).
+- The client documents in `docs/requiremetnt/` promise French and English. This decision meets
+  that through a translation plugin, not bundled French. Confirm with the client before handover.

@@ -242,6 +242,24 @@ function rtbp_get_setting( string $key ) {
 }
 
 /**
+ * Read one setting, with its default applied.
+ *
+ * Use this rather than get_option(), so a fresh install that never opened
+ * Settings still gets the schema's defaults. Example:
+ * `rtbp_setting( 'booking', 'sameDayCutoff' )` returns '14:00' until changed.
+ *
+ * @param string $section Section key, e.g. 'general'.
+ * @param string $key     Key within the section, e.g. 'currencyCode'.
+ * @param mixed  $default Returned when the section or key does not exist.
+ *
+ * @return mixed
+ */
+function rtbp_setting( string $section, string $key, $default = null ) {
+	$values = SettingsHelper::get_setting( $section );
+	return is_array( $values ) && array_key_exists( $key, $values ) ? $values[ $key ] : $default;
+}
+
+/**
  * Get the URL of the current request.
  *
  * @return string

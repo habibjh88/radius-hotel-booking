@@ -25,6 +25,7 @@ import DateTime from '@/components/common/DateTime';
 import EmptyState from '@/components/common/EmptyState';
 import FilterTabs from '@/components/common/FilterTabs';
 import { Field, FormSection } from '@/components/common/Form';
+import MediaField from '@/components/common/MediaField';
 import Money from '@/components/common/Money';
 import Panel from '@/components/common/Panel';
 import SegmentedControl from '@/components/common/SegmentedControl';
@@ -96,6 +97,8 @@ export default function DevUi() {
 	const [ range, setRange ] = useState( { from: '', to: '' } );
 	const [ mode, setMode ] = useState( 'arrival' );
 	const [ confirm, setConfirm ] = useState( null );
+	const [ image, setImage ] = useState( 0 );
+	const [ sound, setSound ] = useState( 0 );
 	const form = useZodForm( SCHEMA, {
 		defaultValues: { name: '', phone: '', email: '' },
 	} );
@@ -467,6 +470,42 @@ export default function DevUi() {
 							<Button type="submit">Save guest</Button>
 						</div>
 					</form>
+				</Block>
+
+				<Block title="MediaField: WordPress media library">
+					<div className="space-y-4">
+						<Field
+							label="Logo (images only)"
+							description="Stores the attachment id."
+						>
+							<MediaField
+								value={ image }
+								onChange={ setImage }
+								accept={ [ 'image/' ] }
+								title="Choose a logo"
+							/>
+						</Field>
+						<Field label="Sound (audio only)">
+							<MediaField
+								value={ sound }
+								onChange={ setSound }
+								accept={ [ 'audio/' ] }
+								title="Choose a sound"
+							/>
+						</Field>
+						<Field
+							label="Missing file + server error"
+							error="That file is no longer in the media library."
+						>
+							<MediaField
+								value={ 999999 }
+								onChange={ () => {} }
+							/>
+						</Field>
+					</div>
+					<p className="m-0 text-xs text-muted-foreground">
+						Values: logo { image }, sound { sound }
+					</p>
 				</Block>
 
 				<Block title="Feedback: toasts, dialogs, skeletons, empty">

@@ -83,4 +83,4 @@ add-on screen needs a missing shared component, add the component to **free** fi
 ## Verify
 
 `npm run build`, then load the screen on the Local site (claude-in-chrome) at
-desktop and 360 px, in French and English, and check loading/empty/error states.
+desktop and 360 px, and check loading/empty/error states.

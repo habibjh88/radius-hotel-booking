@@ -20,7 +20,7 @@ The client (Residence TATA) runs a WooCommerce-based hotel stack. We rebuild it;
 
 ## Rules
 
-1. **Copy behaviour, not code.** Field lists, enum values, defaults, labels (FR/EN), edge cases —
+1. **Copy behaviour, not code.** Field lists, enum values, defaults, labels, edge cases —
    yes. Classes, SQL, JSON-in-meta storage, WooCommerce order coupling — no.
 2. When the legacy behaviour and `docs/requiremetnt/08-feature-list.md` disagree, the feature
    list wins; note the difference in the module doc's **Progress notes**.

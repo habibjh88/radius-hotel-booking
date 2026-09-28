@@ -18,8 +18,8 @@ the **decisions** so that 18 modules built across several weeks look like one pr
    that produced it (feature 7.16).
 5. **The same component in both places.** The front desk and the public site render one
    `BookingFlow`, in two modes. The code never forks.
-6. **French first.** Layouts are sized for French strings, which run about 20% longer. No
-   fixed-width buttons.
+6. **Room for translations.** The UI ships in English (ADR-019), but a translation plugin may
+   swap in longer strings (French runs about 20% longer). No fixed-width buttons.
 
 ## 2. App shell
 
@@ -204,5 +204,4 @@ On a phone, the steps become a stepper: Dates → Rate → Room → Guest → Re
 
 Invoices, receipts and payslips share one HTML template family in `templates/documents/`,
 rendered to PDF on the server (see ADR-005). A4, the hotel logo top left, the document number
-top right, `Money::format()` for every amount, and French or English according to the guest's
-or employee's language.
+top right, `Money::format()` for every amount, and every label a translatable string (site locale).

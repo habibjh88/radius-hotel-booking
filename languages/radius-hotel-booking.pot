@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-28T10:11:53+00:00\n"
+"POT-Creation-Date: 2026-09-28T11:42:33+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: radius-hotel-booking\n"
@@ -56,6 +56,7 @@ msgstr ""
 
 #: includes/Admin/Menu.php:63
 #: src/admin/routes.js:133
+#: src/modules/Settings/sections/Booking.jsx:131
 msgid "Guests"
 msgstr ""
 
@@ -65,9 +66,15 @@ msgid "Rooms & floors"
 msgstr ""
 
 #: includes/Admin/Menu.php:65
-#: radius-hotel-booking.php:394
+#: radius-hotel-booking.php:396
 #: src/admin/routes.js:217
 msgid "Settings"
+msgstr ""
+
+#: includes/Admin/UpgradeNotice.php:96
+#: src/modules/Settings/UpgradeNotice.jsx:45
+#: src/modules/Settings/UpgradeNotice.jsx:68
+msgid "Upgrade"
 msgstr ""
 
 #: includes/Controllers/DashboardController.php:101
@@ -115,50 +122,36 @@ msgstr ""
 msgid "File not found."
 msgstr ""
 
-#: includes/Controllers/SettingsController.php:83
+#: includes/Controllers/SettingsController.php:108
 msgid "Settings retrieved successfully."
 msgstr ""
 
-#: includes/Controllers/SettingsController.php:113
-#: includes/Controllers/SettingsController.php:189
-#: includes/Controllers/SettingsController.php:283
+#: includes/Controllers/SettingsController.php:140
+#: includes/Services/SettingsService.php:103
 msgid "Settings section not found."
 msgstr ""
 
-#: includes/Controllers/SettingsController.php:160
-msgid "Settings updated successfully."
+#: includes/Controllers/SettingsController.php:169
+#: src/modules/Settings/useSettingsDrafts.js:130
+msgid "Settings saved."
 msgstr ""
 
-#: includes/Controllers/SettingsController.php:204
-msgid "Settings section updated successfully."
-msgstr ""
-
-#: includes/Controllers/SettingsController.php:247
-msgid "Settings reset to defaults successfully."
-msgstr ""
-
-#: includes/Controllers/SettingsController.php:251
-msgid "All settings reset to defaults successfully."
-msgstr ""
-
-#: includes/Controllers/SettingsController.php:292
+#: includes/Controllers/SettingsController.php:192
 msgid "Settings section reset to defaults successfully."
 msgstr ""
 
-#: includes/Controllers/SettingsController.php:322
-msgid "Settings exported successfully."
+#: includes/Controllers/SettingsController.php:225
+#: includes/Exceptions/DomainException.php:143
+#: includes/Services/SettingsService.php:69
+msgid "Please correct the highlighted fields."
 msgstr ""
 
-#: includes/Controllers/SettingsController.php:348
-msgid "Settings data is required and must be an array."
+#: includes/Controllers/SettingsController.php:234
+msgid "Settings updated successfully."
 msgstr ""
 
-#: includes/Controllers/SettingsController.php:349
-msgid "Invalid import data format."
-msgstr ""
-
-#: includes/Controllers/SettingsController.php:358
-msgid "Settings imported successfully."
+#: includes/Controllers/SettingsController.php:255
+msgid "Settings reset to defaults successfully."
 msgstr ""
 
 #: includes/Core/Api/ApiResponse.php:218
@@ -172,8 +165,7 @@ msgid "View Dashboard"
 msgstr ""
 
 #: includes/Core/Permissions/Capabilities.php:128
-#: src/modules/Settings/index.jsx:17
-#: src/modules/Settings/index.jsx:116
+#: src/modules/Settings/sections/index.js:25
 msgid "General"
 msgstr ""
 
@@ -246,17 +238,74 @@ msgid "Current Year"
 msgstr ""
 
 #. translators: 1: year, 2: site or company name.
-#: includes/Emails/TemplateHooks.php:174
+#: includes/Emails/TemplateHooks.php:175
 #, php-format
 msgid "&copy; %1$s %2$s. All rights reserved."
 msgstr ""
 
-#: includes/Exceptions/DomainException.php:143
-msgid "Please correct the highlighted fields."
-msgstr ""
-
 #: includes/Hooks/Common.php:65
 msgid "Radius Hotel Booking Page"
+msgstr ""
+
+#: includes/Settings/CoreSettings.php:299
+#: includes/Settings/CoreSettings.php:320
+#: includes/Settings/SettingsValidator.php:287
+msgid "This value is not valid."
+msgstr ""
+
+#. translators: %d: the maximum number of characters.
+#: includes/Settings/CoreSettings.php:326
+#: includes/Settings/SettingsValidator.php:225
+#, php-format
+msgid "Use %d characters or fewer."
+msgstr ""
+
+#: includes/Settings/SettingsValidator.php:101
+msgid "Enter a number."
+msgstr ""
+
+#: includes/Settings/SettingsValidator.php:104
+msgid "Enter a whole number."
+msgstr ""
+
+#. translators: %s: the smallest allowed number.
+#: includes/Settings/SettingsValidator.php:111
+#, php-format
+msgid "Enter %s or more."
+msgstr ""
+
+#. translators: %s: the largest allowed number.
+#: includes/Settings/SettingsValidator.php:115
+#, php-format
+msgid "Enter %s or less."
+msgstr ""
+
+#: includes/Settings/SettingsValidator.php:146
+msgid "Choose one of the options."
+msgstr ""
+
+#: includes/Settings/SettingsValidator.php:164
+msgid "Enter a valid e-mail address."
+msgstr ""
+
+#: includes/Settings/SettingsValidator.php:182
+msgid "Enter a web address starting with https://"
+msgstr ""
+
+#: includes/Settings/SettingsValidator.php:193
+msgid "Enter a colour such as #0040ff."
+msgstr ""
+
+#: includes/Settings/SettingsValidator.php:206
+msgid "Enter a time between 00:00 and 23:59."
+msgstr ""
+
+#: includes/Settings/SettingsValidator.php:249
+msgid "That file is no longer in the media library."
+msgstr ""
+
+#: includes/Settings/SettingsValidator.php:258
+msgid "This type of file is not allowed here."
 msgstr ""
 
 #: includes/Setup/PageInstaller.php:35
@@ -271,16 +320,16 @@ msgstr ""
 msgid "Every 15 minutes"
 msgstr ""
 
-#: includes/Storage/ProtectedFiles.php:80
-#: includes/Storage/ProtectedFiles.php:108
+#: includes/Storage/ProtectedFiles.php:81
+#: includes/Storage/ProtectedFiles.php:111
 msgid "The file could not be saved."
 msgstr ""
 
-#: includes/Storage/ProtectedFiles.php:99
+#: includes/Storage/ProtectedFiles.php:101
 msgid "The file to store was not found."
 msgstr ""
 
-#: includes/Storage/ProtectedFiles.php:259
+#: includes/Storage/ProtectedFiles.php:263
 msgid "This type of file cannot be stored."
 msgstr ""
 
@@ -459,7 +508,7 @@ msgstr ""
 msgid "Hotel details, booking rules and appearance"
 msgstr ""
 
-#: src/api/client.js:54
+#: src/api/client.js:68
 msgid "Request failed."
 msgstr ""
 
@@ -504,6 +553,7 @@ msgstr ""
 
 #: src/components/common/DataTable.jsx:326
 #: src/modules/Dashboard/index.jsx:71
+#: src/modules/Settings/index.jsx:268
 msgid "Try again"
 msgstr ""
 
@@ -595,6 +645,44 @@ msgstr ""
 msgid "(required)"
 msgstr ""
 
+#: src/components/common/MediaField.jsx:130
+msgid "Choose a file"
+msgstr ""
+
+#: src/components/common/MediaField.jsx:131
+msgid "Use this file"
+msgstr ""
+
+#. translators: %s: file name.
+#: src/components/common/MediaField.jsx:148
+#, js-format
+msgid "%s is not an accepted file type."
+msgstr ""
+
+#: src/components/common/MediaField.jsx:228
+msgid "The file is no longer in the media library."
+msgstr ""
+
+#: src/components/common/MediaField.jsx:237
+msgid "No file selected."
+msgstr ""
+
+#: src/components/common/MediaField.jsx:260
+msgid "Replace"
+msgstr ""
+
+#: src/components/common/MediaField.jsx:261
+msgid "Choose file"
+msgstr ""
+
+#: src/components/common/MediaField.jsx:271
+msgid "Remove"
+msgstr ""
+
+#: src/components/common/MediaField.jsx:277
+msgid "The media library is not available for your account."
+msgstr ""
+
 #. translators: %s: screen name, e.g. "Bookings".
 #: src/components/common/ModulePlaceholder.jsx:26
 #, js-format
@@ -644,7 +732,7 @@ msgstr ""
 msgid "Quick navigation"
 msgstr ""
 
-#: src/components/layout/MobileTabBar.jsx:53
+#: src/components/layout/MobileTabBar.jsx:62
 msgid "More"
 msgstr ""
 
@@ -914,61 +1002,584 @@ msgstr ""
 msgid "of %d rooms"
 msgstr ""
 
-#: src/modules/Settings/BrandColorField.jsx:41
+#: src/modules/Settings/BrandColorField.jsx:44
 msgid "Brand colour"
 msgstr ""
 
-#: src/modules/Settings/BrandColorField.jsx:44
+#: src/modules/Settings/BrandColorField.jsx:47
 msgid "Used for buttons, links, the logo and highlights across the dashboard and the booking pages."
 msgstr ""
 
-#: src/modules/Settings/BrandColorField.jsx:54
+#: src/modules/Settings/BrandColorField.jsx:57
 msgid "Suggested colours"
 msgstr ""
 
-#: src/modules/Settings/BrandColorField.jsx:87
+#: src/modules/Settings/BrandColorField.jsx:95
 msgid "Pick a custom colour"
 msgstr ""
 
-#: src/modules/Settings/BrandColorField.jsx:106
+#: src/modules/Settings/BrandColorField.jsx:117
 msgid "Preview"
 msgstr ""
 
-#: src/modules/Settings/index.jsx:18
-#: src/modules/Settings/index.jsx:199
-msgid "Display"
+#: src/modules/Settings/index.jsx:79
+msgid "Settings section"
 msgstr ""
 
-#: src/modules/Settings/index.jsx:83
-msgid "Settings saved."
+#: src/modules/Settings/index.jsx:101
+msgid "Settings sections"
 msgstr ""
 
-#: src/modules/Settings/index.jsx:94
-msgid "Loading settings…"
-msgstr ""
-
-#: src/modules/Settings/index.jsx:122
-msgid "Company name"
-msgstr ""
-
-#: src/modules/Settings/index.jsx:143
-msgid "Contact email"
+#: src/modules/Settings/index.jsx:132
+#: src/modules/Settings/index.jsx:161
+msgid "Unsaved changes"
 msgstr ""
 
 #: src/modules/Settings/index.jsx:165
-msgid "Enable debug logging"
+msgid "You have unsaved changes."
 msgstr ""
 
-#: src/modules/Settings/index.jsx:185
-#: src/modules/Settings/index.jsx:235
+#: src/modules/Settings/index.jsx:173
+msgid "Discard"
+msgstr ""
+
+#: src/modules/Settings/index.jsx:177
 msgid "Saving…"
 msgstr ""
 
-#: src/modules/Settings/index.jsx:186
-#: src/modules/Settings/index.jsx:236
+#: src/modules/Settings/index.jsx:178
 msgid "Save changes"
 msgstr ""
 
-#: src/modules/Settings/index.jsx:213
-msgid "Columns"
+#: src/modules/Settings/index.jsx:326
+msgid "Reset to defaults"
+msgstr ""
+
+#. translators: %s: settings section, e.g. "General".
+#: src/modules/Settings/index.jsx:359
+#, js-format
+msgid "Reset %s to its defaults?"
+msgstr ""
+
+#: src/modules/Settings/index.jsx:365
+msgid "Every setting on this tab goes back to its default value. Other tabs are not changed."
+msgstr ""
+
+#: src/modules/Settings/index.jsx:369
+msgid "Reset"
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:22
+msgid "minutes"
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:27
+msgid "Online bookings"
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:28
+msgid "What guests can book on your website. Staff at the front desk are not limited by these rules."
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:34
+msgid "Booking window"
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:35
+msgid "How many days ahead guests can book. 0 means no limit."
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:44
+msgid "days"
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:50
+msgid "Same-day bookings"
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:51
+msgid "Let guests book a stay that starts today."
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:60
+msgid "Cut-off time"
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:61
+msgid "After this time, guests can only book from tomorrow."
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:81
+msgid "Approve bookings manually"
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:85
+msgid "New bookings stay pending until a staff member approves them. The room is held meanwhile."
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:95
+#: src/modules/Settings/sections/Booking.jsx:103
+msgid "Unavailable rooms in search results"
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:112
+msgid "Hide them"
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:119
+msgid "Show as unavailable"
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:132
+msgid "How guests are counted when a room’s capacity is checked."
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:138
+msgid "Maximum child age"
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:139
+msgid "Guests up to this age count as children; older guests count as adults."
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:148
+msgid "years"
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:155
+msgid "Rooms between stays"
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:156
+msgid "Holding a room while a booking is filled in, and cleaning time after a stay."
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:162
+msgid "Hold a selected room for"
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:166
+msgid "While a booking is being filled in, nobody else can take the room. The hold ends after this time."
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:180
+msgid "Cleaning time after a stay"
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:184
+msgid "The room can be sold again only this long after the previous guest leaves. A room type can override it."
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:200
+msgid "Nightly stays"
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:201
+msgid "Default times for rate plans sold by the night. A rate plan with its own times uses those instead."
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:208
+msgid "Check-in from"
+msgstr ""
+
+#: src/modules/Settings/sections/Booking.jsx:221
+msgid "Check-out by"
+msgstr ""
+
+#: src/modules/Settings/sections/Display.jsx:20
+msgid "Appearance"
+msgstr ""
+
+#: src/modules/Settings/sections/Display.jsx:21
+msgid "How the dashboard and the booking pages look."
+msgstr ""
+
+#: src/modules/Settings/sections/Email.jsx:29
+#: src/modules/Settings/sections/Email.jsx:30
+msgid "To the guest"
+msgstr ""
+
+#: src/modules/Settings/sections/Email.jsx:31
+msgid "To the hotel"
+msgstr ""
+
+#: src/modules/Settings/sections/Email.jsx:32
+msgid "To staff"
+msgstr ""
+
+#: src/modules/Settings/sections/Email.jsx:53
+msgid "Sending"
+msgstr ""
+
+#: src/modules/Settings/sections/Email.jsx:54
+msgid "Who e-mails come from, and where replies go."
+msgstr ""
+
+#: src/modules/Settings/sections/Email.jsx:60
+msgid "Send e-mails"
+msgstr ""
+
+#: src/modules/Settings/sections/Email.jsx:61
+msgid "Turn off to stop every e-mail from the booking system, for example while testing."
+msgstr ""
+
+#: src/modules/Settings/sections/Email.jsx:71
+msgid "Sender name"
+msgstr ""
+
+#: src/modules/Settings/sections/Email.jsx:77
+msgid "Sender e-mail"
+msgstr ""
+
+#: src/modules/Settings/sections/Email.jsx:78
+msgid "Use an address on your own domain, so e-mails are not marked as spam."
+msgstr ""
+
+#: src/modules/Settings/sections/Email.jsx:88
+msgid "Reply-to e-mail"
+msgstr ""
+
+#: src/modules/Settings/sections/Email.jsx:89
+msgid "Where guests’ replies go. Leave empty to use the sender e-mail."
+msgstr ""
+
+#: src/modules/Settings/sections/Email.jsx:104
+msgid "E-mails"
+msgstr ""
+
+#: src/modules/Settings/sections/Email.jsx:105
+msgid "Turn each e-mail on or off."
+msgstr ""
+
+#: src/modules/Settings/sections/Email.jsx:152
+msgid "No e-mails yet"
+msgstr ""
+
+#: src/modules/Settings/sections/Email.jsx:153
+msgid "Booking and payment e-mails appear here once they are available."
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:40
+msgid "CFA franc (XOF)"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:51
+msgid "Euro (EUR)"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:62
+msgid "US dollar (USD)"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:122
+msgid "Hotel details"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:123
+msgid "Shown on e-mails, invoices, payslips and the booking pages."
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:130
+msgid "Hotel name"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:139
+msgid "Legal name"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:140
+msgid "The registered company name on invoices. Leave empty to use the hotel name."
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:153
+msgid "Address"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:164
+msgid "Phone"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:175
+msgid "Contact e-mail"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:182
+msgid "Logo"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:183
+msgid "Shown at the top of e-mails and documents. A square image works best."
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:193
+msgid "Choose a logo"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:199
+msgid "Registration numbers"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:200
+msgid "Printed on invoices and payslips when filled in."
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:207
+msgid "Tax number"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:216
+msgid "CNPS number"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:217
+msgid "The employer social-security number, printed on payslips."
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:232
+msgid "Date and time"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:233
+msgid "How dates and times appear across the dashboard, e-mails and documents."
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:239
+#: src/modules/Settings/sections/General.jsx:253
+msgid "Date format"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:267
+msgid "Custom…"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:278
+msgid "Custom date format"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:289
+msgid "Empty: the WordPress date format is used."
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:299
+#: src/modules/Settings/sections/General.jsx:304
+msgid "Time format"
+msgstr ""
+
+#. translators: %s: a sample date and time in the chosen formats.
+#: src/modules/Settings/sections/General.jsx:326
+#, js-format
+msgid "Preview: %s"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:336
+msgid "Currency"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:337
+msgid "Every price, payment, invoice and report uses this currency."
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:349
+msgid "Quick setup:"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:365
+msgid "Currency code"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:366
+msgid "Three letters, e.g. XOF."
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:384
+msgid "Symbol"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:395
+#: src/modules/Settings/sections/General.jsx:405
+msgid "Symbol position"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:416
+msgid "Before"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:420
+msgid "Before, with a space"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:427
+msgid "After"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:431
+msgid "After, with a space"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:453
+msgid "Thousands separator"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:460
+msgid "Currently a space."
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:464
+msgid "A space is allowed."
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:478
+msgid "Decimal separator"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:491
+msgid "Decimals"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:504
+msgid "Uninstall"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:505
+msgid "What happens to your data when the plugin is deleted."
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:511
+msgid "Delete all data when the plugin is deleted"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:515
+msgid "Bookings, guests, rooms, payments, settings and files are removed for good. Leave this off to keep them for a reinstall."
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:530
+msgid "Delete all data on uninstall?"
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:534
+msgid "If the plugin is later deleted from the Plugins screen, every booking, guest, payment and setting is erased and cannot be recovered. Deactivating the plugin never deletes anything."
+msgstr ""
+
+#: src/modules/Settings/sections/General.jsx:538
+msgid "Turn on"
+msgstr ""
+
+#: src/modules/Settings/sections/index.js:26
+msgid "Your hotel’s details, formats and currency"
+msgstr ""
+
+#: src/modules/Settings/sections/index.js:51
+msgid "Booking rules"
+msgstr ""
+
+#: src/modules/Settings/sections/index.js:52
+msgid "Booking window, same-day bookings, approval and turnover"
+msgstr ""
+
+#: src/modules/Settings/sections/index.js:61
+msgid "Notifications"
+msgstr ""
+
+#: src/modules/Settings/sections/index.js:62
+msgid "The new-booking alert and its sound"
+msgstr ""
+
+#: src/modules/Settings/sections/index.js:93
+msgid "E-mail"
+msgstr ""
+
+#: src/modules/Settings/sections/index.js:94
+msgid "Sender, reply-to and which e-mails are sent"
+msgstr ""
+
+#: src/modules/Settings/sections/index.js:103
+msgid "Display"
+msgstr ""
+
+#: src/modules/Settings/sections/index.js:104
+msgid "Brand colour of the dashboard and booking pages"
+msgstr ""
+
+#: src/modules/Settings/sections/Notifications.jsx:82
+msgid "The browser blocked the sound. Click on the page and try again."
+msgstr ""
+
+#: src/modules/Settings/sections/Notifications.jsx:92
+msgid "New bookings"
+msgstr ""
+
+#: src/modules/Settings/sections/Notifications.jsx:93
+msgid "How staff are told about a new booking while a dashboard screen is open."
+msgstr ""
+
+#: src/modules/Settings/sections/Notifications.jsx:99
+msgid "Alert on new bookings"
+msgstr ""
+
+#: src/modules/Settings/sections/Notifications.jsx:100
+msgid "Show an alert on every staff screen when a booking arrives."
+msgstr ""
+
+#: src/modules/Settings/sections/Notifications.jsx:110
+msgid "Play a sound"
+msgstr ""
+
+#: src/modules/Settings/sections/Notifications.jsx:111
+msgid "Browsers play sound only after someone has clicked on the page."
+msgstr ""
+
+#: src/modules/Settings/sections/Notifications.jsx:121
+msgid "Sound"
+msgstr ""
+
+#: src/modules/Settings/sections/Notifications.jsx:127
+msgid "Built-in chime"
+msgstr ""
+
+#: src/modules/Settings/sections/Notifications.jsx:134
+msgid "Your own sound"
+msgstr ""
+
+#: src/modules/Settings/sections/Notifications.jsx:143
+msgid "Sound file"
+msgstr ""
+
+#: src/modules/Settings/sections/Notifications.jsx:147
+msgid "An MP3, WAV, OGG or M4A file from the media library. Keep it short."
+msgstr ""
+
+#: src/modules/Settings/sections/Notifications.jsx:159
+msgid "Choose a notification sound"
+msgstr ""
+
+#: src/modules/Settings/sections/Notifications.jsx:174
+msgid "Play preview"
+msgstr ""
+
+#: src/modules/Settings/sections/Notifications.jsx:180
+msgid "Check for new bookings every"
+msgstr ""
+
+#: src/modules/Settings/sections/Notifications.jsx:184
+msgid "Shorter is quicker to notice, longer puts less load on the server."
+msgstr ""
+
+#: src/modules/Settings/sections/Notifications.jsx:193
+msgid "seconds"
+msgstr ""
+
+#: src/modules/Settings/UpgradeNotice.jsx:54
+msgid "Radius Hotel Booking Pro"
+msgstr ""
+
+#: src/modules/Settings/UpgradeNotice.jsx:57
+msgid "Adds an activity log, staff passcodes, advanced pricing rules, PDF invoices, iCal sync, and advanced reports and exports."
+msgstr ""
+
+#: src/modules/Settings/UpgradeNotice.jsx:76
+msgid "Dismiss"
+msgstr ""
+
+#: src/modules/Settings/useSettingsDrafts.js:165
+msgid "Defaults restored."
 msgstr ""

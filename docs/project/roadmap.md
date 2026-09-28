@@ -57,7 +57,7 @@ The commands read and update this table. Keep the columns.
 | Order | ID | Module | Tier | Depends on | Status | Branch | Started | Finished |
 |---|---|---|---|---|---|---|---|---|
 | 0 | M00 | [Foundation and design shell](../modules/M00-foundation.md) | Free (+ add-on skeletons) | — | done | module/m00-foundation | 2026-09-28 | 2026-09-28 |
-| 1 | M17 | [Settings and system](../modules/M17-settings.md) | Free | M00 | todo | module/m17-settings | | |
+| 1 | M17 | [Settings and system](../modules/M17-settings.md) | Free | M00 | done | module/m17-settings | 2026-09-28 | 2026-09-28 |
 | 2 | M13 | [Staff permissions and access control](../modules/M13-staff-permissions.md) | Free + Pro | M17 | todo | module/m13-permissions | | |
 | 3 | M14 | [Activity log](../modules/M14-activity-log.md) | Free (emitter) + **Pro** | M13 | todo | module/m14-activity-log | | |
 | 4 | M06 | [Rooms, floors and inventory](../modules/M06-rooms-floors.md) | Free | M14 | todo | module/m06-rooms-floors | | |
@@ -91,5 +91,5 @@ The commands read and update this table. Keep the columns.
 - **People (M12, M16, M15) is independent of the hotel side** and can run in parallel with
   Phases 3–4 if a second developer is available.
 - **M18** finishes localisation QA, imports legacy data and runs the cutover. The foundations
-  part of Module 18 (currency, time zone, FR/EN, mobile, independence from WooCommerce) is built
+  part of Module 18 (currency, time zone, translatable strings, mobile, independence from WooCommerce) is built
   in M00 and applied by every module.

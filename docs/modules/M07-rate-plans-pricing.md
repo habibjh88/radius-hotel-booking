@@ -19,12 +19,12 @@ in one documented order that the screen can explain.
 
 | Feature | Summary | Task |
 |---|---|---|
-| 7.1 | Rate plan library: name (FR/EN), code, active, sort order; the client's plans seeded (confirm the list with the legacy data first) | T1 |
+| 7.1 | Rate plan library: name, code, active, sort order; the client's plans seeded (confirm the list with the legacy data first) | T1 |
 | 7.2 | Fixed-window plans: start and end time (30-minute steps), crossing midnight allowed, `start == end` = 24 h | T1 |
 | 7.3 | Flexible plans: duration (hours) + the allowed check-in range | T1 |
 | — | `multi_unit` flag + `StayWindow` derivation (pure, table-tested; **shared with M08**) | T1 |
-| 7.4 | Features: short FR/EN tags (*Non-refundable*, *8.5 hours stay*, *Flexible check-in*) | T2 |
-| 7.5 | Policy text (FR/EN, rich text limited to basic formatting) | T2 |
+| 7.4 | Features: short tags (*Non-refundable*, *8.5 hours stay*, *Flexible check-in*) | T2 |
+| 7.5 | Policy text (rich text limited to basic formatting) | T2 |
 | 7.10 | "In use": the count of room types and future bookings using the plan; deletion is refused while in use (deactivate instead) | T2 |
 | 7.6, 7.7, 7.8, 7.9 | **Price & Rates grid per room type**: rows = plans, columns = on/off · price · sale price · min units · max units · drag to reorder. Inline edit, one Save | T3 |
 | 7.11 | Seasonal pricing templates (*increase 20 %*, *decrease 5 000 CFA*, *set 25 000*) | T4 |
