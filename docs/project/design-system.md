@@ -116,7 +116,7 @@ as `window.rtbp.ui` so Pro and the client add-on reuse them. Composites built in
 | Component | Built in | Purpose |
 |---|---|---|
 | `PageHeader` | M00 | Title, description, primary action, secondary actions menu |
-| `DataTable` | M00 | TanStack table with a toolbar (search, filters, date range), sorting, server pagination, row actions, a column-visibility menu, and a mobile card layout below `md` |
+| `DataTable` | M00 | Server-driven table (built in-house, not TanStack: every list is paged, sorted and filtered on the server, so an in-browser engine would add ~50 KB for nothing): toolbar (debounced search + filters), sortable headers, pager, row actions (primary button + ⋯ menu), loading/empty/error states, and cards below `md` |
 | `FilterTabs` | M00 | Quick-filter tabs with counts (All · Awaiting · Arriving · Leaving) |
 | `DateRangePicker` | M00 | Range picker with presets (Today, Tomorrow, This week, This month) and an arrival/creation mode switch |
 | `StatusBadge` | M00 | Reads §4 |

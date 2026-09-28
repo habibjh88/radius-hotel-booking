@@ -23,8 +23,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use RadiusTheme\RadiusHotelBooking\Core\Permissions\Capabilities;
+use RadiusTheme\RadiusHotelBooking\Frontend\DashboardPage;
 use RadiusTheme\RadiusHotelBooking\Helpers\SettingsHelper;
 use RadiusTheme\RadiusHotelBooking\Helpers\ThemeHelper;
+use RadiusTheme\RadiusHotelBooking\Support\Dates;
+use RadiusTheme\RadiusHotelBooking\Support\Money;
 
 /**
  * Load assets class.
@@ -47,6 +50,7 @@ class LoadAssets {
 	 */
 	public function __construct() {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_dashboard' ), 20 );
 
 		// Register the public bundle early and enqueue it late. Registering
 		// unconditionally means anything rendering after wp_enqueue_scripts —
@@ -202,6 +206,33 @@ class LoadAssets {
 			return;
 		}
 
+		$this->enqueue_staff_app();
+	}
+
+	/**
+	 * Enqueue the staff app on the front-end dashboard page ([rtbp_dashboard])
+	 * for users allowed to use it.
+	 *
+	 * @return void
+	 */
+	public function enqueue_frontend_dashboard() {
+		if ( DashboardPage::is_dashboard_request() && DashboardPage::user_can_view() ) {
+			$this->enqueue_staff_app();
+		}
+	}
+
+	/**
+	 * Enqueue the staff app (the `admin` bundle) with its styles, brand
+	 * colour, localized data and add-on hook. Shared by the wp-admin page and
+	 * the front-end dashboard page, so both run exactly the same app.
+	 *
+	 * @return void
+	 */
+	public function enqueue_staff_app() {
+		if ( wp_script_is( 'radius-hotel-booking-admin', 'enqueued' ) ) {
+			return;
+		}
+
 		wp_enqueue_media();
 
 		if ( ! $this->enqueue_entry( 'admin', 'radius-hotel-booking-admin', array( 'wp-element', 'wp-i18n', 'wp-api-fetch' ) ) ) {
@@ -344,11 +375,32 @@ class LoadAssets {
 					'display' => SettingsHelper::get_setting( 'display' ),
 				),
 				'timezone'      => wp_timezone_string(),
+				'format'        => $this->format_params(),
+				// The developer UI kit route (#/dev/ui): WP_DEBUG sites, admins only.
+				'dev_ui'        => defined( 'WP_DEBUG' ) && WP_DEBUG && current_user_can( 'manage_options' ),
 				'logo_url'      => RADIUS_HOTEL_BOOKING_ASSETS . '/images/logo.svg',
 				'date_format'   => get_option( 'date_format' ),
 				'time_format'   => get_option( 'time_format' ),
 				'start_of_week' => (int) get_option( 'start_of_week' ),
 			)
+		);
+	}
+
+	/**
+	 * Formatting configuration for src/lib/format.js — the same settings
+	 * Support\Money and Support\Dates use, so both sides format alike.
+	 *
+	 * @return array
+	 */
+	private function format_params(): array {
+		$formats = Dates::display_formats();
+
+		return array(
+			'currency'   => Money::config(),
+			'dateFormat' => $formats['date'],
+			'timeFormat' => $formats['time'],
+			'timezone'   => wp_timezone_string(),
+			'locale'     => str_replace( '_', '-', determine_locale() ),
 		);
 	}
 
@@ -369,6 +421,7 @@ class LoadAssets {
 				'assets_url'  => RADIUS_HOTEL_BOOKING_ASSETS,
 				'is_addon'    => rtbp_addon_active(),
 				'is_loggedin' => is_user_logged_in(),
+				'format'      => $this->format_params(),
 				'settings'    => array(
 					'display' => SettingsHelper::get_setting( 'display' ),
 				),

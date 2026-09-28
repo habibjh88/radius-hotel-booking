@@ -19,8 +19,22 @@ import '../index.css';
 // the app through window.rtbp and the rtbp.* filters.
 publishRuntime();
 
-const container = document.getElementById( 'radius-hotel-booking' );
+/**
+ * Mount once every script on the page has run. Add-on scripts are printed
+ * after this one, and the route table (rtbp.admin.routes) is read once, on
+ * first render; rendering as soon as this bundle runs would race them, since
+ * the browser can run the first render while it is still fetching the next
+ * script. DOMContentLoaded fires only after all footer and deferred scripts.
+ */
+function mount() {
+	const container = document.getElementById( 'radius-hotel-booking' );
+	if ( container ) {
+		createRoot( container ).render( <App /> );
+	}
+}
 
-if ( container ) {
-	createRoot( container ).render( <App /> );
+if ( document.readyState === 'loading' ) {
+	document.addEventListener( 'DOMContentLoaded', mount, { once: true } );
+} else {
+	mount();
 }

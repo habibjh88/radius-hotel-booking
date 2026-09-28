@@ -52,6 +52,8 @@
 	--warning-soft: #fffaeb;
 	--info: #0086c9;
 	--info-soft: #f0f9ff;
+	--caution: #c4320a;
+	--caution-soft: #fff6ed;
 
 	--border: #dbe1e6;
 	--input: #dbe1e6;
@@ -79,6 +81,14 @@ body.admin-bar .rtbp-root {
 @media screen and (max-width: 782px) {
 	body.admin-bar .rtbp-root {
 		--rtbp-top: 46px;
+	}
+}
+
+/* At 600px and below the admin bar scrolls away (position: absolute), so
+   sticky elements must stick to the very top. */
+@media screen and (max-width: 600px) {
+	body.admin-bar .rtbp-root {
+		--rtbp-top: 0px;
 	}
 }
 
@@ -111,6 +121,10 @@ body.admin-bar .rtbp-root {
  * App shell. Plain CSS rather than utilities because these depend on the
  * admin-bar offset variable.
  */
+.rtbp-root.rtbp-shell {
+	min-height: calc(100vh - var(--rtbp-top));
+}
+
 .rtbp-root .rtbp-shell-sidebar {
 	position: sticky;
 	top: var(--rtbp-top);
@@ -124,6 +138,21 @@ body.admin-bar .rtbp-root {
 }
 
 /* wp-admin resets so the app can own the full page. */
+/* Horizontal scrollers that are swiped, not dragged (filter tabs): no bar. */
+.rtbp-root .rtbp-no-scrollbar {
+	scrollbar-width: none;
+}
+
+.rtbp-root .rtbp-no-scrollbar::-webkit-scrollbar {
+	display: none;
+}
+
+/* Front-end dashboard page: the app is the whole page. */
+body.rtbp-dashboard-page {
+	margin: 0;
+	background: var(--app-bg, #edf0f3);
+}
+
 /*
  * #wpcontent's 20px left padding is removed below, so the app sits flush
  * against the admin menu without a negative margin.

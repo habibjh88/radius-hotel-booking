@@ -3,7 +3,7 @@
  * Each module marks its step done on the server as it is built.
  */
 import { Link } from 'react-router-dom';
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { Check, ChevronRight, PartyPopper } from 'lucide-react';
 
 import Panel from '@/components/common/Panel';
@@ -19,7 +19,9 @@ import { cn } from '@/lib/utils';
  */
 export default function SetupPanel( { steps = [], loading } ) {
 	const done = steps.filter( ( step ) => step.done ).length;
-	const percent = steps.length ? Math.round( ( done / steps.length ) * 100 ) : 0;
+	const percent = steps.length
+		? Math.round( ( done / steps.length ) * 100 )
+		: 0;
 
 	return (
 		<Panel
@@ -29,8 +31,13 @@ export default function SetupPanel( { steps = [], loading } ) {
 				loading
 					? ' '
 					: sprintf(
-							/* translators: 1: steps done, 2: total steps. */
-							__( '%1$d of %2$d steps done', 'radius-hotel-booking' ),
+							/* translators: 1: steps done, 2: total steps. The plural follows the steps done. */
+							_n(
+								'%1$d of %2$d steps done',
+								'%1$d of %2$d steps done',
+								done,
+								'radius-hotel-booking'
+							),
 							done,
 							steps.length
 					  )
@@ -47,13 +54,22 @@ export default function SetupPanel( { steps = [], loading } ) {
 					<Progress
 						value={ percent }
 						className="mb-4 h-2"
-						aria-label={ __( 'Setup progress', 'radius-hotel-booking' ) }
+						aria-label={ __(
+							'Setup progress',
+							'radius-hotel-booking'
+						) }
 					/>
 
 					{ steps.length && done === steps.length ? (
 						<p className="m-0 flex items-center gap-2 text-sm font-medium text-success">
-							<PartyPopper className="h-4 w-4" aria-hidden="true" />
-							{ __( 'Your hotel is ready to take bookings.', 'radius-hotel-booking' ) }
+							<PartyPopper
+								className="h-4 w-4"
+								aria-hidden="true"
+							/>
+							{ __(
+								'Your hotel is ready to take bookings.',
+								'radius-hotel-booking'
+							) }
 						</p>
 					) : null }
 
@@ -73,7 +89,10 @@ export default function SetupPanel( { steps = [], loading } ) {
 										) }
 									>
 										{ step.done ? (
-											<Check className="h-4 w-4" aria-hidden="true" />
+											<Check
+												className="h-4 w-4"
+												aria-hidden="true"
+											/>
 										) : (
 											index + 1
 										) }
@@ -81,7 +100,7 @@ export default function SetupPanel( { steps = [], loading } ) {
 									<span className="min-w-0 flex-1">
 										<span
 											className={ cn(
-												'block truncate text-sm font-medium',
+												'block text-sm font-medium',
 												step.done
 													? 'text-muted-foreground line-through'
 													: 'text-heading'
@@ -89,7 +108,7 @@ export default function SetupPanel( { steps = [], loading } ) {
 										>
 											{ step.label }
 										</span>
-										<span className="block truncate text-xs text-muted-foreground">
+										<span className="line-clamp-2 block text-xs text-muted-foreground">
 											{ step.description }
 										</span>
 									</span>

@@ -19,6 +19,8 @@
 namespace RadiusTheme\RadiusHotelBooking\Databases;
 
 use RadiusTheme\RadiusHotelBooking\Core\Database\Schema\Migrations\MigrationRunner;
+use RadiusTheme\RadiusHotelBooking\Databases\Table\FilesTable;
+use RadiusTheme\RadiusHotelBooking\Databases\Table\SequencesTable;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
@@ -79,8 +81,11 @@ class DatabaseManager {
 
 		$this->migrationRunner = new MigrationRunner();
 
-		// Tables in dependency order. Each module adds its own (M00 T3: sequences).
-		$migrationClasses = array();
+		// Tables in dependency order. Each module appends its own.
+		$migrationClasses = array(
+			SequencesTable::class,
+			FilesTable::class,
+		);
 
 		/**
 		 * Filters the list of migration classes to be executed.

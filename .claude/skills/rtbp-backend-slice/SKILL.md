@@ -65,6 +65,8 @@ inside `boot()`**, list the free symbols it needs in `requires_free()`, and unsc
    constructor. Owns validation of business rules, transactions, transitions, activity logging
    (`rtbp-access-and-audit`) and hooks. Throws a domain exception (`Exceptions\DomainException`
    with an error code, created in M00) that the controller turns into `ApiResponse::error()`.
+   Message: `__()` (not `esc_html__()`, it is JSON), with the `ExceptionNotEscaped`
+   phpcs:ignore line from `conventions.md` §2.3 above the `throw`, so Plugin Check passes.
 5. **Resource** — `includes/Resources/<Singular>Resource.php`: the API shape. Never expose
    sensitive fields in `collection()`; use `when()` for fields gated by access.
 6. **Controller** — `includes/Controllers/<Singular>Controller.php` extends `BaseController`

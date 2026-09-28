@@ -39,10 +39,14 @@ externals to the free runtime:
 
 | Import | Resolves to |
 |---|---|
-| `react` | `window.rtbp.React` |
-| `@rtbp/ui` | `window.rtbp.ui` |
-| `@rtbp/lib` | `window.rtbp.lib` |
-| `@wordpress/hooks` | `window.rtbp.hooks` |
+| `react`, `@wordpress/hooks`, `@wordpress/i18n` | WordPress's shared scripts (the wp-scripts default; the same objects as `window.rtbp.React` / `.hooks`) |
+| `@rtbp/ui` | `window.rtbp.ui` (Dialog, Select, Tabs, DropdownMenu parts are lazy: wrap in `Suspense`) |
+| `@rtbp/lib` | `window.rtbp.lib` (forms: `await rtbp.lib.loadForms()`) |
+| `@tanstack/react-query` | `window.rtbp.ReactQuery` (one cache with the free app) |
+
+`../radius-hotel-booking-pro/webpack.config.js` is the reference config. Add-on classes are only
+compiled into the free CSS if free uses them too; until a shared Tailwind preset exists (see M00
+notes), stick to classes the free app already uses.
 
 Screens are added with `addFilter( 'rtbp.admin.routes', … )`. Panels on detail screens use
 `rtbp.booking.panels` / `rtbp.guest.panels`, settings tabs use `rtbp.settings.sections`, and error

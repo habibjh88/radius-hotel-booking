@@ -25,7 +25,8 @@ export default function Panel( {
 	return (
 		<section
 			className={ cn(
-				'flex flex-col rounded-xl border border-border bg-card shadow-sm',
+				// min-w-0: as a grid/flex item it may shrink below its content width.
+				'flex min-w-0 flex-col rounded-xl border border-border bg-card shadow-sm',
 				className
 			) }
 		>

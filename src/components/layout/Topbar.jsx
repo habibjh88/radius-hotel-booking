@@ -4,9 +4,10 @@
  */
 import { useLocation } from 'react-router-dom';
 import { __ } from '@wordpress/i18n';
-import { CalendarDays, Menu } from 'lucide-react';
+import { CalendarDays, Menu, Search } from 'lucide-react';
 
 import { matchRoute } from '@/admin/routes';
+import { isMac } from './shortcuts';
 import { useCurrentPageActions } from './PageActions';
 
 /**
@@ -32,11 +33,12 @@ function todayLabel() {
 
 /**
  * @param {Object}   props            Props.
- * @param {Function} props.onOpenMenu Opens the mobile drawer.
- * @param {boolean}  props.isDesktop  Hides the menu button on desktop.
+ * @param {Function} props.onOpenMenu   Opens the mobile drawer.
+ * @param {Function} props.onOpenSearch Opens the command palette.
+ * @param {boolean}  props.isDesktop    Hides the menu button on desktop.
  * @return {JSX.Element} Top bar.
  */
-export default function Topbar( { onOpenMenu, isDesktop } ) {
+export default function Topbar( { onOpenMenu, onOpenSearch, isDesktop } ) {
 	const location = useLocation();
 	const route = matchRoute( location.pathname );
 	const actions = useCurrentPageActions();
@@ -68,6 +70,18 @@ export default function Topbar( { onOpenMenu, isDesktop } ) {
 			</div>
 
 			<div className="flex shrink-0 items-center gap-3">
+				<button
+					type="button"
+					onClick={ onOpenSearch }
+					className="flex h-10 items-center gap-2 rounded-lg border border-border bg-card px-3 text-[13px] text-muted-foreground transition-colors hover:border-primary hover:text-heading"
+					aria-label={ __( 'Search and go to a screen', 'radius-hotel-booking' ) }
+				>
+					<Search className="h-4 w-4" aria-hidden="true" />
+					<span className="hidden md:inline">{ __( 'Search…', 'radius-hotel-booking' ) }</span>
+					<kbd className="hidden rounded border border-border bg-muted px-1.5 font-sans text-[11px] font-medium md:inline">
+						{ isMac() ? '⌘K' : 'Ctrl K' }
+					</kbd>
+				</button>
 				<span className="hidden items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-[13px] font-medium text-heading lg:inline-flex">
 					<CalendarDays
 						className="h-4 w-4 text-primary"

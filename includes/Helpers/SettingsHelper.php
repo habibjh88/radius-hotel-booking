@@ -51,12 +51,24 @@ class SettingsHelper {
 	 */
 	public static function general(): array {
 		return array(
-			'companyName'  => get_bloginfo( 'name' ),
-			'contactEmail' => get_option( 'admin_email' ),
-			'dateFormat'   => 'm/d/Y',
-			'timeSystem'   => '12h',
-			'perPage'      => 15,
-			'enableDebug'  => false,
+			'companyName'       => get_bloginfo( 'name' ),
+			'contactEmail'      => get_option( 'admin_email' ),
+			// PHP date format for display; defaults to the WordPress setting.
+			'dateFormat'        => (string) get_option( 'date_format', 'Y-m-d' ),
+			// '24h' or '12h'; defaults from the WordPress time format.
+			'timeSystem'        => false !== strpbrk( (string) get_option( 'time_format', 'g:i a' ), 'GH' ) ? '24h' : '12h',
+			// Currency (Support\Money). A client add-on or Settings sets e.g.
+			// XOF / CFA / right_space / ' ' / ',' / 0 for "15 000 CFA".
+			'currencyCode'      => 'USD',
+			'currencySymbol'    => '$',
+			'currencyPosition'  => 'left', // left | right | left_space | right_space.
+			'thousandSeparator' => ',',
+			'decimalSeparator'  => '.',
+			'decimals'          => 2,
+			'perPage'           => 15,
+			'enableDebug'       => false,
+			// uninstall.php removes every table, option, role and file only when true.
+			'deleteDataOnUninstall' => false,
 		);
 	}
 

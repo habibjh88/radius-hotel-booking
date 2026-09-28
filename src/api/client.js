@@ -7,9 +7,24 @@
  *   { success, status_code, message, data, errors, meta }
  *
  * Every helper resolves with `{ data, meta, message }` and rejects with an
- * Error carrying `.errors` and `.status` so forms can show field-level errors.
+ * Error carrying `.errors`, `.status` and `.code` so forms can show
+ * field-level errors.
+ *
+ * Failed requests run the `rtbp.api.error` filter first (ADR-015), so an
+ * add-on can recover from an error, for example Pro asking for a PIN on
+ * `passcode_required` and retrying:
+ *
+ *   addFilter( 'rtbp.api.error', 'rtbp-pro/passcode', ( handled, error, { retry } ) =>
+ *       handled || ( error.code === 'passcode_required'
+ *           ? askForPin().then( ( pin ) => retry( { headers: { 'X-RTBP-Grant': pin } } ) )
+ *           : handled ) );
+ *
+ * A handler returns a Promise to take over the request (its result becomes
+ * the request's result) or passes `handled` through to let the error throw.
+ * The retried request does not run the filter again.
  */
 import apiFetch from '@wordpress/api-fetch';
+import { applyFilters } from '@wordpress/hooks';
 import { __ } from '@wordpress/i18n';
 
 const params =
@@ -36,10 +51,9 @@ function toUrl( path ) {
 	if ( ! params.rest_url ) {
 		return undefined;
 	}
-	return `${ params.rest_url.replace( /\/+$/, '' ) }/${ String( path ).replace(
-		/^\/+/,
-		''
-	) }`;
+	return `${ params.rest_url.replace( /\/+$/, '' ) }/${ String(
+		path
+	).replace( /^\/+/, '' ) }`;
 }
 
 /**
@@ -55,6 +69,8 @@ function unwrap( response ) {
 		);
 		error.errors = response.errors || {};
 		error.status = response.status_code;
+		// Machine-readable code from a DomainException (e.g. 'room_unavailable').
+		error.code = response.code;
 		throw error;
 	}
 
@@ -73,6 +89,37 @@ function unwrap( response ) {
  * @return {Promise<{data: *, meta: Object, message: string}>} Unwrapped response.
  */
 export async function request( path, options = {} ) {
+	try {
+		return await send( path, options );
+	} catch ( error ) {
+		const handled = applyFilters( 'rtbp.api.error', undefined, error, {
+			path,
+			options,
+			retry: ( extra = {} ) =>
+				send( path, {
+					...options,
+					...extra,
+					headers: {
+						...( options.headers || {} ),
+						...( extra.headers || {} ),
+					},
+				} ),
+		} );
+		if ( handled && typeof handled.then === 'function' ) {
+			return handled;
+		}
+		throw error;
+	}
+}
+
+/**
+ * One request, without the error filter.
+ *
+ * @param {string} path    Path relative to the namespace.
+ * @param {Object} options apiFetch options.
+ * @return {Promise<{data: *, meta: Object, message: string}>} Unwrapped response.
+ */
+async function send( path, options ) {
 	try {
 		const url = toUrl( path );
 		const response = await apiFetch( {
@@ -128,4 +175,26 @@ export function addQueryArgs( path, query ) {
 	return queryString ? `${ path }?${ queryString }` : path;
 }
 
-export default { request, get, post, put, del };
+/**
+ * Download URL of a protected file (Storage\ProtectedFiles). Carries the REST
+ * nonce so it works as a plain link.
+ *
+ * @param {string}  token  File token.
+ * @param {boolean} inline Show in the browser (PDFs) instead of downloading.
+ * @return {string} URL.
+ */
+export function fileUrl( token, inline = false ) {
+	const url = new URL(
+		toUrl( `files/${ token }` ) || '',
+		window.location.origin
+	);
+	if ( params.nonce ) {
+		url.searchParams.set( '_wpnonce', params.nonce );
+	}
+	if ( inline ) {
+		url.searchParams.set( 'inline', '1' );
+	}
+	return url.toString();
+}
+
+export default { request, get, post, put, del, fileUrl };

@@ -23,23 +23,26 @@ class PageInstaller {
 	/**
 	 * Pages to create: settings key => [title, block content].
 	 *
-	 * None yet: the booking results and confirmation pages arrive with M04.
-	 * Pages listed here are created on install and on upgrade
-	 * (create_missing_pages()).
+	 * The front-end staff dashboard ships here; the booking results and
+	 * confirmation pages arrive with M04. Pages listed here are created on
+	 * install and on upgrade (create_missing_pages()).
 	 *
 	 * @return array
 	 */
 	private static function get_pages(): array {
-		return (array) apply_filters( 'rtbp_install_pages', array() );
-	}
+		$pages = array(
+			'dashboardPage' => array(
+				'title'   => __( 'Hotel Dashboard', 'radius-hotel-booking' ),
+				'content' => '<!-- wp:shortcode -->[rtbp_dashboard]<!-- /wp:shortcode -->',
+			),
+		);
 
-	/**
-	 * Create the default pages and store their IDs.
-	 *
-	 * @return void
-	 */
-	public static function create_pages(): void {
-		self::insert( self::get_pages(), array() );
+		/**
+		 * Filters the pages created on install: settings key => [ title, content ].
+		 *
+		 * @param array $pages Pages.
+		 */
+		return (array) apply_filters( 'rtbp_install_pages', $pages );
 	}
 
 	/**

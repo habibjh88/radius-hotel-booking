@@ -1,46 +1,24 @@
 /**
- * Dashboard REST calls.
+ * Dashboard REST calls and queries.
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 import { get } from '@/api/client';
 
-export const fetchSummary = () => get( 'dashboard/summary' );
+export const fetchSummary = () =>
+	get( 'dashboard/summary' ).then( ( { data } ) => data );
 
 /**
- * Load the dashboard summary, with loading / error / reload state.
+ * The dashboard summary. Cached by React Query; refreshed when the window
+ * regains focus and every 60 s while the dashboard is open, so the counters
+ * stay current at the front desk. (M01 adds a faster new-booking poll.)
  *
- * @return {{data: Object|null, loading: boolean, error: Error|null, reload: Function}} State.
+ * @return {Object} React Query result: { data, isPending, error, refetch }.
  */
 export function useDashboardSummary() {
-	const [ state, setState ] = useState( {
-		data: null,
-		loading: true,
-		error: null,
+	return useQuery( {
+		queryKey: [ 'dashboard', 'summary' ],
+		queryFn: fetchSummary,
+		refetchInterval: 60 * 1000,
 	} );
-
-	const load = useCallback( () => {
-		let cancelled = false;
-		setState( ( current ) => ( { ...current, loading: true, error: null } ) );
-
-		fetchSummary()
-			.then( ( { data } ) => {
-				if ( ! cancelled ) {
-					setState( { data, loading: false, error: null } );
-				}
-			} )
-			.catch( ( error ) => {
-				if ( ! cancelled ) {
-					setState( { data: null, loading: false, error } );
-				}
-			} );
-
-		return () => {
-			cancelled = true;
-		};
-	}, [] );
-
-	useEffect( () => load(), [ load ] );
-
-	return { ...state, reload: load };
 }

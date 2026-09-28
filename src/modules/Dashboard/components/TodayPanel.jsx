@@ -55,7 +55,10 @@ export default function TodayPanel( { today, loading } ) {
 		<Panel
 			className="h-full"
 			title={ __( 'Today at the front desk', 'radius-hotel-booking' ) }
-			description={ __( 'Guests arriving and leaving today', 'radius-hotel-booking' ) }
+			description={ __(
+				'Guests arriving and leaving today',
+				'radius-hotel-booking'
+			) }
 			actions={
 				<SegmentedControl
 					label={ __( 'Show', 'radius-hotel-booking' ) }
@@ -98,7 +101,10 @@ export default function TodayPanel( { today, loading } ) {
 					title={
 						tab === 'arrivals'
 							? __( 'No arrivals today', 'radius-hotel-booking' )
-							: __( 'No departures today', 'radius-hotel-booking' )
+							: __(
+									'No departures today',
+									'radius-hotel-booking'
+							  )
 					}
 					description={ __(
 						'Bookings that start or end today will be listed here, in time order.',
@@ -109,7 +115,10 @@ export default function TodayPanel( { today, loading } ) {
 							to="/bookings"
 							className="text-sm font-semibold text-primary no-underline hover:underline"
 						>
-							{ __( 'View all bookings', 'radius-hotel-booking' ) }
+							{ __(
+								'View all bookings',
+								'radius-hotel-booking'
+							) }
 						</Link>
 					}
 				/>

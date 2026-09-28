@@ -34,6 +34,10 @@ module.exports = {
 					DEFAULT: 'var(--info)',
 					soft: 'var(--info-soft)',
 				},
+				caution: {
+					DEFAULT: 'var(--caution)',
+					soft: 'var(--caution-soft)',
+				},
 				secondary: {
 					DEFAULT: 'var(--secondary)',
 					foreground: 'var(--secondary-foreground)',

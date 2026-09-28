@@ -29,6 +29,17 @@ module.exports = {
 		...defaults.output,
 		path: path.resolve( __dirname, 'build' ),
 	},
+	// Size budget: the admin entry may grow to 300 KB (JS + CSS, minified;
+	// ~80 KB gzipped). The RTL stylesheet is excluded — it replaces admin.css
+	// on RTL sites, never loads alongside it. Screens stay lazy-loaded (see
+	// src/admin/routes.js), so this budget covers the shell and shared libs only.
+	performance: {
+		...( defaults.performance || {} ),
+		hints: 'warning',
+		maxEntrypointSize: 300 * 1024,
+		maxAssetSize: 300 * 1024,
+		assetFilter: ( file ) => ! /-rtl\.css$/.test( file ) && ! /\.asset\.php$/.test( file ),
+	},
 	resolve: {
 		...defaults.resolve,
 		alias: {

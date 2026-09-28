@@ -163,7 +163,7 @@ pay_schedules · work_shifts · payroll_runs ──► payroll_lines · statutor
 
 ### 4.5 Platform and people
 
-`sequences` (M00) · `access_roles` (M13) · `activity_log`, `log_archives` (M14) · `guests`, `notes`
+`sequences`, `files` (M00: the protected-file index; `token` UNIQUE, `kind`, `path`, `original_name`, `mime`, `size`, `sha256`, `created_by`) · `access_roles` (M13) · `activity_log`, `log_archives` (M14) · `guests`, `notes`
 (M09) · `exports` (M11) · `employees`, `employee_contracts`, `employee_pay_items`,
 `employee_documents` (M12) · the payroll tables (M15) · `import_map` (M18). The column lists are
 in each module doc.

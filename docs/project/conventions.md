@@ -46,7 +46,14 @@ in that repo only:
 2. **Services own the rules; repositories own the SQL.** A service may call several
    repositories. A repository never calls a service.
 3. **Every write that touches inventory or money runs in a transaction**
-   (`START TRANSACTION … COMMIT`) and follows `docs/project/booking-engine.md` §7.
+   (`Core\Database\Transaction::run()`) and follows `docs/project/booking-engine.md` §7.
+   Side effects such as e-mails and hooks go in `Transaction::afterCommit()`. Reference numbers
+   come from `Support\Sequence::next()` **inside** that transaction, which keeps them gap-free.
+   Business-rule failures throw `Exceptions\DomainException`. Its message is translated with
+   `__()`, not `esc_html__()`: it is sent as JSON and React escapes it, so HTML entities would
+   show up (`n&#039;a`). Put `// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
+   -- sent as JSON; React escapes it (phpcs.xml).` on the line above each such `throw`. Plugin
+   Check applies that sniff even though `phpcs.xml` excludes it.
 4. **All SQL through `$wpdb->prepare()`**, or the QueryBuilder, which prepares. Build `IN (…)`
    lists with placeholders. Never interpolate a request value.
 5. **No N+1 queries.** Load related rows in one query before a loop (`whereIn`), then group

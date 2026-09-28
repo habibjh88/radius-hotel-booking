@@ -1,0 +1,51 @@
+{
+    "translation-revision-date": "2026-09-28 10:00+0000",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Dashboard\/components\/RecentBookingsPanel.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=n > 1;"
+            },
+            "Status": [
+                "Statut"
+            ],
+            "New booking": [
+                "Nouvelle r\u00e9servation"
+            ],
+            "Reference": [
+                "R\u00e9f\u00e9rence"
+            ],
+            "Guest": [
+                "Client"
+            ],
+            "Room": [
+                "Chambre"
+            ],
+            "Stay": [
+                "S\u00e9jour"
+            ],
+            "Payment": [
+                "Paiement"
+            ],
+            "Recent bookings": [
+                "R\u00e9servations r\u00e9centes"
+            ],
+            "The latest bookings taken at the desk or online": [
+                "Les derni\u00e8res r\u00e9servations prises \u00e0 la r\u00e9ception ou en ligne"
+            ],
+            "View all": [
+                "Tout voir"
+            ],
+            "No bookings yet": [
+                "Aucune r\u00e9servation pour le moment"
+            ],
+            "Take a walk-in booking at the desk, or share your booking page with guests.": [
+                "Enregistrez un client de passage \u00e0 la r\u00e9ception, ou partagez votre page de r\u00e9servation avec vos clients."
+            ]
+        }
+    }
+}

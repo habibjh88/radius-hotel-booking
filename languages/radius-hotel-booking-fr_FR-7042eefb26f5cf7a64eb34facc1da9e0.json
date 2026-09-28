@@ -1,0 +1,30 @@
+{
+    "translation-revision-date": "2026-09-28 10:00+0000",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Settings\/BrandColorField.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=n > 1;"
+            },
+            "Brand colour": [
+                "Couleur de la marque"
+            ],
+            "Used for buttons, links, the logo and highlights across the dashboard and the booking pages.": [
+                "Utilis\u00e9e pour les boutons, les liens, le logo et les mises en avant dans le tableau de bord et les pages de r\u00e9servation."
+            ],
+            "Suggested colours": [
+                "Couleurs sugg\u00e9r\u00e9es"
+            ],
+            "Pick a custom colour": [
+                "Choisir une couleur personnalis\u00e9e"
+            ],
+            "Preview": [
+                "Aper\u00e7u"
+            ]
+        }
+    }
+}

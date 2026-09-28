@@ -1,41 +1,80 @@
 === Radius Hotel Booking ===
 Contributors: radiustheme
-Tags: hotel booking, framework, rest-api, react, developer
-Requires at least: 5.5.0
+Tags: hotel booking, room booking, reservation, hotel, front desk
+Requires at least: 6.2
 Tested up to: 6.7
 Requires PHP: 8.0
 Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-A WordPress plugin hotel booking: DI container, ORM, migrations, REST router, WP-CLI scaffolding and a React admin.
+Book hotel rooms by time window (half day, overnight or 24 hours) at the front desk or online. No WooCommerce needed.
 
 == Description ==
 
-A starting point for building a WordPress plugin. It ships the plumbing every
-plugin needs and one example resource wired through every layer, so you can
-delete the example and keep the framework.
+Radius Hotel Booking runs a small hotel or residence from WordPress. It books
+rooms by **time window**, not only by night, so the same room can be sold as a
+half day in the afternoon and again overnight.
 
-* Dependency-injection container with lazy bindings
-* Laravel-style ORM with relationships, casts, soft deletes and model events
-* Schema builder and migration runner
-* REST router with middleware (auth, capability, rate limit) and a validation rule engine
-* Capability and role provisioning
-* WP-CLI scaffolding: `wp radius-hotel-booking artisan make:module Thing`
-* React 19 + Tailwind CSS + shadcn/ui admin, built with @wordpress/scripts
-* Gutenberg block, Elementor widget and shortcode, all rendering the same template
-* Email system with merge tags and overridable templates
-* Three-layer i18n setup that survives content-hashed bundle filenames
-* PHPCS preconfigured
+= Built around how the front desk works =
+
+* **Stay windows you define.** Half Day 08:30–17:00, Overnight 20:00→08:00,
+  24 hours from check-in, or any window you need, each with its own price.
+* **No double bookings.** Every booking holds its room for its exact hours,
+  including the cleaning time between guests.
+* **A dashboard for the desk.** Today's arrivals and departures, bookings
+  waiting for approval, and which rooms are free right now.
+* **Walk-in bookings in a few taps**, on a computer, tablet or phone.
+* **Guest records** with stay history.
+* **Online booking** on your website, from a shortcode, a block or an
+  Elementor widget.
+* **Manual payments** such as cash, bank transfer or mobile money, with
+  invoices.
+* **Staff accounts** with their own roles. Staff can work from wp-admin or from
+  a Hotel Dashboard page on your website.
+* **Your brand colour** across the dashboard and the booking pages.
+* **English and French** included.
+
+= No WooCommerce =
+
+The plugin does not need WooCommerce and does not change it. It keeps working
+if WooCommerce is installed on the same site.
+
+= Your data =
+
+Bookings, guests and settings are kept in the plugin's own tables. Deleting the
+plugin keeps them, unless you turn on "Delete all data on uninstall" in
+Settings first.
+
+= Pro =
+
+Radius Hotel Booking Pro adds features for larger teams, such as the activity
+log. This plugin is fully usable without it.
 
 == Installation ==
 
-1. Copy the plugin folder into `wp-content/plugins/`.
-2. Run `composer install` and `npm install`.
-3. Run `npm run build`.
-4. Activate the plugin.
+1. In wp-admin, go to Plugins → Add New and search for "Radius Hotel Booking",
+   or upload the plugin zip.
+2. Activate the plugin.
+3. Open **Radius Hotel Booking** in the admin menu and follow the setup steps
+   on the dashboard: hotel details, room types, rooms, rate plans and payment
+   instructions.
 
-See README.md for how to rename the hotel booking for a new project.
+A **Hotel Dashboard** page is created for your staff. Staff sign in there with
+their WordPress account.
+
+== Frequently Asked Questions ==
+
+= Can a room be booked twice on the same day? =
+
+Yes, if the stays do not overlap. A room booked for a half day until 17:00 can
+be booked again from 20:00 overnight.
+
+= Where are uploaded documents stored? =
+
+In a protected folder in uploads, served only to staff who may see them. On
+nginx, add `define( 'RTBP_PROTECTED_DIR', '/path/outside/the/web/root' );` to
+wp-config.php to keep them outside the public folder.
 
 == Changelog ==
 
@@ -48,6 +87,15 @@ New admin dashboard with a grouped sidebar, today's arrivals and departures, and
 The brand colour chosen in Settings now restyles the whole dashboard, including the logo.
 Removed the example Items screen, shortcode, block, widget and e-mail.
 Now requires PHP 8.0 or later.
+New Hotel Dashboard page: staff use the dashboard on your website, with a sign-in screen.
+On phones, the dashboard has a bottom tab bar; press Ctrl+K (⌘K) to jump to any screen.
+Saving settings now shows a short confirmation message in the corner.
+French translation included; staff see the dashboard in their own profile language.
+Fixed a possible error after an update when the Hotel Dashboard page had been deleted.
+Longer labels on the dashboard and phone tab bar now wrap instead of being cut off.
+Now requires WordPress 6.2 or later.
+Add-ons can now add screens, handle request errors, and reuse dialogs, menus and forms.
+Fixed add-on screens sometimes missing when the admin page loaded slowly.
 
 = 1.0.0 =
 Initial release.

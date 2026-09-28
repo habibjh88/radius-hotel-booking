@@ -17,11 +17,20 @@ import { cn } from '@/lib/utils';
  * @param {boolean}  props.loading Show a skeleton instead of the value.
  * @return {JSX.Element} Card.
  */
-export default function StatCard( { icon: Icon, label, value, hint, to, loading } ) {
+export default function StatCard( {
+	icon: Icon,
+	label,
+	value,
+	hint,
+	to,
+	loading,
+} ) {
 	const body = (
 		<>
 			<span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-				{ Icon ? <Icon className="h-6 w-6" aria-hidden="true" /> : null }
+				{ Icon ? (
+					<Icon className="h-6 w-6" aria-hidden="true" />
+				) : null }
 			</span>
 			<div className="min-w-0 flex-1">
 				<p className="m-0 truncate text-[13px] font-medium text-muted-foreground">
@@ -35,7 +44,7 @@ export default function StatCard( { icon: Icon, label, value, hint, to, loading 
 					</p>
 				) }
 				{ hint ? (
-					<p className="m-0 truncate text-xs text-muted-foreground">
+					<p className="m-0 line-clamp-2 text-xs text-muted-foreground">
 						{ hint }
 					</p>
 				) : null }
@@ -44,7 +53,7 @@ export default function StatCard( { icon: Icon, label, value, hint, to, loading 
 	);
 
 	const className =
-		'flex items-center gap-4 rounded-xl border border-border bg-card p-5 shadow-sm no-underline transition-all duration-150';
+		'flex min-w-0 items-center gap-4 rounded-xl border border-border bg-card p-5 shadow-sm no-underline transition-all duration-150';
 
 	return to ? (
 		<Link

@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { get, put } from '@/api/client';
 import { applyPrimaryColor } from '@/lib/theme';
+import { toast, toastError } from '@/lib/toast';
 import BrandColorField from './BrandColorField';
 
 const SECTIONS = [
@@ -73,16 +74,15 @@ export default function Settings() {
 
 	const save = async ( section ) => {
 		setSaving( true );
-		setNotice( '' );
 
 		try {
 			await put( `settings/${ section }`, settings[ section ] );
 			if ( section === 'display' ) {
 				savedPrimary.current = settings.display?.primaryColor ?? null;
 			}
-			setNotice( __( 'Settings saved.', 'radius-hotel-booking' ) );
+			toast.success( __( 'Settings saved.', 'radius-hotel-booking' ) );
 		} catch ( error ) {
-			setNotice( error.message );
+			toastError( error );
 		} finally {
 			setSaving( false );
 		}
@@ -98,19 +98,15 @@ export default function Settings() {
 
 	return (
 		<div className="max-w-3xl space-y-4">
-			{ notice ? (
-				<p className="rounded-md border border-border bg-muted px-3 py-2 text-sm">
-					{ notice }
-				</p>
-			) : null }
-
 			<Tabs defaultValue="general">
 				<TabsList>
-					{ [ ...SECTIONS, ...extraSections ].map( ( { key, label } ) => (
-						<TabsTrigger key={ key } value={ key }>
-							{ label }
-						</TabsTrigger>
-					) ) }
+					{ [ ...SECTIONS, ...extraSections ].map(
+						( { key, label } ) => (
+							<TabsTrigger key={ key } value={ key }>
+								{ label }
+							</TabsTrigger>
+						)
+					) }
 				</TabsList>
 
 				<TabsContent value="general">
@@ -206,7 +202,10 @@ export default function Settings() {
 						<CardContent className="space-y-4">
 							<BrandColorField
 								value={ settings.display?.primaryColor }
-								onChange={ setField( 'display', 'primaryColor' ) }
+								onChange={ setField(
+									'display',
+									'primaryColor'
+								) }
 							/>
 
 							<div>

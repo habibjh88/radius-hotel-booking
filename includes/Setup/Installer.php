@@ -104,6 +104,24 @@ class Installer {
 		$this->create_tables();
 		$this->add_version();
 
+		// maybe_upgrade() runs on plugins_loaded, before WordPress builds
+		// $wp_rewrite (wp_insert_post() fatals without it) and before
+		// translations may load (the page titles are translated).
+		if ( did_action( 'init' ) ) {
+			self::finish();
+		} else {
+			add_action( 'init', array( __CLASS__, 'finish' ), 20 );
+		}
+	}
+
+	/**
+	 * Create any missing page, then announce the install.
+	 *
+	 * On a fresh install no page is stored yet, so every page is created.
+	 *
+	 * @return void
+	 */
+	public static function finish(): void {
 		PageInstaller::create_missing_pages();
 
 		/**
@@ -122,7 +140,6 @@ class Installer {
 	public function add_version(): void {
 		if ( ! get_option( Keys::INSTALLED ) ) {
 			update_option( Keys::INSTALLED, time() );
-			PageInstaller::create_pages();
 		}
 
 		// DB Version

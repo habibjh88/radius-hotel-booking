@@ -1,6 +1,6 @@
 {
     "name": "radiustheme/radius-hotel-booking",
-    "description": "WordPress plugin hotel booking with a DI container, ORM, migrations, REST router and WP-CLI scaffolding.",
+    "description": "Hotel room booking by time window for WordPress (half day, overnight, 24 h).",
     "type": "wordpress-plugin",
     "license": "GPL-2.0-or-later",
     "authors": [
@@ -18,7 +18,10 @@
     "autoload": {
         "psr-4": {
             "RadiusTheme\\RadiusHotelBooking\\": "includes/"
-        }
+        },
+        "exclude-from-classmap": [
+            "includes/Commands/"
+        ]
     },
     "require": {
         "php": ">=8.0"

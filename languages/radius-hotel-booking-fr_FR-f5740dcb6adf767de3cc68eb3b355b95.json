@@ -1,0 +1,114 @@
+{
+    "translation-revision-date": "2026-09-28 10:00+0000",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/admin\/routes.js",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=n > 1;"
+            },
+            "Dashboard": [
+                "Tableau de bord"
+            ],
+            "Bookings": [
+                "R\u00e9servations"
+            ],
+            "Availability": [
+                "Disponibilit\u00e9s"
+            ],
+            "Guests": [
+                "Clients"
+            ],
+            "Rooms & floors": [
+                "Chambres et \u00e9tages"
+            ],
+            "Settings": [
+                "R\u00e9glages"
+            ],
+            "System": [
+                "Syst\u00e8me"
+            ],
+            "Overview": [
+                "Vue d'ensemble"
+            ],
+            "Front desk": [
+                "R\u00e9ception"
+            ],
+            "Hotel setup": [
+                "Configuration de l'h\u00f4tel"
+            ],
+            "Reports & data": [
+                "Rapports et donn\u00e9es"
+            ],
+            "phone tab bar: keep it short\u0004Dashboard": [
+                "Accueil"
+            ],
+            "Today at your hotel, at a glance": [
+                "Aujourd'hui dans votre h\u00f4tel, en un coup d'\u0153il"
+            ],
+            "Open, close and price your rooms by date": [
+                "Ouvrez, fermez et tarifez vos chambres par date"
+            ],
+            "phone tab bar: new booking, keep it short\u0004New": [
+                "Nouvelle"
+            ],
+            "New booking": [
+                "Nouvelle r\u00e9servation"
+            ],
+            "Take a walk-in booking at the front desk": [
+                "Enregistrez un client de passage \u00e0 la r\u00e9ception"
+            ],
+            "phone tab bar: keep it short\u0004Bookings": [
+                "R\u00e9servations"
+            ],
+            "Every booking, arrival and departure": [
+                "Toutes les r\u00e9servations, arriv\u00e9es et d\u00e9parts"
+            ],
+            "phone tab bar: keep it short\u0004Guests": [
+                "Clients"
+            ],
+            "Guest records, documents and stay history": [
+                "Fiches clients, documents et historique des s\u00e9jours"
+            ],
+            "Payments": [
+                "Paiements"
+            ],
+            "Payments received and bookings to follow up": [
+                "Paiements re\u00e7us et r\u00e9servations \u00e0 relancer"
+            ],
+            "Room types, floors and every physical room": [
+                "Types de chambre, \u00e9tages et chaque chambre physique"
+            ],
+            "Rate plans": [
+                "Formules tarifaires"
+            ],
+            "Stay windows such as Half Day or Overnight, and their prices": [
+                "Cr\u00e9neaux de s\u00e9jour comme Demi-journ\u00e9e ou Nuit\u00e9e, et leurs prix"
+            ],
+            "Reports": [
+                "Rapports"
+            ],
+            "Sales, rooms and availability reports": [
+                "Rapports de ventes, de chambres et de disponibilit\u00e9s"
+            ],
+            "Exports": [
+                "Exports"
+            ],
+            "Export bookings and guests to a spreadsheet": [
+                "Exportez les r\u00e9servations et les clients vers un tableur"
+            ],
+            "Permissions": [
+                "Autorisations"
+            ],
+            "Choose what each staff role may open and do": [
+                "Choisissez ce que chaque r\u00f4le du personnel peut ouvrir et faire"
+            ],
+            "Hotel details, booking rules and appearance": [
+                "Informations de l'h\u00f4tel, r\u00e8gles de r\u00e9servation et apparence"
+            ]
+        }
+    }
+}

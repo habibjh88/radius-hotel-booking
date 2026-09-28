@@ -1,12 +1,24 @@
 # Radius Hotel Booking
 
-A WordPress plugin hotel booking. It ships the plumbing every plugin needs — DI
-container, ORM, migrations, REST router, capabilities, CLI scaffolding, a React
-admin — plus **one example resource (`Item`) wired through every layer**, so you
-can see how the pieces fit and then delete the example.
+Hotel room booking for WordPress, by **time window** rather than only by night:
+half day, overnight, 24 hours, or any window the hotel defines. Built first for
+Residence TATA (Abidjan) to replace their WooCommerce-based hotel stack, and
+published on wordpress.org as a free plugin.
 
-Extracted from a production RadiusTheme plugin, with all domain code removed
-and Vite replaced by `@wordpress/scripts`/webpack.
+The product ships as three plugins:
+
+| Plugin | Folder (siblings) | Ships to |
+|---|---|---|
+| **Radius Hotel Booking** (this repo) | `radius-hotel-booking` | wordpress.org |
+| **Radius Hotel Booking Pro** | `radius-hotel-booking-pro` | paying customers |
+| **Residence TATA add-on** | `radius-hotel-booking-residencetata` | the client only |
+
+The free plugin holds no Pro or client code. It exposes hooks, registries and a
+JS runtime (`window.rtbp`) that the other two build on (ADR-014 to ADR-017).
+
+**Planning and specs live in [`docs/`](docs/README.md).** Start there: the build
+order, the booking engine, the architecture, the design system and the
+Definition of Done.
 
 ---
 
@@ -14,101 +26,70 @@ and Vite replaced by `@wordpress/scripts`/webpack.
 
 ```bash
 composer install
-npm install
+bun install
 
-npm run build          # production bundles into build/
-npm run start          # watch + rebuild (writes to the same build/ directory)
+bun run build          # production bundles into build/
+bun run start          # watch + rebuild (writes to the same build/ directory)
 ```
 
-Then activate the plugin. **Radius Hotel Booking** appears in the admin menu with
-Dashboard, Items and Settings screens.
+Activate the plugin. **Radius Hotel Booking** appears in the admin menu, and a
+**Hotel Dashboard** page is created for staff on the front end.
 
 | Command | What it does |
 |---|---|
-| `npm run start` | Watch mode. Writes to `build/`, same as a production build. |
-| `npm run build` | Production bundles + `*.asset.php` dependency files. |
-| `npm run format` | Prettier, via wp-scripts. |
-| `composer phpcs` / `composer phpcs:fix` | WordPress coding standards. |
-| `npm run package` | Build a distributable zip. |
-| `npm run i18n:pot` | Regenerate `languages/radius-hotel-booking.pot`. |
+| `bun run start` | Watch mode. Writes to `build/`, the same as a production build. |
+| `bun run build` | Production bundles + `*.asset.php` dependency files. |
+| `bun run format` | Prettier, via wp-scripts. |
+| `composer phpcs` / `composer phpcs:fix` | WordPress coding standards. Judge by the exit code. |
+| `bun run check:woocommerce` | Fails if the code calls WooCommerce (feature 18.6). |
+| `bun run i18n:pot` | Regenerate `languages/radius-hotel-booking.pot`. |
+| `bin/i18n-build.sh --all` | Compile every `.po` into `.mo`, `.l10n.php` and JSON. |
+| `bun run package` | Build the distributable zip (runs the WooCommerce check first). |
 
----
+There is no PHPUnit or ESLint suite. Changes are verified on a local site with
+throwaway `wp eval` scripts and in the browser (ADR-018,
+`docs/project/conventions.md` §4).
 
-## Renaming it for a new project
-
-Everything identity-related lives in a handful of strings. Replace them all —
-in that order, so the longer strings match first:
-
-| Find | Replace with | Where |
-|---|---|---|
-| `RadiusTheme\RadiusHotelBooking` | `YourVendor\YourPlugin` | every PHP file, `composer.json` autoload |
-| `RADIUS_HOTEL_BOOKING_` | `YOUR_PLUGIN_` | constants |
-| `radius_hotel_booking_` | `your_plugin_` | table prefix, localized JS object names |
-| `radius-hotel-booking` | `your-plugin` | slug, text domain, REST namespace, handles, CLI command |
-| `rtbp_` | `yp_` | function prefix, option keys, hook names, capabilities |
-| `RadiusHotelBooking` | `YourPlugin` | main class name |
-| `Radius Hotel Booking` | `Your Plugin` | display strings |
-
-```bash
-# From the plugin root. Review the diff before committing.
-grep -rl 'RadiusHotelBooking\|radius-hotel-booking\|radius_hotel_booking\|rtbp_\|RADIUS_HOTEL_BOOKING' \
-  --exclude-dir={node_modules,vendor,build,.git} . |
-xargs perl -pi -e '
-  s/RadiusTheme\\RadiusHotelBooking/YourVendor\\YourPlugin/g;
-  s/RADIUS_HOTEL_BOOKING/YOUR_PLUGIN/g;
-  s/radius_hotel_booking/your_plugin/g;
-  s/radius-hotel-booking/your-plugin/g;
-  s/rtbp_/yp_/g;
-  s/Radius Hotel Booking/Your Plugin/g;
-  s/RadiusHotelBooking/YourPlugin/g;
-'
-
-mv radius-hotel-booking.php your-plugin.php
-composer dump-autoload
-```
-
-Then update the plugin header in the main file, `readme.txt`, and
-`package.json`/`composer.json` names.
+Add `define( 'WP_DEBUG', true );` to open the UI kit at
+`#/dev/ui` (administrators only): every shared component in its loading,
+empty, error and populated states.
 
 ---
 
 ## Architecture
 
 ```
-radius-hotel-booking.php        Bootstrap: constants, lifecycle, component wiring
+radius-hotel-booking.php      Bootstrap: constants, lifecycle, component wiring
+uninstall.php                 Removes all data, only when the site asked for it
 includes/
   Abstracts/                  BaseController, BaseModel, BaseRepository, BaseResource,
                               BaseEmail, Facade, Migration
   Admin/                      Admin menu
   Assets/LoadAssets.php       Enqueues the webpack bundles + the i18n layer
-  Blocks/                     Gutenberg block registration
   Commands/                   WP-CLI "artisan" generators
   Common/Keys.php             Every option/transient key
-  Controllers/                REST controllers (ItemController, SettingsController)
+  Controllers/                REST controllers
   Core/
     Api/                      ApiManager, ApiResponse, router, middleware, validation
     Container/                DI container
-    Database/                 Connection, Schema builder, MigrationRunner
+    Database/                 Connection, Schema builder, MigrationRunner, Transaction
     Events/                   EventDispatcher
     ORM/                      QueryBuilder, relations, pagination
     Permissions/              Capability registry + enforcement
-    Support/                  Collection, DateTimeParser
     config/                   bindings.php, events.php
   Databases/                  DatabaseManager + Table/ schemas
-  Elementor/                  Widget registration
   Emails/                     EmailManager, MergeTags, TemplateHooks, sender, renderer
-  Helpers/SettingsHelper.php  Settings sections and their defaults
-  Hooks/                      Cross-cutting hooks
-  Models/                     Item, Settings
-  Repositories/               Data access
-  Resources/                  API response shaping
+  Exceptions/                 DomainException (code + message + status + field errors)
+  Frontend/                   The [rtbp_dashboard] staff page
+  Helpers/                    SettingsHelper (sections + defaults), ThemeHelper
+  Models/ Repositories/ Resources/ Services/
   Routes/routes.php           Route definitions
-  Services/                   Business logic
-  Setup/                      Installer, PageInstaller, PermissionsInstaller
-  Shortcodes/                 Shortcode registry
+  Setup/                      Installer, PageInstaller, PermissionsInstaller, Scheduler
+  Storage/ProtectedFiles.php  Private uploads with an authenticated download route
+  Support/                    Money, Dates, Sequence
   Utility/                    Procedural helpers, template functions
 src/                          React (see below)
-templates/                    Overridable front-end + email templates
+templates/                    Overridable dashboard and e-mail templates
 views/app.php                 Admin mount point
 resources/stubs/              Templates the CLI generators render
 ```
@@ -117,41 +98,30 @@ resources/stubs/              Templates the CLI generators render
 
 ```
 REST request
-  → Core\Api\ApiManager           loads includes/Routes/routes.php on rest_api_init
+  → Core\Api\ApiManager            loads includes/Routes/routes.php on rest_api_init
   → Core\Api\Routes\RouteRegistrar registers each route with WordPress
-  → Controllers\ItemController     middleware → validation → repository
-  → Abstracts\BaseController       index/show/store/update/destroy for free
-  → Repositories\ItemRepository    wraps the model
-  → Models\Item                    ORM + lifecycle events
-  → Resources\ItemResource         shapes the JSON
-  → Core\Api\ApiResponse           { success, status_code, message, data, errors, meta }
+  → Controllers\…Controller        middleware → validation → service
+  → Services\…                     business rules, transactions, hooks
+  → Repositories\… → Models\…      data access, ORM, lifecycle events
+  → Resources\…                    shapes the JSON
+  → Core\Api\ApiResponse           { success, status_code, message, data, errors, meta, code? }
 ```
 
-### Adding a resource
+`PermissionMiddleware` needs a valid `x-wp-nonce` **and** a `Referer` starting
+with `home_url()`. A client without a Referer gets a 403.
+
+### Adding a slice
 
 ```bash
-wp radius-hotel-booking artisan make:module Product
+wp radius-hotel-booking artisan make:module Floor
 ```
 
-scaffolds the model, controller, service, repository and resource. Then:
-
-1. Add a table class under `includes/Databases/Table/` (or
-   `wp radius-hotel-booking artisan make:table Products`) and register it in
-   `Databases\DatabaseManager`.
-2. Bump `RadiusHotelBooking::DBVERSION` so the migration runs.
-3. Register the repository/service in `includes/Core/config/bindings.php`.
-4. Add routes in `includes/Routes/routes.php`.
-5. Add a capability in `Core\Permissions\Capabilities` and bump
-   `PermissionsInstaller::ROLES_VERSION`.
-6. Add a screen under `src/modules/` and a line in `src/admin/routes.js`.
-
-### Adding a webpack entry
-
-1. Add `myentry: path.resolve( __dirname, 'src/myentry/main.jsx' )` to
-   `entry` in `webpack.config.js`.
-2. Create `src/myentry/main.jsx`.
-3. Enqueue it from `Assets\LoadAssets` with
-   `$this->enqueue_entry( 'myentry', 'radius-hotel-booking-myentry' )`.
+scaffolds the model, controller, service, repository and resource. Then add the
+table under `includes/Databases/Table/`, register it in
+`Databases\DatabaseManager`, **bump `RadiusHotelBooking::DBVERSION`**, bind the
+repository and service in `includes/Core/config/bindings.php`, and add the
+routes. The `rtbp-backend-slice` skill in `.claude/skills/` has the full
+checklist.
 
 ---
 
@@ -159,90 +129,81 @@ scaffolds the model, controller, service, repository and resource. Then:
 
 ```
 src/
-  admin/          Admin SPA entry, App shell, route table
-  site/           Public app entry (mounted by the shortcode/block/widget)
+  admin/          Admin SPA entry, App, the route table (routes.js)
+  site/           Public app entry
   blocks/         Block editor bundle
   components/
-    ui/           shadcn/ui primitives (new-york, JSX, lucide icons)
-    Layout.jsx    Admin sidebar + header
-  modules/        One folder per screen: Dashboard, Items, Settings
-  api/client.js   apiFetch wrapper that unwraps the ApiResponse envelope
-  lib/utils.jsx   cn()
-  index.css       Admin styles + design tokens
-  site.css        Public styles + design tokens
+    ui/           shadcn/ui primitives (Radix, lucide icons)
+    layout/       AppShell, Sidebar, Topbar, MobileTabBar, CommandPalette
+    common/       DataTable, FilterTabs, DateRangePicker, StatusBadge, Money,
+                  DateTime, EmptyState, ConfirmDialog, Form…
+  modules/        One folder per screen
+  api/client.js   Unwraps the ApiResponse envelope; errors carry `code` and field errors
+  lib/            runtime (window.rtbp), format, status, theme, query-client, toast
+  index.css       Design tokens, scoped to .rtbp-root
 ```
 
 * `@/` resolves to `src/` (webpack alias + `jsconfig.json`).
 * Tailwind utilities are scoped with `important: '.rtbp-root'`, so the plugin's
-  CSS can never leak into wp-admin or a theme. Keep `rtbp-root` on your
-  outermost element — including inside portalled Radix content (dialogs,
-  dropdowns), which render outside the app tree.
-* Colours are CSS variables defined in `index.css` / `site.css` and mapped in
-  `tailwind.config.js`. Re-theme by editing the variables only.
-* Add a shadcn component with `npx shadcn@latest add <name>` — `components.json`
-  is already configured.
+  CSS can never leak into wp-admin or a theme. Portalled Radix content
+  (dialogs, popovers, selects) needs `rtbp-root` on its own content node.
+* The brand colour comes from Settings → Display and restyles every token that
+  derives from `--primary`.
 
-### How assets are enqueued (no dev/prod switch)
-
-`@wordpress/scripts` emits `build/<entry>.js`, `build/<entry>.css` and
-`build/<entry>.asset.php` for every entry. The asset file returns the WordPress
-script dependencies the bundle imports plus a content hash:
-
-```php
-<?php return array( 'dependencies' => array( 'react', 'wp-i18n' ), 'version' => 'a1b2c3…' );
-```
-
-`Assets\LoadAssets` reads it, so dependencies and cache-busting are automatic
-and there is **no manifest to parse and no dev-server mode** — `npm run start`
-and `npm run build` write the same files to the same place.
-
-If a change doesn't show: rebuild (`npm run build`) or check that
-`npm run start` is still running.
+`@wordpress/scripts` emits `build/<entry>.js`, `.css` and `.asset.php` for every
+entry. `Assets\LoadAssets` reads the asset file, so dependencies and cache
+busting are automatic. There is no dev server: if a change doesn't show, the
+build didn't run.
 
 ---
 
 ## Internationalisation
 
-`@wordpress/i18n` is externalised to `wp.i18n` by webpack's dependency
-extraction, so bundles share WordPress's locale data — no shim needed.
-
-What still needs a workaround is the *lookup*: WordPress finds a script's JSON
-translations by hashing the bundle's source path, which content-hashed builds
-and Loco's per-source-file sharding both break.
-`LoadAssets::load_merged_script_translations()` fixes that by merging **every**
-`radius-hotel-booking-{locale}-*.json` it finds across the three folders Loco can
-save to, plus the compiled `.mo`/`.l10n.php` catalog, into a single
-`locale_data` block. A translator saving a `.po` in Loco gets working React
-translations with no build step.
+English strings in code, French shipped in `languages/`
+(`radius-hotel-booking-fr_FR.po`). Staff see the language in their WordPress
+profile, both in wp-admin and on the Hotel Dashboard page.
 
 ```js
 import { __, sprintf } from '@wordpress/i18n';
 
-__( 'My text', 'radius-hotel-booking' );
-sprintf( __( 'Hello %s', 'radius-hotel-booking' ), name ); // never concatenate
+__( 'Arriving today', 'radius-hotel-booking' );
+sprintf( __( 'of %d rooms', 'radius-hotel-booking' ), total ); // never concatenate
 ```
 
-Regenerate the POT with `npm run i18n:pot`; compile with `bin/i18n-build.sh`.
+After adding strings:
+
+```bash
+bun run i18n:pot                                  # refresh the template
+msgmerge --update languages/radius-hotel-booking-fr_FR.po languages/radius-hotel-booking.pot
+# translate the new entries, then:
+bin/i18n-build.sh fr_FR
+```
+
+WordPress finds a script's JSON translations by hashing the bundle path, which
+content-hashed builds and Loco Translate's per-file output both break.
+`LoadAssets::load_merged_script_translations()` merges every
+`radius-hotel-booking-{locale}-*.json` in the three folders Loco can save to,
+plus the compiled `.mo`, into one `locale_data` block. A `.mo` alone is enough
+for the React screens to translate.
 
 ---
 
-## Free / add-on split
+## WooCommerce
 
-The hotel booking keeps the hooks for a paid add-on, but no licensing logic:
-
-* `rtbp_addon_active()` — true when `RADIUS_HOTEL_BOOKING_PRO_VERSION` is defined.
-* `rtbp_api_route_paths` — an add-on appends its own route file.
-* `rtbp_register_addon_routes` — or registers routes on the shared router.
-* `rtbp_register_addon_integrations` — fires after the plugin boots.
-* `is_addon` is localized to both JS apps for UI gating.
-
-Gate a paid feature **both** in the UI and server-side, so a stored setting
-can't bypass the gate.
+The plugin must run with WooCommerce absent (feature 18.6).
+`bun run check:woocommerce` rejects calls to `wc_*()`, `WC()`, `WC_*` classes,
+firing WooCommerce hooks and WooCommerce JS packages. Listening to a WooCommerce
+filter so the two coexist is allowed. `PermissionsManager` uses one to stop
+WooCommerce locking staff out of wp-admin.
 
 ---
 
-## What was intentionally left out
+## Uninstall
 
-No payment gateways, no third-party integrations, no Action Scheduler, no
-charting or PDF libraries, no date pickers. Add what you need — the hotel booking
-stays small on purpose.
+Deleting the plugin keeps every table, option, role and file unless General →
+`deleteDataOnUninstall` is on. When it is on, `uninstall.php` removes, on each
+site: every table with the plugin's prefix (the Pro and client tables too),
+every `rtbp_*` option and transient, the pages the plugin created, the `rtbp_*`
+roles and the `rtbp_*` capabilities on other roles, and the protected uploads
+folder. A folder set with `RTBP_PROTECTED_DIR` belongs to the host and is not
+touched.

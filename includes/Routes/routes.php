@@ -21,10 +21,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use RadiusTheme\RadiusHotelBooking\Controllers\DashboardController;
+use RadiusTheme\RadiusHotelBooking\Controllers\FileController;
 use RadiusTheme\RadiusHotelBooking\Controllers\SettingsController;
 
 /** Dashboard. */
 $this->router->get( 'dashboard/summary', array( DashboardController::class, 'summary' ) );
+
+/** Protected file download (plain links; see FileController). */
+$this->router->get( 'files/(?P<token>[a-f0-9]{32})', array( FileController::class, 'download' ) );
 
 /** Settings routes. */
 $this->router->get( 'settings', array( SettingsController::class, 'index' ) );

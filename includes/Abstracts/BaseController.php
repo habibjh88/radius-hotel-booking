@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 } // Exit if accessed directly
 
-use Exception;
+use Throwable;
 use RadiusTheme\RadiusHotelBooking\Core\Api\ApiResponse;
 use RadiusTheme\RadiusHotelBooking\Core\Api\Validation\ApiValidator;
 use WP_REST_Controller;
@@ -304,8 +304,8 @@ abstract class BaseController extends WP_REST_Controller {
 					$item = apply_filters( 'rtbp_created_item_' . $this->getResourceType(), $item, $item->id, $this );
 
 					return ApiResponse::created( $this->transformItem( $item ) )->send();
-				} catch ( Exception $e ) {
-					return ApiResponse::error( $e->getMessage(), 500 )->send();
+				} catch ( Throwable $e ) {
+					return ApiResponse::fromThrowable( $e )->send();
 				}
 			}
 		);
@@ -348,8 +348,8 @@ abstract class BaseController extends WP_REST_Controller {
 					$item = apply_filters( 'rtbp_updated_item_' . $this->getResourceType(), $item, $item->id, $this );
 
 					return ApiResponse::success( $this->transformItem( $item ) )->send();
-				} catch ( Exception $e ) {
-					return ApiResponse::error( $e->getMessage(), 500 )->send();
+				} catch ( Throwable $e ) {
+					return ApiResponse::fromThrowable( $e )->send();
 				}
 			}
 		);
@@ -381,8 +381,8 @@ abstract class BaseController extends WP_REST_Controller {
 					do_action( 'rtbp_item_deleted_' . $this->getResourceType(), $id, $request, $this );
 
 					return ApiResponse::success( array(), 'Resource deleted successfully' )->send();
-				} catch ( Exception $e ) {
-					return ApiResponse::error( $e->getMessage(), 500 )->send();
+				} catch ( Throwable $e ) {
+					return ApiResponse::fromThrowable( $e )->send();
 				}
 			}
 		);

@@ -75,6 +75,10 @@ work behind silently — if `git status` is dirty, ask whether to commit, stash,
 Set the module `in-progress`, fill **Branch** and **Started** (today's date, absolute) in
 `docs/project/roadmap.md`.
 
+Show the plan with the same **progress line** that `/next-task` ends with (see
+`.claude/skills/next-task/SKILL.md`, "Progress line"), so you can see from the start how many
+tasks the module has.
+
 ## 7. Begin
 
 Unless the user asked only to plan, continue straight into the first unchecked task by following

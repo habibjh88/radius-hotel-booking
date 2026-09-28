@@ -20,6 +20,7 @@ restaurant shop.
 
 | Feature | Summary | Task |
 |---|---|---|
+| — | **Before any T:** scope Tailwind's CSS reset (preflight) under `.rtbp-root` in `site.css` (disable global preflight, add a scoped reset). Today it resets the whole theme, and it must not on a guest page (found in M00 T5) | T1 |
 | 4.1, 4.2 | Search bar block + shortcode `[rtbp_search]`: arrival, departure, adults / children, an optional rooms count (a setting); submits to the results page | T1 |
 | 4.3 | Results: `[rtbp_booking]` mounts `BookingFlow mode="guest"`, with the same rate-by-room-type layout and prices for the dates | T2 |
 | 4.4 | Show or hide unavailable rates and rooms (setting 17.11). When shown, they are greyed with the reason | T2 |

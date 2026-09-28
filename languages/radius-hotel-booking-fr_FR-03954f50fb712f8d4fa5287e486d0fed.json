@@ -1,0 +1,24 @@
+{
+    "translation-revision-date": "2026-09-28 10:00+0000",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/admin\/App.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=n > 1;"
+            },
+            "This page does not exist": [
+                "Cette page n'existe pas"
+            ],
+            "The link may be old, or the screen may belong to a feature that is switched off.": [
+                "Le lien est peut-\u00eatre ancien, ou l'\u00e9cran appartient \u00e0 une fonctionnalit\u00e9 d\u00e9sactiv\u00e9e."
+            ],
+            "Go to the dashboard": [
+                "Aller au tableau de bord"
+            ]
+        }
+    }
+}

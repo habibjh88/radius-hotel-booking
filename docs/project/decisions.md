@@ -102,6 +102,14 @@ Exports, archives, invoices and employee documents are written to
 `wp-content/uploads/radius-hotel-booking/<kind>/` with a deny-all `.htaccess`, an `index.php`,
 and random file names. Files are served only through an authenticated REST download endpoint that
 checks the access key.
+*Amendment (M00 T4, 2026-09-28):* nginx ignores `.htaccess`, and on the nginx Local site the
+direct URL answered 200. The protection there is the 128-bit random file name, unless the host
+does one of these:
+(a) adds a deny rule:
+    `location ^~ /wp-content/uploads/radius-hotel-booking/ { deny all; return 404; }`
+(b) sets `RTBP_PROTECTED_DIR` in wp-config.php to a folder outside the web root.
+The admin notes and the cutover runbook (M18) must include this. A Site Health check that warns
+when the folder is publicly reachable is a follow-up for M18 T1.
 
 ## ADR-010: Payment is a ledger — Accepted
 
@@ -174,17 +182,28 @@ neither.
 | `rtbp_settings` filter (**live**) + the generic `GET/PUT settings/{section}` | an add-on settings section with defaults and storage (`rtbp_<section>_settings`) |
 | `rtbp_admin_enqueue_scripts( $handle )` action (**live**) | enqueuing an add-on bundle after the free admin app, with `$handle` as a dependency |
 
-**JavaScript.** The free admin bundle publishes a runtime on `window.rtbp`: `ui` (the shadcn
-primitives and composites), `lib` (format, status, access, the API client and the query client),
-`React` and `hooks` (`@wordpress/hooks`). Add-on bundles import them through webpack externals
-(`@rtbp/ui` → `window.rtbp.ui` …), so there is one React and one copy of the components. Filters:
+**JavaScript.** The free admin bundle publishes a runtime on `window.rtbp` (**live**):
+
+- `ui`: the shadcn primitives and composites. Dialog, DropdownMenu, Select and Tabs parts, plus
+  DataTable, DateRangePicker and ConfirmDialog, are `React.lazy` stand-ins under their usual names.
+  They load as one chunk on first render (eager, they would add about 220 KB to every page), so
+  wrap them in a `Suspense`.
+- `lib`: format, status, the API client, the shared `queryClient`, `toast`, `usePageActions`, and
+  `loadForms()`, a promise of `{ useZodForm, applyServerErrors, z }`.
+- `ReactQuery`: map `@tanstack/react-query` to it so there is one cache.
+- `hooks`: `@wordpress/hooks`.
+- `React`: the same object as WordPress's shared `react` script.
+
+Add-on bundles import them through webpack externals (`@rtbp/ui` → `window.rtbp.ui` …), so there
+is one React and one copy of the components. The free app mounts on `DOMContentLoaded`, after every
+add-on script has registered its filters. Filters:
 
 | JS filter | Use |
 |---|---|
-| `rtbp.admin.routes` | Add screens and sidebar items |
+| `rtbp.admin.routes` (**live**) | Add screens and sidebar items |
 | `rtbp.settings.sections` (**live**) | Add settings tabs: `{ key, label, render( { value, setField, save, saving } ) }`, where `key` is a PHP section from `rtbp_settings` |
 | `rtbp.booking.panels`, `rtbp.guest.panels` | Add panels to detail screens (for example the activity timeline) |
-| `rtbp.api.error` | Handle API errors (Pro turns `passcode_required` into its PIN dialog) |
+| `rtbp.api.error` (**live**) | `( handled, error, { path, options, retry } )`: return a Promise to take over the request (e.g. Pro turns `passcode_required` into its PIN dialog, then `retry( { headers } )`), or pass `handled` through to let the error throw. A retried request does not run the filter again |
 | `rtbp.dashboard.widgets`, `rtbp.reports.tabs` | Add dashboard widgets and report tabs |
 
 The add-on scripts declare `radius-hotel-booking-admin` as a dependency, so they load after the

@@ -1,4 +1,5 @@
 import { HashRouter, Link, Route, Routes } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { Suspense } from 'react';
 import { __ } from '@wordpress/i18n';
 import { SearchX } from 'lucide-react';
@@ -9,6 +10,7 @@ import ModulePlaceholder from '@/components/common/ModulePlaceholder';
 import Panel from '@/components/common/Panel';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { queryClient } from '@/lib/query-client';
 import { getRoutes } from './routes';
 
 /**
@@ -39,7 +41,10 @@ function NotFound() {
 		<Panel>
 			<EmptyState
 				icon={ SearchX }
-				title={ __( 'This page does not exist', 'radius-hotel-booking' ) }
+				title={ __(
+					'This page does not exist',
+					'radius-hotel-booking'
+				) }
 				description={ __(
 					'The link may be old, or the screen may belong to a feature that is switched off.',
 					'radius-hotel-booking'
@@ -47,7 +52,10 @@ function NotFound() {
 				action={
 					<Button asChild>
 						<Link to="/">
-							{ __( 'Go to the dashboard', 'radius-hotel-booking' ) }
+							{ __(
+								'Go to the dashboard',
+								'radius-hotel-booking'
+							) }
 						</Link>
 					</Button>
 				}
@@ -67,30 +75,34 @@ function NotFound() {
  */
 export default function App() {
 	return (
-		<HashRouter>
-			<AppShell>
-				<Suspense fallback={ <ScreenSkeleton /> }>
-					<Routes>
-						{ getRoutes().map( ( route ) => {
-							const Screen = route.element;
-							return (
-								<Route
-									key={ route.path }
-									path={ route.path }
-									element={
-										Screen ? (
-											<Screen />
-										) : (
-											<ModulePlaceholder route={ route } />
-										)
-									}
-								/>
-							);
-						} ) }
-						<Route path="*" element={ <NotFound /> } />
-					</Routes>
-				</Suspense>
-			</AppShell>
-		</HashRouter>
+		<QueryClientProvider client={ queryClient }>
+			<HashRouter>
+				<AppShell>
+					<Suspense fallback={ <ScreenSkeleton /> }>
+						<Routes>
+							{ getRoutes().map( ( route ) => {
+								const Screen = route.element;
+								return (
+									<Route
+										key={ route.path }
+										path={ route.path }
+										element={
+											Screen ? (
+												<Screen />
+											) : (
+												<ModulePlaceholder
+													route={ route }
+												/>
+											)
+										}
+									/>
+								);
+							} ) }
+							<Route path="*" element={ <NotFound /> } />
+						</Routes>
+					</Suspense>
+				</AppShell>
+			</HashRouter>
+		</QueryClientProvider>
 	);
 }

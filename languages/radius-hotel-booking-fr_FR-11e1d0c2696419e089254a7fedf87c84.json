@@ -1,0 +1,48 @@
+{
+    "translation-revision-date": "2026-09-28 10:00+0000",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Dashboard\/index.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=n > 1;"
+            },
+            "New booking": [
+                "Nouvelle r\u00e9servation"
+            ],
+            "Try again": [
+                "R\u00e9essayer"
+            ],
+            "Awaiting approval": [
+                "En attente de validation"
+            ],
+            "The dashboard could not be loaded.": [
+                "Le tableau de bord n'a pas pu \u00eatre charg\u00e9."
+            ],
+            "Bookings to accept or decline": [
+                "R\u00e9servations \u00e0 accepter ou refuser"
+            ],
+            "Arriving today": [
+                "Arriv\u00e9es du jour"
+            ],
+            "Guests due to check in": [
+                "Clients attendus"
+            ],
+            "Leaving today": [
+                "D\u00e9parts du jour"
+            ],
+            "Guests due to check out": [
+                "Clients sur le d\u00e9part"
+            ],
+            "Rooms free now": [
+                "Chambres libres"
+            ],
+            "of %d rooms": [
+                "sur %d chambres"
+            ]
+        }
+    }
+}

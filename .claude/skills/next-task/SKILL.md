@@ -60,9 +60,12 @@ Run and fix until clean, **in every repo the task touched**. Show the user the r
 never claim a pass you did not see:
 
 ```bash
-./vendor/bin/phpcs --standard=phpcs.xml <changed php files>
+./vendor/bin/phpcs --standard=phpcs.xml --report=summary <changed php files>; echo "phpcs exit: $?"
 npm run build
 ```
+
+phpcs passes only when the exit code is 0. Never judge it from `tail` of the full report: the
+error table sits above the last lines and gets cut off.
 
 There is no PHPUnit suite. Verify new PHP logic on the Local site with a throwaway `wp eval`
 script, and run the concurrency check if the booking write path changed
@@ -98,7 +101,23 @@ If that was the last unchecked task:
 ## 7. Arguments `all`
 
 With `all`, repeat steps 1–5 for each remaining task of the module, stopping at the first task
-that fails verification or needs a user decision, and summarise at the end.
+that fails verification or needs a user decision, and summarise at the end, followed by the progress line.
 
 Otherwise stop after one task: summarise what was built, what was verified, and what the next
 task is (`/next-task` to continue).
+
+## Progress line (always end with it)
+
+Re-read the module doc's **Tasks** after ticking, and end the reply with this block. Count every
+`- [x] T…` / `- [ ] T…` line in the module; sub-tasks such as T7a and T7b count separately.
+
+```
+M00 Foundation — 2 of 11 tasks done (9 left)
+✅ T1  ✅ T2  ▶ T3  ○ T4  ○ T5  ○ T6  ○ T7a  ○ T7b  ○ T7c  ○ T8  ○ T9
+Next: T3 — standard errors, transactions, reference counter, scheduled jobs
+```
+
+- ✅ done · ▶ the next task · ○ not started. Mark a task you stopped on after a failure or a
+  question as ▶, and say why it stopped.
+- When the last task is ticked, the line reads `… — all N tasks done`, followed by the
+  module-close steps (§6), or `Module done — next: /next-module (Mxx …)`.

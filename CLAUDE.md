@@ -7,12 +7,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 # Initial setup
 composer install
-npm install
+bun install
 
 # Frontend (@wordpress/scripts + webpack)
-npm run start            # Watch mode — writes to build/, same output as a production build
-npm run build            # Production bundles + *.asset.php dependency files
-npm run format           # Prettier via wp-scripts
+bun run start            # Watch mode — writes to build/, same output as a production build
+bun run build            # Production bundles + *.asset.php dependency files
+bun run format           # Prettier via wp-scripts
 
 # PHP linting
 composer phpcs           # Check all files against WordPress coding standards
@@ -32,8 +32,10 @@ wp radius-hotel-booking artisan migrate:rollback
 wp radius-hotel-booking artisan migrate:status
 
 # Packaging & i18n
-npm run package          # Build plugin zip via bin/build-plugin-zip.sh
-npm run i18n:pot         # Regenerate languages/radius-hotel-booking.pot
+bun run package          # Build plugin zip via bin/build-plugin-zip.sh
+bun run check:woocommerce # Fail on any WooCommerce dependency (18.6); run by package
+bun run i18n:pot         # Regenerate languages/radius-hotel-booking.pot
+msgmerge --update languages/radius-hotel-booking-fr_FR.po languages/radius-hotel-booking.pot
 bin/i18n-build.sh --all  # Compile .po -> .mo / .l10n.php / .json
 ```
 
@@ -98,8 +100,12 @@ on `plugins_loaded`. Bindings are lazy closures.
   or `get`/`post`/`put`/`delete` for individual endpoints.
 * `ApiResponse` fluent interface: `success()`, `created()`, `error()`,
   `unauthorized()`, `notFound()`, `validationError()`. Every response is
-  `{ success, status_code, message, data, errors, meta }` — `src/api/client.js`
-  unwraps exactly this shape.
+  `{ success, status_code, message, data, errors, meta, code? }` — `src/api/client.js`
+  unwraps exactly this shape (`code` becomes `error.code`).
+* Services throw `Exceptions\DomainException` (code + translated message + HTTP
+  status + field errors); controllers turn any throwable into the envelope with
+  `ApiResponse::fromThrowable()`. Unexpected errors return a generic 500 unless
+  `WP_DEBUG` is on.
 * Middleware in `includes/Core/Api/Middleware/`: Auth, Permission, RateLimit.
   **`PermissionMiddleware` requires a valid `x-wp-nonce` AND a `Referer` that
   starts with `home_url()`** — a REST client without a Referer gets a 403
@@ -125,7 +131,7 @@ shadcn/ui (`src/components/ui/`) on Radix primitives. API calls go through
 which returns the entry's WordPress script dependencies and a content-hash
 version. `includes/Assets/LoadAssets.php` reads that file, so dependencies and
 cache busting are automatic. There is **no dev-server mode and no manifest** —
-`npm run start` and `npm run build` write the same files to `build/`. "My change
+`bun run start` and `bun run build` write the same files to `build/`. "My change
 doesn't show" therefore means the build didn't run, not that a dev server needs
 starting.
 
@@ -256,18 +262,15 @@ Multisite is supported: network activation installs per-site, and
 
 - Settings live in `wp_options` as `rtbp_<section>_settings`; sections and their
   defaults are declared in `Helpers\SettingsHelper`.
+- `uninstall.php` removes data only when `general.deleteDataOnUninstall` is on. It
+  matches by prefix (`rtbp_` options, roles and caps; the table prefix), so a new
+  table, option or role is covered without editing it.
 - Hook names are prefixed `rtbp_`; so are capabilities, option keys and global
   functions.
 - Text domain: `radius-hotel-booking`.
-- PHP 8.0+ / WordPress 5.5.0+ (the framework uses PHP 8.0 syntax; no 8.1+ features).
+- PHP 8.0+ / WordPress 6.2+ (the framework uses PHP 8.0 syntax, no 8.1+ features, and `%i` identifier placeholders in `$wpdb->prepare()`, which need WordPress 6.2).
 - WordPress coding standards enforced via PHPCS (`phpcs.xml`); database queries
   must use `$wpdb->prepare()` and output must be escaped.
 - Each public embed (M04) ships as a shortcode, a block and an Elementor widget
   that all render the **same** template — keep it that way so the three paths
   can't drift.
-
-## Renaming the hotel booking
-
-See the table and the one-shot `perl` command in README.md. Order matters:
-replace the longest strings first (`RadiusTheme\RadiusHotelBooking` before
-`RadiusHotelBooking`, `radius_hotel_booking` before `radius-hotel-booking`).

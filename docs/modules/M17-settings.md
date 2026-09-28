@@ -22,7 +22,7 @@ through the same registry (`rtbp-settings-section` skill).
 |---|---|---|
 | — | `Settings\SettingsSchema` registry (type, default, min/max, enum, `sensitive`, `translatable`), `rtbp_setting( $section, $key )` helper, server-side sanitise and validate, `rtbp_settings_updated` hook with before/after | T1 |
 | — | Settings UI: vertical tabs, a Select on mobile, `SettingsSection`, `TranslatableField` (FR/EN), `MediaField` (WP media library), a sticky unsaved-changes bar, reset section to defaults | T2 |
-| 17.10 | **General**: hotel name, legal name, address, phone, e-mail, logo, tax number, CNPS number, date format, time format (12h/24h). Shared with invoices (M05) and payslips (M15, feature 15.21) | T3 |
+| 17.10 | **General**: hotel name, legal name, address, phone, e-mail, logo, tax number, CNPS number, date format, time format (12h/24h), currency (code, symbol, symbol position, thousand and decimal separators, decimals; the keys already exist in `SettingsHelper::general()` and are read by `Support\Money` since M00 T2). Shared with invoices (M05) and payslips (M15, feature 15.21) | T3 |
 | 17.7 | **Booking rules**: booking window (days, 0 = unlimited) | T3 |
 | 17.8 | Same-day booking allowed + cut-off time | T3 |
 | 17.9 | Manual approval required | T3 |
@@ -75,7 +75,7 @@ to `rtbp_settings_updated`.
 - [ ] T2 [Free] Settings UI framework (tabs registry, `SettingsSection`, `TranslatableField`, `MediaField`, dirty bar, reset)
 - [ ] T3 [Free] General and Booking rules sections (PHP schema + UI)
 - [ ] T4 [Free] Notifications (with sound upload and preview) and E-mail sections
-- [ ] T5 [Free] General → "Delete all data on uninstall" (off by default) + the single dismissible Upgrade notice and link on the Settings screen only (ADR-016)
+- [ ] T5 [Free] General → "Delete all data on uninstall" (off by default; the key `general.deleteDataOnUninstall` and `uninstall.php` exist since M00 T8, so only the toggle is left) + the single dismissible Upgrade notice and link on the Settings screen only (ADR-016)
 
 ## Acceptance
 

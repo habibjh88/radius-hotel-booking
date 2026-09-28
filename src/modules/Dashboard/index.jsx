@@ -8,7 +8,14 @@
  */
 import { Link } from 'react-router-dom';
 import { __, sprintf } from '@wordpress/i18n';
-import { AlertCircle, BedDouble, Hourglass, LogIn, LogOut, Plus } from 'lucide-react';
+import {
+	AlertCircle,
+	BedDouble,
+	Hourglass,
+	LogIn,
+	LogOut,
+	Plus,
+} from 'lucide-react';
 
 import StatCard from '@/components/common/StatCard';
 import { usePageActions } from '@/components/layout/PageActions';
@@ -23,7 +30,12 @@ import TodayPanel from './components/TodayPanel';
  * @return {JSX.Element} Screen.
  */
 export default function Dashboard() {
-	const { data, loading, error, reload } = useDashboardSummary();
+	const {
+		data,
+		isPending: loading,
+		error,
+		refetch: reload,
+	} = useDashboardSummary();
 	const stats = data?.stats || {};
 
 	usePageActions(
@@ -40,14 +52,22 @@ export default function Dashboard() {
 	if ( error ) {
 		return (
 			<div className="flex items-start gap-3 rounded-xl border border-destructive bg-destructive-soft p-5">
-				<AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" aria-hidden="true" />
+				<AlertCircle
+					className="mt-0.5 h-5 w-5 shrink-0 text-destructive"
+					aria-hidden="true"
+				/>
 				<div className="flex-1">
 					<p className="m-0 text-sm font-semibold text-heading">
-						{ __( 'The dashboard could not be loaded.', 'radius-hotel-booking' ) }
+						{ __(
+							'The dashboard could not be loaded.',
+							'radius-hotel-booking'
+						) }
 					</p>
-					<p className="m-0 mt-1 text-[13px] text-muted-foreground">{ error.message }</p>
+					<p className="m-0 mt-1 text-[13px] text-muted-foreground">
+						{ error.message }
+					</p>
 				</div>
-				<Button variant="outline" size="sm" onClick={ reload }>
+				<Button variant="outline" size="sm" onClick={ () => reload() }>
 					{ __( 'Try again', 'radius-hotel-booking' ) }
 				</Button>
 			</div>
@@ -61,7 +81,10 @@ export default function Dashboard() {
 					icon={ Hourglass }
 					label={ __( 'Awaiting approval', 'radius-hotel-booking' ) }
 					value={ stats.awaiting_approval ?? 0 }
-					hint={ __( 'Bookings to accept or decline', 'radius-hotel-booking' ) }
+					hint={ __(
+						'Bookings to accept or decline',
+						'radius-hotel-booking'
+					) }
 					to="/bookings"
 					loading={ loading }
 				/>
@@ -69,7 +92,10 @@ export default function Dashboard() {
 					icon={ LogIn }
 					label={ __( 'Arriving today', 'radius-hotel-booking' ) }
 					value={ stats.arrivals_today ?? 0 }
-					hint={ __( 'Guests due to check in', 'radius-hotel-booking' ) }
+					hint={ __(
+						'Guests due to check in',
+						'radius-hotel-booking'
+					) }
 					to="/bookings"
 					loading={ loading }
 				/>
@@ -77,7 +103,10 @@ export default function Dashboard() {
 					icon={ LogOut }
 					label={ __( 'Leaving today', 'radius-hotel-booking' ) }
 					value={ stats.departures_today ?? 0 }
-					hint={ __( 'Guests due to check out', 'radius-hotel-booking' ) }
+					hint={ __(
+						'Guests due to check out',
+						'radius-hotel-booking'
+					) }
 					to="/bookings"
 					loading={ loading }
 				/>
@@ -96,17 +125,23 @@ export default function Dashboard() {
 			</div>
 
 			<div className="grid gap-6 lg:grid-cols-3">
-				<div className="lg:col-span-2">
+				<div className="min-w-0 lg:col-span-2">
 					<TodayPanel today={ data?.today } loading={ loading } />
 				</div>
 				<SetupPanel steps={ data?.setup } loading={ loading } />
 			</div>
 
 			<div className="grid gap-6 lg:grid-cols-3">
-				<div className="lg:col-span-2">
-					<RecentBookingsPanel bookings={ data?.recent_bookings } loading={ loading } />
+				<div className="min-w-0 lg:col-span-2">
+					<RecentBookingsPanel
+						bookings={ data?.recent_bookings }
+						loading={ loading }
+					/>
 				</div>
-				<RoomStatusPanel counts={ data?.rooms_by_state } loading={ loading } />
+				<RoomStatusPanel
+					counts={ data?.rooms_by_state }
+					loading={ loading }
+				/>
 			</div>
 		</div>
 	);

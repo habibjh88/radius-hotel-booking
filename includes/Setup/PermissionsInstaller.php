@@ -107,7 +107,10 @@ class PermissionsInstaller {
 	 */
 	public static function remove_roles(): void {
 		foreach ( array_keys( Capabilities::roleMap() ) as $slug ) {
-			remove_role( $slug );
+			// The map is filterable; never remove a core role an add-on grants caps to.
+			if ( 0 === strpos( $slug, 'rtbp_' ) ) {
+				remove_role( $slug );
+			}
 		}
 		delete_option( self::VERSION_OPTION );
 	}

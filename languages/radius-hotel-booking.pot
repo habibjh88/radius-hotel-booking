@@ -1,0 +1,974 @@
+# Copyright (C) 2026 RadiusTheme
+# This file is distributed under the GPLv2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Radius Hotel Booking 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/radius-hotel-booking\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-09-28T10:11:53+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: radius-hotel-booking\n"
+
+#. Plugin Name of the plugin
+#: radius-hotel-booking.php
+#: includes/Admin/Menu.php:49
+#: includes/Admin/Menu.php:50
+#: includes/Blocks/BlockManager.php:46
+#: includes/Elementor/ElementorManager.php:41
+msgid "Radius Hotel Booking"
+msgstr ""
+
+#. Plugin URI of the plugin
+#. Author URI of the plugin
+#: radius-hotel-booking.php
+msgid "https://radiustheme.com"
+msgstr ""
+
+#. Description of the plugin
+#: radius-hotel-booking.php
+msgid "Hotel room booking by the hour or the night: half-day, overnight and 24-hour stays, taken at the front desk or on your website. No WooCommerce needed."
+msgstr ""
+
+#. Author of the plugin
+#: radius-hotel-booking.php
+msgid "RadiusTheme"
+msgstr ""
+
+#: includes/Admin/Menu.php:60
+#: src/admin/routes.js:67
+msgid "Dashboard"
+msgstr ""
+
+#: includes/Admin/Menu.php:61
+#: src/admin/routes.js:115
+msgid "Bookings"
+msgstr ""
+
+#: includes/Admin/Menu.php:62
+#: src/admin/routes.js:79
+msgid "Availability"
+msgstr ""
+
+#: includes/Admin/Menu.php:63
+#: src/admin/routes.js:133
+msgid "Guests"
+msgstr ""
+
+#: includes/Admin/Menu.php:64
+#: src/admin/routes.js:157
+msgid "Rooms & floors"
+msgstr ""
+
+#: includes/Admin/Menu.php:65
+#: radius-hotel-booking.php:394
+#: src/admin/routes.js:217
+msgid "Settings"
+msgstr ""
+
+#: includes/Controllers/DashboardController.php:101
+msgid "Add your hotel details"
+msgstr ""
+
+#: includes/Controllers/DashboardController.php:102
+msgid "Name and contact e-mail, used on e-mails and invoices."
+msgstr ""
+
+#: includes/Controllers/DashboardController.php:107
+msgid "Create your room types"
+msgstr ""
+
+#: includes/Controllers/DashboardController.php:108
+msgid "For example Standard Room and Room VIP."
+msgstr ""
+
+#: includes/Controllers/DashboardController.php:113
+msgid "Add floors and rooms"
+msgstr ""
+
+#: includes/Controllers/DashboardController.php:114
+msgid "Every physical room with its number and floor."
+msgstr ""
+
+#: includes/Controllers/DashboardController.php:119
+msgid "Set up rate plans and prices"
+msgstr ""
+
+#: includes/Controllers/DashboardController.php:120
+msgid "Your stay windows, such as Half Day or Overnight, and their prices."
+msgstr ""
+
+#: includes/Controllers/DashboardController.php:125
+msgid "Write your payment instructions"
+msgstr ""
+
+#: includes/Controllers/DashboardController.php:126
+msgid "How guests pay you: Wave, Orange Money, cash or bank transfer."
+msgstr ""
+
+#: includes/Controllers/FileController.php:46
+#: includes/Controllers/FileController.php:51
+msgid "File not found."
+msgstr ""
+
+#: includes/Controllers/SettingsController.php:83
+msgid "Settings retrieved successfully."
+msgstr ""
+
+#: includes/Controllers/SettingsController.php:113
+#: includes/Controllers/SettingsController.php:189
+#: includes/Controllers/SettingsController.php:283
+msgid "Settings section not found."
+msgstr ""
+
+#: includes/Controllers/SettingsController.php:160
+msgid "Settings updated successfully."
+msgstr ""
+
+#: includes/Controllers/SettingsController.php:204
+msgid "Settings section updated successfully."
+msgstr ""
+
+#: includes/Controllers/SettingsController.php:247
+msgid "Settings reset to defaults successfully."
+msgstr ""
+
+#: includes/Controllers/SettingsController.php:251
+msgid "All settings reset to defaults successfully."
+msgstr ""
+
+#: includes/Controllers/SettingsController.php:292
+msgid "Settings section reset to defaults successfully."
+msgstr ""
+
+#: includes/Controllers/SettingsController.php:322
+msgid "Settings exported successfully."
+msgstr ""
+
+#: includes/Controllers/SettingsController.php:348
+msgid "Settings data is required and must be an array."
+msgstr ""
+
+#: includes/Controllers/SettingsController.php:349
+msgid "Invalid import data format."
+msgstr ""
+
+#: includes/Controllers/SettingsController.php:358
+msgid "Settings imported successfully."
+msgstr ""
+
+#: includes/Core/Api/ApiResponse.php:218
+#: src/components/common/ConfirmDialog.jsx:91
+#: src/lib/toast.js:24
+msgid "Something went wrong. Please try again."
+msgstr ""
+
+#: includes/Core/Permissions/Capabilities.php:128
+msgid "View Dashboard"
+msgstr ""
+
+#: includes/Core/Permissions/Capabilities.php:128
+#: src/modules/Settings/index.jsx:17
+#: src/modules/Settings/index.jsx:116
+msgid "General"
+msgstr ""
+
+#: includes/Core/Permissions/Capabilities.php:129
+msgid "Manage Settings"
+msgstr ""
+
+#: includes/Core/Permissions/Capabilities.php:129
+#: src/admin/routes.js:51
+msgid "System"
+msgstr ""
+
+#: includes/Core/Permissions/Capabilities.php:140
+msgid "Other"
+msgstr ""
+
+#: includes/Core/Permissions/Capabilities.php:153
+msgid "Manager"
+msgstr ""
+
+#: includes/Core/Permissions/Capabilities.php:154
+msgid "Staff"
+msgstr ""
+
+#. translators: 1: migration class name, 2: comma separated list of available tables.
+#: includes/Databases/DatabaseManager.php:190
+#, php-format
+msgid "Migration class %1$s not found. Available tables: %2$s"
+msgstr ""
+
+#: includes/Emails/MergeTags.php:36
+msgid "Recipient Name"
+msgstr ""
+
+#: includes/Emails/MergeTags.php:37
+msgid "Recipient Email"
+msgstr ""
+
+#: includes/Emails/MergeTags.php:38
+msgid "Date"
+msgstr ""
+
+#: includes/Emails/MergeTags.php:39
+msgid "Time"
+msgstr ""
+
+#: includes/Emails/MergeTags.php:40
+msgid "Price"
+msgstr ""
+
+#: includes/Emails/MergeTags.php:41
+#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:19
+msgid "Status"
+msgstr ""
+
+#: includes/Emails/MergeTags.php:42
+msgid "Notes"
+msgstr ""
+
+#: includes/Emails/MergeTags.php:45
+msgid "Site URL"
+msgstr ""
+
+#: includes/Emails/MergeTags.php:46
+msgid "Site Name"
+msgstr ""
+
+#: includes/Emails/MergeTags.php:47
+msgid "Current Year"
+msgstr ""
+
+#. translators: 1: year, 2: site or company name.
+#: includes/Emails/TemplateHooks.php:174
+#, php-format
+msgid "&copy; %1$s %2$s. All rights reserved."
+msgstr ""
+
+#: includes/Exceptions/DomainException.php:143
+msgid "Please correct the highlighted fields."
+msgstr ""
+
+#: includes/Hooks/Common.php:65
+msgid "Radius Hotel Booking Page"
+msgstr ""
+
+#: includes/Setup/PageInstaller.php:35
+msgid "Hotel Dashboard"
+msgstr ""
+
+#: includes/Setup/Scheduler.php:68
+msgid "Every 5 minutes"
+msgstr ""
+
+#: includes/Setup/Scheduler.php:73
+msgid "Every 15 minutes"
+msgstr ""
+
+#: includes/Storage/ProtectedFiles.php:80
+#: includes/Storage/ProtectedFiles.php:108
+msgid "The file could not be saved."
+msgstr ""
+
+#: includes/Storage/ProtectedFiles.php:99
+msgid "The file to store was not found."
+msgstr ""
+
+#: includes/Storage/ProtectedFiles.php:259
+msgid "This type of file cannot be stored."
+msgstr ""
+
+#. translators: %s template
+#: includes/Utility/core-functions.php:51
+#, php-format
+msgid "%s does not exist."
+msgstr ""
+
+#: includes/Utility/core-functions.php:72
+msgid "action_args should not be overwritten when calling rtbp_get_template."
+msgstr ""
+
+#: templates/dashboard/login.php:24
+msgid "Hotel dashboard"
+msgstr ""
+
+#: templates/dashboard/login.php:28
+#: templates/dashboard/login.php:38
+msgid "Sign in"
+msgstr ""
+
+#: templates/dashboard/login.php:29
+msgid "Sign in with your staff account to open the front desk."
+msgstr ""
+
+#: templates/dashboard/login.php:35
+msgid "Username or e-mail"
+msgstr ""
+
+#: templates/dashboard/login.php:36
+msgid "Password"
+msgstr ""
+
+#: templates/dashboard/login.php:37
+msgid "Keep me signed in"
+msgstr ""
+
+#: templates/dashboard/login.php:45
+msgid "Forgot your password?"
+msgstr ""
+
+#: templates/dashboard/no-access.php:20
+msgid "No access to the hotel dashboard"
+msgstr ""
+
+#. translators: %s: the signed-in user's display name.
+#: templates/dashboard/no-access.php:25
+#, php-format
+msgid "You are signed in as %s, but this account cannot open the hotel dashboard. Ask a manager to give you access."
+msgstr ""
+
+#: templates/dashboard/no-access.php:30
+msgid "Sign in with another account"
+msgstr ""
+
+#: src/admin/App.jsx:44
+msgid "This page does not exist"
+msgstr ""
+
+#: src/admin/App.jsx:48
+msgid "The link may be old, or the screen may belong to a feature that is switched off."
+msgstr ""
+
+#: src/admin/App.jsx:55
+msgid "Go to the dashboard"
+msgstr ""
+
+#: src/admin/routes.js:47
+msgid "Overview"
+msgstr ""
+
+#: src/admin/routes.js:48
+msgid "Front desk"
+msgstr ""
+
+#: src/admin/routes.js:49
+msgid "Hotel setup"
+msgstr ""
+
+#: src/admin/routes.js:50
+msgid "Reports & data"
+msgstr ""
+
+#: src/admin/routes.js:61
+msgctxt "phone tab bar: keep it short"
+msgid "Dashboard"
+msgstr ""
+
+#: src/admin/routes.js:68
+msgid "Today at your hotel, at a glance"
+msgstr ""
+
+#: src/admin/routes.js:80
+msgid "Open, close and price your rooms by date"
+msgstr ""
+
+#: src/admin/routes.js:91
+msgctxt "phone tab bar: new booking, keep it short"
+msgid "New"
+msgstr ""
+
+#: src/admin/routes.js:97
+#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:118
+#: src/modules/Dashboard/index.jsx:46
+msgid "New booking"
+msgstr ""
+
+#: src/admin/routes.js:98
+msgid "Take a walk-in booking at the front desk"
+msgstr ""
+
+#: src/admin/routes.js:109
+msgctxt "phone tab bar: keep it short"
+msgid "Bookings"
+msgstr ""
+
+#: src/admin/routes.js:116
+msgid "Every booking, arrival and departure"
+msgstr ""
+
+#: src/admin/routes.js:127
+msgctxt "phone tab bar: keep it short"
+msgid "Guests"
+msgstr ""
+
+#: src/admin/routes.js:134
+msgid "Guest records, documents and stay history"
+msgstr ""
+
+#: src/admin/routes.js:145
+msgid "Payments"
+msgstr ""
+
+#: src/admin/routes.js:146
+msgid "Payments received and bookings to follow up"
+msgstr ""
+
+#: src/admin/routes.js:158
+msgid "Room types, floors and every physical room"
+msgstr ""
+
+#: src/admin/routes.js:169
+msgid "Rate plans"
+msgstr ""
+
+#: src/admin/routes.js:170
+msgid "Stay windows such as Half Day or Overnight, and their prices"
+msgstr ""
+
+#: src/admin/routes.js:181
+msgid "Reports"
+msgstr ""
+
+#: src/admin/routes.js:182
+msgid "Sales, rooms and availability reports"
+msgstr ""
+
+#: src/admin/routes.js:193
+msgid "Exports"
+msgstr ""
+
+#: src/admin/routes.js:194
+msgid "Export bookings and guests to a spreadsheet"
+msgstr ""
+
+#: src/admin/routes.js:205
+msgid "Permissions"
+msgstr ""
+
+#: src/admin/routes.js:206
+msgid "Choose what each staff role may open and do"
+msgstr ""
+
+#: src/admin/routes.js:218
+msgid "Hotel details, booking rules and appearance"
+msgstr ""
+
+#: src/api/client.js:54
+msgid "Request failed."
+msgstr ""
+
+#: src/components/common/ConfirmDialog.jsx:55
+msgid "Confirm"
+msgstr ""
+
+#: src/components/common/ConfirmDialog.jsx:56
+msgid "Go back"
+msgstr ""
+
+#: src/components/common/ConfirmDialog.jsx:59
+msgid "Reason"
+msgstr ""
+
+#. translators: %d: minimum number of characters.
+#: src/components/common/ConfirmDialog.jsx:148
+#, js-format
+msgid "At least %d characters. Staff and the activity log will see it."
+msgstr ""
+
+#: src/components/common/ConfirmDialog.jsx:182
+msgid "Working…"
+msgstr ""
+
+#: src/components/common/DataTable.jsx:84
+#: src/components/layout/Topbar.jsx:80
+msgid "Search…"
+msgstr ""
+
+#: src/components/common/DataTable.jsx:87
+msgid "Search"
+msgstr ""
+
+#: src/components/common/DataTable.jsx:148
+msgid "More actions"
+msgstr ""
+
+#: src/components/common/DataTable.jsx:315
+msgid "The list could not be loaded."
+msgstr ""
+
+#: src/components/common/DataTable.jsx:326
+#: src/modules/Dashboard/index.jsx:71
+msgid "Try again"
+msgstr ""
+
+#: src/components/common/DataTable.jsx:398
+msgid "Actions"
+msgstr ""
+
+#. translators: 1: first row number, 2: last row number, 3: total rows.
+#: src/components/common/DataTable.jsx:532
+#, js-format
+msgid "Showing %1$d–%2$d of %3$d"
+msgstr ""
+
+#: src/components/common/DataTable.jsx:547
+msgid "Previous page"
+msgstr ""
+
+#. translators: 1: current page, 2: number of pages.
+#: src/components/common/DataTable.jsx:557
+#, js-format
+msgid "Page %1$d of %2$d"
+msgstr ""
+
+#: src/components/common/DataTable.jsx:570
+msgid "Next page"
+msgstr ""
+
+#: src/components/common/DateRangePicker.jsx:66
+msgid "Today"
+msgstr ""
+
+#: src/components/common/DateRangePicker.jsx:72
+msgid "Tomorrow"
+msgstr ""
+
+#: src/components/common/DateRangePicker.jsx:78
+msgid "Next 7 days"
+msgstr ""
+
+#: src/components/common/DateRangePicker.jsx:84
+msgid "This week"
+msgstr ""
+
+#: src/components/common/DateRangePicker.jsx:90
+msgid "This month"
+msgstr ""
+
+#: src/components/common/DateRangePicker.jsx:96
+msgid "Last month"
+msgstr ""
+
+#: src/components/common/DateRangePicker.jsx:111
+msgid "Any date"
+msgstr ""
+
+#: src/components/common/DateRangePicker.jsx:175
+msgid "Booked:"
+msgstr ""
+
+#: src/components/common/DateRangePicker.jsx:176
+msgid "Arriving:"
+msgstr ""
+
+#: src/components/common/DateRangePicker.jsx:217
+msgid "Dates mean"
+msgstr ""
+
+#: src/components/common/DateRangePicker.jsx:226
+msgid "Arrival date"
+msgstr ""
+
+#: src/components/common/DateRangePicker.jsx:233
+msgid "Booking date"
+msgstr ""
+
+#: src/components/common/DateRangePicker.jsx:262
+msgid "Clear"
+msgstr ""
+
+#: src/components/common/DateRangePicker.jsx:268
+msgid "Done"
+msgstr ""
+
+#: src/components/common/DateRangePicker.jsx:281
+msgid "Clear dates"
+msgstr ""
+
+#: src/components/common/Form.jsx:156
+msgid "(required)"
+msgstr ""
+
+#. translators: %s: screen name, e.g. "Bookings".
+#: src/components/common/ModulePlaceholder.jsx:26
+#, js-format
+msgid "%s is on its way"
+msgstr ""
+
+#. translators: 1: what the screen does, 2: module id such as M06.
+#: src/components/common/ModulePlaceholder.jsx:31
+#, js-format
+msgid "%1$s. This screen is built in module %2$s."
+msgstr ""
+
+#: src/components/common/ModulePlaceholder.jsx:38
+msgid "Back to dashboard"
+msgstr ""
+
+#: src/components/layout/AppShell.jsx:60
+msgid "Menu"
+msgstr ""
+
+#: src/components/layout/AppShell.jsx:67
+#: src/components/layout/Sidebar.jsx:173
+msgid "Close menu"
+msgstr ""
+
+#: src/components/layout/CommandPalette.jsx:76
+msgid "Go to…"
+msgstr ""
+
+#: src/components/layout/CommandPalette.jsx:79
+msgid "Type the name of a screen and press Enter."
+msgstr ""
+
+#: src/components/layout/CommandPalette.jsx:81
+msgid "Go to a screen…"
+msgstr ""
+
+#: src/components/layout/CommandPalette.jsx:83
+msgid "No screen matches."
+msgstr ""
+
+#: src/components/layout/CommandPalette.jsx:111
+msgid "Searching bookings, guests and rooms by name, phone or number comes with the bookings module."
+msgstr ""
+
+#: src/components/layout/MobileTabBar.jsx:29
+msgid "Quick navigation"
+msgstr ""
+
+#: src/components/layout/MobileTabBar.jsx:53
+msgid "More"
+msgstr ""
+
+#: src/components/layout/Sidebar.jsx:37
+msgid "Manage your hotel"
+msgstr ""
+
+#: src/components/layout/Sidebar.jsx:164
+msgid "Hotel navigation"
+msgstr ""
+
+#: src/components/layout/Sidebar.jsx:184
+msgid "Expand menu"
+msgstr ""
+
+#: src/components/layout/Sidebar.jsx:185
+msgid "Collapse menu"
+msgstr ""
+
+#: src/components/layout/Topbar.jsx:46
+msgid "Page not found"
+msgstr ""
+
+#: src/components/layout/Topbar.jsx:55
+msgid "Open menu"
+msgstr ""
+
+#: src/components/layout/Topbar.jsx:77
+msgid "Search and go to a screen"
+msgstr ""
+
+#: src/lib/status.js:15
+#: src/modules/Dashboard/index.jsx:82
+msgid "Awaiting approval"
+msgstr ""
+
+#: src/lib/status.js:16
+msgid "Confirmed"
+msgstr ""
+
+#: src/lib/status.js:17
+msgid "Checked in"
+msgstr ""
+
+#: src/lib/status.js:18
+msgid "Checked out"
+msgstr ""
+
+#: src/lib/status.js:19
+msgid "Cancelled"
+msgstr ""
+
+#: src/lib/status.js:20
+msgid "Declined"
+msgstr ""
+
+#: src/lib/status.js:21
+msgid "No-show"
+msgstr ""
+
+#: src/lib/status.js:24
+msgid "Unpaid"
+msgstr ""
+
+#: src/lib/status.js:25
+msgid "On hold"
+msgstr ""
+
+#: src/lib/status.js:26
+msgid "Partially paid"
+msgstr ""
+
+#: src/lib/status.js:27
+msgid "Paid"
+msgstr ""
+
+#: src/lib/status.js:28
+msgid "Refunded"
+msgstr ""
+
+#: src/lib/status.js:29
+msgid "Payment overdue"
+msgstr ""
+
+#: src/lib/status.js:32
+#: src/modules/Dashboard/components/RoomStatusPanel.jsx:16
+msgid "Available"
+msgstr ""
+
+#: src/lib/status.js:33
+#: src/modules/Dashboard/components/RoomStatusPanel.jsx:21
+msgid "Maintenance"
+msgstr ""
+
+#: src/lib/status.js:34
+#: src/modules/Dashboard/components/RoomStatusPanel.jsx:26
+msgid "Out of service"
+msgstr ""
+
+#: src/lib/status.js:37
+msgid "Free"
+msgstr ""
+
+#: src/lib/status.js:38
+msgid "Booked"
+msgstr ""
+
+#: src/lib/status.js:39
+msgid "Held"
+msgstr ""
+
+#: src/lib/status.js:40
+msgid "Blocked"
+msgstr ""
+
+#: src/lib/status.js:41
+msgid "Closed"
+msgstr ""
+
+#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:14
+msgid "Reference"
+msgstr ""
+
+#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:15
+msgid "Guest"
+msgstr ""
+
+#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:16
+msgid "Room"
+msgstr ""
+
+#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:17
+msgid "Stay"
+msgstr ""
+
+#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:18
+msgid "Payment"
+msgstr ""
+
+#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:32
+msgid "Recent bookings"
+msgstr ""
+
+#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:33
+msgid "The latest bookings taken at the desk or online"
+msgstr ""
+
+#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:40
+msgid "View all"
+msgstr ""
+
+#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:109
+msgid "No bookings yet"
+msgstr ""
+
+#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:110
+msgid "Take a walk-in booking at the desk, or share your booking page with guests."
+msgstr ""
+
+#: src/modules/Dashboard/components/RoomStatusPanel.jsx:46
+msgid "Rooms by status"
+msgstr ""
+
+#: src/modules/Dashboard/components/RoomStatusPanel.jsx:47
+msgid "Which rooms can be sold right now"
+msgstr ""
+
+#: src/modules/Dashboard/components/RoomStatusPanel.jsx:98
+msgid "No rooms yet"
+msgstr ""
+
+#: src/modules/Dashboard/components/RoomStatusPanel.jsx:99
+msgid "Add your floors and rooms to start selling them."
+msgstr ""
+
+#: src/modules/Dashboard/components/RoomStatusPanel.jsx:106
+msgid "Add rooms"
+msgstr ""
+
+#: src/modules/Dashboard/components/SetupPanel.jsx:29
+msgid "Get your hotel ready"
+msgstr ""
+
+#. translators: 1: steps done, 2: total steps. The plural follows the steps done.
+#: src/modules/Dashboard/components/SetupPanel.jsx:35
+#, js-format
+msgid "%1$d of %2$d steps done"
+msgid_plural "%1$d of %2$d steps done"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/modules/Dashboard/components/SetupPanel.jsx:57
+msgid "Setup progress"
+msgstr ""
+
+#: src/modules/Dashboard/components/SetupPanel.jsx:69
+msgid "Your hotel is ready to take bookings."
+msgstr ""
+
+#: src/modules/Dashboard/components/TodayPanel.jsx:57
+msgid "Today at the front desk"
+msgstr ""
+
+#: src/modules/Dashboard/components/TodayPanel.jsx:58
+msgid "Guests arriving and leaving today"
+msgstr ""
+
+#: src/modules/Dashboard/components/TodayPanel.jsx:64
+msgid "Show"
+msgstr ""
+
+#: src/modules/Dashboard/components/TodayPanel.jsx:70
+msgid "Arrivals"
+msgstr ""
+
+#: src/modules/Dashboard/components/TodayPanel.jsx:75
+msgid "Departures"
+msgstr ""
+
+#: src/modules/Dashboard/components/TodayPanel.jsx:103
+msgid "No arrivals today"
+msgstr ""
+
+#: src/modules/Dashboard/components/TodayPanel.jsx:104
+msgid "No departures today"
+msgstr ""
+
+#: src/modules/Dashboard/components/TodayPanel.jsx:109
+msgid "Bookings that start or end today will be listed here, in time order."
+msgstr ""
+
+#: src/modules/Dashboard/components/TodayPanel.jsx:118
+msgid "View all bookings"
+msgstr ""
+
+#: src/modules/Dashboard/index.jsx:61
+msgid "The dashboard could not be loaded."
+msgstr ""
+
+#: src/modules/Dashboard/index.jsx:84
+msgid "Bookings to accept or decline"
+msgstr ""
+
+#: src/modules/Dashboard/index.jsx:93
+msgid "Arriving today"
+msgstr ""
+
+#: src/modules/Dashboard/index.jsx:95
+msgid "Guests due to check in"
+msgstr ""
+
+#: src/modules/Dashboard/index.jsx:104
+msgid "Leaving today"
+msgstr ""
+
+#: src/modules/Dashboard/index.jsx:106
+msgid "Guests due to check out"
+msgstr ""
+
+#: src/modules/Dashboard/index.jsx:115
+msgid "Rooms free now"
+msgstr ""
+
+#. translators: %d: total number of rooms.
+#: src/modules/Dashboard/index.jsx:119
+#, js-format
+msgid "of %d rooms"
+msgstr ""
+
+#: src/modules/Settings/BrandColorField.jsx:41
+msgid "Brand colour"
+msgstr ""
+
+#: src/modules/Settings/BrandColorField.jsx:44
+msgid "Used for buttons, links, the logo and highlights across the dashboard and the booking pages."
+msgstr ""
+
+#: src/modules/Settings/BrandColorField.jsx:54
+msgid "Suggested colours"
+msgstr ""
+
+#: src/modules/Settings/BrandColorField.jsx:87
+msgid "Pick a custom colour"
+msgstr ""
+
+#: src/modules/Settings/BrandColorField.jsx:106
+msgid "Preview"
+msgstr ""
+
+#: src/modules/Settings/index.jsx:18
+#: src/modules/Settings/index.jsx:199
+msgid "Display"
+msgstr ""
+
+#: src/modules/Settings/index.jsx:83
+msgid "Settings saved."
+msgstr ""
+
+#: src/modules/Settings/index.jsx:94
+msgid "Loading settings…"
+msgstr ""
+
+#: src/modules/Settings/index.jsx:122
+msgid "Company name"
+msgstr ""
+
+#: src/modules/Settings/index.jsx:143
+msgid "Contact email"
+msgstr ""
+
+#: src/modules/Settings/index.jsx:165
+msgid "Enable debug logging"
+msgstr ""
+
+#: src/modules/Settings/index.jsx:185
+#: src/modules/Settings/index.jsx:235
+msgid "Saving…"
+msgstr ""
+
+#: src/modules/Settings/index.jsx:186
+#: src/modules/Settings/index.jsx:236
+msgid "Save changes"
+msgstr ""
+
+#: src/modules/Settings/index.jsx:213
+msgid "Columns"
+msgstr ""

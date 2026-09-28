@@ -152,12 +152,15 @@ class CommandRegistry {
 		$full_class_name   = self::BASE_NAMESPACE . $class_name;
 		$full_command_name = self::COMMAND_PREFIX . ' ' . $command_name;
 
-		if ( ! class_exists( $full_class_name ) ) {
-			$this->logMissingClass( $full_class_name );
+		// 'MigrateCommand::status' registers one (instance) method, which
+		// WP-CLI only accepts as array( $instance, 'method' ).
+		list( $class_only, $method ) = array_pad( explode( '::', $full_class_name, 2 ), 2, '' );
+		if ( ! class_exists( $class_only ) ) {
+			$this->logMissingClass( $class_only );
 			return;
 		}
 
-		\WP_CLI::add_command( $full_command_name, $full_class_name );
+		\WP_CLI::add_command( $full_command_name, '' === $method ? $class_only : array( new $class_only(), $method ) );
 	}
 
 	/**

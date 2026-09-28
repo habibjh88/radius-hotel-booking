@@ -1,0 +1,30 @@
+{
+    "translation-revision-date": "2026-09-28 10:00+0000",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/components\/layout\/CommandPalette.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=n > 1;"
+            },
+            "Go to\u2026": [
+                "Aller \u00e0\u2026"
+            ],
+            "Type the name of a screen and press Enter.": [
+                "Saisissez le nom d'un \u00e9cran et appuyez sur Entr\u00e9e."
+            ],
+            "Go to a screen\u2026": [
+                "Aller \u00e0 un \u00e9cran\u2026"
+            ],
+            "No screen matches.": [
+                "Aucun \u00e9cran ne correspond."
+            ],
+            "Searching bookings, guests and rooms by name, phone or number comes with the bookings module.": [
+                "La recherche de r\u00e9servations, de clients et de chambres par nom, t\u00e9l\u00e9phone ou num\u00e9ro arrivera avec le module des r\u00e9servations."
+            ]
+        }
+    }
+}

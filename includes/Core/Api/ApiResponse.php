@@ -7,6 +7,8 @@
 
 namespace RadiusTheme\RadiusHotelBooking\Core\Api;
 
+use RadiusTheme\RadiusHotelBooking\Exceptions\DomainException;
+use Throwable;
 use WP_REST_Response;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -56,6 +58,13 @@ class ApiResponse {
 	 * @var array
 	 */
 	private array $meta;
+
+	/**
+	 * Machine-readable error code (e.g. `room_unavailable`), sent as `code`.
+	 *
+	 * @var string|null
+	 */
+	private ?string $code = null;
 
 	/**
 	 * ApiResponse constructor.
@@ -164,6 +173,54 @@ class ApiResponse {
 	}
 
 	/**
+	 * Attach a machine-readable error code.
+	 *
+	 * @param string $code Code.
+	 * @return self
+	 */
+	public function withCode( string $code ): self {
+		$this->code = $code;
+		return $this;
+	}
+
+	/**
+	 * The response for an exception thrown while handling a request.
+	 *
+	 * A DomainException becomes its own status, code, message, field errors
+	 * and context. Anything else is an unexpected failure: a 500 whose real
+	 * message is only shown when WP_DEBUG is on (it may reveal SQL or paths),
+	 * and is always written to the PHP error log.
+	 *
+	 * @param Throwable $e Exception.
+	 * @return self
+	 */
+	public static function fromThrowable( Throwable $e ): self {
+		if ( $e instanceof DomainException ) {
+			$field_errors = array();
+			foreach ( $e->getFieldErrors() as $field => $messages ) {
+				$messages               = (array) $messages;
+				$field_errors[ $field ] = array(
+					'field'         => $field,
+					'messages'      => $messages,
+					'first_message' => (string) ( $messages[0] ?? '' ),
+				);
+			}
+
+			return ( new self( $e->getStatus(), $e->getContext(), $e->getMessage(), $field_errors ? $field_errors : null ) )
+				->withCode( $e->getErrorCode() );
+		}
+
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- server-side record of an unexpected failure.
+		error_log( sprintf( '[radius-hotel-booking] %s in %s:%d', $e->getMessage(), $e->getFile(), $e->getLine() ) );
+
+		$message = defined( 'WP_DEBUG' ) && WP_DEBUG
+			? $e->getMessage()
+			: __( 'Something went wrong. Please try again.', 'radius-hotel-booking' );
+
+		return ( new self( 500, array(), $message ) )->withCode( 'server_error' );
+	}
+
+	/**
 	 * Convert the response to an array format.
 	 *
 	 * @return array The formatted response.
@@ -188,6 +245,10 @@ class ApiResponse {
 
 		if ( ! empty( $this->meta ) ) {
 			$response['meta'] = $this->meta;
+		}
+
+		if ( null !== $this->code ) {
+			$response['code'] = $this->code;
 		}
 
 		/**

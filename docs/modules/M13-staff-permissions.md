@@ -157,7 +157,7 @@ Until M14 exists these fire as hooks (`rtbp_access_changed`, `rtbp_access_denied
 ## Tasks
 
 - [ ] T1 [Free] `AccessRegistry` with the initial keys (defaults `open`/`locked` only), `Access::level()` resolver (built-in role map → `rtbp_access_level` filter → admin relax); resolution verified on the Local site
-- [ ] T2 [Free] `AccessMiddleware` (per-method keys; `open`/`locked`; `passcode` delegated to the `rtbp_access_passcode_check` filter, and treated as `locked` when no handler answers), `access/me`, `useAccess`, route hiding, the `rtbp.api.error` hook in the API client; migrate the Settings endpoints onto keys
+- [ ] T2 [Free] `AccessMiddleware` (per-method keys; `open`/`locked`; `passcode` delegated to the `rtbp_access_passcode_check` filter, and treated as `locked` when no handler answers), `access/me`, `useAccess`, route hiding (the `rtbp.api.error` hook already exists since M00 T9); migrate the Settings endpoints onto keys
 - [ ] T3 [Free] Settings → Permissions: the open/locked matrix per built-in role (`rtbp_manager`, `rtbp_staff`); log via `rtbp_activity()`
 - [ ] T4 [Pro] Passcode level: PIN hashing, fallback PIN, `access/unlock` with brute-force lockout, grant tokens (global / per key), `PasscodeDialog` registered on `rtbp.api.error`, and the Settings → Access section (validity, scope, locked message)
 - [ ] T5 [Pro] Custom access roles (`access_roles` table in Pro, the six templates seeded) + per-user screen (role, overrides, effective map with sources, set PIN, reset overrides); the matrix gains the third level through `rtbp.settings.sections`

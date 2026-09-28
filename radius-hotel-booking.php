@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:     Radius Hotel Booking
- * Description:     A WordPress plugin hotel booking: DI container, Laravel-style ORM and migrations, a REST router with middleware and validation, WP-CLI scaffolding, and a React 19 + Tailwind + shadcn/ui admin built with @wordpress/scripts.
+ * Description:     Hotel room booking by the hour or the night: half-day, overnight and 24-hour stays, taken at the front desk or on your website. No WooCommerce needed.
  * Plugin URI:      https://radiustheme.com
  * Version:         1.0.0
  * Author:          RadiusTheme
@@ -9,7 +9,7 @@
  * Text Domain:     radius-hotel-booking
  * Domain Path:     /languages
  * Requires PHP:    8.0
- * Requires at least: 5.5.0
+ * Requires at least: 6.2
  * License:         GPLv2 or later
  * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
  *
@@ -45,7 +45,7 @@ final class RadiusHotelBooking {
 	 *
 	 * @var string
 	 */
-	const DBVERSION = '1.0.0';
+	const DBVERSION = '1.0.2';
 
 	/**
 	 * Plugin slug — the admin page slug and the asset handle prefix.
@@ -96,7 +96,6 @@ final class RadiusHotelBooking {
 	 *
 	 * @return RadiusHotelBooking
 	 * @since 1.0.0
-	 *
 	 */
 	public static function init() {
 		static $instance = false;
@@ -139,7 +138,6 @@ final class RadiusHotelBooking {
 	 *
 	 * @return void
 	 * @since 1.0.0
-	 *
 	 */
 	public function define_constants() {
 		define( 'RADIUS_HOTEL_BOOKING_VERSION', self::VERSION );
@@ -162,7 +160,6 @@ final class RadiusHotelBooking {
 	 *
 	 * @return void
 	 * @since 1.0.0
-	 *
 	 */
 	public function init_plugin() {
 		$this->includes();
@@ -171,6 +168,8 @@ final class RadiusHotelBooking {
 		add_action( 'init', array( '\RadiusTheme\RadiusHotelBooking\Shortcodes\Shortcodes', 'init' ) );
 
 		RadiusTheme\RadiusHotelBooking\Setup\Installer::init();
+		RadiusTheme\RadiusHotelBooking\Setup\Scheduler::init();
+		RadiusTheme\RadiusHotelBooking\Frontend\DashboardPage::init();
 
 		// Multisite: set the tables up when a new site is created.
 		add_action( 'wp_insert_site', array( $this, 'on_new_site_created' ) );
@@ -265,8 +264,8 @@ final class RadiusHotelBooking {
 	 *
 	 * @return void
 	 */
-	public function deactivate( $network_wide = false )  // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter
-	{
+	public function deactivate( $network_wide = false ) {  // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter
+		RadiusTheme\RadiusHotelBooking\Setup\Scheduler::unschedule_all();
 		flush_rewrite_rules();
 	}
 
@@ -302,10 +301,25 @@ final class RadiusHotelBooking {
 	 * @return void
 	 */
 	public function init_hooks() {
+		add_action( 'init', array( $this, 'load_textdomain' ), 0 );
 		add_action( 'init', array( $this, 'init_classes' ) );
 		add_action( 'plugins_loaded', array( $this, 'loaded_bootstrap' ) );
 
 		add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( $this, 'plugin_action_links' ) );
+	}
+
+	/**
+	 * Register the translations shipped in languages/ (French).
+	 *
+	 * Recent WordPress (7.0) registers the Domain Path folder by itself; the
+	 * older versions the plugin supports only read wp-content/languages, so
+	 * there the bundled .mo would never load for PHP strings. A language pack
+	 * in wp-content/languages still takes priority.
+	 *
+	 * @return void
+	 */
+	public function load_textdomain() {
+		load_plugin_textdomain( 'radius-hotel-booking', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 	}
 
 	/**
@@ -388,7 +402,6 @@ final class RadiusHotelBooking {
  *
  * @return RadiusHotelBooking
  * @since 1.0.0
- *
  */
 function radius_hotel_booking() { // phpcs:ignore
 	return RadiusHotelBooking::init();

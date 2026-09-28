@@ -12,7 +12,7 @@
 #   bin/i18n-build.sh es_ES fr_FR de_DE    # several locales
 #   bin/i18n-build.sh --all                # every PO file in languages/
 #
-# Designed to be called by the Claude `translator` subagent after it writes a .po file.
+# Run after updating a .po (see README.md → Internationalisation).
 
 set -euo pipefail
 
@@ -71,7 +71,8 @@ build_json() {
 		log_warn "wp-cli not available; skipping JSON for ${locale}. Install WP-CLI to regenerate."
 		return 0
 	fi
-	wp i18n make-json "$LANG_DIR" --no-purge --pretty-print 1>/dev/null
+	# The React sources are .jsx; make-json only reads .js unless told.
+	wp i18n make-json "$LANG_DIR" --no-purge --pretty-print --extensions=jsx 1>/dev/null
 	log_info "Wrote JSON sidecars for ${locale}"
 }
 
@@ -102,6 +103,8 @@ patch_l10n_php_files() {
 		tmp="$(mktemp)"
 		awk 'NR==1 { print; print ""; print "if ( ! defined( '"'"'ABSPATH'"'"' ) ) { exit; }"; print ""; next } { print }' "$f" > "$tmp"
 		mv "$tmp" "$f"
+		# mktemp creates the file 0600; the web server must be able to read it.
+		chmod 0644 "$f"
 		log_info "Patched ABSPATH guard into $(basename "$f")"
 	done
 	shopt -u nullglob
