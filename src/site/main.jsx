@@ -1,9 +1,9 @@
 /**
  * Public app entry.
  *
- * Mounted into the node printed by templates/items/item-list.php, which the
- * `[rtbp_items]` shortcode, the `radius-hotel-booking/items` block and the
- * Elementor widget all render.
+ * Mounted into `#radius-hotel-booking-site`, which the public shortcodes,
+ * blocks and Elementor widgets print (M04: search bar and booking flow).
+ * The node's `data-*` attributes carry the embed's options.
  */
 import { createRoot } from 'react-dom/client';
 
@@ -13,11 +13,5 @@ import '../site.css';
 const container = document.getElementById( 'radius-hotel-booking-site' );
 
 if ( container ) {
-	createRoot( container ).render(
-		<App
-			layout={ container.dataset.layout || 'grid' }
-			columns={ Number( container.dataset.columns ) || 3 }
-			perPage={ Number( container.dataset.perPage ) || 9 }
-		/>
-	);
+	createRoot( container ).render( <App options={ { ...container.dataset } } /> );
 }

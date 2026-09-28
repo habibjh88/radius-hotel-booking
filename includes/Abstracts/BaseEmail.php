@@ -304,8 +304,6 @@ abstract class BaseEmail {
 		return array(
 			'recipient_name'  => 'John Doe',
 			'recipient_email' => 'john@example.com',
-			'item_title'      => 'Example Item',
-			'item_id'         => 'ITEM-2025-001',
 			'date'            => 'Monday, October 20, 2025',
 			'time'            => '2:00 PM',
 			'price'           => '$75.00',

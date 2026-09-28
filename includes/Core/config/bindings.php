@@ -17,21 +17,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use RadiusTheme\RadiusHotelBooking\Core\Container\Container;
-use RadiusTheme\RadiusHotelBooking\Repositories\ItemRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\SettingsRepository;
-use RadiusTheme\RadiusHotelBooking\Services\ItemService;
 use RadiusTheme\RadiusHotelBooking\Services\SettingsService;
 
 return array(
 
 	// Repositories.
-	ItemRepository::class     => fn() => new ItemRepository(),
 	SettingsRepository::class => fn() => new SettingsRepository(),
 
 	// Services.
-	ItemService::class        => fn() => new ItemService(
-		Container::resolve( ItemRepository::class )
-	),
 	SettingsService::class    => fn() => new SettingsService(
 		Container::resolve( SettingsRepository::class )
 	),

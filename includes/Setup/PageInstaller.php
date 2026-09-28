@@ -23,18 +23,14 @@ class PageInstaller {
 	/**
 	 * Pages to create: settings key => [title, block content].
 	 *
-	 * BOILERPLATE: one example page hosting the public shortcode. Add yours here
-	 * and they are created on install and on upgrade (create_missing_pages()).
+	 * None yet: the booking results and confirmation pages arrive with M04.
+	 * Pages listed here are created on install and on upgrade
+	 * (create_missing_pages()).
 	 *
 	 * @return array
 	 */
 	private static function get_pages(): array {
-		return array(
-			'itemsPage' => array(
-				'title'   => __( 'Items', 'radius-hotel-booking' ),
-				'content' => '<!-- wp:shortcode -->[rtbp_items]<!-- /wp:shortcode -->',
-			),
-		);
+		return (array) apply_filters( 'rtbp_install_pages', array() );
 	}
 
 	/**

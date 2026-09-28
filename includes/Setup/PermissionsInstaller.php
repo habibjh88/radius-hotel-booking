@@ -25,7 +25,7 @@ class PermissionsInstaller {
 	/**
 	 * Bump when the capability set or role map changes so existing sites re-sync.
 	 */
-	const ROLES_VERSION = '1';
+	const ROLES_VERSION = '2';
 
 	/**
 	 * Option storing the last-synced roles version.
@@ -79,6 +79,13 @@ class PermissionsInstaller {
 				if ( isset( $wanted[ $cap ] ) && ! $has ) {
 					$role->add_cap( $cap );
 				} elseif ( ! isset( $wanted[ $cap ] ) && $has ) {
+					$role->remove_cap( $cap );
+				}
+			}
+
+			// Strip capabilities the plugin no longer grants.
+			foreach ( Capabilities::retired() as $cap ) {
+				if ( $role->has_cap( $cap ) ) {
 					$role->remove_cap( $cap );
 				}
 			}

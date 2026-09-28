@@ -25,9 +25,13 @@ class Shortcodes {
 	 * @return void
 	 */
 	public static function init() {
-		$shortcodes = array(
-			'rtbp_items' => __CLASS__ . '::items',
-		);
+		/**
+		 * Filters the plugin's shortcodes (tag => callback). None ship yet: the
+		 * booking search and booking form shortcodes arrive with M04.
+		 *
+		 * @param array<string,callable> $shortcodes Shortcodes.
+		 */
+		$shortcodes = (array) apply_filters( 'rtbp_shortcodes', array() );
 
 		foreach ( $shortcodes as $shortcode => $callback ) {
 			add_shortcode( apply_filters( "rtbp_{$shortcode}_shortcode_tag", $shortcode ), $callback );
@@ -65,16 +69,5 @@ class Shortcodes {
 			: wp_kses_post( $wrapper['after'] );
 
 		return ob_get_clean();
-	}
-
-	/**
-	 * `[rtbp_items]` — renders the public React app.
-	 *
-	 * @param array $atts Shortcode attributes.
-	 *
-	 * @return string
-	 */
-	public static function items( $atts ) {
-		return self::shortcode_wrapper( array( ItemList::class, 'output' ), (array) $atts );
 	}
 }

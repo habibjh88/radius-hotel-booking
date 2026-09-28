@@ -12,7 +12,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use RadiusTheme\RadiusHotelBooking\Abstracts\BaseEmail;
-use RadiusTheme\RadiusHotelBooking\Emails\Admin\ItemCreated;
 
 /**
  * Class EmailManager
@@ -56,9 +55,7 @@ class EmailManager {
 		 */
 		$classes = (array) apply_filters(
 			'rtbp_email_classes',
-			array(
-				ItemCreated::class,
-			)
+			array()
 		);
 
 		foreach ( $classes as $class_name ) {

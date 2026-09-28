@@ -19,7 +19,6 @@
 namespace RadiusTheme\RadiusHotelBooking\Databases;
 
 use RadiusTheme\RadiusHotelBooking\Core\Database\Schema\Migrations\MigrationRunner;
-use RadiusTheme\RadiusHotelBooking\Databases\Table\ItemsTable;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
@@ -80,9 +79,8 @@ class DatabaseManager {
 
 		$this->migrationRunner = new MigrationRunner();
 
-		$migrationClasses = array(
-			ItemsTable::class,
-		);
+		// Tables in dependency order. Each module adds its own (M00 T3: sequences).
+		$migrationClasses = array();
 
 		/**
 		 * Filters the list of migration classes to be executed.

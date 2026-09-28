@@ -293,11 +293,17 @@ class LoadAssets {
 			return false;
 		}
 
-		$post = get_post();
+		$post    = get_post();
+		$content = $post ? (string) $post->post_content : '';
+		$needed  = false !== strpos( $content, '<!-- wp:radius-hotel-booking/' );
 
-		$needed = $post
-			&& ( has_shortcode( (string) $post->post_content, 'rtbp_items' )
-				|| has_block( 'radius-hotel-booking/items', $post ) );
+		/** This filter is documented in includes/Shortcodes/Shortcodes.php */
+		foreach ( array_keys( (array) apply_filters( 'rtbp_shortcodes', array() ) ) as $tag ) {
+			if ( $needed ) {
+				break;
+			}
+			$needed = has_shortcode( $content, (string) $tag );
+		}
 
 		/**
 		 * Filter whether to enqueue the public bundle on this request.

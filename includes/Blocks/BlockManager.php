@@ -11,7 +11,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use RadiusTheme\RadiusHotelBooking\Shortcodes\ItemList;
 
 /**
  * Class BlockManager
@@ -45,7 +44,7 @@ class BlockManager {
 				array(
 					'slug'  => 'radius-hotel-booking',
 					'title' => esc_html__( 'Radius Hotel Booking', 'radius-hotel-booking' ),
-					'icon'  => 'screenoptions',
+					'icon'  => 'building',
 				),
 			),
 			$categories
@@ -55,53 +54,19 @@ class BlockManager {
 	/**
 	 * Register the blocks.
 	 *
-	 * BOILERPLATE: one example block, server-rendered through the same template
-	 * the shortcode uses, so both paths stay in sync.
+	 * None yet: the booking search and booking form blocks arrive with M04 and
+	 * render the same templates as their shortcodes. Each block is registered
+	 * here with a server-side render callback; its editor UI lives in
+	 * `src/blocks/`.
 	 *
 	 * @return void
 	 */
 	public function register_blocks() {
-		register_block_type(
-			'radius-hotel-booking/items',
-			array(
-				'attributes'      => array(
-					'layout'  => array(
-						'type'    => 'string',
-						'default' => 'grid',
-					),
-					'columns' => array(
-						'type'    => 'number',
-						'default' => 3,
-					),
-					'perPage' => array(
-						'type'    => 'number',
-						'default' => 9,
-					),
-				),
-				'render_callback' => array( $this, 'render_items_block' ),
-			)
-		);
-	}
-
-	/**
-	 * Server-side render for the items block.
-	 *
-	 * @param array $attributes Block attributes.
-	 *
-	 * @return string
-	 */
-	public function render_items_block( $attributes ) {
-		ob_start();
-
-		ItemList::output(
-			array(
-				'layout'   => $attributes['layout'] ?? '',
-				'columns'  => $attributes['columns'] ?? '',
-				'per_page' => $attributes['perPage'] ?? '',
-			)
-		);
-
-		return ob_get_clean();
+		/**
+		 * Fires when the plugin registers its blocks, so an add-on can register
+		 * its own under the same category.
+		 */
+		do_action( 'rtbp_register_blocks' );
 	}
 
 	/**

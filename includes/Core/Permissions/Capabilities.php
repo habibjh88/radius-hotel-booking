@@ -18,14 +18,16 @@ if ( ! defined( 'ABSPATH' ) ) {
  * PermissionMiddleware (enforcement), PermissionsInstaller (provisioning) and
  * LoadAssets (frontend localization).
  *
- * BOILERPLATE: replace the three example capabilities below with the ones your
- * plugin actually needs, then add matching entries to catalog() and
- * defaultRoleMap(). Nothing else in the permission system needs editing.
+ * These WordPress capabilities only gate entry to the dashboard and to the
+ * settings. Everything finer (each page and action, Open / Passcode / Locked)
+ * is the M13 access map, layered on top (ADR-004).
  */
 class Capabilities {
 
-	const VIEW_DASHBOARD  = 'rtbp_view_dashboard';
-	const MANAGE_ITEMS    = 'rtbp_manage_items';
+	/** Enter the hotel dashboard. Finer access comes from the M13 access map. */
+	const VIEW_DASHBOARD = 'rtbp_view_dashboard';
+
+	/** Change settings and the hotel's setup (rooms, rate plans). */
 	const MANAGE_SETTINGS = 'rtbp_manage_settings';
 
 	/**
@@ -42,11 +44,20 @@ class Capabilities {
 	public static function all(): array {
 		$caps = array(
 			self::VIEW_DASHBOARD,
-			self::MANAGE_ITEMS,
 			self::MANAGE_SETTINGS,
 		);
 
 		return array_values( array_unique( (array) apply_filters( 'rtbp_capabilities', $caps ) ) );
+	}
+
+	/**
+	 * Capabilities the plugin used to grant and no longer does. The role sync
+	 * strips them, because it otherwise only reconciles current capabilities.
+	 *
+	 * @return string[]
+	 */
+	public static function retired(): array {
+		return array( 'rtbp_manage_items' );
 	}
 
 	/**
@@ -62,12 +73,10 @@ class Capabilities {
 		return array(
 			'rtbp_manager' => array(
 				self::VIEW_DASHBOARD,
-				self::MANAGE_ITEMS,
 				self::MANAGE_SETTINGS,
 			),
 			'rtbp_staff'   => array(
 				self::VIEW_DASHBOARD,
-				self::MANAGE_ITEMS,
 			),
 		);
 	}
@@ -117,7 +126,6 @@ class Capabilities {
 	public static function catalog(): array {
 		$meta = array(
 			self::VIEW_DASHBOARD  => array( __( 'View Dashboard', 'radius-hotel-booking' ), __( 'General', 'radius-hotel-booking' ) ),
-			self::MANAGE_ITEMS    => array( __( 'Manage Items', 'radius-hotel-booking' ), __( 'Content', 'radius-hotel-booking' ) ),
 			self::MANAGE_SETTINGS => array( __( 'Manage Settings', 'radius-hotel-booking' ), __( 'System', 'radius-hotel-booking' ) ),
 		);
 

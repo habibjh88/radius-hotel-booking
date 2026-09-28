@@ -6,12 +6,12 @@
  * available as `$router`) is a Core\Api\Routes\RouteRegistrar bound to the
  * `radius-hotel-booking/v1` namespace.
  *
- *   $this->router->resource( 'items', ItemController::class );
- *     => GET    /items            index
- *        POST   /items            store
- *        GET    /items/{id}       show
- *        PUT    /items/{id}       update
- *        DELETE /items/{id}       destroy
+ *   $this->router->resource( 'floors', FloorController::class );
+ *     => GET    /floors           index
+ *        POST   /floors           store
+ *        GET    /floors/{id}      show
+ *        PUT    /floors/{id}      update
+ *        DELETE /floors/{id}      destroy
  *
  * @package RadiusTheme\RadiusHotelBooking\Routes
  */
@@ -21,12 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use RadiusTheme\RadiusHotelBooking\Controllers\DashboardController;
-use RadiusTheme\RadiusHotelBooking\Controllers\ItemController;
 use RadiusTheme\RadiusHotelBooking\Controllers\SettingsController;
-
-/** Item routes — the example CRUD resource. */
-$this->router->resource( 'items', ItemController::class );
-$this->router->put( 'items/(?P<id>\d+)/publish', array( ItemController::class, 'publish' ) );
 
 /** Dashboard. */
 $this->router->get( 'dashboard/summary', array( DashboardController::class, 'summary' ) );

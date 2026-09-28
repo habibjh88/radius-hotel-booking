@@ -39,7 +39,7 @@ class ElementorManager {
 			'radius-hotel-booking',
 			array(
 				'title' => esc_html__( 'Radius Hotel Booking', 'radius-hotel-booking' ),
-				'icon'  => 'eicon-menu-card',
+				'icon'  => 'eicon-archive',
 			)
 		);
 	}
@@ -52,6 +52,12 @@ class ElementorManager {
 	 * @return void
 	 */
 	public function register_widgets( $widgets_manager ) {
-		$widgets_manager->register( new Widgets\ItemListWidget() );
+		/**
+		 * Register Elementor widgets. None ship yet: the booking widgets arrive
+		 * with M04 and render the same templates as the shortcodes.
+		 *
+		 * @param \Elementor\Widgets_Manager $widgets_manager Elementor widgets manager.
+		 */
+		do_action( 'rtbp_register_elementor_widgets', $widgets_manager );
 	}
 }

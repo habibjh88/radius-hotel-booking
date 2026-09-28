@@ -29,7 +29,7 @@ const params =
 /**
  * Absolute URL for a path relative to the plugin's REST namespace.
  *
- * @param {string} path Path such as 'settings' or 'items/5?x=1'.
+ * @param {string} path Path such as 'settings' or 'bookings/5?x=1'.
  * @return {string|undefined} URL, or undefined when the root is unknown.
  */
 function toUrl( path ) {
@@ -68,7 +68,7 @@ function unwrap( response ) {
 /**
  * Perform a request against the plugin's REST namespace.
  *
- * @param {string} path    Path relative to the namespace, e.g. 'items'.
+ * @param {string} path    Path relative to the namespace, e.g. 'bookings'.
  * @param {Object} options apiFetch options (method, data, …).
  * @return {Promise<{data: *, meta: Object, message: string}>} Unwrapped response.
  */

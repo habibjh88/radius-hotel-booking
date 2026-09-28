@@ -125,9 +125,9 @@ class Installer {
 			PageInstaller::create_pages();
 		}
 
-		//DB Version
+		// DB Version
 		update_option( Keys::DB_VERSION, RADIUS_HOTEL_BOOKING_DB_VERSION );
-		//Plugin version
+		// Plugin version
 		update_option( Keys::VERSION, RADIUS_HOTEL_BOOKING_VERSION );
 	}
 

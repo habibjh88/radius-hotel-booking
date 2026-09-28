@@ -35,8 +35,6 @@ class MergeTags {
 	public static function init() {
 		self::register_tag( 'recipient_name', __( 'Recipient Name', 'radius-hotel-booking' ) );
 		self::register_tag( 'recipient_email', __( 'Recipient Email', 'radius-hotel-booking' ) );
-		self::register_tag( 'item_title', __( 'Item Title', 'radius-hotel-booking' ) );
-		self::register_tag( 'item_id', __( 'Item ID', 'radius-hotel-booking' ) );
 		self::register_tag( 'date', __( 'Date', 'radius-hotel-booking' ) );
 		self::register_tag( 'time', __( 'Time', 'radius-hotel-booking' ) );
 		self::register_tag( 'price', __( 'Price', 'radius-hotel-booking' ) );
