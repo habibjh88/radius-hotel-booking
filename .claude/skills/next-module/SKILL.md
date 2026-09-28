@@ -1,6 +1,6 @@
 ---
 name: next-module
-description: Start (or switch to) the next module of the Radius Hotel Booking build — picks it from docs/project/roadmap.md, checks dependencies, creates the module branch, loads the module spec and plans its tasks, then begins the first task.
+description: Start (or switch to) the next module of the Radius Hotel Booking build — picks it from docs/project/roadmap.md, checks dependencies, confirms the repos are ready, loads the module spec and plans its tasks, then begins the first task.
 argument-hint: "[M06 | next] [--force]"
 disable-model-invocation: true
 ---
@@ -31,7 +31,7 @@ If another module is `in-progress`: set it to `paused` in the tracker, note in i
 under **Progress notes** which task was next and anything half-done. Do not leave uncommitted
 work behind silently — if `git status` is dirty, ask whether to commit, stash, or carry it over.
 
-## 3. Branch (in every repo the module touches)
+## 3. Repos (every repo the module touches)
 
 - The tracker's **Tier** column and the task tags (`[Free]`, `[Pro]`, `[Client]`) say which repos
   are involved (ADR-014):
@@ -40,9 +40,9 @@ work behind silently — if `git status` is dirty, ask whether to commit, stash,
   - Client = `../radius-hotel-booking-residencetata`
 - If a needed Pro or Client repo does not exist yet, M00 T9 has not been done. Stop and say so.
 - In each involved repo, `git status` must be clean, unless the user chose to carry changes over.
-- Use the branch name from the tracker's **Branch** column (`module/m07-rate-plans`), the same in
-  every repo. Create it from `main` if it does not exist, otherwise check it out.
-- Never force-push, and never commit without being asked.
+- Work on `main` in every repo. **Never create a branch** (or a worktree). If a repo is on another
+  branch, or the work seems to need its own branch, ask the user; they create branches themselves.
+- Never push unless asked, and ask before each commit.
 
 ## 4. Load context (read, don't skim)
 

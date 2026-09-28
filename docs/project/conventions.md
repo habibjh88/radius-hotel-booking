@@ -36,8 +36,8 @@ in that repo only:
 - `[Pro]` → `../radius-hotel-booking-pro`. `[Client]` → `../radius-hotel-booking-residencetata`.
   They reuse the free framework and `window.rtbp`, and guard every free symbol with
   `class_exists()` / `function_exists()`. They never copy free code.
-- Each repo has its own `readme.txt` changelog, `DBVERSION`, text domain and git branch (the same
-  branch name as the module).
+- Each repo has its own `readme.txt` changelog, `DBVERSION` and text domain. All three repos work
+  on `main`.
 
 ## 2. Backend rules
 
@@ -145,6 +145,6 @@ Documentation-only and internal refactors with no visible effect do not need a l
 
 ## 8. Git
 
-- One branch per module: `module/m06-rooms-floors`. Branch from `main`.
+- All work happens on `main` in every repo. Never create a branch; the user creates one when needed.
 - Commit per task, message `M06: bulk room creation (6.10)`.
-- Commit and push only when the user asks.
+- Ask before each commit. Push only when the user asks.

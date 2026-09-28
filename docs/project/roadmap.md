@@ -48,8 +48,8 @@ Phase 6  Go-live         M18
 
 ## Tracker
 
-**Tier** says which plugin(s) the module's tasks land in (ADR-014). Branches use the same name
-in every repo the module touches.
+**Tier** says which plugin(s) the module's tasks land in (ADR-014). All work happens on `main`
+in every repo; the **Branch** column is only a label, and no branch is created for it.
 
 Status values: `todo` · `in-progress` · `paused` · `review` · `done` · `blocked`.
 The commands read and update this table. Keep the columns.

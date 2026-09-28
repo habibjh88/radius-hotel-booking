@@ -21,7 +21,7 @@ Arguments: `$ARGUMENTS`
    - `[Client]` → `../radius-hotel-booking-residencetata`
    - A combined tag → each of the named repos, free first.
 
-   Confirm each repo is on the module's branch (tracker **Branch** column); if not, check it out.
+   Work on `main` in each repo. Never create a branch; if a repo is on another branch, ask the user.
    The docs and tracker always live in this repo.
 4. If this is a fresh session, load the context listed in `/next-module` step 4 for this module
    (module doc, conventions, the relevant architecture/booking-engine sections, legacy refs).
