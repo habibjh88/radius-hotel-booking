@@ -117,7 +117,7 @@ Profile fields (M16 enforces them), matching the legacy defaults: `username` res
 | user meta | `rtbp_access_role` (role id), `rtbp_access_overrides` (key→level), `rtbp_profile_field_overrides`, `rtbp_pin_hash`, `rtbp_pin_failures`, `rtbp_pin_locked_until` |
 | transient | `rtbp_pc_{user}_{scope}` → a hash of the unlock token, TTL = validity. Changing a PIN clears **all** of the user's grants |
 
-WordPress side: role `rtbp_staff` with `rtbp_access_dashboard`. Staff users are created in M12.
+WordPress side: role `rtbp_staff` with `rtbp_view_dashboard`. Staff users are created in M12.
 Until then, any user with the capability can be assigned an access role here.
 
 ## API
@@ -156,7 +156,7 @@ Until M14 exists these fire as hooks (`rtbp_access_changed`, `rtbp_access_denied
 
 ## Tasks
 
-- [ ] T1 [Free] `AccessRegistry` with the initial keys (defaults `open`/`locked` only), `Access::level()` resolver (built-in role map → `rtbp_access_level` filter → admin relax); table-driven unit tests
+- [ ] T1 [Free] `AccessRegistry` with the initial keys (defaults `open`/`locked` only), `Access::level()` resolver (built-in role map → `rtbp_access_level` filter → admin relax); resolution verified on the Local site
 - [ ] T2 [Free] `AccessMiddleware` (per-method keys; `open`/`locked`; `passcode` delegated to the `rtbp_access_passcode_check` filter, and treated as `locked` when no handler answers), `access/me`, `useAccess`, route hiding, the `rtbp.api.error` hook in the API client; migrate the Settings endpoints onto keys
 - [ ] T3 [Free] Settings → Permissions: the open/locked matrix per built-in role (`rtbp_manager`, `rtbp_staff`); log via `rtbp_activity()`
 - [ ] T4 [Pro] Passcode level: PIN hashing, fallback PIN, `access/unlock` with brute-force lockout, grant tokens (global / per key), `PasscodeDialog` registered on `rtbp.api.error`, and the Settings → Access section (validity, scope, locked message)

@@ -21,21 +21,16 @@
         }
     },
     "require": {
-        "php": ">=7.4"
+        "php": ">=8.0"
     },
     "require-dev": {
         "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
         "phpcompatibility/phpcompatibility-wp": "^2.1",
-        "phpunit/phpunit": "^9.6",
-        "wp-coding-standards/wpcs": "^3.0",
-        "wp-phpunit/wp-phpunit": "^6.4",
-        "yoast/phpunit-polyfills": "^2.0"
+        "wp-coding-standards/wpcs": "^3.0"
     },
     "scripts": {
         "phpcs": "./vendor/bin/phpcs --standard=phpcs.xml",
         "phpcs:fix": "./vendor/bin/phpcbf --standard=phpcs.xml",
-        "phpcs:report": "./vendor/bin/phpcs --standard=phpcs.xml --report=csv > phpcs-report.csv",
-        "test": "phpunit",
-        "phpunit": "phpunit"
+        "phpcs:report": "./vendor/bin/phpcs --standard=phpcs.xml --report=csv > phpcs-report.csv"
     }
 }

@@ -75,7 +75,7 @@ default), `guests.notes`.
 
 ## Tasks
 
-- [ ] T1 [Free] `guests` + `notes` tables, `Phone` normaliser (CI numbering: 10-digit national numbers since 2021, and the legacy 8-digit form), name folding, placeholder e-mail, `GuestService` (create with duplicate detection, update with logging, ban/unban, lookup); unit tests for phone and name folding
+- [ ] T1 [Free] `guests` + `notes` tables, `Phone` normaliser (CI numbering: 10-digit national numbers since 2021, and the legacy 8-digit form), name folding, placeholder e-mail, `GuestService` (create with duplicate detection, update with logging, ban/unban, lookup); phone normalising and name folding verified on the Local site
 - [ ] T2 [Free] Guest list screen (search, standing filter, mobile cards)
 - [ ] T3 [Free] Guest detail screen (contact, ID with masked/full reveal, stays tab, ban dialog with reason, `ActivityTimeline`)
 - [ ] T4 [Free] Generic notes API + `NotesPanel` component, wired into the guest detail screen

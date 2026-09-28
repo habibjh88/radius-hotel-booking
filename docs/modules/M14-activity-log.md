@@ -87,8 +87,8 @@ lists its kind and a translatable label. Initial entries: `auth.login`, `auth.lo
 
 ## Tasks
 
-- [ ] T1 [Free] `rtbp_activity( $action, $subject, $context )` emitter: a normalised event with actor, IP, user agent, subject, and a before/after diff with secrets masked. Fires the `rtbp_activity` action and **stores nothing**. Plus a filterable `ActionCatalog`, and emits auth / page-view / denied events from free. Unit tests for diffing and masking
-- [ ] T2 [Pro] `activity_log` + `log_archives` tables in Pro + `ActivityLogger` subscribed to `rtbp_activity` (device parsing, proxy-aware IP, grouping window, hash chain) + `log:verify` CLI; unit tests for grouping and chain verification
+- [ ] T1 [Free] `rtbp_activity( $action, $subject, $context )` emitter: a normalised event with actor, IP, user agent, subject, and a before/after diff with secrets masked. Fires the `rtbp_activity` action and **stores nothing**. Plus a filterable `ActionCatalog`, and emits auth / page-view / denied events from free. Diffing and masking verified on the Local site
+- [ ] T2 [Pro] `activity_log` + `log_archives` tables in Pro + `ActivityLogger` subscribed to `rtbp_activity` (device parsing, proxy-aware IP, grouping window, hash chain) + `log:verify` CLI; grouping and chain verification checked on the Local site
 - [ ] T3 [Pro] Log screen (via `rtbp.admin.routes`: filters, search, grouped ×N rows, diff drawer) + `ActivityTimeline` injected through `rtbp.booking.panels` / `rtbp.guest.panels` + the subject endpoint
 - [ ] T4 [Pro] Archiving: scheduler, on-demand archive, verified purge, archive list and download
 

@@ -90,7 +90,7 @@ The booking flow from the diagram, as implemented:
   place `wp_timezone()` is read.
 - In the API: ISO 8601 with offset (`2026-10-02T20:00:00+00:00`). The UI formats with the site
   time zone, not the browser's.
-- Abidjan is UTC+0 with no DST today. The tests still include a DST-zone fixture
+- Abidjan is UTC+0 with no DST today. The checks still include a DST-zone case
   (`Europe/Paris`), so the arithmetic is proven correct for any site.
 
 ## 4. Overlap
@@ -282,7 +282,7 @@ Line status: `pending → confirmed → checked_in → checked_out`, plus `decli
 `occupied_until`. The transition table is in M03. Payment status is a separate axis (M05) and
 never affects inventory, except through the deadline release.
 
-## 10. Edge cases: each one is a row in the test data provider
+## 10. Edge cases: the verification checklist (check each row on the Local site)
 
 | # | Case | Expected |
 |---|---|---|
@@ -306,7 +306,7 @@ never affects inventory, except through the deadline release.
 | 17 | Rate calendar closes Rest Time on 31 Dec | Rest Time `rate_closed` for that date only |
 | 18 | Multi-night Overnight ×2 where night 2 is closed | `rate_closed` |
 | 19 | Search nights = 3 on Half Day | `incompatible_span`, listed in other options |
-| 20 | Two parallel creates for the last room | exactly one succeeds, the other 409 (concurrency test) |
+| 20 | Two parallel creates for the last room | exactly one succeeds, the other 409 (concurrency check) |
 | 21 | A window crossing a DST change (Europe/Paris fixture) | the duration stays at wall-clock hours; GMT columns correct |
 | 22 | 29 Feb multi-night | correct end date |
 | 23 | Room moved to another type with a future booking | the booking keeps its line; the room's new type sees it as busy |

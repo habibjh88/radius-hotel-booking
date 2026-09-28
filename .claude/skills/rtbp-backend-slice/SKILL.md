@@ -1,6 +1,6 @@
 ---
 name: rtbp-backend-slice
-description: How to add a domain entity end-to-end in the Radius Hotel Booking PHP framework — migration table, model, repository, service, resource, controller, route, DI binding, events and tests. Use whenever creating or changing a table, model, repository, service, REST controller or route in this plugin.
+description: How to add a domain entity end-to-end in the Radius Hotel Booking PHP framework — migration table, model, repository, service, resource, controller, route, DI binding, events and verification. Use whenever creating or changing a table, model, repository, service, REST controller or route in this plugin.
 ---
 
 # Adding a backend slice
@@ -69,7 +69,7 @@ inside `boot()`**, list the free symbols it needs in `requires_free()`, and unsc
    sensitive fields in `collection()`; use `when()` for fields gated by access.
 6. **Controller** — `includes/Controllers/<Singular>Controller.php` extends `BaseController`
    (index/show/store/update/destroy come free). Middleware in the constructor:
-   - before M13 is done: `AuthMiddleware` + `PermissionMiddleware( Capabilities::ACCESS_DASHBOARD )`
+   - before M13 is done: `AuthMiddleware` + `PermissionMiddleware( Capabilities::VIEW_DASHBOARD )`
    - after M13: `AccessMiddleware` with per-method access keys (see `rtbp-access-and-audit`).
    Supply `transformItem()`, `transformCollection()`, `getValidationRules()` (rule objects from
    `Core/Api/Validation/Rules/`), `getResourceType()`. Extra endpoints wrap their body in
@@ -80,8 +80,9 @@ inside `boot()`**, list the free symbols it needs in `requires_free()`, and unsc
 8. **Bindings** — `includes/Core/config/bindings.php`: repositories and services as lazy closures.
 9. **Events** — model lifecycle events are `<ModelFqcn>.<event>`; map them to `rtbp_*` hooks in
    `includes/Core/config/events.php` only when an add-on or another module needs the hook.
-10. **Tests** — `tests/phpunit/Integration/<Name>Test.php` (extends `WP_UnitTestCase`, creates
-    tables via `Setup\Installer::create_tables()`), plus `tests/phpunit/Unit/` for pure logic.
+10. **Verify** — there is no PHPUnit suite. Check the slice on the Local site with a throwaway
+    `wp eval` script (create, read, update, delete, and the rules) and through the REST route
+    (`docs/project/conventions.md` §4).
 
 ## Checks before done
 

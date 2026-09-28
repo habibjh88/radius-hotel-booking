@@ -3,7 +3,7 @@ Contributors: radiustheme
 Tags: hotel booking, framework, rest-api, react, developer
 Requires at least: 5.5.0
 Tested up to: 6.7
-Requires PHP: 7.4
+Requires PHP: 8.0
 Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -26,7 +26,7 @@ delete the example and keep the framework.
 * Gutenberg block, Elementor widget and shortcode, all rendering the same template
 * Email system with merge tags and overridable templates
 * Three-layer i18n setup that survives content-hashed bundle filenames
-* PHPCS and PHPUnit preconfigured
+* PHPCS preconfigured
 
 == Installation ==
 
@@ -40,12 +40,14 @@ See README.md for how to rename the hotel booking for a new project.
 == Changelog ==
 
 = 1.0.0.1 ( UNRELEASE ) =
-Removed the wp-env Docker environment and Playwright end-to-end tests; PHPUnit now runs directly.
+Removed the wp-env Docker environment, Playwright end-to-end tests and the PHPUnit test setup.
 Moved rtbp_table_prefix() into the core functions file with the other global helpers.
 Fixed admin screens failing when another plugin changes WordPress's shared REST request settings.
 Added extension points so add-ons can add settings tabs and reuse the admin interface.
 New admin dashboard with a grouped sidebar, today's arrivals and departures, and a setup checklist.
 The brand colour chosen in Settings now restyles the whole dashboard, including the logo.
+Removed the example Items screen, shortcode, block, widget and e-mail.
+Now requires PHP 8.0 or later.
 
 = 1.0.0 =
 Initial release.

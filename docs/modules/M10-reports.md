@@ -63,7 +63,7 @@ at the client's volume. Cache per filter hash in a transient, invalidated by the
 
 ## Tasks
 
-- [ ] T1 [Free] `ReportService` date-range and mode handling + the sales aggregates (tests against a fixture with known answers) + the `rtbp_report_definitions` registry
+- [ ] T1 [Free] `ReportService` date-range and mode handling + the sales aggregates (verified against seeded data with known answers) + the `rtbp_report_definitions` registry
 - [ ] T2 [Free] Sales screen: KPI tiles, chart (recharts), by-method table
 - [ ] T3 [Free] Rooms report: counts, bookings table, empty rooms by floor
 - [ ] T4 [Free] Room availability grid (live window)
@@ -73,7 +73,7 @@ at the client's volume. Cache per filter hash in a transient, invalidated by the
 
 ## Acceptance
 
-Seed a known month (a fixture script in `tests/fixtures/`). Every figure on every report matches the
+Seed a known month (a throwaway `wp eval-file` seed script). Every figure on every report matches the
 spreadsheet of expected values, in both date modes. A multi-night stay counts as occupied on every
 night, not only on its arrival day.
 

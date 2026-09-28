@@ -80,7 +80,7 @@ Each can be switched on or off in Settings → E-mail.
 ## Tasks
 
 - [ ] T1 [Free] `BookingQuery` (one-shot loading of the booking + lines + guest + rooms) + the detail screen layout (desktop two-column, mobile tabs) + money summary
-- [ ] T2 [Free] `StatusMachine` (a table of legal moves, illegal-move tests) + approve / decline / cancel / check-in (room change) / check-out (balance warning) / no-show + e-mails
+- [ ] T2 [Free] `StatusMachine` (a table of legal moves; illegal moves checked on the Local site) + approve / decline / cancel / check-in (room change) / check-out (balance warning) / no-show + e-mails
 - [ ] T3 [Free] Add, edit and remove lines through the engine's locked write path; the price-freeze rule; the invoice-revision hook
 - [ ] T4 [Free] Notes panel, guest billing panel, guest notes on the booking, `ActivityTimeline`
 

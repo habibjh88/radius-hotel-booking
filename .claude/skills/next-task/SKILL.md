@@ -62,8 +62,11 @@ never claim a pass you did not see:
 ```bash
 ./vendor/bin/phpcs --standard=phpcs.xml <changed php files>
 npm run build
-npm run test:php            # if WP_CORE_DIR / test DB are configured; otherwise say it was skipped
 ```
+
+There is no PHPUnit suite. Verify new PHP logic on the Local site with a throwaway `wp eval`
+script, and run the concurrency check if the booking write path changed
+(`docs/project/conventions.md` §4). Show the real output.
 
 Then check: strings translatable · access key on every new endpoint · activity-log entry on every
 state change · `DBVERSION` / `ROLES_VERSION` bumped if needed · `readme.txt` changelog line added

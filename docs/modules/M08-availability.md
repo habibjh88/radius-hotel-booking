@@ -24,7 +24,7 @@ this module, M02 and M04 only build UI on top of it.
 | — | `AvailabilityService::search()`: the §5.2 rule checks, the §5.3 four-query plan, per room type × rate × room evaluation, reasons, pricing via `PriceResolver`, public vs staff shaping | T2 |
 | 2.14 | `HoldService` (create through the locked write path, extend, release, sweep cron) + `holds` table | T3 |
 | — | `BookingWriter::lockAndCheck()`, the shared locked write path (§7.1), used by holds now and by bookings in M02 | T3 |
-| — | **Concurrency test**: two PHP processes / two DB connections request the last room; exactly one wins (run in CI) | T3 |
+| — | **Concurrency check**: two parallel `wp eval` processes request the last room; exactly one wins | T3 |
 | 8.1, 8.6 | Availability calendar per room type: dates × rate plans grid with the price, open/closed state and free-room count per date. Month navigation, sticky headers, horizontal virtualisation | T4 |
 | 8.2, 8.3, 8.4 | Per-date price override; per-date rate on/off; per-date whole room type on/off (`rate_calendar` with `rate_plan_id` NULL) | T4 |
 | 8.5 | Bulk update: date range + weekdays + rate plans → set price / clear override / open / close, with a preview count | T5 |
@@ -48,7 +48,7 @@ this module, M02 and M04 only build UI on top of it.
 ## Performance gate
 
 `availability` for 2 room types × 11 rate plans × 30 rooms × a 1-month envelope with 500 lines:
-**< 300 ms and exactly 4 SQL queries**. Asserted in an integration test with a query counter
+**< 300 ms and exactly 4 SQL queries**. Checked on the Local site with a query counter
 (`$wpdb->num_queries` delta).
 
 ## Activity log actions
@@ -67,9 +67,9 @@ this module, M02 and M04 only build UI on top of it.
 
 ## Tasks
 
-- [ ] T1 [Free] `Overlap` + `AvailabilityRepository::busy()/conflicts()` + unit tests for booking-engine §10 rows 1–5 and 9–16
-- [ ] T2 [Free] `AvailabilityService::search()` with rules and reasons + the staff/public resource shapes + a performance test (4 queries, < 300 ms)
-- [ ] T3 [Free] `holds` + `HoldService` + `BookingWriter::lockAndCheck()` + the sweep cron + the **concurrency test** (row 20)
+- [ ] T1 [Free] `Overlap` + `AvailabilityRepository::busy()/conflicts()` + booking-engine §10 rows 1–5 and 9–16 verified on the Local site
+- [ ] T2 [Free] `AvailabilityService::search()` with rules and reasons + the staff/public resource shapes + a performance check (4 queries, < 300 ms)
+- [ ] T3 [Free] `holds` + `HoldService` + `BookingWriter::lockAndCheck()` + the sweep cron + the **concurrency check** (row 20)
 - [ ] T4 [Free] Calendar grid (per-date override, rate close, room-type close, free counts)
 - [ ] T5 [Free] Bulk update + blocks (API + screens + calendar overlay); the `rtbp_block_sources` filter for external block sources
 - [ ] T6 [Pro] iCal export (tokenised) + import (SSRF guard, cron, reconcile by UID) as a `rtbp_block_sources` provider
@@ -83,7 +83,7 @@ this module, M02 and M04 only build UI on top of it.
 4. Two browsers hold A2 at once. One gets it, and the other sees *held* after refreshing.
 5. Import a Booking.com iCal feed with an event on A4. A4 shows *blocked* for those dates. Remove
    the event upstream, sync, and the block disappears.
-6. The concurrency test passes 50/50 runs.
+6. The concurrency check gives exactly one winner in 50 out of 50 runs.
 
 ## Legacy reference
 

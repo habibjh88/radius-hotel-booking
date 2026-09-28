@@ -72,11 +72,11 @@ Floor 2 (6)
 
 ## Tasks
 
-- [ ] T1 [Free] `floors`, `room_types`, `rooms` tables (UNIQUE number, `number_sort`) + models / repos / services + `NaturalSort` with tests; register the access keys and log actions
+- [ ] T1 [Free] `floors`, `room_types`, `rooms` tables (UNIQUE number, `number_sort`) + models / repos / services + `NaturalSort` (verified on the Local site); register the access keys and log actions
 - [ ] T2 [Free] Room type CRUD API + detail form (gallery via the WP media library, FR/EN fields, amenities tags); delete guard
 - [ ] T3 [Free] Room-type overview cards screen
 - [ ] T4 [Free] Floors screen + the Rooms tab (grouped by floor, add / rename / state / remove with guards)
-- [ ] T5 [Free] Bulk create with preview + move room between types with the future-booking warning (the guard becomes live once M02 writes bookings; test it with fixtures)
+- [ ] T5 [Free] Bulk create with preview + move room between types with the future-booking warning (the guard becomes live once M02 writes bookings; check it with seeded rows on the Local site)
 
 ## Acceptance
 

@@ -65,12 +65,12 @@ in one documented order that the screen can explain.
 
 ## Tasks
 
-- [ ] T1 [Free] `rate_plans` table + model + `StayWindow` (pure), with the booking-engine §10 derivation rows as data-provider tests (midnight, 24 h, flexible, multi-unit, DST fixture, leap day); seed the client's plans
+- [ ] T1 [Free] `rate_plans` table + model + `StayWindow` (pure), with the booking-engine §10 derivation rows verified on the Local site (midnight, 24 h, flexible, multi-unit, DST fixture, leap day); seed the client's plans
 - [ ] T2 [Free] Rate plan library API + screen (editor with a live window preview, features, policy, in-use guard)
 - [ ] T3 [Free] `room_type_rates` + the Price & Rates grid (inline edit, drag to reorder, validation: sale < price, min ≤ max)
-- [ ] T4 [Free] `PriceResolver`: steps base → sale → date override → floor/round, with the `rtbp_price_steps` filter for inserting steps; `OccupancyCalculator`; `PriceBreakdown` + the simulator; table-driven tests
+- [ ] T4 [Free] `PriceResolver`: steps base → sale → date override → floor/round, with the `rtbp_price_steps` filter for inserting steps; `OccupancyCalculator`; `PriceBreakdown` + the simulator; verified against the §6 order on the Local site
 - [ ] T5 [Pro] Pricing templates + seasonal rules (tables, API, screens via `rtbp.admin.routes`), inserted as the seasonal step through `rtbp_price_steps`
-- [ ] T6 [Pro] Occupancy + early-bird / last-minute rules as `rtbp_price_steps` steps (the §6 order, precedence tests, rounding)
+- [ ] T6 [Pro] Occupancy + early-bird / last-minute rules as `rtbp_price_steps` steps (the §6 order, precedence and rounding verified on the Local site)
 
 ## Acceptance
 

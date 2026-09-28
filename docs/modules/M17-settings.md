@@ -71,7 +71,7 @@ to `rtbp_settings_updated`.
 
 ## Tasks
 
-- [ ] T1 [Free] `SettingsSchema` + sanitiser + `rtbp_setting()` + refactor `SettingsHelper` / `SettingsService` onto it + hook; unit tests for sanitising each type
+- [ ] T1 [Free] `SettingsSchema` + sanitiser + `rtbp_setting()` + refactor `SettingsHelper` / `SettingsService` onto it + hook; sanitising of each type verified on the Local site
 - [ ] T2 [Free] Settings UI framework (tabs registry, `SettingsSection`, `TranslatableField`, `MediaField`, dirty bar, reset)
 - [ ] T3 [Free] General and Booking rules sections (PHP schema + UI)
 - [ ] T4 [Free] Notifications (with sound upload and preview) and E-mail sections

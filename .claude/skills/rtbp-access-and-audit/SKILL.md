@@ -55,7 +55,7 @@ custom role, then per-person override), then the admin relax.
 | `passcode` | Handled by `rtbp_access_passcode_check` (Pro): it checks the `X-RTBP-Passcode` token, and answers 403 `passcode_required` when the token is missing. **If no handler answers, `passcode` is treated as `locked`** |
 | `open` | The request continues |
 
-Before M13 exists, fall back to `PermissionMiddleware( Capabilities::ACCESS_DASHBOARD )`, and check
+Before M13 exists, fall back to `PermissionMiddleware( Capabilities::VIEW_DASHBOARD )`, and check
 with `class_exists()` first.
 
 Services reachable from several endpoints re-check with `Access::can( 'bookings.approve' )`.

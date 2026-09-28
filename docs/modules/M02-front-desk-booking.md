@@ -71,7 +71,7 @@ inline. Web-created bookings log with the actor `guest`.
 
 ## Tasks
 
-- [ ] T1 [Free] `bookings` + `booking_rooms` tables (all the architecture §4.4 columns) + `BookingService::create()` on `BookingWriter` + integration tests (create, conflict 409, price_changed, banned guest, multi-line all-or-nothing)
+- [ ] T1 [Free] `bookings` + `booking_rooms` tables (all the architecture §4.4 columns) + `BookingService::create()` on `BookingWriter` + verification on the Local site (create, conflict 409, price_changed, banned guest, multi-line all-or-nothing)
 - [ ] T2 [Free] `BookingFlow` shell + dates/guests bar + rates by room type (`RateCard`, `PriceBreakdown`, reasons, other options)
 - [ ] T3 [Free] `RoomPicker` + holds (place, countdown, extend, release) + multiple lines
 - [ ] T4 [Free] Guest step (lookup combobox, new guest with ID, banned banner) + summary + payment state + confirm + success screen linking to the booking (M03)

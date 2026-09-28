@@ -15,7 +15,7 @@ Framework details (layers, DI, REST envelope, i18n, Tailwind scoping) are in the
 | Model | Singular StudlyCase | `BookingRoom` |
 | Option | `rtbp_<section>_settings` | `rtbp_booking_settings` |
 | Hook | `rtbp_<domain>_<event>` | `rtbp_booking_status_changed` |
-| Capability (WP) | `rtbp_<verb>_<noun>` | `rtbp_access_dashboard` |
+| Capability (WP) | `rtbp_<verb>_<noun>` | `rtbp_view_dashboard` |
 | Access key (Module 13) | `<area>.<action>` | `bookings.approve` |
 | Activity action | the same key as the access key where one exists | `bookings.approve` |
 | REST route | plural kebab case, nested for children | `bookings/{id}/payments` |
@@ -84,24 +84,26 @@ in that repo only:
    `design-system.md`.
 7. Every screen must work at 360 px wide.
 
-## 4. Tests
+## 4. Verification (no automated test suite)
 
-| Kind | Where | Required for |
+The project has **no PHPUnit suite**, by decision. Logic is verified on the Local site
+(`food-menu.local`) instead:
+
+| Check | How | Required for |
 |---|---|---|
-| Unit | `tests/phpunit/Unit/` | Every pure function in pricing, availability, time windows, payroll maths, invoice numbering |
-| Integration | `tests/phpunit/Integration/` | Every service method that writes: booking create, transitions, payment record, holds |
-| Concurrency | `tests/phpunit/Integration/ConcurrencyTest.php` | Booking the last room from two connections. Exactly one wins. |
-| Manual script | The module doc's **Acceptance** section | Every module, run on the Local site before the module is marked done |
+| Logic check | A throwaway `wp eval` / `wp eval-file` script run against the Local site. It prints the inputs and results; you compare them with the expected values. Don't commit it | Every pure calculation: pricing, time windows, overlap, money, payroll maths, invoice numbering |
+| Edge-case checklist | Walk the relevant table (for example booking-engine §10, or the M15 statutory brackets) row by row with a logic check | Availability, pricing and payroll changes |
+| Concurrency check | Two `wp eval` processes started in parallel, both trying to book the last room. Exactly one wins | Any change to the locked write path (booking-engine §7) |
+| Acceptance script | The module doc's **Acceptance** section, in the browser | Every module, before it is marked done |
 
-Money, availability and payroll maths get **table-driven tests** (a data provider of inputs and
-expected outputs), so a new edge case is one new row.
+Record what was checked, and the result, in the module's **Progress notes**.
 
 ## 5. Definition of Done — per task
 
 - [ ] Code follows the layer rules above
 - [ ] `composer phpcs` clean on the changed PHP files
 - [ ] `npm run build` succeeds
-- [ ] New or changed PHP logic has tests, and `npm run test:php` passes (when the test DB is configured)
+- [ ] New or changed PHP logic is verified on the Local site (§4), and the result is noted
 - [ ] Every new string is translatable
 - [ ] Every new endpoint has an access key; every new state change writes an activity log entry
 - [ ] `DBVERSION` / `ROLES_VERSION` bumped if tables or capabilities changed

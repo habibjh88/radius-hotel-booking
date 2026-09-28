@@ -40,7 +40,8 @@ Check, in this order:
    add-ons never copy free classes and guard free symbols. Free makes no external HTTP calls and
    loads no CDN assets.
 8. **Payroll** (M15 only, in the client add-on). Each statutory rate, cap and bracket matches the table in the M15
-   doc; rounding is applied where the doc says; a table-driven test covers each bracket boundary.
+   doc; rounding is applied where the doc says; each bracket boundary was checked on the Local site
+   (see the module's Progress notes).
 
 Report format — for each finding:
 `[severity: critical|high|medium] file:line — what is wrong — concrete scenario (inputs → wrong

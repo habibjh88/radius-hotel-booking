@@ -42,7 +42,7 @@ Base definitions, per employee per month:
   `CNPS_WORK_INJURY`.
 
 All rates, caps and brackets live in **one** `Payroll\StatutoryTable` class (versioned by
-effective date), never duplicated. A table-driven test covers every bracket boundary.
+effective date), never duplicated. Every bracket boundary is checked on the Local site against the accountant's figures.
 
 ## Scope
 
@@ -82,9 +82,9 @@ The same keys as the access keys, plus `timeoff.request|approve|decline`, `payro
 
 ## Tasks
 
-- [ ] T1 [Client] `StatutoryTable` + `PayrollCalculator` + exhaustive table-driven tests (every bracket edge, caps, zero salary, hourly)
+- [ ] T1 [Client] `StatutoryTable` + `PayrollCalculator` + verification on the Local site of every bracket edge, caps, zero salary and hourly pay
 - [ ] T2 [Client] Pay schedules + work shifts (tables, API, screens)
-- [ ] T3 [Client] Runs: create, edit line, finalise, settle, void, revert, remove (a state machine with illegal-move tests)
+- [ ] T3 [Client] Runs: create, edit line, finalise, settle, void, revert, remove (a state machine; illegal moves checked on the Local site)
 - [ ] T4 [Client] Statutory contributions + payments
 - [ ] T5 [Client] Payslip PDF + monthly / yearly / statutory reports + export
 - [ ] T6 [Client] Time off (requests, approvals, balances, quota) + the vacation quota setting

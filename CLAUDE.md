@@ -19,9 +19,6 @@ composer phpcs           # Check all files against WordPress coding standards
 composer phpcs:fix       # Auto-fix
 ./vendor/bin/phpcs --standard=phpcs.xml includes/path/to/File.php  # Lint one file
 
-# Testing (needs WP_CORE_DIR + a throwaway MySQL database — see README)
-npm run test:php         # PHPUnit, tests/phpunit/
-
 # WP-CLI scaffolding (any WP-CLI environment)
 wp radius-hotel-booking artisan make:model ModelName
 wp radius-hotel-booking artisan make:controller ControllerName
@@ -44,7 +41,9 @@ bin/i18n-build.sh --all  # Compile .po -> .mo / .l10n.php / .json
 
 A hotel management plugin for **Residence TATA** (Abidjan), replacing their
 WooCommerce-based hotel stack. It is built on a framework layer extracted from a
-production RadiusTheme plugin. The example `Item` slice is removed in module M00.
+production RadiusTheme plugin (Radius Booking, which is also the design
+reference for the admin: `/Users/habib/GithubProjects/radius-booking/radius-booking`,
+read-only).
 
 **The build is planned in modules. Read `docs/README.md` first.**
 
@@ -140,8 +139,10 @@ post content (an Elementor widget, a theme template) calls
 `tailwind.config.js` sets `important: '.rtbp-root'`, so every utility is scoped
 under that class and the plugin's CSS cannot leak into wp-admin or a theme.
 Anything rendered in a portal (Radix dialogs, dropdowns, selects) mounts outside
-the app tree, so **those elements need `rtbp-root` on their own content node** —
-see `ItemFormDialog`'s `DialogContent` and `SelectContent`.
+the app tree, so **those elements need `rtbp-root` on their own content node**
+(e.g. `<DialogContent className="rtbp-root …">`). Design tokens are CSS variables
+scoped to `.rtbp-root` in `src/index.css`; the brand colour (`--primary`) comes
+from Settings → Display via `Helpers\ThemeHelper`.
 
 ### Event system
 
@@ -258,12 +259,12 @@ Multisite is supported: network activation installs per-site, and
 - Hook names are prefixed `rtbp_`; so are capabilities, option keys and global
   functions.
 - Text domain: `radius-hotel-booking`.
-- PHP 7.4+ / WordPress 5.5.0+.
+- PHP 8.0+ / WordPress 5.5.0+ (the framework uses PHP 8.0 syntax; no 8.1+ features).
 - WordPress coding standards enforced via PHPCS (`phpcs.xml`); database queries
   must use `$wpdb->prepare()` and output must be escaped.
-- The shortcode, the block and the Elementor widget all render the **same**
-  template (`templates/items/item-list.php`) — keep it that way so the three
-  paths can't drift.
+- Each public embed (M04) ships as a shortcode, a block and an Elementor widget
+  that all render the **same** template — keep it that way so the three paths
+  can't drift.
 
 ## Renaming the hotel booking
 

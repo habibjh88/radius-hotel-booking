@@ -54,9 +54,11 @@ base → sale (only if set and lower) → date override → seasonal (priority, 
 → round to franc. Record every step in `price_breakdown`. Same pipeline for desk and web; never
 skip rules in admin. Never re-price an existing line except via an explicit, logged line edit.
 
-## Tests you must add or keep green
+## Verification (no PHPUnit suite)
 
-- The `booking-engine.md` §10 table as a PHPUnit data provider (add a row for every new case).
-- Query-count + timing assertion on `AvailabilityService::search()`.
-- The concurrency test (two connections, last room, exactly one wins) whenever the write path
-  changes.
+- Walk the `booking-engine.md` §10 edge-case table with a `wp eval` logic check on the Local
+  site whenever windows, overlap, holds or pricing change. Add a row for every new case.
+- Check the availability search's query count (`$wpdb->num_queries` before and after) and its
+  timing.
+- Run the concurrency check (two parallel `wp eval` processes, last room, exactly one wins)
+  whenever the write path changes.

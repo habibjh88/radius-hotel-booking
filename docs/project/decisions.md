@@ -61,7 +61,7 @@ hard-coded dashboard routes would couple two release cycles.
 ## ADR-004: Access control layered on one capability — Accepted
 
 WordPress capabilities answer only "may this person enter the hotel dashboard"
-(`rtbp_access_dashboard`). Everything finer is Module 13's **access map**: every page and action
+(`rtbp_view_dashboard`). Everything finer is Module 13's **access map**: every page and action
 key is set to `open`, `passcode` or `locked`. The effective level for a user is
 `user override → access role → global default`. It is enforced by `AccessMiddleware` on the
 server. Administrators are never *locked* out, but *passcode* still applies to them through the
@@ -93,8 +93,8 @@ UTC+0 with no DST today, but the code must not depend on that. See booking-engin
 
 Three layers: (1) the availability query excludes overlapping lines, holds and blocks;
 (2) the write path locks the room rows (`SELECT … FOR UPDATE`) inside a transaction and
-re-checks the overlap before inserting; (3) a concurrency test in CI proves exactly one of two
-parallel requests wins. See booking-engine §7.
+re-checks the overlap before inserting; (3) a concurrency check (two parallel `wp eval`
+processes, run whenever the write path changes) proves exactly one of two parallel requests wins. See booking-engine §7.
 
 ## ADR-009: Protected file storage — Accepted
 
@@ -237,3 +237,13 @@ own.
   never checks it** (ADR-014).
 - Each module's `[Pro]` task creates `includes/Features/<Area>/<Name>Feature.php` for its feature
   key. Until then, the feature shows as *In development*.
+
+## ADR-018: No automated test suite, no JS linting — Accepted (2026-09-28)
+
+The owner does not want PHPUnit tests or ESLint in the project. Both are removed: the `tests/`
+folder, `phpunit.xml.dist`, the PHPUnit Composer packages, and the `test:php` / `lint:js`
+scripts. PHPCS stays as the only linter.
+*Consequence:* the guarantees that tests would have given are now checked on the Local site
+(`conventions.md` §4). That covers the booking-engine edge cases (§10), the concurrency check
+(ADR-008), pricing and payroll maths. The results are recorded in each module's Progress notes.
+Money, availability and payroll code still goes through the `rtbp-critical-reviewer` agent.

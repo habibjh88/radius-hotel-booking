@@ -21,7 +21,7 @@ client's data across from the legacy system, run both in parallel, and cut over.
 |---|---|---|
 | 18.1 | Translation completeness: `make-pot`, `fr_FR` 100 %, legacy French labels mined from `class-react-app.php:268 i18n_strings()`, a per-user language switch in the avatar menu (user meta; no global `locale` filter) | T1 |
 | 18.2 | CFA audit: every amount on screen, in e-mails and on PDFs goes through `Money` (grep for raw `number_format` / `toFixed`) | T1 |
-| 18.3 | Time-zone audit: reports crossing midnight, DST-agnostic tests, the site time zone check on activation (warn if it is not `Africa/Abidjan`) | T1 |
+| 18.3 | Time-zone audit: reports crossing midnight, DST-agnostic checks, the site time zone check on activation (warn if it is not `Africa/Abidjan`) | T1 |
 | 18.5 | Phone audit: every route at 360 px (a checklist in this doc, ticked per screen) | T1 |
 | 18.6 | Independence: the guard test from M00 passes, WooCommerce deactivated on staging, and the plugin still works | T1 |
 | 18.8 | **Importer** `wp radius-hotel-booking import:legacy [--dry-run]` plus an admin screen: room types, floors, rooms, rate plans (deduplicated into one library), room-type rates, rate calendar, pricing rules, blocks, iCal feeds, guests, staff + employees + contracts + payroll history (if M15), access settings (PINs hashed), settings, and **future** bookings | T2–T5 |

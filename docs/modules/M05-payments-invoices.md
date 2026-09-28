@@ -97,7 +97,7 @@ switched on or off in Settings → E-mail.
 ## Tasks
 
 - [ ] T1 [Free] Settings sections Payments + Invoices; the `payments`, `invoices` and `invoice_versions` tables; register the access keys
-- [ ] T2 [Free] `PaymentService` (record, void, recalculate; table-driven tests), the record-payment dialog, and the payment history panel
+- [ ] T2 [Free] `PaymentService` (record, void, recalculate; verified on the Local site), the record-payment dialog, and the payment history panel
 - [ ] T3 [Free] Deadline computation + countdown UI + the `overdue` derived state
 - [ ] T4 [Free] Invoice + receipt: sequential numbering, versioning, an HTML print view (`templates/documents/`), and the `rtbp_document_renderers` registry
 - [ ] T5 [Free] Confirmation e-mail + public confirmation page with instructions (invoice link to the print view); guest language
@@ -116,7 +116,7 @@ switched on or off in Settings → E-mail.
 4. Edit a line's dates (the price changes). The invoice is re-issued as v2 under the same number.
 5. Let a booking pass its deadline with auto-release on. The room is freed, the guest is e-mailed,
    and the log shows `system`.
-6. Numbers never skip, even when two bookings are created at the same second (the concurrency test).
+6. Numbers never skip, even when two bookings are created at the same second (the concurrency check).
 
 ## Legacy reference
 

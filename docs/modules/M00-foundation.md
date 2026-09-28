@@ -46,7 +46,7 @@ front-end page. When M00 is done, a module can be added without touching any fra
 
 ## Access
 
-Capability `rtbp_access_dashboard` replaces the example capabilities (`MANAGE_ITEMS`). Fine-grained
+Capability `rtbp_view_dashboard` replaces the example capabilities (`MANAGE_ITEMS`). Fine-grained
 access arrives in M13. Until then, every hotel endpoint checks this capability.
 
 ## Consumes / provides
@@ -57,15 +57,21 @@ access arrives in M13. Until then, every hotel endpoint checks this capability.
 
 ## Tasks
 
-- [ ] T1 [Free] Remove the Item slice everywhere; update the Dashboard placeholder; set PHP 8.0 as the minimum; add the `ACCESS_DASHBOARD` capability; bump `ROLES_VERSION`
-- [ ] T2 [Free] `Money` + `Dates` (PHP + JS twins), with table-driven unit tests: XOF format, rounding, local↔GMT, midnight, month end, leap day
+- [x] T1 [Free] Remove the Item slice everywhere (model, table, repo, service, resource, controller, routes, bindings, events, capability, shortcode, block, Elementor widget, email, template, test, JS module) and the CLAUDE.md lines about the Item template; set PHP 8.0 as the minimum (header, composer.json, phpcs testVersion, readme.txt); add the `VIEW_DASHBOARD` capability; bump `ROLES_VERSION` — done 2026-09-28
+- [ ] T2 [Free] `Money` + `Dates` (PHP), verified on the Local site (XOF format, rounding, local↔GMT, midnight, month end, leap day), plus the JS twins in `src/lib/format.js` (`formatMoney`, `formatDate`, `formatTime`, `formatDateRange`), localised currency and date settings
 - [ ] T3 [Free] `DomainException` → ApiResponse; `Transaction`; `Sequence` + `sequences` table (bump `DBVERSION`); `Scheduler`
 - [ ] T4 [Free] `ProtectedFiles` + `GET /files/{token}` download endpoint
 - [ ] T5 [Free] `[rtbp_dashboard]` shortcode + front-end mount of the admin bundle + login prompt
-- [ ] T6 [Free] App shell (grouped sidebar, top bar, mobile Sheet + bottom tabs, palette stub), tokens, `status.js`, `format.js`
-- [ ] T7 [Free] Composite components + react-query / RHF / zod / sonner / day-picker; a demo page under `#/dev/ui` (dev builds only)
-- [ ] T8 [Free] French pipeline end to end; WooCommerce-independence guard test; `uninstall.php` honouring "delete data on uninstall"; rewrite CLAUDE.md, README and readme.txt descriptions; `Requires PHP: 8.0`
-- [ ] T9 [Free+Pro+Client] Extension runtime (ADR-015): publish `window.rtbp` (`ui`, `lib`, `React`, `hooks`) and the JS filters `rtbp.admin.routes` / `rtbp.settings.sections` / `rtbp.api.error`. Scaffold the sibling repos `../radius-hotel-booking-pro` and `../radius-hotel-booking-residencetata`: bootstrap with a dependency check and admin notice, Composer PSR-4, webpack externals to `window.rtbp`, `readme.txt`, phpcs, `CLAUDE.md` pointing back to these docs, and git init. Each registers one demo route through `rtbp.admin.routes` to prove the seam. Run Plugin Check on free
+- [ ] T6 [Free] Finish the shell (most of it is built; see Progress notes): `src/lib/status.js` + `StatusBadge`, mobile bottom tabs for the front-desk routes, a ⌘K command-palette stub (navigation only), and a visual check at 360 px
+- [ ] T7a [Free] Libraries: react-query (with the provider in the shell), react-hook-form, zod, sonner (with the toaster); `ConfirmDialog` (optional required reason); `FormSection` / `Field` wired to API field errors
+- [ ] T7b [Free] `DataTable` (server pagination, sorting, row actions, mobile cards), `FilterTabs` with counts, `DateRangePicker` (react-day-picker, presets, arrival/creation mode)
+- [ ] T7c [Free] `Money` / `DateTime` display components + the `#/dev/ui` demo page (dev builds only) showing every composite in loading, empty, error and populated states
+- [ ] T8 [Free] French pipeline end to end; WooCommerce-independence guard test; `uninstall.php` honouring "delete data on uninstall"; rewrite the README and readme.txt descriptions as the product
+- [ ] T9 [Free+Pro+Client] Finish the extension runtime (the Pro repo and the first seams exist; see Progress notes): the `rtbp.api.error` filter in the API client; `React` and the new composites on `window.rtbp`; scaffold `../radius-hotel-booking-residencetata` (the same bootstrap as Pro, requiring free + Pro); a demo route in Pro and in the client add-on through `rtbp.admin.routes`; run Plugin Check on free
+
+**Deferred:** 18.7 (bookings are real records) is delivered by M02/M03. M00 only guarantees there
+is no WooCommerce dependency. `PageHeader` is dropped: the shell's Topbar and `usePageActions()`
+already cover it.
 
 ## Acceptance
 
@@ -73,7 +79,7 @@ access arrives in M13. Until then, every hotel endpoint checks this capability.
 2. Open the dashboard in wp-admin, and on a page containing `[rtbp_dashboard]`, at 1280 px and 360 px.
 3. Switch the user's language to French. The shell renders in French.
 4. `#/dev/ui` shows every composite in its loading, empty, error and populated states.
-5. `npm run test:php` passes the Money / Dates / Sequence tests.
+5. A `wp eval` check of Money, Dates and Sequence gives the expected values (recorded in Progress notes).
 
 ## Progress notes
 
@@ -114,3 +120,20 @@ access arrives in M13. Until then, every hotel endpoint checks this capability.
   - **Still to do in T6:** the command palette stub and bottom tabs on mobile. The phone
     layout is not yet checked visually (the browser window could not be resized).
 - 2026-09-28: JS linting (ESLint, `npm run lint:js`) was removed from the project at the user's request. PHPCS is the only linter.
+- 2026-09-28 **T1 done.**
+  - The Item slice is gone from PHP, JS, templates and tests. The block, shortcode, Elementor,
+    page-installer and e-mail managers stay as empty scaffolding with filters
+    (`rtbp_register_blocks`, `rtbp_shortcodes`, `rtbp_register_elementor_widgets`,
+    `rtbp_install_pages`, `rtbp_email_classes`) for M04 and M05 to fill.
+  - The public bundle now loads for any `rtbp_shortcodes` tag or any
+    `radius-hotel-booking/*` block.
+  - The site app renders nothing until M04.
+  - Capability: the code keeps `Capabilities::VIEW_DASHBOARD` (`rtbp_view_dashboard`). The docs
+    said `ACCESS_DASHBOARD` and are corrected. `Capabilities::retired()` lets the role sync strip
+    `rtbp_manage_items`; `ROLES_VERSION` is now 2.
+  - PHP 8.0 minimum in the plugin header, composer.json (lock hash refreshed), phpcs testVersion,
+    readme.txt and CLAUDE.md.
+  - Leftover on existing dev sites: the old `…_items` table is not dropped, which is harmless.
+  - README.md still describes the Item example and is rewritten in T8.
+  - Verified on food-menu.local: roles re-synced, the dashboard and settings load, and the
+    `items` endpoint is gone.

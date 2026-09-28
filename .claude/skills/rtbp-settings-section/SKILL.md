@@ -35,5 +35,5 @@ build their own settings screens.
 ## Checklist
 
 - Default exists for every key (a fresh install must work without visiting Settings).
-- The feature reading the setting has a test for at least the default and one non-default value.
+- The feature reading the setting is checked on the Local site with the default and one non-default value.
 - Changelog line for the new option.

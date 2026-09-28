@@ -56,7 +56,7 @@ The commands read and update this table. Keep the columns.
 
 | Order | ID | Module | Tier | Depends on | Status | Branch | Started | Finished |
 |---|---|---|---|---|---|---|---|---|
-| 0 | M00 | [Foundation and design shell](../modules/M00-foundation.md) | Free (+ add-on skeletons) | — | todo | module/m00-foundation | | |
+| 0 | M00 | [Foundation and design shell](../modules/M00-foundation.md) | Free (+ add-on skeletons) | — | in-progress | module/m00-foundation | 2026-09-28 | |
 | 1 | M17 | [Settings and system](../modules/M17-settings.md) | Free | M00 | todo | module/m17-settings | | |
 | 2 | M13 | [Staff permissions and access control](../modules/M13-staff-permissions.md) | Free + Pro | M17 | todo | module/m13-permissions | | |
 | 3 | M14 | [Activity log](../modules/M14-activity-log.md) | Free (emitter) + **Pro** | M13 | todo | module/m14-activity-log | | |

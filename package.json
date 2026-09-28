@@ -11,8 +11,7 @@
     "format": "wp-scripts format src",
     "packages-update": "wp-scripts packages-update",
     "package": "bash ./bin/build-plugin-zip.sh",
-    "i18n:pot": "wp i18n make-pot . languages/radius-hotel-booking.pot --domain=radius-hotel-booking --exclude=node_modules,build,vendor,tests",
-    "test:php": "./vendor/bin/phpunit -c phpunit.xml.dist"
+    "i18n:pot": "wp i18n make-pot . languages/radius-hotel-booking.pot --domain=radius-hotel-booking --exclude=node_modules,build,vendor"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",

@@ -29,7 +29,6 @@ Dashboard, Items and Settings screens.
 | `npm run build` | Production bundles + `*.asset.php` dependency files. |
 | `npm run format` | Prettier, via wp-scripts. |
 | `composer phpcs` / `composer phpcs:fix` | WordPress coding standards. |
-| `npm run test:php` | PHPUnit — see Testing below for the required env vars. |
 | `npm run package` | Build a distributable zip. |
 | `npm run i18n:pot` | Regenerate `languages/radius-hotel-booking.pot`. |
 
@@ -239,35 +238,6 @@ The hotel booking keeps the hooks for a paid add-on, but no licensing logic:
 
 Gate a paid feature **both** in the UI and server-side, so a stored setting
 can't bypass the gate.
-
----
-
-## Testing
-
-PHPUnit runs against a WordPress checkout and a throwaway MySQL database. There
-is no containerised environment — point the suite at whatever local stack you
-already use:
-
-```bash
-export WP_CORE_DIR="$HOME/wordpress"     # any WordPress checkout
-export WP_TESTS_DB_NAME=wordpress_test   # DROPPED and recreated on every run
-export WP_TESTS_DB_USER=root
-export WP_TESTS_DB_PASSWORD=
-export WP_TESTS_DB_HOST=127.0.0.1
-
-npm run test:php      # PHPUnit — tests/phpunit/
-```
-
-Those variables are read by `tests/phpunit/wp-config.php`, which
-`phpunit.xml.dist` loads. The test database is wiped on every run, so never
-aim it at one you care about.
-
-`tests/phpunit/TestItemCrud.php` is the reference test; copy it for your own
-resources.
-
-When you write tests that call the REST API, remember that
-`PermissionMiddleware` rejects requests whose `Referer` isn't the site URL —
-set that header, or the request comes back 403 "Invalid request source".
 
 ---
 
