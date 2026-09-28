@@ -24,6 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use RadiusTheme\RadiusHotelBooking\Core\Permissions\Capabilities;
 use RadiusTheme\RadiusHotelBooking\Helpers\SettingsHelper;
+use RadiusTheme\RadiusHotelBooking\Helpers\ThemeHelper;
 
 /**
  * Load assets class.
@@ -209,7 +210,19 @@ class LoadAssets {
 
 		wp_enqueue_style( 'wp-components' );
 
+		// The Settings → Display primary colour, on first paint.
+		ThemeHelper::attach_to( 'radius-hotel-booking-admin' );
+
 		$this->localize( 'radius-hotel-booking-admin', 'radius_hotel_booking_param', $this->admin_params() );
+
+		/**
+		 * Fires after the admin app is enqueued, so an add-on can enqueue its own
+		 * bundle with `radius-hotel-booking-admin` as a dependency. The add-on
+		 * then extends the app through `window.rtbp` and the `rtbp.*` JS filters.
+		 *
+		 * @param string $handle The admin app's script handle.
+		 */
+		do_action( 'rtbp_admin_enqueue_scripts', 'radius-hotel-booking-admin' );
 	}
 
 	/**
@@ -229,6 +242,8 @@ class LoadAssets {
 		if ( ! $this->register_entry( 'site', self::SITE_HANDLE, array( 'wp-element', 'wp-i18n', 'wp-api-fetch' ) ) ) {
 			return;
 		}
+
+		ThemeHelper::attach_to( self::SITE_HANDLE );
 
 		$this->localize( self::SITE_HANDLE, 'radius_hotel_booking_site_param', $this->site_params() );
 	}
@@ -322,6 +337,8 @@ class LoadAssets {
 					'general' => SettingsHelper::get_setting( 'general' ),
 					'display' => SettingsHelper::get_setting( 'display' ),
 				),
+				'timezone'      => wp_timezone_string(),
+				'logo_url'      => RADIUS_HOTEL_BOOKING_ASSETS . '/images/logo.svg',
 				'date_format'   => get_option( 'date_format' ),
 				'time_format'   => get_option( 'time_format' ),
 				'start_of_week' => (int) get_option( 'start_of_week' ),

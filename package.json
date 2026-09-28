@@ -8,8 +8,6 @@
   "scripts": {
     "start": "wp-scripts start",
     "build": "wp-scripts build",
-    "lint:js": "wp-scripts lint-js src",
-    "lint:js:fix": "wp-scripts lint-js src --fix",
     "format": "wp-scripts format src",
     "packages-update": "wp-scripts packages-update",
     "package": "bash ./bin/build-plugin-zip.sh",

@@ -16,6 +16,23 @@ module.exports = {
 				primary: {
 					DEFAULT: 'var(--primary)',
 					foreground: 'var(--primary-foreground)',
+					hover: 'var(--primary-hover)',
+					soft: 'var(--primary-soft)',
+					softer: 'var(--primary-softer)',
+				},
+				app: 'var(--app-bg)',
+				heading: 'var(--heading)',
+				success: {
+					DEFAULT: 'var(--success)',
+					soft: 'var(--success-soft)',
+				},
+				warning: {
+					DEFAULT: 'var(--warning)',
+					soft: 'var(--warning-soft)',
+				},
+				info: {
+					DEFAULT: 'var(--info)',
+					soft: 'var(--info-soft)',
 				},
 				secondary: {
 					DEFAULT: 'var(--secondary)',
@@ -24,6 +41,7 @@ module.exports = {
 				destructive: {
 					DEFAULT: 'var(--destructive)',
 					foreground: 'var(--destructive-foreground)',
+					soft: 'var(--destructive-soft)',
 				},
 				muted: {
 					DEFAULT: 'var(--muted)',

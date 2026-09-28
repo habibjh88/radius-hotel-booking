@@ -20,12 +20,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use RadiusTheme\RadiusHotelBooking\Controllers\DashboardController;
 use RadiusTheme\RadiusHotelBooking\Controllers\ItemController;
 use RadiusTheme\RadiusHotelBooking\Controllers\SettingsController;
 
 /** Item routes — the example CRUD resource. */
 $this->router->resource( 'items', ItemController::class );
 $this->router->put( 'items/(?P<id>\d+)/publish', array( ItemController::class, 'publish' ) );
+
+/** Dashboard. */
+$this->router->get( 'dashboard/summary', array( DashboardController::class, 'summary' ) );
 
 /** Settings routes. */
 $this->router->get( 'settings', array( SettingsController::class, 'index' ) );

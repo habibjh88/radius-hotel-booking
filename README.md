@@ -27,7 +27,7 @@ Dashboard, Items and Settings screens.
 |---|---|
 | `npm run start` | Watch mode. Writes to `build/`, same as a production build. |
 | `npm run build` | Production bundles + `*.asset.php` dependency files. |
-| `npm run lint:js` / `npm run format` | ESLint / Prettier, via wp-scripts. |
+| `npm run format` | Prettier, via wp-scripts. |
 | `composer phpcs` / `composer phpcs:fix` | WordPress coding standards. |
 | `npm run test:php` | PHPUnit — see Testing below for the required env vars. |
 | `npm run package` | Build a distributable zip. |

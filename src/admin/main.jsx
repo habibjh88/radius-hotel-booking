@@ -12,7 +12,12 @@
 import { createRoot } from 'react-dom/client';
 
 import App from './App';
+import { publishRuntime } from '@/lib/runtime';
 import '../index.css';
+
+// Before anything renders: add-on scripts load after this bundle and extend
+// the app through window.rtbp and the rtbp.* filters.
+publishRuntime();
 
 const container = document.getElementById( 'radius-hotel-booking' );
 

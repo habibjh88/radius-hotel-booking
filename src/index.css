@@ -3,51 +3,89 @@
 @tailwind utilities;
 
 /*
- * Design tokens. Tailwind's colors in tailwind.config.js all point at these
- * variables, so re-theming the plugin means editing this block only.
+ * Design tokens.
+ *
+ * Scoped to `.rtbp-root` (not `:root`) so they can never clash with another
+ * plugin's `--primary` in wp-admin; portals carry `rtbp-root` on their content
+ * node, so they get the tokens too. Tailwind's colours in tailwind.config.js
+ * all point at these variables.
+ *
+ * Brand: only `--primary` is set by the site owner (Settings → Display). It is
+ * overridden inline by Helpers\ThemeHelper on first paint and live by
+ * src/lib/theme.js; every other brand shade is derived from it here.
  */
-:root {
-	--background: #ffffff;
-	--foreground: #111827;
-
-	--card: #ffffff;
-	--card-foreground: #111827;
-
-	--popover: #ffffff;
-	--popover-foreground: #111827;
-
+.rtbp-root {
 	--primary: #0040ff;
 	--primary-foreground: #ffffff;
+	--primary-hover: color-mix(in srgb, var(--primary) 86%, #000000);
+	--primary-soft: color-mix(in srgb, var(--primary) 10%, #ffffff);
+	--primary-softer: color-mix(in srgb, var(--primary) 5%, #ffffff);
 
-	--secondary: #f3f4f6;
-	--secondary-foreground: #111827;
+	--app-bg: #edf0f3;
+	--heading: #00134d;
 
-	--muted: #f3f4f6;
-	--muted-foreground: #6b7280;
+	--background: #ffffff;
+	--foreground: #1f2937;
 
-	--accent: #eef2ff;
-	--accent-foreground: #1e293b;
+	--card: #ffffff;
+	--card-foreground: #1f2937;
 
-	--destructive: #dc2626;
+	--popover: #ffffff;
+	--popover-foreground: #1f2937;
+
+	--secondary: #f4f6f8;
+	--secondary-foreground: #00134d;
+
+	--muted: #f4f6f8;
+	--muted-foreground: #5b6b7f;
+
+	--accent: var(--primary-softer);
+	--accent-foreground: #00134d;
+
+	--destructive: #d92d20;
 	--destructive-foreground: #ffffff;
+	--destructive-soft: #fef3f2;
 
-	--border: #e5e7eb;
-	--input: #e5e7eb;
-	--ring: #0040ff;
+	--success: #079455;
+	--success-soft: #ecfdf3;
+	--warning: #dc6803;
+	--warning-soft: #fffaeb;
+	--info: #0086c9;
+	--info-soft: #f0f9ff;
+
+	--border: #dbe1e6;
+	--input: #dbe1e6;
+	--ring: var(--primary);
 
 	--radius: 0.5rem;
 
 	--sidebar-background: #ffffff;
-	--sidebar-foreground: #374151;
-	--sidebar-primary: #0040ff;
+	--sidebar-foreground: #3f4b5b;
+	--sidebar-primary: var(--primary);
 	--sidebar-primary-foreground: #ffffff;
-	--sidebar-accent: #f3f4f6;
-	--sidebar-accent-foreground: #111827;
-	--sidebar-border: #e5e7eb;
-	--sidebar-ring: #0040ff;
+	--sidebar-accent: var(--primary-softer);
+	--sidebar-accent-foreground: #00134d;
+	--sidebar-border: #dbe1e6;
+	--sidebar-ring: var(--primary);
+
+	/* Offset for the WordPress admin bar, used by the sticky shell. */
+	--rtbp-top: 0px;
 }
 
-.dark {
+body.admin-bar .rtbp-root {
+	--rtbp-top: 32px;
+}
+
+@media screen and (max-width: 782px) {
+	body.admin-bar .rtbp-root {
+		--rtbp-top: 46px;
+	}
+}
+
+.rtbp-root.dark,
+.rtbp-root .dark {
+	--app-bg: #0b0f19;
+	--heading: #f9fafb;
 	--background: #0b0f19;
 	--foreground: #f9fafb;
 	--card: #111827;
@@ -69,9 +107,29 @@
 	--sidebar-border: #1f2937;
 }
 
+/*
+ * App shell. Plain CSS rather than utilities because these depend on the
+ * admin-bar offset variable.
+ */
+.rtbp-root .rtbp-shell-sidebar {
+	position: sticky;
+	top: var(--rtbp-top);
+	height: calc(100vh - var(--rtbp-top));
+}
+
+.rtbp-root .rtbp-shell-topbar {
+	position: sticky;
+	top: var(--rtbp-top);
+	z-index: 20;
+}
+
 /* wp-admin resets so the app can own the full page. */
+/*
+ * #wpcontent's 20px left padding is removed below, so the app sits flush
+ * against the admin menu without a negative margin.
+ */
 .radius-hotel-booking-admin-page {
-	margin-left: -20px;
+	background: var(--app-bg);
 	color: var(--foreground);
 	font-size: 14px;
 	line-height: 1.5;

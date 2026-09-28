@@ -51,14 +51,17 @@ class Menu {
 			$capability,
 			$slug,
 			array( $this, 'plugin_page' ),
-			'dashicons-screenoptions',
+			$this->menu_icon(),
 			$menu_position
 		);
 
 		if ( current_user_can( $capability ) ) { // phpcs:ignore
 			// phpcs:disable WordPress.WP.GlobalVariablesOverride.Prohibited
 			$submenu[ $slug ][] = array( esc_attr__( 'Dashboard', 'radius-hotel-booking' ), Capabilities::VIEW_DASHBOARD, 'admin.php?page=' . $slug . '#/' );
-			$submenu[ $slug ][] = array( esc_attr__( 'Items', 'radius-hotel-booking' ), Capabilities::MANAGE_ITEMS, 'admin.php?page=' . $slug . '#/items' );
+			$submenu[ $slug ][] = array( esc_attr__( 'Bookings', 'radius-hotel-booking' ), Capabilities::VIEW_DASHBOARD, 'admin.php?page=' . $slug . '#/bookings' );
+			$submenu[ $slug ][] = array( esc_attr__( 'Availability', 'radius-hotel-booking' ), Capabilities::VIEW_DASHBOARD, 'admin.php?page=' . $slug . '#/calendar' );
+			$submenu[ $slug ][] = array( esc_attr__( 'Guests', 'radius-hotel-booking' ), Capabilities::VIEW_DASHBOARD, 'admin.php?page=' . $slug . '#/guests' );
+			$submenu[ $slug ][] = array( esc_attr__( 'Rooms & floors', 'radius-hotel-booking' ), Capabilities::MANAGE_SETTINGS, 'admin.php?page=' . $slug . '#/rooms' );
 			$submenu[ $slug ][] = array( esc_attr__( 'Settings', 'radius-hotel-booking' ), Capabilities::MANAGE_SETTINGS, 'admin.php?page=' . $slug . '#/settings' );
 			// phpcs:enable WordPress.WP.GlobalVariablesOverride.Prohibited
 
@@ -69,6 +72,26 @@ class Menu {
 			 */
 			do_action( 'rtbp_after_settings_menu_item' );
 		}
+	}
+
+	/**
+	 * The admin-menu icon: the logo's building, as a monochrome SVG data URI so
+	 * WordPress repaints it to match the admin colour scheme.
+	 *
+	 * @return string
+	 */
+	private function menu_icon(): string {
+		$file = RADIUS_HOTEL_BOOKING_DIR . 'assets/images/menu-icon.svg';
+
+		if ( ! is_readable( $file ) ) {
+			return 'dashicons-building';
+		}
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- local plugin file.
+		$svg = (string) file_get_contents( $file );
+
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- the data URI format WordPress expects for menu icons.
+		return 'data:image/svg+xml;base64,' . base64_encode( $svg );
 	}
 
 	/**

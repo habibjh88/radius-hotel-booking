@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { __ } from '@wordpress/i18n';
+import { applyFilters } from '@wordpress/hooks';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { get, put } from '@/api/client';
+import { applyPrimaryColor } from '@/lib/theme';
+import BrandColorField from './BrandColorField';
 
 const SECTIONS = [
 	{ key: 'general', label: __( 'General', 'radius-hotel-booking' ) },
@@ -28,10 +31,38 @@ export default function Settings() {
 	const [ saving, setSaving ] = useState( false );
 	const [ notice, setNotice ] = useState( '' );
 
+	// Tabs contributed by add-ons (ADR-015). Each entry is
+	// `{ key, label, render( { value, setField, save, saving } ) }`, where `key`
+	// is a section registered in PHP through the `rtbp_settings` filter.
+	const extraSections = useMemo(
+		() =>
+			( applyFilters( 'rtbp.settings.sections', [] ) || [] ).filter(
+				( section ) =>
+					section?.key &&
+					typeof section.render === 'function' &&
+					! SECTIONS.some( ( { key } ) => key === section.key )
+			),
+		[]
+	);
+
+	// The brand colour as last saved: previews change it live, and leaving the
+	// screen without saving puts this one back.
+	const savedPrimary = useRef( null );
+
 	useEffect( () => {
 		get( 'settings' )
-			.then( ( { data } ) => setSettings( data.settings ?? data ) )
+			.then( ( { data } ) => {
+				const loaded = data.settings ?? data;
+				savedPrimary.current = loaded.display?.primaryColor ?? null;
+				setSettings( loaded );
+			} )
 			.catch( ( error ) => setNotice( error.message ) );
+
+		return () => {
+			if ( savedPrimary.current ) {
+				applyPrimaryColor( savedPrimary.current );
+			}
+		};
 	}, [] );
 
 	const setField = ( section, field ) => ( value ) =>
@@ -46,6 +77,9 @@ export default function Settings() {
 
 		try {
 			await put( `settings/${ section }`, settings[ section ] );
+			if ( section === 'display' ) {
+				savedPrimary.current = settings.display?.primaryColor ?? null;
+			}
 			setNotice( __( 'Settings saved.', 'radius-hotel-booking' ) );
 		} catch ( error ) {
 			setNotice( error.message );
@@ -72,7 +106,7 @@ export default function Settings() {
 
 			<Tabs defaultValue="general">
 				<TabsList>
-					{ SECTIONS.map( ( { key, label } ) => (
+					{ [ ...SECTIONS, ...extraSections ].map( ( { key, label } ) => (
 						<TabsTrigger key={ key } value={ key }>
 							{ label }
 						</TabsTrigger>
@@ -170,29 +204,10 @@ export default function Settings() {
 							</CardTitle>
 						</CardHeader>
 						<CardContent className="space-y-4">
-							<div>
-								<Label htmlFor="rtbp-color">
-									{ __(
-										'Primary color',
-										'radius-hotel-booking'
-									) }
-								</Label>
-								<Input
-									id="rtbp-color"
-									type="color"
-									className="h-10 w-20 p-1"
-									value={
-										settings.display?.primaryColor ??
-										'#0040ff'
-									}
-									onChange={ ( event ) =>
-										setField(
-											'display',
-											'primaryColor'
-										)( event.target.value )
-									}
-								/>
-							</div>
+							<BrandColorField
+								value={ settings.display?.primaryColor }
+								onChange={ setField( 'display', 'primaryColor' ) }
+							/>
 
 							<div>
 								<Label htmlFor="rtbp-columns">
@@ -227,6 +242,17 @@ export default function Settings() {
 						</CardContent>
 					</Card>
 				</TabsContent>
+
+				{ extraSections.map( ( { key, render } ) => (
+					<TabsContent key={ key } value={ key }>
+						{ render( {
+							value: settings[ key ] ?? {},
+							setField: ( field ) => setField( key, field ),
+							save: () => save( key ),
+							saving,
+						} ) }
+					</TabsContent>
+				) ) }
 			</Tabs>
 		</div>
 	);

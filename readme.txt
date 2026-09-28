@@ -42,6 +42,10 @@ See README.md for how to rename the hotel booking for a new project.
 = 1.0.0.1 ( UNRELEASE ) =
 Removed the wp-env Docker environment and Playwright end-to-end tests; PHPUnit now runs directly.
 Moved rtbp_table_prefix() into the core functions file with the other global helpers.
+Fixed admin screens failing when another plugin changes WordPress's shared REST request settings.
+Added extension points so add-ons can add settings tabs and reuse the admin interface.
+New admin dashboard with a grouped sidebar, today's arrivals and departures, and a setup checklist.
+The brand colour chosen in Settings now restyles the whole dashboard, including the logo.
 
 = 1.0.0 =
 Initial release.

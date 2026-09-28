@@ -18,13 +18,28 @@ const params =
 			window.radius_hotel_booking_site_param ) ) ||
 	{};
 
-// Send the REST nonce with every request — PermissionMiddleware requires it.
-if ( params.nonce ) {
-	apiFetch.use( apiFetch.createNonceMiddleware( params.nonce ) );
-}
+/*
+ * `apiFetch` is WordPress's shared global instance (externalised to
+ * `wp.apiFetch`). Registering middleware on it with `apiFetch.use()` would
+ * leak into every other plugin's requests, and another plugin's root-URL
+ * middleware would hijack ours — so each request carries its own absolute
+ * URL and nonce header instead.
+ */
 
-if ( params.rest_url ) {
-	apiFetch.use( apiFetch.createRootURLMiddleware( params.rest_url ) );
+/**
+ * Absolute URL for a path relative to the plugin's REST namespace.
+ *
+ * @param {string} path Path such as 'settings' or 'items/5?x=1'.
+ * @return {string|undefined} URL, or undefined when the root is unknown.
+ */
+function toUrl( path ) {
+	if ( ! params.rest_url ) {
+		return undefined;
+	}
+	return `${ params.rest_url.replace( /\/+$/, '' ) }/${ String( path ).replace(
+		/^\/+/,
+		''
+	) }`;
 }
 
 /**
@@ -59,7 +74,16 @@ function unwrap( response ) {
  */
 export async function request( path, options = {} ) {
 	try {
-		const response = await apiFetch( { path, ...options } );
+		const url = toUrl( path );
+		const response = await apiFetch( {
+			...( url ? { url } : { path } ),
+			...options,
+			headers: {
+				// PermissionMiddleware requires the REST nonce on every request.
+				...( params.nonce ? { 'X-WP-Nonce': params.nonce } : {} ),
+				...( options.headers || {} ),
+			},
+		} );
 		return unwrap( response );
 	} catch ( error ) {
 		// apiFetch rejects with the parsed body on a non-2xx response.
