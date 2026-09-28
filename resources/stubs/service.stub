@@ -1,0 +1,19 @@
+<?php
+namespace {{namespace}};
+
+use RadiusTheme\RadiusHotelBooking\Repositories\{{model}}Repository;
+
+/**
+ * Services/{{class}}.php
+ * Business logic layer for {{model}}.
+ */
+class {{class}} {
+
+	private {{model}}Repository ${{variable}}Repo;
+
+	public function __construct( {{model}}Repository ${{variable}}Repo ) {
+		$this->{{variable}}Repo = ${{variable}}Repo;
+	}
+
+	// Add business logic methods here...
+}

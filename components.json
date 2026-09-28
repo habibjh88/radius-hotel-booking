@@ -1,0 +1,28 @@
+//components.json is the config file for the shadcn/ui CLI. It isn't read at build time or runtime — webpack, Tailwind and your app all ignore it. Only the npx shadcn@latest add … command reads it.
+// When you run:
+//
+//  npx shadcn@latest add tooltip
+//
+//  the CLI needs to know where to put the file, what to name it, and which conventions to write it in. components.json answers that — without it the CLI refuses to run
+//  and tells you to init first.
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "rsc": false,
+  "tsx": false,
+  "tailwind": {
+    "config": "tailwind.config.js",
+    "css": "src/index.css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils",
+    "ui": "@/components/ui",
+    "lib": "@/lib",
+    "hooks": "@/hooks"
+  },
+  "iconLibrary": "lucide"
+}

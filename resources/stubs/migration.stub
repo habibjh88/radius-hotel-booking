@@ -1,0 +1,25 @@
+<?php
+/**
+ * Migration class for the '{{ table }}' table.
+ */
+
+namespace RadiusTheme\RadiusHotelBooking\Databases\Table;
+
+use RadiusTheme\RadiusHotelBooking\Core\Database\Schema\Blueprint;
+use RadiusTheme\RadiusHotelBooking\Abstracts\Migration;
+use RadiusTheme\RadiusHotelBooking\Core\Database\Schema\Schema;
+
+class {{ class }}Table extends Migration {
+	public function up(): void {
+		Schema::create(
+		    $this->tablePrefix . '{{ table }}',
+			function ( Blueprint $table ) {
+				$table->id();
+			}
+		);
+	}
+
+	public function down(): void {
+		Schema::drop( $this->tablePrefix . '{{ table }}' );
+	}
+}

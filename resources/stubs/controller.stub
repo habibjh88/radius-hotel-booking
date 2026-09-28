@@ -1,0 +1,57 @@
+<?php
+namespace RadiusTheme\RadiusHotelBooking\Controllers;
+
+use WP_REST_Request;
+use RadiusTheme\RadiusHotelBooking\Abstracts\BaseController;
+use RadiusTheme\RadiusHotelBooking\Core\Api\Validation\Rules\RequiredRule;
+use RadiusTheme\RadiusHotelBooking\Core\Api\Validation\Rules\IntegerRule;
+use RadiusTheme\RadiusHotelBooking\Repositories\{{model}}Repository;
+use RadiusTheme\RadiusHotelBooking\Resources\{{model}}Resource;
+
+/**
+ * Api/Controllers/{{class}}.php
+ * {{model}} API controller
+ */
+class {{class}} extends BaseController {
+
+	public function __construct() {
+		parent::__construct( new {{model}}Repository() );
+	}
+
+	protected function transformItem( $item ): array {
+		return ( new {{model}}Resource() )->transform( $item );
+	}
+
+	protected function transformCollection( array $items ): array {
+		return {{model}}Resource::collection( $items );
+	}
+
+	/**
+	 * Validation rules for create and update.
+	 *
+	 * @param string $context 'create' or 'update'
+	 * @return array
+	 */
+	protected function getValidationRules( $request, string $context = 'create', ): array {
+		$rules = [
+			// Add your fields below
+			// 'field_name' => [ new RequiredRule(), new IntegerRule() ],
+		];
+
+		if ( $context === 'update' ) {
+			// Make some fields optional
+			// unset( $rules['field_name'] );
+		}
+
+		return $rules;
+	}
+
+	/**
+     * Retrieves the resource type for this controller.
+     *
+     * @return string The resource type, which is 'user' in this case.
+     */
+	protected  function getResourceType(): string {
+    		return {{model}};
+    	}
+}

@@ -1,0 +1,106 @@
+<?php
+/**
+ * Creates the plugin's default pages on first activation.
+ *
+ * @package RadiusTheme\RadiusHotelBooking\Setup
+ */
+
+namespace RadiusTheme\RadiusHotelBooking\Setup;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
+
+use RadiusTheme\RadiusHotelBooking\Common\Keys;
+
+/**
+ * Class PageInstaller
+ *
+ * @since 1.0.0
+ */
+class PageInstaller {
+
+	/**
+	 * Pages to create: settings key => [title, block content].
+	 *
+	 * BOILERPLATE: one example page hosting the public shortcode. Add yours here
+	 * and they are created on install and on upgrade (create_missing_pages()).
+	 *
+	 * @return array
+	 */
+	private static function get_pages(): array {
+		return array(
+			'itemsPage' => array(
+				'title'   => __( 'Items', 'radius-hotel-booking' ),
+				'content' => '<!-- wp:shortcode -->[rtbp_items]<!-- /wp:shortcode -->',
+			),
+		);
+	}
+
+	/**
+	 * Create the default pages and store their IDs.
+	 *
+	 * @return void
+	 */
+	public static function create_pages(): void {
+		self::insert( self::get_pages(), array() );
+	}
+
+	/**
+	 * Create any page added in a newer version, or recreate one that was
+	 * trashed or deleted.
+	 *
+	 * @return void
+	 */
+	public static function create_missing_pages(): void {
+		$existing = get_option( Keys::PAGES, array() );
+		$existing = is_array( $existing ) ? $existing : array();
+
+		$missing = array();
+		foreach ( self::get_pages() as $key => $page_data ) {
+			if ( ! empty( $existing[ $key ] ) && 'publish' === get_post_status( $existing[ $key ] ) ) {
+				continue;
+			}
+			$missing[ $key ] = $page_data;
+		}
+
+		if ( $missing ) {
+			self::insert( $missing, $existing );
+		}
+	}
+
+	/**
+	 * Insert pages and merge their IDs into the stored page map.
+	 *
+	 * @param array $pages    Pages to insert, keyed by settings key.
+	 * @param array $existing Currently stored page map.
+	 *
+	 * @return void
+	 */
+	private static function insert( array $pages, array $existing ): void {
+		$ids = array();
+
+		foreach ( $pages as $key => $page_data ) {
+			$page_id = wp_insert_post(
+				array(
+					'post_title'     => $page_data['title'],
+					'post_content'   => $page_data['content'],
+					'post_status'    => 'publish',
+					'post_type'      => 'page',
+					'post_author'    => get_current_user_id() ? get_current_user_id() : 1,
+					'comment_status' => 'closed',
+				),
+				true
+			);
+
+			if ( ! is_wp_error( $page_id ) ) {
+				$ids[ $key ] = $page_id;
+				update_post_meta( $page_id, '_rtbp_page', $key );
+			}
+		}
+
+		if ( $ids ) {
+			update_option( Keys::PAGES, array_merge( $existing, $ids ) );
+		}
+	}
+}

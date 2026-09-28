@@ -1,0 +1,28 @@
+<?php
+namespace {{namespace}};
+
+use RadiusTheme\RadiusHotelBooking\Abstracts\BaseResource;
+
+/**
+ * Api/Resources/{{class}}.php
+ * {{model}} resource transformer
+ *
+ * @package RadiusTheme\RadiusHotelBooking\Resources
+ */
+class {{class}} extends BaseResource {
+
+	/**
+	 * Transform a {{model}} model into an API-friendly array.
+	 *
+	 * @param object ${{variable}} The {{model}} model instance.
+	 * @return array Transformed data.
+	 */
+	public function transform( ${{variable}} ): array {
+		return array(
+			'id'         => ${{variable}}->id,
+			// Add other fields as needed
+			'created_at' => ${{variable}}->created_at,
+			'updated_at' => ${{variable}}->updated_at,
+		);
+	}
+}

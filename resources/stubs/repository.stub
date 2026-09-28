@@ -1,0 +1,23 @@
+<?php
+namespace {{namespace}};
+
+use RadiusTheme\RadiusHotelBooking\Abstracts\BaseRepository;
+use RadiusTheme\RadiusHotelBooking\Models\{{model}};
+
+/**
+ * Class {{class}}
+ *
+ * Handles data operations for the {{model}} model.
+ */
+class {{class}} extends BaseRepository {
+
+    /**
+     * The model class managed by this repository.
+     *
+     * @var string
+     */
+    protected string $model = {{model}}::class;
+
+    // You can add custom repository methods here
+
+}

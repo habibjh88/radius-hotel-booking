@@ -1,0 +1,41 @@
+<?php
+
+namespace RadiusTheme\RadiusHotelBooking\Models;
+
+use RadiusTheme\RadiusHotelBooking\Abstracts\BaseModel;
+
+/**
+ * Class {{ class }}
+ *
+ * @package RadiusTheme\RadiusHotelBooking\Models
+ *
+ * @property int    $id
+ * @property string $name
+ */
+class {{ class }} extends BaseModel {
+
+	/**
+	 * The database table associated with the model.
+	 *
+	 * @var string
+	 */
+	protected string $table = 'radius_hotel_booking_{{ table }}';
+
+	/**
+	 * The attributes that are mass assignable.
+	 *
+	 * @var array
+	 */
+	protected array $fillable = array(
+		'name',
+	);
+
+	/**
+	 * The validation rules.
+	 *
+	 * @var array
+	 */
+	protected array $rules = array(
+		'name' => 'required|string|max:255',
+	);
+}
