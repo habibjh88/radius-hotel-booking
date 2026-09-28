@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(composer phpcs*)",
+      "Bash(composer phpcs:fix*)",
+      "Bash(./vendor/bin/phpcs *)",
+      "Bash(./vendor/bin/phpcbf *)",
+      "Bash(npm run build)",
+      "Bash(npm run format)",
+      "Bash(npm run test:php*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git branch*)"
+    ]
+  }
+}

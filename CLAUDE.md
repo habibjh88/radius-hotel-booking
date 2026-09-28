@@ -12,7 +12,6 @@ npm install
 # Frontend (@wordpress/scripts + webpack)
 npm run start            # Watch mode — writes to build/, same output as a production build
 npm run build            # Production bundles + *.asset.php dependency files
-npm run lint:js          # ESLint via wp-scripts
 npm run format           # Prettier via wp-scripts
 
 # PHP linting
@@ -43,14 +42,29 @@ bin/i18n-build.sh --all  # Compile .po -> .mo / .l10n.php / .json
 
 ## What this repository is
 
-A **plugin hotel booking**, not a product. It is the framework layer extracted from
-a production RadiusTheme plugin, with all domain code removed, plus one
-example resource (`Item`) implemented through every layer as a working
-reference. Expect to delete the `Item` slice once a real domain replaces it.
+A hotel management plugin for **Residence TATA** (Abidjan), replacing their
+WooCommerce-based hotel stack. It is built on a framework layer extracted from a
+production RadiusTheme plugin. The example `Item` slice is removed in module M00.
 
-When adding to it, the bar is different from a normal feature repo: code here is
-read as an example, so keep it generic, commented at the "why", and free of
-domain assumptions.
+**The build is planned in modules. Read `docs/README.md` first.**
+
+- `docs/project/roadmap.md`: the build order and tracker. `/module-status`,
+  `/next-module` and `/next-task` read and update it.
+- `docs/project/booking-engine.md`: time-based booking (rate-plan windows,
+  overlap, holds, row locks, pricing order). Read it before touching
+  availability, pricing or booking writes.
+- `docs/project/architecture.md`, `design-system.md`, `conventions.md`
+  (Definition of Done), `decisions.md` (ADRs and open client questions).
+- `docs/modules/Mxx-*.md`: per-module spec and task checklist.
+- `docs/project/legacy-reference.md`: how the client's current system behaves.
+  Copy its behaviour, never its code.
+- Project skills in `.claude/skills/` (`rtbp-backend-slice`, `rtbp-booking-engine`,
+  `rtbp-admin-screen`, `rtbp-settings-section`, `rtbp-access-and-audit`,
+  `rtbp-legacy-lookup`) and the `rtbp-critical-reviewer` agent.
+
+Terminology: **room type** (the diagram's "package"; it owns its rooms exclusively),
+**rate plan** (a reusable stay window such as Half Day 08:30–17:00, Overnight
+20:00→08:00 or 24 h flexible), **booking line** (one physical room × one window).
 
 ## Architecture Overview
 
@@ -189,16 +203,40 @@ In JS: `import { __ } from '@wordpress/i18n'` then
 `__( 'My text', 'radius-hotel-booking' )`. Use `sprintf` for interpolation —
 never concatenate, since `wp i18n make-pot` only extracts string literals.
 
-### Free / add-on split
+### Free / Pro / client add-on split (ADR-014 to ADR-017)
 
-`rtbp_addon_active()` is true when `RADIUS_HOTEL_BOOKING_PRO_VERSION` is defined.
-An add-on extends this plugin through filters, never by editing it:
-`rtbp_api_route_paths`, `rtbp_register_addon_routes`,
-`rtbp_register_addon_integrations`, `rtbp_email_classes`, `rtbp_settings`,
-`rtbp_capabilities`. The `is_addon` flag is localized to both JS apps.
+The product ships as **three plugins**. Every module doc has a **Tier** line
+that says which plugin each task belongs to.
 
-Gate a paid feature **both** in the UI and server-side, so a stored setting
-cannot bypass the gate.
+| Plugin | Repo folder (sibling of this one) | Namespace, prefix | Ships to |
+|---|---|---|---|
+| **Free** (this repo) | `radius-hotel-booking` | `RadiusTheme\RadiusHotelBooking`, `rtbp_` | wordpress.org |
+| **Pro** | `radius-hotel-booking-pro` | `RadiusTheme\RadiusHotelBookingPro`, `rtbp_pro_` | paying customers |
+| **Client add-on** | `radius-hotel-booking-residencetata` | `RadiusTheme\RadiusHotelBookingTata`, `rtbp_tata_` | Residence TATA only |
+
+- **Pro code never lives in the free plugin.** wordpress.org rejects
+  "trialware", meaning features locked behind payment. The free plugin exposes
+  **hooks, registries and JS extension points**. The Pro plugin supplies the
+  code that uses them. Never write `if ( rtbp_addon_active() ) { …pro feature… }`
+  in this repo. The `is_addon` flag is only for showing an upsell notice.
+- Pro and the client add-on reuse this plugin's framework: `Abstracts`,
+  `Container`, `Schema`, the router, and the `window.rtbp` JS runtime. They
+  never copy it. Every call into the free plugin is guarded with
+  `class_exists()` or `function_exists()`, and each add-on loads only when the
+  free plugin is active.
+- Existing extension points: `rtbp_api_route_paths`,
+  `rtbp_register_addon_routes`, `rtbp_register_addon_integrations`,
+  `rtbp_email_classes`, `rtbp_settings`, `rtbp_capabilities`,
+  `rtbp_migration_classes`.
+- Extension points added as the modules are built: `rtbp_access_keys`,
+  `rtbp_access_level`, `rtbp_activity` (the free plugin *emits* activity; Pro
+  *stores* it), `rtbp_price_steps`, and the JS filters `rtbp.admin.routes`,
+  `rtbp.booking.panels`, `rtbp.api.error`. The full list is in
+  `docs/project/architecture.md` §9.
+- **Every Pro feature is switchable** (ADR-017): it is listed in Pro's
+  `FeatureRegistry`, lives in a `Features\<Area>\<Name>Feature` class, and hooks in
+  only from `boot()`. The switches are under Settings → Pro features, a tab Pro adds to
+  this plugin's Settings screen.
 
 ### Bootstrap flow
 
