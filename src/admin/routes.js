@@ -89,7 +89,7 @@ const baseRoutes = [
 		icon: CalendarDays,
 		capability: VIEW,
 		accessKey: 'page.availability',
-		module: 'M08',
+		element: lazy( () => import( '@/modules/Availability' ) ),
 	},
 	{
 		path: '/bookings/new',

@@ -45,7 +45,7 @@ final class RadiusHotelBooking {
 	 *
 	 * @var string
 	 */
-	const DBVERSION = '1.0.5';
+	const DBVERSION = '1.0.7';
 
 	/**
 	 * Plugin slug — the admin page slug and the asset handle prefix.
@@ -343,6 +343,11 @@ final class RadiusHotelBooking {
 
 		RadiusTheme\RadiusHotelBooking\Access\AccessAudit::init();
 		RadiusTheme\RadiusHotelBooking\ActivityLog\CoreEvents::init();
+
+		// The availability engine answers the pricing seams (M08).
+		RadiusTheme\RadiusHotelBooking\Services\Availability\RateCalendar::init();
+		RadiusTheme\RadiusHotelBooking\Services\Availability\OccupancyCalculator::init();
+		RadiusTheme\RadiusHotelBooking\Services\Availability\HoldService::init();
 
 		$this->shortcode = new RadiusTheme\RadiusHotelBooking\Shortcodes\Shortcodes();
 		$this->emails    = new RadiusTheme\RadiusHotelBooking\Emails\EmailManager();

@@ -19,8 +19,13 @@
 namespace RadiusTheme\RadiusHotelBooking\Databases;
 
 use RadiusTheme\RadiusHotelBooking\Core\Database\Schema\Migrations\MigrationRunner;
+use RadiusTheme\RadiusHotelBooking\Databases\Table\BlocksTable;
+use RadiusTheme\RadiusHotelBooking\Databases\Table\BookingRoomsTable;
+use RadiusTheme\RadiusHotelBooking\Databases\Table\BookingsTable;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\FilesTable;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\FloorsTable;
+use RadiusTheme\RadiusHotelBooking\Databases\Table\HoldsTable;
+use RadiusTheme\RadiusHotelBooking\Databases\Table\RateCalendarTable;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\RatePlansTable;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\RoomsTable;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\RoomTypeRatesTable;
@@ -97,6 +102,12 @@ class DatabaseManager {
 			// Rate plans and pricing (M07).
 			RatePlansTable::class,
 			RoomTypeRatesTable::class,
+			// Availability engine (M08); the booking tables' schema too (ADR-022).
+			BookingsTable::class,
+			BookingRoomsTable::class,
+			HoldsTable::class,
+			BlocksTable::class,
+			RateCalendarTable::class,
 		);
 
 		/**

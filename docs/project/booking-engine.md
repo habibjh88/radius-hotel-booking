@@ -109,6 +109,7 @@ end_eff        := occupied_until + buffer
 - **Buffer** (cleaning time, D4): `room_types.buffer_minutes`, falling back to the setting (default
   0). It is added to the **end** of both the existing and the candidate interval, so the room is
   free *buffer* minutes after any stay ends.
+  A **block** is a closure, not a stay: no buffer applies around it (M08 T1).
 - **What occupies a room:**
 
   | Kind | Occupies when |
@@ -135,7 +136,7 @@ GET availability?arrival=2026-10-02&departure=2026-10-02&adults=2&children=0
 {
   "span": { "arrival": "2026-10-02", "departure": "2026-10-02", "nights": 0 },
   "room_types": [{
-    "id": 1, "name": "Standard Room", "free_rooms_now": 7,
+    "id": 1, "name": "Standard Room", "rooms_total": 8, "rooms_sellable": 7,
     "rates": [{
       "rate_plan_id": 3, "name": "Half Day", "window": { "start": "…T08:30…", "end": "…T17:00…" },
       "units": 1, "available": true, "free_count": 5,
@@ -143,10 +144,10 @@ GET availability?arrival=2026-10-02&departure=2026-10-02&adults=2&children=0
       "reasons": []
     }, {
       "rate_plan_id": 5, "name": "Overnight", "available": false,
-      "reasons": [{ "code": "fully_booked" }]
+      "reasons": [{ "code": "fully_booked", "message": "Fully booked." }]
     }],
     "floors": [{ "id": 2, "name": "Floor 1", "rooms": [
-      { "id": 11, "number": "A1", "available_for": [3], "reasons_by_rate": { "5": ["booked"] } },
+      { "id": 11, "number": "A1", "available_for": [3], "reasons_by_rate": { "5": { "code": "booked", "booking_ref": "RT-…", "until": "…" } } },
       { "id": 13, "number": "A3", "available_for": [], "state": "maintenance" }
     ]}]
   }],
@@ -191,7 +192,7 @@ Never run one query per rate plan or per room (the legacy system's N+1).
       AND start_at_gmt < %s AND occupied_until_gmt > %s   -- envelope, minus buffer on the left
    UNION ALL
    SELECT room_id, start_at_gmt, end_at_gmt, 'hold', NULL FROM holds
-    WHERE room_id IN (…) AND expires_at_gmt > UTC_TIMESTAMP() AND token <> %s
+    WHERE room_id IN (…) AND expires_at_gmt > %s AND token <> %s   -- "now" from PHP (Dates::now), not the MySQL clock
       AND start_at_gmt < %s AND end_at_gmt > %s
    UNION ALL
    SELECT … FROM blocks WHERE (scope/scope_id matches the rooms, their types, floors, or the property) AND …
@@ -262,6 +263,13 @@ Transaction::run(function () {
 - MySQL cannot express "no overlapping ranges" as a constraint. **The row lock is the guarantee.**
   Every path that makes a room busy must take it. Code review rejects a write that doesn't.
 - Tables must be InnoDB (the installer forces `ENGINE=InnoDB`).
+- **Transactions run at READ COMMITTED** (`Transaction::run()`, M08 T3). Under MySQL's default
+  REPEATABLE READ, a read made after waiting for the room lock can use a snapshot taken *before*
+  the wait, and miss the hold or booking the previous lock holder just committed. The
+  concurrency check proves it: with READ COMMITTED off and one plain read before the lock, two
+  processes held the same room in 10 of 10 runs. With it on, exactly one wins in 50 of 50. The
+  level is skipped only where the binary log is in STATEMENT format, which refuses writes at that
+  level.
 
 ## 8. Release paths
 
@@ -323,5 +331,5 @@ never affects inventory, except through the deadline release.
 | Search | `Services\Availability\AvailabilityService::search()` | M08 T2 |
 | Holds | `Services\Availability\HoldService` | M08 T3 |
 | Pricing | `Services\Pricing\PriceResolver` + `Rules\*` | M07 T4–T6 |
-| Locked write path | `Services\Booking\BookingWriter` (used by BookingService, HoldService, the importer) | M02 T1 |
+| Locked write path | `Services\Booking\BookingWriter::lockAndCheck()` (used by HoldService now; BookingService, the importer later) | M08 T3 |
 | Occupancy for pricing and reports | `Services\Availability\OccupancyCalculator` | M07 T6 / M10 |

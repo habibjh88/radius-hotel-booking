@@ -38,7 +38,7 @@ restaurant shop.
 
 | Method | Route | Purpose | Limit |
 |---|---|---|---|
-| GET | `public/availability` | The same payload as the desk, without internal fields (no room state notes, no booking refs) | 30/min/IP |
+| GET | `public/availability` | The same payload as the desk, without internal fields (no room state notes, no booking refs): `AvailabilityService::search( …, 'public' )` shaped by `AvailabilityResource::public()` (M08 T2b) | 30/min/IP |
 | POST | `public/holds` · DELETE `public/holds/{token}` | Hold the chosen room(s) for the setting's hold minutes | 10/min/IP |
 | POST | `public/bookings` | Create from a hold token + guest details (creates the booking `pending` or `confirmed` per the manual-approval setting) | 5/min/IP |
 | GET | `public/bookings/{token}` | Confirmation data | 30/min/IP |

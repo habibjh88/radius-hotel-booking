@@ -23,8 +23,21 @@ if ( ! defined( 'ABSPATH' ) ) {
  *   exception anywhere rolls the whole thing back.
  * - `afterCommit()` defers side effects (e-mails, hooks, cache flushes) until
  *   the data is really saved; they are dropped on rollback.
+ * - Transactions run at READ COMMITTED (M08): after `SELECT … FOR UPDATE`
+ *   waits for a lock, every later read sees what the previous holder
+ *   committed. Under MySQL's default REPEATABLE READ a read could use a
+ *   snapshot taken before the lock was granted and miss a hold or booking a
+ *   competitor just made (booking-engine §7.1). Skipped where statement-based
+ *   binary logging would refuse writes at that level.
  */
 class Transaction {
+
+	/**
+	 * Whether READ COMMITTED may be used (null = not checked yet).
+	 *
+	 * @var bool|null
+	 */
+	private static ?bool $read_committed = null;
 
 	/**
 	 * Nesting depth.
@@ -59,6 +72,9 @@ class Transaction {
 			}
 		}
 
+		if ( self::readCommittedAllowed() ) {
+			$wpdb->query( 'SET TRANSACTION ISOLATION LEVEL READ COMMITTED' ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- applies to the next transaction only.
+		}
 		$wpdb->query( 'START TRANSACTION' ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		self::$depth = 1;
 
@@ -105,5 +121,29 @@ class Transaction {
 	 */
 	public static function active(): bool {
 		return self::$depth > 0;
+	}
+
+	/**
+	 * READ COMMITTED is refused for writes when the binary log is on in
+	 * STATEMENT format, so it is only used when the server logs by row (or
+	 * not at all). Checked once per request.
+	 *
+	 * @return bool
+	 */
+	private static function readCommittedAllowed(): bool {
+		global $wpdb;
+		if ( null === self::$read_committed ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- server variables.
+			$row = $wpdb->get_row( 'SELECT @@log_bin AS log_bin, @@binlog_format AS format', ARRAY_A );
+			$ok  = is_array( $row ) && ( ! (int) $row['log_bin'] || 'STATEMENT' !== strtoupper( (string) $row['format'] ) );
+
+			/**
+			 * Whether plugin transactions run at READ COMMITTED.
+			 *
+			 * @param bool $ok Detected.
+			 */
+			self::$read_committed = (bool) apply_filters( 'rtbp_transaction_read_committed', $ok );
+		}
+		return self::$read_committed;
 	}
 }

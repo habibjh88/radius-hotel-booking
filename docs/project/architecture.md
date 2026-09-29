@@ -148,7 +148,7 @@ pay_schedules · work_shifts · payroll_runs ──► payroll_lines · statutor
 
 | Table | Columns |
 |---|---|
-| `rate_calendar` | `id`, `room_type_id`, `rate_plan_id` (NULL = the whole room type), `date`, `price_override` (NULL), `is_closed`. UNIQUE `(room_type_id, rate_plan_id, date)` |
+| `rate_calendar` | `id`, `room_type_id`, `rate_plan_id` (**0** = the whole room type; not NULL, since a UNIQUE key allows many NULLs), `date`, `price_override` (NULL), `is_closed`. UNIQUE `(room_type_id, rate_plan_id, date)` |
 | `blocks` | `id`, `scope` (property / floor / room_type / room), `scope_id`, `start_at`, `end_at`, `start_at_gmt`, `end_at_gmt`, `source` (manual / ical), `feed_id`, `external_uid`, `reason`, `created_by`. Index `(scope, scope_id, start_at_gmt, end_at_gmt)` |
 | `ical_feeds` | `id`, `room_id`, `direction` (import / export), `name`, `url` (import), `token` (export, random), `interval_minutes`, `last_synced_at`, `last_status` |
 | `holds` | `id`, `room_id`, `room_type_id`, `rate_plan_id`, `start_at_gmt`, `end_at_gmt`, `token`, `user_id` / `session_key`, `expires_at_gmt`. Index `(room_id, start_at_gmt, end_at_gmt)`, `(expires_at_gmt)` |
@@ -199,8 +199,8 @@ in each module doc.
 | `rtbp_room_moved` | RoomService (M06) | room, from type id, to type id, upcoming count |
 | `rtbp_access_changed` / `rtbp_access_denied` / `rtbp_passcode_failed` / `rtbp_page_viewed` | M13 | … |
 | `rtbp_price_steps` (filter) | PriceResolver (M07) | `name => [ position, apply( float $before, array $context ): ?[ after, label, rule_id ] ]`. Core positions: base 10, sale 20, date_override 30, floor_round 90 (base stays first, floor_round last; add-ons are clamped to 11–89). Pro: seasonal 40, occupancy 50, booking_window 60. Context: room_type_id, rate_plan_id, date (the unit's local date), unit, units, arrival, booked_at, rate (row), window (StayWindow) |
-| `rtbp_price_date_override` (filter) | PriceResolver (M07); M08 fills it | null, room type id, rate plan id, local date → a price replacing base + sale |
-| `rtbp_occupied_rooms` (filter) | OccupancyCalculator (M07); M02/M08 fill it | 0, room type id, local date → rooms occupied that day |
+| `rtbp_price_date_override` (filter) | PriceResolver (M07); filled by `RateCalendar` (M08) | null, room type id, rate plan id, local date → a price replacing base + sale |
+| `rtbp_occupied_rooms` (filter) | OccupancyCalculator (M07); filled by the engine (M08: sellable rooms with a line, live hold or block that day) | 0, room type id, local date → rooms occupied that day |
 | `rtbp_access_keys`, `rtbp_activity_actions`, `rtbp_settings`, `rtbp_email_classes`, `rtbp_id_document_types` (filters) | registries | add-on extension points |
 
 ## 7. Performance budget

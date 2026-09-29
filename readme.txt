@@ -120,6 +120,8 @@ Fresh installs start with three rate plans: Half Day, Overnight and 24 Hours Fle
 New Rates tab per room type: price, sale price and minimum or maximum stay per rate plan.
 Room type cards now list the rate plans each type sells.
 New price simulator on the Rates tab: see what a stay costs and each step behind it.
+New Availability calendar: prices, free rooms and closed dates per room type and month.
+Set a one-day price, or close a rate or a whole room type that day.
 
 = 1.0.0 =
 Initial release.

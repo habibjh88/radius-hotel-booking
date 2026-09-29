@@ -31,6 +31,7 @@ import * as status from '@/lib/status';
 import { queryClient } from '@/lib/query-client';
 import { toast, toastError } from '@/lib/toast';
 import { cn } from '@/lib/utils';
+import CalendarGrid from '@/components/common/CalendarGrid';
 import DateTime from '@/components/common/DateTime';
 import EmptyState from '@/components/common/EmptyState';
 import FilterTabs from '@/components/common/FilterTabs';
@@ -204,6 +205,8 @@ export function publishRuntime() {
 			...TabsParts,
 			...SheetParts,
 			Badge,
+			// M08: dates × rows with sticky headers (the availability calendar).
+			CalendarGrid,
 			ConfirmDialog,
 			DataTable,
 			DateRangePicker,

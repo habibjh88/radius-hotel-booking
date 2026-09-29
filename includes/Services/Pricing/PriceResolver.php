@@ -121,7 +121,28 @@ class PriceResolver {
 
 		$window    = StayWindow::for( $plan, $arrival, $units, $checkin );
 		$booked_at = null !== $booked_at && Dates::is_date( $booked_at ) ? $booked_at : Dates::today();
-		$steps     = $this->steps();
+
+		return $this->price( $rate, $window, $room_type_id, $rate_plan_id, $booked_at );
+	}
+
+	/**
+	 * Price a derived window with a rate row already loaded — the part of
+	 * `quote()` the availability search (M08) runs for every sellable rate
+	 * without querying again. The caller has checked that the rate is sold
+	 * and the units are within its bounds.
+	 *
+	 * @param object     $rate         Rate row (`price`, `sale_price`, …).
+	 * @param StayWindow $window       The stay.
+	 * @param int        $room_type_id Room type id.
+	 * @param int        $rate_plan_id Rate plan id.
+	 * @param string     $booked_at    Local date the booking is made.
+	 * @param array|null $steps        `steps()`, when the caller prices many windows.
+	 * @return array{ window: array, units: int, unit_prices: float[], total: float, steps: array[] }
+	 */
+	public function price( object $rate, StayWindow $window, int $room_type_id, int $rate_plan_id, string $booked_at, ?array $steps = null ): array {
+		$steps   = $steps ?? $this->steps();
+		$units   = $window->units();
+		$arrival = $window->start()->format( 'Y-m-d' );
 
 		$unit_prices = array();
 		$all_steps   = array();

@@ -206,6 +206,7 @@ add-on script has registered its filters. Filters:
 | `window.rtbp.lib.access` (**live**) | `useAccess( key )`, `useAccessMap()`, `canAccess( keys )`, `refreshAccess()`. A refused request's error carries `error.data.key` |
 | `window.rtbp.ui.NumberInput`, `window.rtbp.ui.ToggleRow` (**live**, M13 T4b) | The Settings field rows, for add-on settings tabs |
 | `window.rtbp.ui` Sheet parts, `PriceBreakdown`, `PriceBreakdownPopover`, `GalleryField`, `TagInput` (**live**, M06–M07; Sheet and PriceBreakdown lazy) | Side-panel editors (`Sheet`, `SheetContent`, `SheetHeader`, `SheetFooter`, `SheetTitle`, `SheetDescription`, `SheetClose`; wrap in `Suspense`) and the pricing breakdown, for add-on screens. Free main after M07 T5b; an add-on falls back to the Dialog parts when `Sheet` is missing |
+| `window.rtbp.ui.CalendarGrid` (**live**, M08 T4b; eager) | Dates × rows with sticky headers: `dates`, `today`, `rows[{ key, label, sublabel, cells }]`, `renderCell`, `onCellClick`, `cellClassName`, `cellLabel`, `isDisabled`. For add-on calendars (Pro's iCal overlay, reports). Free main after M08 T4b; guard with `window.rtbp?.ui?.CalendarGrid` |
 | `window.rtbp.router` (**live**, M13 T5b) | The app's react-router (`Link`, `NavLink`, `Navigate`, `useLocation`, `useNavigate`, `useParams`, `useSearchParams`); add-ons map `react-router-dom` to it in webpack externals |
 | `rtbp_settings_access_key` (**live**, M13 review) + `AccessRegistry::settingsKey()` | The access key guarding a settings section's writes; Pro routes `pro_access` and `pro_features` to `access.manage`. A passcode refusal lists every pending key in `data.keys` so one PIN unlocks them |
 | Tailwind `safelist` in free (**live**, M13 T6) | Add-on bundles are not scanned by the free Tailwind build: a class an add-on needs that free stops using disappears. Responsive row classes add-ons rely on are safelisted in `tailwind.config.js`; check new add-on classes against `build/*.css` |
@@ -325,3 +326,17 @@ TATA's own list.
   windows the engine must get right.
 - The starter plans are ordinary rows: the hotel can rename, change or deactivate them. Seeding
   never runs again once the table has rows (it does not recreate a deleted plan).
+
+## ADR-022: The booking tables are created with the engine (M08), not with the booking form (M02) — Accepted (2026-09-29, M08)
+
+The availability engine reads booking lines (booking-engine §4, §5.3), and its edge-case checks
+(§10 rows 9, 15, 16) need real lines. M08 T1 therefore creates the `bookings` and
+`booking_rooms` tables exactly as architecture §4.4 defines them, together with `holds` and
+`blocks`.
+
+*Consequences:*
+
+- M08 owns only the schema and the read side (`AvailabilityRepository`). M02 adds the models,
+  `BookingService` and the screens, and must not recreate or re-declare the tables; a column it
+  needs is added by an ordinary schema change and a `DBVERSION` bump.
+- The M08 checks insert test lines with plain SQL and remove them afterwards.

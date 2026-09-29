@@ -92,6 +92,13 @@ final class ActionCatalog {
 			'rate_plans.update'          => array( self::DATA, __( 'Changed a rate plan', 'radius-hotel-booking' ) ),
 			'rate_plans.delete'          => array( self::DATA, __( 'Deleted a rate plan', 'radius-hotel-booking' ) ),
 			'rates.update'               => array( self::DATA, __( 'Changed a price', 'radius-hotel-booking' ) ),
+			// Availability (M08). Web holds are counted, not logged.
+			'availability.override'      => array( self::DATA, __( 'Changed a price for a date', 'radius-hotel-booking' ) ),
+			'availability.close'         => array( self::DATA, __( 'Closed dates', 'radius-hotel-booking' ) ),
+			'availability.open'          => array( self::DATA, __( 'Opened dates', 'radius-hotel-booking' ) ),
+			'availability.bulk'          => array( self::DATA, __( 'Updated the calendar in bulk', 'radius-hotel-booking' ) ),
+			'holds.create'               => array( self::DATA, __( 'Held a room', 'radius-hotel-booking' ) ),
+			'holds.release'              => array( self::DATA, __( 'Released a held room', 'radius-hotel-booking' ) ),
 
 			// Bookings (14.2), reserved for M02/M03.
 			'bookings.create'            => array( self::DATA, __( 'Created a booking', 'radius-hotel-booking' ) ),

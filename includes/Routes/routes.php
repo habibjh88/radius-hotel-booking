@@ -24,6 +24,9 @@ use RadiusTheme\RadiusHotelBooking\Controllers\AccessController;
 use RadiusTheme\RadiusHotelBooking\Controllers\DashboardController;
 use RadiusTheme\RadiusHotelBooking\Controllers\FileController;
 use RadiusTheme\RadiusHotelBooking\Controllers\FloorController;
+use RadiusTheme\RadiusHotelBooking\Controllers\AvailabilityController;
+use RadiusTheme\RadiusHotelBooking\Controllers\CalendarController;
+use RadiusTheme\RadiusHotelBooking\Controllers\HoldController;
 use RadiusTheme\RadiusHotelBooking\Controllers\PricingController;
 use RadiusTheme\RadiusHotelBooking\Controllers\RatePlanController;
 use RadiusTheme\RadiusHotelBooking\Controllers\RoomTypeRateController;
@@ -66,6 +69,14 @@ $this->router->resource( 'rate-plans', RatePlanController::class );
 $this->router->get( 'room-types/(?P<id>\d+)/rates', array( RoomTypeRateController::class, 'grid' ) );
 $this->router->put( 'room-types/(?P<id>\d+)/rates', array( RoomTypeRateController::class, 'save' ) );
 $this->router->post( 'pricing/quote', array( PricingController::class, 'quote' ) );
+
+// Availability (M08): the staff search.
+$this->router->get( 'availability', array( AvailabilityController::class, 'search' ) );
+$this->router->get( 'availability/calendar', array( CalendarController::class, 'grid' ) );
+$this->router->put( 'availability/calendar', array( CalendarController::class, 'save' ) );
+$this->router->post( 'holds', array( HoldController::class, 'store' ) );
+$this->router->put( 'holds/(?P<token>[A-Za-z0-9]{32})', array( HoldController::class, 'extend' ) );
+$this->router->delete( 'holds/(?P<token>[A-Za-z0-9]{32})', array( HoldController::class, 'destroy' ) );
 
 /**
  * Add-on routes — an add-on plugin registers its own endpoints here rather than

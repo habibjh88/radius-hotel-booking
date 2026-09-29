@@ -1,9 +1,15 @@
 /**
  * One room type (`#/rooms/:id`, `#/rooms/new`): Details · Rooms tabs (M06).
- * The Rates and Calendar tabs arrive with M07 / M08.
+ * The Rates tab came with M07. `?tab=rooms|rates` opens that tab (the
+ * availability calendar links to Rates).
  */
 import { useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import {
+	Link,
+	useNavigate,
+	useParams,
+	useSearchParams,
+} from 'react-router-dom';
 import { __, sprintf } from '@wordpress/i18n';
 import { ArrowLeft, DoorOpen, Trash2 } from 'lucide-react';
 
@@ -30,6 +36,8 @@ export default function RoomTypeDetail() {
 	const navigate = useNavigate();
 	const canManage = useAccess( 'room_types.manage' ) !== 'locked';
 	const canSeeRates = useAccess( 'page.rates' ) !== 'locked';
+	const [ params ] = useSearchParams();
+	const tab = params.get( 'tab' );
 	const { data: type, isPending, error, refetch } = useRoomType( id );
 	const remove = useDeleteRoomType();
 	const [ confirmDelete, setConfirmDelete ] = useState( false );
@@ -173,7 +181,13 @@ export default function RoomTypeDetail() {
 				) : null }
 			</div>
 
-			<Tabs defaultValue="details">
+			<Tabs
+				defaultValue={
+					tab === 'rooms' || ( tab === 'rates' && canSeeRates )
+						? tab
+						: 'details'
+				}
+			>
 				<TabsList>
 					<TabsTrigger value="details">
 						{ __( 'Details', 'radius-hotel-booking' ) }

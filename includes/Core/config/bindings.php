@@ -19,12 +19,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 use RadiusTheme\RadiusHotelBooking\Core\Container\Container;
 use RadiusTheme\RadiusHotelBooking\Repositories\FloorRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\RatePlanRepository;
+use RadiusTheme\RadiusHotelBooking\Repositories\AvailabilityRepository;
+use RadiusTheme\RadiusHotelBooking\Repositories\HoldRepository;
+use RadiusTheme\RadiusHotelBooking\Repositories\RateCalendarRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\RoomTypeRateRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\RoomRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\RoomTypeRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\SettingsRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\StoredFileRepository;
 use RadiusTheme\RadiusHotelBooking\Services\Inventory\FloorService;
+use RadiusTheme\RadiusHotelBooking\Services\Availability\AvailabilityService;
+use RadiusTheme\RadiusHotelBooking\Services\Availability\CalendarService;
+use RadiusTheme\RadiusHotelBooking\Services\Availability\HoldService;
+use RadiusTheme\RadiusHotelBooking\Services\Booking\BookingWriter;
 use RadiusTheme\RadiusHotelBooking\Services\Availability\OccupancyCalculator;
 use RadiusTheme\RadiusHotelBooking\Services\Pricing\PriceResolver;
 use RadiusTheme\RadiusHotelBooking\Services\Pricing\RatePlanService;
@@ -43,6 +50,9 @@ return array(
 	RoomRepository::class       => fn() => new RoomRepository(),
 	RatePlanRepository::class   => fn() => new RatePlanRepository(),
 	RoomTypeRateRepository::class => fn() => new RoomTypeRateRepository(),
+	AvailabilityRepository::class => fn() => new AvailabilityRepository(),
+	RateCalendarRepository::class => fn() => new RateCalendarRepository(),
+	HoldRepository::class         => fn() => new HoldRepository(),
 
 	// Services.
 	SettingsService::class    => fn() => new SettingsService(),
@@ -52,6 +62,10 @@ return array(
 	PriceResolver::class      => fn() => new PriceResolver( Container::resolve( RoomTypeRateRepository::class ), Container::resolve( RatePlanRepository::class ), Container::resolve( RoomTypeRepository::class ) ),
 	// A new one per resolve; keep one for a whole quote to reuse its per-date cache.
 	OccupancyCalculator::class => fn() => new OccupancyCalculator( Container::resolve( RoomRepository::class ) ),
+	AvailabilityService::class => fn() => new AvailabilityService( Container::resolve( AvailabilityRepository::class ), Container::resolve( PriceResolver::class ) ),
+	BookingWriter::class       => fn() => new BookingWriter( Container::resolve( AvailabilityRepository::class ), Container::resolve( RatePlanRepository::class ), Container::resolve( PriceResolver::class ) ),
+	CalendarService::class     => fn() => new CalendarService( Container::resolve( AvailabilityRepository::class ), Container::resolve( RateCalendarRepository::class ), Container::resolve( RoomTypeRepository::class ), Container::resolve( PriceResolver::class ) ),
+	HoldService::class         => fn() => new HoldService( Container::resolve( HoldRepository::class ), Container::resolve( BookingWriter::class ) ),
 	RoomTypeRateService::class => fn() => new RoomTypeRateService( Container::resolve( RoomTypeRateRepository::class ), Container::resolve( RatePlanRepository::class ), Container::resolve( RoomTypeRepository::class ) ),
 	RoomTypeService::class    => fn() => new RoomTypeService( Container::resolve( RoomTypeRepository::class ), Container::resolve( RoomRepository::class ) ),
 );
