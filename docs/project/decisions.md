@@ -172,7 +172,7 @@ neither.
 
 | Seam (free) | Pro / client use |
 |---|---|
-| `rtbp_activity( $action, $subject, array $context )`: builds a normalised event (actor, IP, user agent, subject, before/after diff with secrets masked) and fires `do_action( 'rtbp_activity', $event )`. **Stores nothing** | Pro's `ActivityLogger` stores it (hash chain, grouping, archive) |
+| `rtbp_activity( $action, $subject, array $context )` (**live**, M14 T1): builds a normalised event (actor, IP, user agent, subject, before/after diff with secrets masked) and fires `do_action( 'rtbp_activity', $event )`. **Stores nothing**. Also `ActionCatalog` + `rtbp_activity_actions`, `rtbp_activity_event` (alter/drop), `rtbp_activity_ip`, `rtbp_activity_secret_pattern` | Pro's `ActivityLogger` stores it (hash chain, grouping, archive) |
 | `AccessRegistry` + `rtbp_access_keys` filter (and `register()` from `rtbp_access_registry_init`, groups via `rtbp_access_groups`); `Access::level()` passes through the `rtbp_access_level` filter `( $level, $key, $user, $definition )`; `AccessMiddleware` handles `open` / `locked`, and hands `passcode` to `rtbp_access_passcode_check` `( null, $key, $request\|null )` → `true` or a `WP_Error` (null = locked). Also `rtbp_access_role_defaults`, `rtbp_access_locked_message`, and the actions `rtbp_access_denied`, `rtbp_page_viewed`, `rtbp_access_changed( $scope, {before, after}, $user_id )` (**live**, M13 T1–T3) | Pro adds the `passcode` level, PIN verification, custom roles and per-person overrides. **Live (M13 T4a):** Pro answers `rtbp_access_passcode_check` from the `X-RTBP-Passcode` header, fires `rtbp_passcode_failed( $user_id, $key, $failures, $locked )` and `rtbp_pro_pin_changed( $user_id, $removed )` |
 | `PriceResolver` steps + the `rtbp_price_steps` filter | Pro adds the seasonal, occupancy and booking-window steps |
 | `rtbp_document_renderers` (invoice, receipt) with an HTML print view in free | Pro adds the PDF renderer |
@@ -202,7 +202,7 @@ add-on script has registered its filters. Filters:
 |---|---|
 | `rtbp.admin.routes` (**live**) | Add screens and sidebar items |
 | `rtbp.settings.sections` (**live**) | Add settings tabs: `{ key, label, render( { value, setField, save, saving } ) }`, where `key` is a PHP section from `rtbp_settings` |
-| `rtbp.booking.panels`, `rtbp.guest.panels` | Add panels to detail screens (for example the activity timeline) |
+| `rtbp.booking.panels`, `rtbp.guest.panels` (contract fixed M14 T3b; host side in M03 / M09) | `applyFilters( 'rtbp.booking.panels', [], { booking } )` (guest: `{ guest }`) returns `{ key, label, order, render() }[]`; the host renders them sorted by `order`. Pro adds the activity timeline (`activity`, order 90) |
 | `window.rtbp.lib.access` (**live**) | `useAccess( key )`, `useAccessMap()`, `canAccess( keys )`, `refreshAccess()`. A refused request's error carries `error.data.key` |
 | `window.rtbp.ui.NumberInput`, `window.rtbp.ui.ToggleRow` (**live**, M13 T4b) | The Settings field rows, for add-on settings tabs |
 | `window.rtbp.router` (**live**, M13 T5b) | The app's react-router (`Link`, `NavLink`, `Navigate`, `useLocation`, `useNavigate`, `useParams`, `useSearchParams`); add-ons map `react-router-dom` to it in webpack externals |
@@ -262,6 +262,18 @@ own.
   never checks it** (ADR-014).
 - Each module's `[Pro]` task creates `includes/Features/<Area>/<Name>Feature.php` for its feature
   key. Until then, the feature shows as *In development*.
+
+## ADR-020: The activity log is an HMAC chain with a sealed head — Accepted (2026-09-29, M14 review)
+
+Refines ADR-011. Rows are chained with HMAC-SHA256 under a key kept outside the database
+(`RTBP_PRO_LOG_KEY` in wp-config.php, else a key file in protected storage; never the WP salts).
+One head record (last id, last hash, live rows, anchor), sealed with the same key, is locked for
+every write (`SELECT … FOR UPDATE`), so writers never fork the chain and `log:verify` can check
+both ends. Purges delete in batches that move the anchor inside the same transaction.
+*Why:* an unkeyed SHA-256 chain can be recomputed by anyone with database access, and without a
+head record deleting the newest rows or emptying the table goes unnoticed.
+*Consequence:* the key must be backed up with the site; losing it makes the existing chain
+unverifiable (new rows chain on).
 
 ## ADR-018: No automated test suite, no JS linting — Accepted (2026-09-28)
 

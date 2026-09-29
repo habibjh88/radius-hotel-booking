@@ -342,6 +342,7 @@ final class RadiusHotelBooking {
 		new RadiusTheme\RadiusHotelBooking\Hooks\Common();
 
 		RadiusTheme\RadiusHotelBooking\Access\AccessAudit::init();
+		RadiusTheme\RadiusHotelBooking\ActivityLog\CoreEvents::init();
 
 		$this->shortcode = new RadiusTheme\RadiusHotelBooking\Shortcodes\Shortcodes();
 		$this->emails    = new RadiusTheme\RadiusHotelBooking\Emails\EmailManager();

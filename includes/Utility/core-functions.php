@@ -290,6 +290,30 @@ function rtbp_class_basename( $class_name ): string {
 	return basename( str_replace( '\\', '/', $class_name ) );
 }
 
+/**
+ * Record an activity event (M14).
+ *
+ * Builds a normalised event (actor, IP, user agent, subject, only the changed
+ * before/after values with secrets masked) and fires `rtbp_activity`. The free
+ * plugin stores nothing; the Pro activity log stores it. Example:
+ *
+ *     rtbp_activity( 'bookings.approve', $booking, array(
+ *         'before'      => array( 'status' => 'pending' ),
+ *         'after'       => array( 'status' => 'confirmed' ),
+ *         'description' => sprintf( __( 'Approved booking %s', 'radius-hotel-booking' ), $booking->reference ),
+ *     ) );
+ *
+ * Call it inside the service method, after the write succeeded.
+ *
+ * @param string                                          $action  Action key (in ActionCatalog).
+ * @param \RadiusTheme\RadiusHotelBooking\Abstracts\BaseModel|array|null $subject The record, `[ type, id, label ]`, or null.
+ * @param array                                           $context `before`, `after`, `description`, `actor`, extras.
+ * @return array The event as fired.
+ */
+function rtbp_activity( string $action, $subject = null, array $context = array() ): array {
+	return \RadiusTheme\RadiusHotelBooking\ActivityLog\Activity::emit( $action, $subject, $context );
+}
+
 if ( ! function_exists( 'rtbp_table_prefix' ) ) {
 	/**
 	 * Table prefix for the plugin's own tables.

@@ -1,0 +1,171 @@
+<?php
+/**
+ * Activity action catalogue.
+ *
+ * @package RadiusTheme\RadiusHotelBooking\ActivityLog
+ */
+
+namespace RadiusTheme\RadiusHotelBooking\ActivityLog;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Every action the activity log knows (M14): key => kind and translatable
+ * label. The action key is the access key where one exists
+ * (`bookings.approve`). Kinds drive the log filter (feature 14.7).
+ *
+ * Modules add their actions in the task that emits them, through the
+ * `rtbp_activity_actions` filter; the booking and payment keys are reserved
+ * here (features 14.2, 14.15) and emitted by M02–M05.
+ */
+final class ActionCatalog {
+
+	const DATA       = 'data';
+	const VIEW       = 'view';
+	const AUTH       = 'auth';
+	const PAYMENT    = 'payment';
+	const PERMISSION = 'permission';
+	const SECURITY   = 'security';
+	const SYSTEM     = 'system';
+
+	/**
+	 * The resolved catalogue, per request.
+	 *
+	 * @var array<string, array{kind: string, label: string}>|null
+	 */
+	private static ?array $resolved = null;
+
+	/**
+	 * Every action.
+	 *
+	 * @return array<string, array{kind: string, label: string}>
+	 */
+	public static function actions(): array {
+		if ( null !== self::$resolved ) {
+			return self::$resolved;
+		}
+
+		$rows = array(
+			// Sign-in (14.3) and page views (14.4).
+			'auth.login'                 => array( self::AUTH, __( 'Signed in', 'radius-hotel-booking' ) ),
+			'auth.logout'                => array( self::AUTH, __( 'Signed out', 'radius-hotel-booking' ) ),
+			'auth.failed'                => array( self::AUTH, __( 'Failed sign-in', 'radius-hotel-booking' ) ),
+			'page.view'                  => array( self::VIEW, __( 'Opened a page', 'radius-hotel-booking' ) ),
+
+			// Security (14.17).
+			'security.denied'            => array( self::SECURITY, __( 'Tried something locked', 'radius-hotel-booking' ) ),
+			'security.passcode_ok'       => array( self::SECURITY, __( 'Confirmed with a PIN', 'radius-hotel-booking' ) ),
+			'security.passcode_failed'   => array( self::SECURITY, __( 'Entered a wrong PIN', 'radius-hotel-booking' ) ),
+			'security.pin_locked'        => array( self::SECURITY, __( 'Locked out after wrong PINs', 'radius-hotel-booking' ) ),
+			'security.pin_changed'       => array( self::SECURITY, __( 'Changed a PIN', 'radius-hotel-booking' ) ),
+
+			// Permissions (14.16).
+			'permission.changed'         => array( self::PERMISSION, __( 'Changed permissions', 'radius-hotel-booking' ) ),
+			'permission.role_created'    => array( self::PERMISSION, __( 'Created an access role', 'radius-hotel-booking' ) ),
+			'permission.role_updated'    => array( self::PERMISSION, __( 'Changed an access role', 'radius-hotel-booking' ) ),
+			'permission.role_deleted'    => array( self::PERMISSION, __( 'Deleted an access role', 'radius-hotel-booking' ) ),
+			'permission.overrides_reset' => array( self::PERMISSION, __( 'Reset personal overrides', 'radius-hotel-booking' ) ),
+
+			// Settings and the log itself.
+			'settings.updated'           => array( self::SYSTEM, __( 'Changed settings', 'radius-hotel-booking' ) ),
+			'settings.pro_features'      => array( self::SYSTEM, __( 'Switched Pro features', 'radius-hotel-booking' ) ),
+			'activity.archived'          => array( self::SYSTEM, __( 'Archived the activity log', 'radius-hotel-booking' ) ),
+			'activity.purged'            => array( self::SYSTEM, __( 'Removed archived log entries', 'radius-hotel-booking' ) ),
+
+			// Bookings (14.2), reserved for M02/M03.
+			'bookings.create'            => array( self::DATA, __( 'Created a booking', 'radius-hotel-booking' ) ),
+			'bookings.approve'           => array( self::DATA, __( 'Approved a booking', 'radius-hotel-booking' ) ),
+			'bookings.decline'           => array( self::DATA, __( 'Declined a booking', 'radius-hotel-booking' ) ),
+			'bookings.cancel'            => array( self::DATA, __( 'Cancelled a booking', 'radius-hotel-booking' ) ),
+			'bookings.check_in'          => array( self::DATA, __( 'Checked a guest in', 'radius-hotel-booking' ) ),
+			'bookings.check_out'         => array( self::DATA, __( 'Checked a guest out', 'radius-hotel-booking' ) ),
+			'bookings.no_show'           => array( self::DATA, __( 'Marked a no-show', 'radius-hotel-booking' ) ),
+			'bookings.edit'              => array( self::DATA, __( 'Edited a booking', 'radius-hotel-booking' ) ),
+			'bookings.line_add'          => array( self::DATA, __( 'Added a room to a booking', 'radius-hotel-booking' ) ),
+			'bookings.line_edit'         => array( self::DATA, __( 'Changed a room on a booking', 'radius-hotel-booking' ) ),
+			'bookings.line_remove'       => array( self::DATA, __( 'Removed a room from a booking', 'radius-hotel-booking' ) ),
+			'bookings.note_add'          => array( self::DATA, __( 'Added a booking note', 'radius-hotel-booking' ) ),
+			'bookings.note_edit'         => array( self::DATA, __( 'Edited a booking note', 'radius-hotel-booking' ) ),
+			'bookings.note_remove'       => array( self::DATA, __( 'Removed a booking note', 'radius-hotel-booking' ) ),
+
+			// Payments (14.15), reserved for M05.
+			'payments.record'            => array( self::PAYMENT, __( 'Recorded a payment', 'radius-hotel-booking' ) ),
+			'payments.change_status'     => array( self::PAYMENT, __( 'Changed a payment status', 'radius-hotel-booking' ) ),
+			'payments.void'              => array( self::PAYMENT, __( 'Voided a payment', 'radius-hotel-booking' ) ),
+			'invoices.send'              => array( self::PAYMENT, __( 'Sent an invoice', 'radius-hotel-booking' ) ),
+			'invoices.regenerate'        => array( self::PAYMENT, __( 'Regenerated an invoice', 'radius-hotel-booking' ) ),
+		);
+
+		$actions = array();
+		foreach ( $rows as $key => $row ) {
+			$actions[ $key ] = array(
+				'kind'  => $row[0],
+				'label' => $row[1],
+			);
+		}
+
+		/**
+		 * Filters the activity action catalogue. Modules add their actions here.
+		 *
+		 * @param array $actions Key => [ 'kind' => …, 'label' => … ].
+		 */
+		$filtered = (array) apply_filters( 'rtbp_activity_actions', $actions );
+
+		self::$resolved = array();
+		foreach ( $filtered as $key => $action ) {
+			if ( is_array( $action ) && preg_match( '/^[a-z0-9_]+\.[a-z0-9_]+$/', (string) $key ) ) {
+				self::$resolved[ (string) $key ] = array(
+					'kind'  => isset( self::kinds()[ $action['kind'] ?? '' ] ) ? $action['kind'] : self::DATA,
+					'label' => (string) ( $action['label'] ?? $key ),
+				);
+			}
+		}
+		return self::$resolved;
+	}
+
+	/**
+	 * The kind of an action: from the catalogue, else `data`.
+	 *
+	 * @param string $action Action key.
+	 * @return string
+	 */
+	public static function kind( string $action ): string {
+		return self::actions()[ $action ]['kind'] ?? self::DATA;
+	}
+
+	/**
+	 * The label of an action: from the catalogue, else the key.
+	 *
+	 * @param string $action Action key.
+	 * @return string
+	 */
+	public static function label( string $action ): string {
+		return self::actions()[ $action ]['label'] ?? $action;
+	}
+
+	/**
+	 * The kinds, for the log filter (feature 14.7).
+	 *
+	 * @return array<string, string> Kind => translated label.
+	 */
+	public static function kinds(): array {
+		return array(
+			self::DATA       => __( 'Data changes', 'radius-hotel-booking' ),
+			self::VIEW       => __( 'Page views', 'radius-hotel-booking' ),
+			self::AUTH       => __( 'Sign-in', 'radius-hotel-booking' ),
+			self::PAYMENT    => __( 'Payments', 'radius-hotel-booking' ),
+			self::PERMISSION => __( 'Permissions', 'radius-hotel-booking' ),
+			self::SECURITY   => __( 'Security', 'radius-hotel-booking' ),
+			self::SYSTEM     => __( 'System', 'radius-hotel-booking' ),
+		);
+	}
+
+	/**
+	 * Forget the resolved catalogue.
+	 *
+	 * @return void
+	 */
+	public static function flush(): void {
+		self::$resolved = null;
+	}
+}
