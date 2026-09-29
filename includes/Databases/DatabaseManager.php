@@ -20,6 +20,9 @@ namespace RadiusTheme\RadiusHotelBooking\Databases;
 
 use RadiusTheme\RadiusHotelBooking\Core\Database\Schema\Migrations\MigrationRunner;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\FilesTable;
+use RadiusTheme\RadiusHotelBooking\Databases\Table\FloorsTable;
+use RadiusTheme\RadiusHotelBooking\Databases\Table\RoomsTable;
+use RadiusTheme\RadiusHotelBooking\Databases\Table\RoomTypesTable;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\SequencesTable;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
@@ -85,6 +88,10 @@ class DatabaseManager {
 		$migrationClasses = array(
 			SequencesTable::class,
 			FilesTable::class,
+			// Inventory (M06).
+			FloorsTable::class,
+			RoomTypesTable::class,
+			RoomsTable::class,
 		);
 
 		/**

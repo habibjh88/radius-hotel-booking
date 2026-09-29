@@ -1049,8 +1049,15 @@ class QueryBuilder {
 	 */
 	public function insert( array $data ): int|false {
 		$columns      = array_keys( $data );
-		$values       = array_values( $data );
-		$placeholders = array_fill( 0, count( $values ), '%s' );
+		$placeholders = array();
+		$values       = array();
+		foreach ( $data as $value ) {
+			// NULL stays NULL: a %s placeholder would store '' (0 in a numeric column).
+			$placeholders[] = null === $value ? 'NULL' : '%s';
+			if ( null !== $value ) {
+				$values[] = $value;
+			}
+		}
 
 		$sql = sprintf(
 			'INSERT INTO %s (%s) VALUES (%s)',
@@ -1077,6 +1084,11 @@ class QueryBuilder {
 		$bindings = array();
 
 		foreach ( $data as $column => $value ) {
+			if ( null === $value ) {
+				// NULL stays NULL: a %s placeholder would store '' (0 in a numeric column).
+				$setParts[] = "$column = NULL";
+				continue;
+			}
 			$setParts[] = "$column = %s";
 			$bindings[] = $value;
 		}

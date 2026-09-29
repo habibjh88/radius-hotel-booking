@@ -172,7 +172,28 @@ const baseRoutes = [
 		icon: DoorOpen,
 		capability: VIEW,
 		accessKey: 'page.rooms',
-		module: 'M06',
+		element: lazy( () => import( '@/modules/Rooms' ) ),
+	},
+	{
+		path: '/rooms/floors',
+		hidden: true,
+		label: __( 'Floors', 'radius-hotel-booking' ),
+		description: __(
+			'The floors of the hotel, in order',
+			'radius-hotel-booking'
+		),
+		capability: VIEW,
+		accessKey: 'page.rooms',
+		element: lazy( () => import( '@/modules/Rooms/Floors' ) ),
+	},
+	{
+		// One room type (`new` = add one). Title comes from the `/rooms` route.
+		path: '/rooms/:id',
+		hidden: true,
+		label: __( 'Room type', 'radius-hotel-booking' ),
+		capability: VIEW,
+		accessKey: 'page.rooms',
+		element: lazy( () => import( '@/modules/Rooms/Detail' ) ),
 	},
 	{
 		path: '/rate-plans',

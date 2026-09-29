@@ -33,6 +33,12 @@ export const STATUS = {
 		maintenance: { label: __( 'Maintenance', 'radius-hotel-booking' ), tone: 'warning' },
 		out_of_service: { label: __( 'Out of service', 'radius-hotel-booking' ), tone: 'neutral' },
 	},
+	// A room type's sellability (M06): rooms available to sell, or none.
+	readiness: {
+		ready: { label: __( 'Ready to sell', 'radius-hotel-booking' ), tone: 'success' },
+		no_rooms: { label: __( 'No rooms to sell', 'radius-hotel-booking' ), tone: 'warning' },
+		hidden: { label: __( 'Hidden from sale', 'radius-hotel-booking' ), tone: 'neutral', outline: true },
+	},
 	availability: {
 		free: { label: __( 'Free', 'radius-hotel-booking' ), tone: 'success' },
 		booked: { label: __( 'Booked', 'radius-hotel-booking' ), tone: 'danger' },
@@ -71,7 +77,7 @@ export const TONE_COLOR = {
  * Look up a status. Unknown values fall back to a neutral badge showing the
  * raw value, so a new server status never breaks a screen.
  *
- * @param {string} domain 'stay' | 'payment' | 'room' | 'availability'.
+ * @param {string} domain 'stay' | 'payment' | 'room' | 'readiness' | 'availability'.
  * @param {string} value  Status value.
  * @return {{label: string, tone: string, outline?: boolean, pattern?: string}} Status.
  */

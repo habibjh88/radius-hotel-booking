@@ -144,7 +144,8 @@ final class Activity {
 	private static function subject( $subject ): ?array {
 		if ( $subject instanceof BaseModel ) {
 			$type  = strtolower( preg_replace( '/([a-z])([A-Z])/', '$1_$2', rtbp_class_basename( $subject ) ) );
-			$label = $subject->reference ?? $subject->name ?? $subject->title ?? '';
+			// A booking's reference, a room's number, or a name / title.
+			$label = $subject->reference ?? $subject->number ?? $subject->name ?? $subject->title ?? '';
 			return array(
 				'type'  => $type,
 				'id'    => (string) $subject->id,

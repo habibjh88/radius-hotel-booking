@@ -60,7 +60,7 @@ The commands read and update this table. Keep the columns.
 | 1 | M17 | [Settings and system](../modules/M17-settings.md) | Free | M00 | done | module/m17-settings | 2026-09-28 | 2026-09-28 |
 | 2 | M13 | [Staff permissions and access control](../modules/M13-staff-permissions.md) | Free + Pro | M17 | done | module/m13-permissions | 2026-09-29 | 2026-09-29 |
 | 3 | M14 | [Activity log](../modules/M14-activity-log.md) | Free (emitter) + **Pro** | M13 | done | module/m14-activity-log | 2026-09-29 | 2026-09-29 |
-| 4 | M06 | [Rooms, floors and inventory](../modules/M06-rooms-floors.md) | Free | M14 | todo | module/m06-rooms-floors | | |
+| 4 | M06 | [Rooms, floors and inventory](../modules/M06-rooms-floors.md) | Free | M14 | done | module/m06-rooms-floors | 2026-09-29 | 2026-09-29 |
 | 5 | M07 | [Rate plans and pricing](../modules/M07-rate-plans-pricing.md) | Free + Pro | M06 | todo | module/m07-rate-plans | | |
 | 6 | M08 | [Availability engine, calendar and rules](../modules/M08-availability.md) | Free + Pro | M07 | todo | module/m08-availability | | |
 | 7 | M09 | [Guest records](../modules/M09-guests.md) | Free | M14 | todo | module/m09-guests | | |

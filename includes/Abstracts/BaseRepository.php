@@ -42,6 +42,31 @@ abstract class BaseRepository {
 	}
 
 	/**
+	 * Lock one row until the transaction ends (`SELECT … FOR UPDATE`); call it
+	 * inside `Transaction::run()`. A failed statement (lock wait timeout,
+	 * deadlock) is reported as "busy", never as a missing row.
+	 *
+	 * @param string $table     Table name without the plugin prefix (`rooms`).
+	 * @param int    $id        Row id.
+	 * @param bool   $live_only Only a row that is not soft-deleted.
+	 * @return bool Whether the row exists (and is live).
+	 * @throws \RadiusTheme\RadiusHotelBooking\Exceptions\DomainException 503 when the lock could not be taken.
+	 */
+	protected function lockRow( string $table, int $id, bool $live_only = false ): bool {
+		global $wpdb;
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- row lock inside a transaction.
+		$found = $live_only
+			? $wpdb->get_var( $wpdb->prepare( 'SELECT id FROM %i WHERE id = %d AND deleted_at IS NULL FOR UPDATE', rtbp_table( $table ), $id ) )
+			: $wpdb->get_var( $wpdb->prepare( 'SELECT id FROM %i WHERE id = %d FOR UPDATE', rtbp_table( $table ), $id ) );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		if ( '' !== (string) $wpdb->last_error ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw new \RadiusTheme\RadiusHotelBooking\Exceptions\DomainException( 'busy', __( 'Someone else is changing this right now. Please try again.', 'radius-hotel-booking' ), 503 );
+		}
+		return (bool) $found;
+	}
+
+	/**
 	 * Retrieves all records from the model.
 	 *
 	 * @return array An array of all model instances.

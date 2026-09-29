@@ -35,6 +35,8 @@ import DateTime from '@/components/common/DateTime';
 import EmptyState from '@/components/common/EmptyState';
 import FilterTabs from '@/components/common/FilterTabs';
 import MediaField from '@/components/common/MediaField';
+import GalleryField from '@/components/common/GalleryField';
+import TagInput from '@/components/common/TagInput';
 import Money from '@/components/common/Money';
 import Panel from '@/components/common/Panel';
 import SegmentedControl from '@/components/common/SegmentedControl';
@@ -203,6 +205,8 @@ export function publishRuntime() {
 			Switch,
 			EmptyState,
 			MediaField,
+			GalleryField,
+			TagInput,
 			// Settings field rows (a number with its unit; an on/off row).
 			NumberInput,
 			ToggleRow,

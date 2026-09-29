@@ -107,6 +107,14 @@ New General setting to delete all plugin data when the plugin is deleted (off by
 Added an Upgrade link and one dismissible Pro notice on the Settings screen.
 Staff pages and settings are now open or locked per role, enforced on the server.
 New Settings → Permissions tab: choose what Managers and Staff may open and do.
+New room types: photos, amenities, occupancy, bed and size details; types with rooms cannot be deleted.
+Fixed empty optional numbers being saved as zero instead of left blank.
+New Rooms & floors screen: a card per room type with photo, room counts and readiness.
+New Floors screen: add, rename, reorder and delete floors; floors holding rooms stay protected.
+Room types now list their rooms by floor: add, rename, set maintenance or out of service, remove.
+Room numbers are unique across the hotel; removed rooms keep their number.
+New Bulk add: create a range of rooms like A1–A12 with a preview; existing numbers skipped.
+Move a room to another room type, with a warning listing its upcoming bookings.
 
 = 1.0.0 =
 Initial release.

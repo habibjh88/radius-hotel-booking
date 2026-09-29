@@ -72,6 +72,21 @@ final class ActionCatalog {
 			'activity.archived'          => array( self::SYSTEM, __( 'Archived the activity log', 'radius-hotel-booking' ) ),
 			'activity.purged'            => array( self::SYSTEM, __( 'Removed archived log entries', 'radius-hotel-booking' ) ),
 
+			// Inventory (M06).
+			'floors.create'              => array( self::DATA, __( 'Added a floor', 'radius-hotel-booking' ) ),
+			'floors.update'              => array( self::DATA, __( 'Renamed a floor', 'radius-hotel-booking' ) ),
+			'floors.delete'              => array( self::DATA, __( 'Deleted a floor', 'radius-hotel-booking' ) ),
+			'floors.reorder'             => array( self::DATA, __( 'Reordered the floors', 'radius-hotel-booking' ) ),
+			'room_types.create'          => array( self::DATA, __( 'Added a room type', 'radius-hotel-booking' ) ),
+			'room_types.update'          => array( self::DATA, __( 'Changed a room type', 'radius-hotel-booking' ) ),
+			'room_types.delete'          => array( self::DATA, __( 'Deleted a room type', 'radius-hotel-booking' ) ),
+			'rooms.create'               => array( self::DATA, __( 'Added a room', 'radius-hotel-booking' ) ),
+			'rooms.update'               => array( self::DATA, __( 'Changed a room', 'radius-hotel-booking' ) ),
+			'rooms.delete'               => array( self::DATA, __( 'Removed a room', 'radius-hotel-booking' ) ),
+			'rooms.state'                => array( self::DATA, __( 'Changed a room state', 'radius-hotel-booking' ) ),
+			'rooms.move'                 => array( self::DATA, __( 'Moved a room to another type', 'radius-hotel-booking' ) ),
+			'rooms.bulk_create'          => array( self::DATA, __( 'Added rooms in bulk', 'radius-hotel-booking' ) ),
+
 			// Bookings (14.2), reserved for M02/M03.
 			'bookings.create'            => array( self::DATA, __( 'Created a booking', 'radius-hotel-booking' ) ),
 			'bookings.approve'           => array( self::DATA, __( 'Approved a booking', 'radius-hotel-booking' ) ),

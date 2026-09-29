@@ -173,6 +173,7 @@ in each module doc.
 | Service | Module | Used by |
 |---|---|---|
 | `Money`, `Dates`, `Phone`, `Sequence`, `Transaction` | M00 | everyone |
+| `BaseRepository::lockRow()` (row `FOR UPDATE`, 503 "busy" on a lock failure), `Support\Db::quietly()` / `duplicateKey()` (writes a UNIQUE index may refuse) | M06 | every write that locks a parent row or races on a unique column (M02 booking writes) |
 | `SettingsSchema` / `rtbp_setting()` | M17 | everyone |
 | `Access` / `AccessMiddleware` | M13 | every controller |
 | `rtbp_activity()` (free emitter; Pro stores) | M14 | every service that changes state |
@@ -190,6 +191,12 @@ in each module doc.
 | `rtbp_booking_changed` | any booking write | booking id |
 | `rtbp_payment_recorded` | PaymentService | payment, booking |
 | `rtbp_settings_updated` | SettingsService | section, before, after |
+| `rtbp_room_type_created` / `_updated` / `_deleted` | RoomTypeService (M06) | room type (+ diff on update) |
+| `rtbp_room_created` / `rtbp_room_deleted` / `rtbp_room_state_changed` | RoomService (M06) | room (+ old, new state) |
+| `rtbp_room_future_bookings` (filter) | RoomService (M06); M02 fills it | count (0), room id. A room with any is not removed; moving it needs confirmation |
+| `rtbp_room_future_booking_list` (filter) | RoomService (M06); M02 fills it | `[ { id, reference, start, end, guest } ]`, room id. Listed in the move warning |
+| `rtbp_room_in_use` (filter) | RoomService (M06); M02/M03 fill it | false, room id. An occupied room is not moved |
+| `rtbp_room_moved` | RoomService (M06) | room, from type id, to type id, upcoming count |
 | `rtbp_access_changed` / `rtbp_access_denied` / `rtbp_passcode_failed` / `rtbp_page_viewed` | M13 | … |
 | `rtbp_price_steps` (filter) | PriceResolver | steps, context. An add-on can add a pricing step |
 | `rtbp_access_keys`, `rtbp_activity_actions`, `rtbp_settings`, `rtbp_email_classes`, `rtbp_id_document_types` (filters) | registries | add-on extension points |

@@ -251,6 +251,7 @@ final class AccessRegistry {
 
 			// Rooms, rates and availability.
 			'rooms.manage'           => array( $locked, __( 'Manage rooms', 'radius-hotel-booking' ), 'manage-room-number' ),
+			'rooms.move'             => array( $locked, __( 'Move a room to another room type', 'radius-hotel-booking' ), '' ),
 			'room_types.manage'      => array( $locked, __( 'Manage room types', 'radius-hotel-booking' ), '' ),
 			'rates.manage'           => array( $locked, __( 'Manage rate plans', 'radius-hotel-booking' ), '' ),
 			'pricing.manage'         => array( $locked, __( 'Manage prices', 'radius-hotel-booking' ), '' ),
