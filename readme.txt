@@ -105,6 +105,8 @@ New Notifications settings: new-booking alert, check interval, and a built-in ch
 New E-mail settings: master switch, sender, reply-to, and an on/off switch for each e-mail.
 New General setting to delete all plugin data when the plugin is deleted (off by default).
 Added an Upgrade link and one dismissible Pro notice on the Settings screen.
+Staff pages and settings are now open or locked per role, enforced on the server.
+New Settings → Permissions tab: choose what Managers and Staff may open and do.
 
 = 1.0.0 =
 Initial release.

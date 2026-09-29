@@ -184,6 +184,17 @@ class ApiResponse {
 	}
 
 	/**
+	 * Attach data, e.g. the details of an error (`{ key }` on `access_locked`).
+	 *
+	 * @param array $data Data.
+	 * @return self
+	 */
+	public function withData( array $data ): self {
+		$this->data = $data;
+		return $this;
+	}
+
+	/**
 	 * The response for an exception thrown while handling a request.
 	 *
 	 * A DomainException becomes its own status, code, message, field errors

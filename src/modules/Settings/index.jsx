@@ -6,7 +6,8 @@
  * Tabs come from ./sections (the free plugin's) and the
  * `rtbp.settings.sections` filter (add-ons, ADR-015). An add-on tab is
  * `{ key, label, description?, icon?, Component }` or the older
- * `{ key, label, render( props ) }`. Both receive:
+ * `{ key, label, render( props ) }`, with an optional `accessKey` (default
+ * `settings.<key>`: the tab is hidden while it is locked). Both receive:
  *
  *   value      the section's current (draft) values
  *   setField   setField( key )( value )
@@ -34,6 +35,7 @@ import {
 	SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { canAccess, useAccessMap } from '@/lib/access';
 import { applyPrimaryColor, isHexColor } from '@/lib/theme';
 import { cn } from '@/lib/utils';
 import coreSections from './sections';
@@ -209,13 +211,22 @@ export default function Settings() {
 	const [ params, setParams ] = useSearchParams();
 	const [ confirmReset, setConfirmReset ] = useState( false );
 
-	// Only tabs whose section the server knows (an add-on may be half-loaded).
+	// Only tabs whose section the server knows (an add-on may be half-loaded)
+	// and whose access key is not locked (M13; the server refuses it anyway).
+	const { data: accessLevels } = useAccessMap();
 	const available = useMemo(
 		() =>
 			state.drafts
-				? sections.filter( ( section ) => section.key in state.drafts )
+				? sections.filter(
+						( section ) =>
+							section.key in state.drafts &&
+							canAccess(
+								section.accessKey ?? `settings.${ section.key }`
+							)
+				  )
 				: [],
-		[ sections, state.drafts ]
+		// accessLevels: re-filter when the access map changes.
+		[ sections, state.drafts, accessLevels ]
 	);
 	const active =
 		available.find(

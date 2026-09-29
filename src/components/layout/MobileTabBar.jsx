@@ -8,6 +8,7 @@ import { __ } from '@wordpress/i18n';
 import { Menu } from 'lucide-react';
 
 import { canSee, getRoutes } from '@/admin/routes';
+import { useAccessMap } from '@/lib/access';
 import { cn } from '@/lib/utils';
 
 /**
@@ -16,6 +17,8 @@ import { cn } from '@/lib/utils';
  * @return {JSX.Element} Tab bar.
  */
 export default function MobileTabBar( { onOpenMenu } ) {
+	// Re-render when the access map changes (canSee reads it).
+	useAccessMap();
 	const tabs = getRoutes()
 		.filter( ( route ) => route.mobileTab && canSee( route ) )
 		.slice( 0, 4 );

@@ -20,11 +20,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use RadiusTheme\RadiusHotelBooking\Controllers\AccessController;
 use RadiusTheme\RadiusHotelBooking\Controllers\DashboardController;
 use RadiusTheme\RadiusHotelBooking\Controllers\FileController;
 use RadiusTheme\RadiusHotelBooking\Controllers\SettingsController;
 
 /** Dashboard. */
+$this->router->get( 'access/me', array( AccessController::class, 'me' ) );
+$this->router->get( 'access/registry', array( AccessController::class, 'registry' ) );
+
 $this->router->get( 'dashboard/summary', array( DashboardController::class, 'summary' ) );
 
 /** Protected file download (plain links; see FileController). */

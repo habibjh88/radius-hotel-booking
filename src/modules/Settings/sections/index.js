@@ -1,8 +1,9 @@
 /**
  * The Settings tabs the free plugin owns, in display order.
  *
- * Each tab: `{ key, label, description, icon, Component, onSaved? }`. `key` is
- * the PHP section (Settings\SettingsSchema); `Component` receives
+ * Each tab: `{ key, label, description, icon, Component, onSaved?, accessKey? }`.
+ * `key` is the PHP section (Settings\SettingsSchema); `accessKey` (default
+ * `settings.<key>`) hides the tab when locked (M13); `Component` receives
  * `{ value, setField, errors, schema, saving }` (see ../index.jsx);
  * `onSaved( values )` runs after a save or reset of the tab.
  *
@@ -11,8 +12,16 @@
  */
 import { lazy } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Bell, Building2, CalendarCheck, Mail, Palette } from 'lucide-react';
+import {
+	Bell,
+	Building2,
+	CalendarCheck,
+	Mail,
+	Palette,
+	ShieldCheck,
+} from 'lucide-react';
 
+import { refreshAccess } from '@/lib/access';
 import { setFormatConfig } from '@/lib/format';
 
 /**
@@ -107,6 +116,19 @@ export default function coreSections() {
 			),
 			icon: Palette,
 			Component: lazy( () => import( './Display' ) ),
+		},
+		{
+			key: 'access',
+			label: __( 'Permissions', 'radius-hotel-booking' ),
+			description: __(
+				'What each staff role may open and do',
+				'radius-hotel-booking'
+			),
+			icon: ShieldCheck,
+			accessKey: 'access.manage',
+			Component: lazy( () => import( './Permissions' ) ),
+			// Your own menus follow the new map without a reload.
+			onSaved: () => refreshAccess(),
 		},
 	];
 }

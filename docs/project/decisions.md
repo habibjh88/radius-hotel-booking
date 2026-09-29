@@ -173,12 +173,12 @@ neither.
 | Seam (free) | Pro / client use |
 |---|---|
 | `rtbp_activity( $action, $subject, array $context )`: builds a normalised event (actor, IP, user agent, subject, before/after diff with secrets masked) and fires `do_action( 'rtbp_activity', $event )`. **Stores nothing** | Pro's `ActivityLogger` stores it (hash chain, grouping, archive) |
-| `AccessRegistry` + `rtbp_access_keys` filter; `Access::level()` passes through the `rtbp_access_level` filter; `AccessMiddleware` handles `open` / `locked`, and hands `passcode` to `rtbp_access_passcode_check` | Pro adds the `passcode` level, PIN verification, custom roles and per-person overrides |
+| `AccessRegistry` + `rtbp_access_keys` filter (and `register()` from `rtbp_access_registry_init`, groups via `rtbp_access_groups`); `Access::level()` passes through the `rtbp_access_level` filter `( $level, $key, $user, $definition )`; `AccessMiddleware` handles `open` / `locked`, and hands `passcode` to `rtbp_access_passcode_check` `( null, $key, $request\|null )` → `true` or a `WP_Error` (null = locked). Also `rtbp_access_role_defaults`, `rtbp_access_locked_message`, and the actions `rtbp_access_denied`, `rtbp_page_viewed`, `rtbp_access_changed( $scope, {before, after}, $user_id )` (**live**, M13 T1–T3) | Pro adds the `passcode` level, PIN verification, custom roles and per-person overrides. **Live (M13 T4a):** Pro answers `rtbp_access_passcode_check` from the `X-RTBP-Passcode` header, fires `rtbp_passcode_failed( $user_id, $key, $failures, $locked )` and `rtbp_pro_pin_changed( $user_id, $removed )` |
 | `PriceResolver` steps + the `rtbp_price_steps` filter | Pro adds the seasonal, occupancy and booking-window steps |
 | `rtbp_document_renderers` (invoice, receipt) with an HTML print view in free | Pro adds the PDF renderer |
 | `rtbp_report_definitions`, the `rtbp_export_formats` filter (CSV in free) | Pro adds reports, XLSX, schedules and archiving |
 | `rtbp_block_sources` | Pro adds iCal feeds |
-| `SettingsSchema::register()`, `rtbp_migration_classes`, `rtbp_register_addon_routes`, `rtbp_email_classes` | registering an add-on's own sections, tables, routes and e-mails |
+| `SettingsSchema::register()`, `rtbp_migration_classes`, `rtbp_register_addon_routes`, `rtbp_email_classes` | registering an add-on's own sections, tables, routes and e-mails. Migration keys carry the **free** DB version, so an add-on also re-runs its own tables when its own DB version changes (Pro: `Databases\Installer`, M13 T5a) |
 | `rtbp_settings` filter (**live**) + the generic `GET/PUT settings/{section}` | an add-on settings section with defaults and storage (`rtbp_<section>_settings`) |
 | `rtbp_admin_enqueue_scripts( $handle )` action (**live**) | enqueuing an add-on bundle after the free admin app, with `$handle` as a dependency |
 
@@ -203,6 +203,12 @@ add-on script has registered its filters. Filters:
 | `rtbp.admin.routes` (**live**) | Add screens and sidebar items |
 | `rtbp.settings.sections` (**live**) | Add settings tabs: `{ key, label, render( { value, setField, save, saving } ) }`, where `key` is a PHP section from `rtbp_settings` |
 | `rtbp.booking.panels`, `rtbp.guest.panels` | Add panels to detail screens (for example the activity timeline) |
+| `window.rtbp.lib.access` (**live**) | `useAccess( key )`, `useAccessMap()`, `canAccess( keys )`, `refreshAccess()`. A refused request's error carries `error.data.key` |
+| `window.rtbp.ui.NumberInput`, `window.rtbp.ui.ToggleRow` (**live**, M13 T4b) | The Settings field rows, for add-on settings tabs |
+| `window.rtbp.router` (**live**, M13 T5b) | The app's react-router (`Link`, `NavLink`, `Navigate`, `useLocation`, `useNavigate`, `useParams`, `useSearchParams`); add-ons map `react-router-dom` to it in webpack externals |
+| `rtbp_settings_access_key` (**live**, M13 review) + `AccessRegistry::settingsKey()` | The access key guarding a settings section's writes; Pro routes `pro_access` and `pro_features` to `access.manage`. A passcode refusal lists every pending key in `data.keys` so one PIN unlocks them |
+| Tailwind `safelist` in free (**live**, M13 T6) | Add-on bundles are not scanned by the free Tailwind build: a class an add-on needs that free stops using disappears. Responsive row classes add-ons rely on are safelisted in `tailwind.config.js`; check new add-on classes against `build/*.css` |
+| `rtbp.access.levels` (**live**, M13 T5b) | The level options of the free permission matrix; the PHP twin `rtbp_access_role_levels` is the server allow-list |
 | `rtbp.api.error` (**live**) | `( handled, error, { path, options, retry } )`: return a Promise to take over the request (e.g. Pro turns `passcode_required` into its PIN dialog, then `retry( { headers } )`), or pass `handled` through to let the error throw. A retried request does not run the filter again |
 | `rtbp.dashboard.widgets`, `rtbp.reports.tabs` | Add dashboard widgets and report tabs |
 

@@ -10,6 +10,7 @@ import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 import Logo from '@/components/brand/Logo';
 import { NAV_GROUPS, canSee, getRoutes } from '@/admin/routes';
+import { useAccessMap } from '@/lib/access';
 import { cn } from '@/lib/utils';
 
 /**
@@ -130,6 +131,8 @@ export default function Sidebar( {
 	mobile = false,
 	onClose,
 } ) {
+	// Re-render when the access map changes (canSee reads it).
+	useAccessMap();
 	const routes = getRoutes().filter(
 		( route ) => route.group && ! route.hidden && canSee( route )
 	);

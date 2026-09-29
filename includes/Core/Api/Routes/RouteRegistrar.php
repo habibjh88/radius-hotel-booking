@@ -256,6 +256,11 @@ class RouteRegistrar {
 				$callback   = array( $controller, $callback[1] );
 			}
 
+			// The controller method is the "action" AccessMiddleware maps to an access key.
+			if ( is_array( $callback ) && is_string( $callback[1] ?? null ) ) {
+				$request->set_attributes( array_merge( $request->get_attributes(), array( 'rtbp_action' => $callback[1] ) ) );
+			}
+
 			return call_user_func( $callback, $request );
 		};
 	}

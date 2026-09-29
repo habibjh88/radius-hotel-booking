@@ -13,8 +13,18 @@
 import React, { lazy } from 'react';
 import * as hooks from '@wordpress/hooks';
 import * as ReactQuery from '@tanstack/react-query';
+import {
+	Link,
+	NavLink,
+	Navigate,
+	useLocation,
+	useNavigate,
+	useParams,
+	useSearchParams,
+} from 'react-router-dom';
 
 import api from '@/api/client';
+import * as access from '@/lib/access';
 import * as format from '@/lib/format';
 import * as sound from '@/lib/sound';
 import * as status from '@/lib/status';
@@ -31,6 +41,7 @@ import SegmentedControl from '@/components/common/SegmentedControl';
 import SettingsSection from '@/components/common/SettingsSection';
 import StatCard from '@/components/common/StatCard';
 import { Field, FormSection } from '@/components/common/Form';
+import { NumberInput, ToggleRow } from '@/modules/Settings/sections/fields';
 import StatusBadge from '@/components/common/StatusBadge';
 import { usePageActions } from '@/components/layout/PageActions';
 import { Badge } from '@/components/ui/badge';
@@ -153,6 +164,17 @@ export function publishRuntime() {
 		// dependency anyway; this is for bundles made any other way.
 		React,
 		hooks,
+		// The app's router (HashRouter): add-on screens must use this copy, a
+		// bundled one would not see the app's router context.
+		router: {
+			Link,
+			NavLink,
+			Navigate,
+			useLocation,
+			useNavigate,
+			useParams,
+			useSearchParams,
+		},
 		ui: {
 			...DialogParts,
 			...DropdownMenuParts,
@@ -181,6 +203,9 @@ export function publishRuntime() {
 			Switch,
 			EmptyState,
 			MediaField,
+			// Settings field rows (a number with its unit; an on/off row).
+			NumberInput,
+			ToggleRow,
 			Panel,
 			SegmentedControl,
 			SettingsSection,
@@ -189,6 +214,8 @@ export function publishRuntime() {
 			Textarea,
 		},
 		lib: {
+			// M13: useAccess( key ), canAccess( keys ), refreshAccess().
+			access,
 			api,
 			cn,
 			format,

@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use RadiusTheme\RadiusHotelBooking\Core\Api\ApiResponse;
+use RadiusTheme\RadiusHotelBooking\Core\Api\Middleware\AccessMiddleware;
 use RadiusTheme\RadiusHotelBooking\Core\Api\Middleware\AuthMiddleware;
 use RadiusTheme\RadiusHotelBooking\Core\Api\Middleware\PermissionMiddleware;
 use RadiusTheme\RadiusHotelBooking\Core\Permissions\Capabilities;
@@ -38,12 +39,16 @@ class DashboardController {
 	public function summary( WP_REST_Request $request ) {
 		$auth       = new AuthMiddleware();
 		$permission = new PermissionMiddleware( Capabilities::VIEW_DASHBOARD );
+		$access     = new AccessMiddleware( 'page.dashboard' );
 
 		return $auth->handle(
 			$request,
 			fn( $request ) => $permission->handle(
 				$request,
-				fn() => ApiResponse::success( $this->build() )->send()
+				fn( $request ) => $access->handle(
+					$request,
+					fn() => ApiResponse::success( $this->build() )->send()
+				)
 			)
 		);
 	}

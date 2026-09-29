@@ -1,8 +1,8 @@
-import { HashRouter, Link, Route, Routes } from 'react-router-dom';
+import { HashRouter, Link, Navigate, Route, Routes } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Suspense } from 'react';
 import { __ } from '@wordpress/i18n';
-import { SearchX } from 'lucide-react';
+import { Lock, SearchX } from 'lucide-react';
 
 import AppShell from '@/components/layout/AppShell';
 import EmptyState from '@/components/common/EmptyState';
@@ -10,8 +10,9 @@ import ModulePlaceholder from '@/components/common/ModulePlaceholder';
 import Panel from '@/components/common/Panel';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAccessMap } from '@/lib/access';
 import { queryClient } from '@/lib/query-client';
-import { getRoutes } from './routes';
+import { canSee, getRoutes } from './routes';
 
 /**
  * Placeholder shown while a lazily-loaded screen downloads.
@@ -66,6 +67,65 @@ function NotFound() {
 }
 
 /**
+ * A route the user may not open (its access keys are locked, or a
+ * capability is missing). The server refuses the data too.
+ *
+ * @return {JSX.Element} Screen.
+ */
+function Locked() {
+	return (
+		<Panel>
+			<EmptyState
+				icon={ Lock }
+				title={ __(
+					'You do not have access to this page',
+					'radius-hotel-booking'
+				) }
+				description={
+					// Settings may replace it (the `rtbp_access_locked_message` filter).
+					window.radius_hotel_booking_param?.access?.lockedMessage ||
+					__( 'Ask a manager if you need it.', 'radius-hotel-booking' )
+				}
+				action={
+					<Button asChild>
+						<Link to="/">
+							{ __(
+								'Go to the dashboard',
+								'radius-hotel-booking'
+							) }
+						</Link>
+					</Button>
+				}
+				className="border-0 py-16"
+			/>
+		</Panel>
+	);
+}
+
+/**
+ * Render a route's screen, or Locked when the user may not see it.
+ *
+ * @param {Object} props       Props.
+ * @param {Object} props.route Route.
+ * @return {JSX.Element} Screen.
+ */
+function RouteScreen( { route } ) {
+	// Re-render when the access map changes (canSee reads it).
+	useAccessMap();
+
+	if ( ! canSee( route ) ) {
+		return <Locked />;
+	}
+
+	if ( route.redirect ) {
+		return <Navigate to={ route.redirect } replace />;
+	}
+
+	const Screen = route.element;
+	return Screen ? <Screen /> : <ModulePlaceholder route={ route } />;
+}
+
+/**
  * The admin single-page app.
  *
  * HashRouter is deliberate: wp-admin owns the real URL, so routes live in the
@@ -80,24 +140,13 @@ export default function App() {
 				<AppShell>
 					<Suspense fallback={ <ScreenSkeleton /> }>
 						<Routes>
-							{ getRoutes().map( ( route ) => {
-								const Screen = route.element;
-								return (
-									<Route
-										key={ route.path }
-										path={ route.path }
-										element={
-											Screen ? (
-												<Screen />
-											) : (
-												<ModulePlaceholder
-													route={ route }
-												/>
-											)
-										}
-									/>
-								);
-							} ) }
+							{ getRoutes().map( ( route ) => (
+								<Route
+									key={ route.path }
+									path={ route.path }
+									element={ <RouteScreen route={ route } /> }
+								/>
+							) ) }
 							<Route path="*" element={ <NotFound /> } />
 						</Routes>
 					</Suspense>

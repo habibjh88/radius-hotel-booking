@@ -16,6 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use RadiusTheme\RadiusHotelBooking\Access\Access;
 use RadiusTheme\RadiusHotelBooking\Core\Permissions\Capabilities;
 
 /**
@@ -57,12 +58,20 @@ class Menu {
 
 		if ( current_user_can( $capability ) ) { // phpcs:ignore
 			// phpcs:disable WordPress.WP.GlobalVariablesOverride.Prohibited
-			$submenu[ $slug ][] = array( esc_attr__( 'Dashboard', 'radius-hotel-booking' ), Capabilities::VIEW_DASHBOARD, 'admin.php?page=' . $slug . '#/' );
-			$submenu[ $slug ][] = array( esc_attr__( 'Bookings', 'radius-hotel-booking' ), Capabilities::VIEW_DASHBOARD, 'admin.php?page=' . $slug . '#/bookings' );
-			$submenu[ $slug ][] = array( esc_attr__( 'Availability', 'radius-hotel-booking' ), Capabilities::VIEW_DASHBOARD, 'admin.php?page=' . $slug . '#/calendar' );
-			$submenu[ $slug ][] = array( esc_attr__( 'Guests', 'radius-hotel-booking' ), Capabilities::VIEW_DASHBOARD, 'admin.php?page=' . $slug . '#/guests' );
-			$submenu[ $slug ][] = array( esc_attr__( 'Rooms & floors', 'radius-hotel-booking' ), Capabilities::MANAGE_SETTINGS, 'admin.php?page=' . $slug . '#/rooms' );
-			$submenu[ $slug ][] = array( esc_attr__( 'Settings', 'radius-hotel-booking' ), Capabilities::MANAGE_SETTINGS, 'admin.php?page=' . $slug . '#/settings' );
+			// Label, hash route, M13 page key: an item is listed unless its page is locked.
+			$items = array(
+				array( esc_attr__( 'Dashboard', 'radius-hotel-booking' ), '#/', 'page.dashboard' ),
+				array( esc_attr__( 'Bookings', 'radius-hotel-booking' ), '#/bookings', 'page.bookings' ),
+				array( esc_attr__( 'Availability', 'radius-hotel-booking' ), '#/calendar', 'page.availability' ),
+				array( esc_attr__( 'Guests', 'radius-hotel-booking' ), '#/guests', 'page.guests' ),
+				array( esc_attr__( 'Rooms & floors', 'radius-hotel-booking' ), '#/rooms', 'page.rooms' ),
+				array( esc_attr__( 'Settings', 'radius-hotel-booking' ), '#/settings', 'page.settings' ),
+			);
+			foreach ( $items as $item ) {
+				if ( Access::LOCKED !== Access::level( $item[2] ) ) {
+					$submenu[ $slug ][] = array( $item[0], Capabilities::VIEW_DASHBOARD, 'admin.php?page=' . $slug . $item[1] );
+				}
+			}
 			// phpcs:enable WordPress.WP.GlobalVariablesOverride.Prohibited
 
 			/**

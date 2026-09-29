@@ -10,10 +10,13 @@
  * - `description` One line under the page title.
  * - `icon`        lucide-react component.
  * - `capability`  WordPress capability needed to see it (localized caps).
+ * - `accessKey`   M13 access key(s) of the page; hidden when every one is
+ *                 locked (src/lib/access.js). The server enforces the same keys.
  * - `mobileTab`   Shown in the bottom tab bar on phones (keep it to 4);
  *                 `mobileLabel` is its tab label, an `_x()` string with a
  *                 "phone tab bar" context so a translator can pick a
  *                 shorter word than the menu label (French: "Accueil").
+ * - `redirect`    Path to send the user to instead of rendering a screen.
  * - `element`     Lazy component. Routes without one render the module
  *                 placeholder until their module (`module`) is built.
  *
@@ -23,6 +26,8 @@
 import { lazy } from 'react';
 import { applyFilters } from '@wordpress/hooks';
 import { __, _x } from '@wordpress/i18n';
+
+import { canAccess } from '@/lib/access';
 import {
 	BarChart3,
 	BedDouble,
@@ -52,7 +57,6 @@ export const NAV_GROUPS = [
 ];
 
 const VIEW = 'rtbp_view_dashboard';
-const SETTINGS = 'rtbp_manage_settings';
 
 const baseRoutes = [
 	{
@@ -71,6 +75,7 @@ const baseRoutes = [
 		),
 		icon: LayoutDashboard,
 		capability: VIEW,
+		accessKey: 'page.dashboard',
 		element: lazy( () => import( '@/modules/Dashboard' ) ),
 	},
 	{
@@ -83,6 +88,7 @@ const baseRoutes = [
 		),
 		icon: CalendarDays,
 		capability: VIEW,
+		accessKey: 'page.availability',
 		module: 'M08',
 	},
 	{
@@ -101,6 +107,7 @@ const baseRoutes = [
 		),
 		icon: CalendarPlus,
 		capability: VIEW,
+		accessKey: 'bookings.create',
 		module: 'M02',
 	},
 	{
@@ -119,6 +126,7 @@ const baseRoutes = [
 		),
 		icon: BedDouble,
 		capability: VIEW,
+		accessKey: 'page.bookings',
 		module: 'M01',
 	},
 	{
@@ -137,6 +145,7 @@ const baseRoutes = [
 		),
 		icon: Users,
 		capability: VIEW,
+		accessKey: 'page.guests',
 		module: 'M09',
 	},
 	{
@@ -149,6 +158,7 @@ const baseRoutes = [
 		),
 		icon: Wallet,
 		capability: VIEW,
+		accessKey: 'page.bookings',
 		module: 'M05',
 	},
 	{
@@ -160,7 +170,8 @@ const baseRoutes = [
 			'radius-hotel-booking'
 		),
 		icon: DoorOpen,
-		capability: SETTINGS,
+		capability: VIEW,
+		accessKey: 'page.rooms',
 		module: 'M06',
 	},
 	{
@@ -172,7 +183,8 @@ const baseRoutes = [
 			'radius-hotel-booking'
 		),
 		icon: Clock,
-		capability: SETTINGS,
+		capability: VIEW,
+		accessKey: 'page.rates',
 		module: 'M07',
 	},
 	{
@@ -185,6 +197,7 @@ const baseRoutes = [
 		),
 		icon: BarChart3,
 		capability: VIEW,
+		accessKey: [ 'page.reports_sales', 'page.reports_rooms' ],
 		module: 'M10',
 	},
 	{
@@ -196,7 +209,8 @@ const baseRoutes = [
 			'radius-hotel-booking'
 		),
 		icon: Download,
-		capability: SETTINGS,
+		capability: VIEW,
+		accessKey: 'page.exports',
 		module: 'M11',
 	},
 	{
@@ -208,8 +222,10 @@ const baseRoutes = [
 			'radius-hotel-booking'
 		),
 		icon: ShieldCheck,
-		capability: SETTINGS,
-		module: 'M13',
+		capability: VIEW,
+		accessKey: 'access.manage',
+		// The permission map is a Settings tab.
+		redirect: '/settings?section=access',
 	},
 	{
 		path: '/settings',
@@ -220,7 +236,8 @@ const baseRoutes = [
 			'radius-hotel-booking'
 		),
 		icon: Settings,
-		capability: SETTINGS,
+		capability: VIEW,
+		accessKey: 'page.settings',
 		element: lazy( () => import( '@/modules/Settings' ) ),
 	},
 ];
@@ -258,18 +275,20 @@ export function getRoutes() {
 }
 
 /**
- * Whether the current user may see a route. Administrators hold every plugin
- * capability; the REST layer is the real gate — this keeps the menu honest.
+ * Whether the current user may see a route: its capability, and its access
+ * key(s) not all locked. The REST layer is the real gate; this keeps the menu
+ * honest. Components that call it subscribe with `useAccessMap()` so they
+ * re-render when the map changes.
  *
  * @param {Object} route Route.
  * @return {boolean} Visible.
  */
 export function canSee( route ) {
 	const caps = window.radius_hotel_booking_param?.capabilities;
-	if ( ! route.capability || ! caps ) {
-		return true;
+	if ( route.capability && caps && caps[ route.capability ] !== true ) {
+		return false;
 	}
-	return caps[ route.capability ] === true;
+	return canAccess( route.accessKey );
 }
 
 /**

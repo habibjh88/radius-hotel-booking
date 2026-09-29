@@ -59,3 +59,5 @@ the hotel allows. They also see their own payslips and time off.
 `legacy-reference.md` → Module 16.
 
 ## Progress notes
+
+- From the M13 critical review (2026-09-29): changing your **own** PIN must ask for the current PIN first. `PasscodeService::set_pin()` clears the lockout and failure count, so without it anyone at an unattended session could reset the brute-force limit and pick a new PIN. The `passcode` profile field (`ProfileFields::allowed()`) only says whether the person may change it at all.

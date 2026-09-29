@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/command';
 import { DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { NAV_GROUPS, canSee, getRoutes } from '@/admin/routes';
+import { useAccessMap } from '@/lib/access';
 
 /**
  * Predictable matching for a short list of screens: label prefix, word
@@ -58,6 +59,8 @@ function rank( value, search, keywords = [] ) {
  */
 export default function CommandPalette( { open, onOpenChange } ) {
 	const navigate = useNavigate();
+	// Re-render when the access map changes (canSee reads it).
+	useAccessMap();
 
 	const routes = getRoutes().filter( ( route ) => route.group && ! route.hidden && canSee( route ) );
 	const groups = NAV_GROUPS.map( ( group ) => ( {

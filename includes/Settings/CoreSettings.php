@@ -7,6 +7,10 @@
 
 namespace RadiusTheme\RadiusHotelBooking\Settings;
 
+use RadiusTheme\RadiusHotelBooking\Access\Access;
+use RadiusTheme\RadiusHotelBooking\Access\AccessRegistry;
+use RadiusTheme\RadiusHotelBooking\Core\Permissions\Capabilities;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -26,6 +30,26 @@ final class CoreSettings {
 		SettingsSchema::register( 'display', self::display() );
 		SettingsSchema::register( 'notifications', self::notifications() );
 		SettingsSchema::register( 'email', self::email() );
+		SettingsSchema::register( 'access', self::access() );
+	}
+
+	/**
+	 * Access (M13): the open/locked level of each access key per built-in role.
+	 * Keys a role does not set fall back to Access::role_defaults(), then to the
+	 * registry default. The passcode level and custom roles are Pro's, in its
+	 * own option.
+	 *
+	 * @return array
+	 */
+	private static function access(): array {
+		return array(
+			// Role slug => access key => open | locked.
+			'roleLevels' => array(
+				'type'     => 'array',
+				'default'  => array(),
+				'sanitize' => array( self::class, 'role_levels' ),
+			),
+		);
 	}
 
 	/**
@@ -303,6 +327,42 @@ final class CoreSettings {
 			$id = sanitize_key( (string) $id );
 			if ( '' !== $id ) {
 				$clean[ $id ] = (bool) filter_var( $on, FILTER_VALIDATE_BOOLEAN );
+			}
+		}
+		return $clean;
+	}
+
+	/**
+	 * Role => key => level: built-in plugin roles, registered keys and the
+	 * allowed levels (open, locked; `rtbp_access_role_levels`) only.
+	 *
+	 * @param mixed $value Value.
+	 * @return array|\WP_Error
+	 */
+	public static function role_levels( $value ) {
+		if ( ! is_array( $value ) ) {
+			return new \WP_Error( 'rtbp_invalid_setting', __( 'This value is not valid.', 'radius-hotel-booking' ) );
+		}
+
+		$roles = Capabilities::manageableRoles();
+
+		/**
+		 * Filters the levels the permission matrix may store. The free plugin
+		 * stores open and locked; Pro adds passcode. A stored passcode without
+		 * a passcode handler is enforced as locked.
+		 *
+		 * @param string[] $levels Levels.
+		 */
+		$levels = array_intersect( (array) apply_filters( 'rtbp_access_role_levels', array( Access::OPEN, Access::LOCKED ) ), Access::levels() );
+		$clean  = array();
+		foreach ( $value as $role => $keys ) {
+			if ( ! in_array( $role, $roles, true ) || ! is_array( $keys ) ) {
+				continue;
+			}
+			foreach ( $keys as $key => $level ) {
+				if ( AccessRegistry::has( (string) $key ) && in_array( $level, $levels, true ) ) {
+					$clean[ $role ][ $key ] = $level;
+				}
 			}
 		}
 		return $clean;

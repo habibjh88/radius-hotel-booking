@@ -8,10 +8,15 @@
 namespace RadiusTheme\RadiusHotelBooking\Controllers;
 
 use RadiusTheme\RadiusHotelBooking\Abstracts\BaseController;
+use RadiusTheme\RadiusHotelBooking\Access\AccessRegistry;
 use RadiusTheme\RadiusHotelBooking\Core\Api\ApiResponse;
+use RadiusTheme\RadiusHotelBooking\Core\Api\Middleware\AccessMiddleware;
+use RadiusTheme\RadiusHotelBooking\Core\Api\Middleware\AuthMiddleware;
 use RadiusTheme\RadiusHotelBooking\Core\Api\Middleware\PermissionMiddleware;
 use RadiusTheme\RadiusHotelBooking\Core\Container\Container;
+use RadiusTheme\RadiusHotelBooking\Core\Permissions\Capabilities;
 use RadiusTheme\RadiusHotelBooking\Exceptions\DomainException;
+use RadiusTheme\RadiusHotelBooking\Helpers\SettingsHelper;
 use RadiusTheme\RadiusHotelBooking\Repositories\SettingsRepository;
 use RadiusTheme\RadiusHotelBooking\Services\SettingsService;
 use RadiusTheme\RadiusHotelBooking\Settings\SettingsSchema;
@@ -26,8 +31,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Settings endpoints. Every write goes through SettingsService, which
  * validates against the schema and fires `rtbp_settings_updated`.
  *
- * Access: `rtbp_manage_settings` until M13 replaces it with the
- * `page.settings` / `settings.<section>` access keys.
+ * Access (M13): `page.settings` to read, `settings.<section>` to change a
+ * section (`access.manage` for the `access` section).
  */
 class SettingsController extends BaseController {
 
@@ -44,7 +49,34 @@ class SettingsController extends BaseController {
 	public function __construct() {
 		parent::__construct( Container::resolve( SettingsRepository::class ) );
 		$this->settings     = Container::resolve( SettingsService::class );
-		$this->middleware[] = new PermissionMiddleware( 'rtbp_manage_settings' );
+		$this->middleware[] = new AuthMiddleware();
+		$this->middleware[] = new PermissionMiddleware( Capabilities::VIEW_DASHBOARD );
+		$this->middleware[] = new AccessMiddleware(
+			array(
+				'index'         => 'page.settings',
+				'schema'        => 'page.settings',
+				'show'          => 'page.settings',
+				'updateSection' => fn( WP_REST_Request $r ) => self::accessKey( (string) $r->get_param( 'section' ) ),
+				'resetSection'  => fn( WP_REST_Request $r ) => self::accessKey( (string) $r->get_param( 'section' ) ),
+				// Every section in the body (update) or being reset.
+				'update'        => fn( WP_REST_Request $r ) => array_map( array( self::class, 'accessKey' ), array_keys( (array) $r->get_json_params() ) ),
+				'reset'         => function ( WP_REST_Request $r ) {
+					$sections = $r->get_param( 'sections' );
+					$sections = is_array( $sections ) && $sections ? $sections : array_keys( SettingsHelper::all() );
+					return array_map( array( self::class, 'accessKey' ), $sections );
+				},
+			)
+		);
+	}
+
+	/**
+	 * The access key that guards writing a section (AccessRegistry::settingsKey()).
+	 *
+	 * @param string $section Section key.
+	 * @return string
+	 */
+	public static function accessKey( $section ): string {
+		return AccessRegistry::settingsKey( (string) $section );
 	}
 
 	/**

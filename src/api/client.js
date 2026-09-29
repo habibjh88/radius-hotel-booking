@@ -71,6 +71,8 @@ function unwrap( response ) {
 		error.status = response.status_code;
 		// Machine-readable code from a DomainException (e.g. 'room_unavailable').
 		error.code = response.code;
+		// Error details, e.g. `{ key }` on `access_locked` / `passcode_required`.
+		error.data = response.data;
 		throw error;
 	}
 

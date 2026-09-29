@@ -23,6 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use RadiusTheme\RadiusHotelBooking\Admin\UpgradeNotice;
+use RadiusTheme\RadiusHotelBooking\Controllers\AccessController;
 use RadiusTheme\RadiusHotelBooking\Core\Permissions\Capabilities;
 use RadiusTheme\RadiusHotelBooking\Frontend\DashboardPage;
 use RadiusTheme\RadiusHotelBooking\Helpers\SettingsHelper;
@@ -366,6 +367,8 @@ class LoadAssets {
 				'version'       => RADIUS_HOTEL_BOOKING_VERSION,
 				'is_addon'      => rtbp_addon_active(),
 				'capabilities'  => Capabilities::forCurrentUser(),
+				// The M13 access map (key => open | passcode | locked); `access/me` refreshes it.
+				'access'        => AccessController::payload(),
 				'current_user'  => array(
 					'id'    => get_current_user_id(),
 					'name'  => wp_get_current_user()->display_name,
