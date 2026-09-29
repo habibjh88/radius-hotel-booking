@@ -21,7 +21,9 @@ namespace RadiusTheme\RadiusHotelBooking\Databases;
 use RadiusTheme\RadiusHotelBooking\Core\Database\Schema\Migrations\MigrationRunner;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\FilesTable;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\FloorsTable;
+use RadiusTheme\RadiusHotelBooking\Databases\Table\RatePlansTable;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\RoomsTable;
+use RadiusTheme\RadiusHotelBooking\Databases\Table\RoomTypeRatesTable;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\RoomTypesTable;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\SequencesTable;
 if ( ! defined( 'ABSPATH' ) ) {
@@ -92,6 +94,9 @@ class DatabaseManager {
 			FloorsTable::class,
 			RoomTypesTable::class,
 			RoomsTable::class,
+			// Rate plans and pricing (M07).
+			RatePlansTable::class,
+			RoomTypeRatesTable::class,
 		);
 
 		/**

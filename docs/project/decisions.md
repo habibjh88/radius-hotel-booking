@@ -205,6 +205,7 @@ add-on script has registered its filters. Filters:
 | `rtbp.booking.panels`, `rtbp.guest.panels` (contract fixed M14 T3b; host side in M03 / M09) | `applyFilters( 'rtbp.booking.panels', [], { booking } )` (guest: `{ guest }`) returns `{ key, label, order, render() }[]`; the host renders them sorted by `order`. Pro adds the activity timeline (`activity`, order 90) |
 | `window.rtbp.lib.access` (**live**) | `useAccess( key )`, `useAccessMap()`, `canAccess( keys )`, `refreshAccess()`. A refused request's error carries `error.data.key` |
 | `window.rtbp.ui.NumberInput`, `window.rtbp.ui.ToggleRow` (**live**, M13 T4b) | The Settings field rows, for add-on settings tabs |
+| `window.rtbp.ui` Sheet parts, `PriceBreakdown`, `PriceBreakdownPopover`, `GalleryField`, `TagInput` (**live**, M06–M07; Sheet and PriceBreakdown lazy) | Side-panel editors (`Sheet`, `SheetContent`, `SheetHeader`, `SheetFooter`, `SheetTitle`, `SheetDescription`, `SheetClose`; wrap in `Suspense`) and the pricing breakdown, for add-on screens. Free main after M07 T5b; an add-on falls back to the Dialog parts when `Sheet` is missing |
 | `window.rtbp.router` (**live**, M13 T5b) | The app's react-router (`Link`, `NavLink`, `Navigate`, `useLocation`, `useNavigate`, `useParams`, `useSearchParams`); add-ons map `react-router-dom` to it in webpack externals |
 | `rtbp_settings_access_key` (**live**, M13 review) + `AccessRegistry::settingsKey()` | The access key guarding a settings section's writes; Pro routes `pro_access` and `pro_features` to `access.manage`. A passcode refusal lists every pending key in `data.keys` so one PIN unlocks them |
 | Tailwind `safelist` in free (**live**, M13 T6) | Add-on bundles are not scanned by the free Tailwind build: a class an add-on needs that free stops using disappears. Responsive row classes add-ons rely on are safelisted in `tailwind.config.js`; check new add-on classes against `build/*.css` |
@@ -306,3 +307,21 @@ The plugin does not build its own language layer.
 - Layouts still leave room for longer translations (no fixed-width buttons).
 - The client documents in `docs/requiremetnt/` promise French and English. This decision meets
   that through a translation plugin, not bundled French. Confirm with the client before handover.
+
+## ADR-021: The free plugin seeds generic rate plans, not the client's — Accepted (2026-09-29, M07)
+
+The owner decided that a fresh install of the free plugin gets a small **generic starter set**
+of rate plans, created only when the `rate_plans` table is empty: *Half Day* (fixed 08:30 →
+17:00), *Overnight* (fixed 20:00 → 08:00, multi-unit) and *24 Hours Flexible* (24 h, check-in
+any time, multi-unit). The free plugin ships to wordpress.org, so it does not carry Residence
+TATA's own list.
+
+*Consequences:*
+
+- The client's seven plans (booking-engine §2) reach their site through the **M18 import** of the
+  legacy `rate_plan` terms, which removes duplicates by type and times, so the starter plans are
+  matched, not doubled.
+- `StayWindow` is still verified against all seven client windows (T1), since those are the
+  windows the engine must get right.
+- The starter plans are ordinary rows: the hotel can rename, change or deactivate them. Seeding
+  never runs again once the table has rows (it does not recreate a deleted plan).

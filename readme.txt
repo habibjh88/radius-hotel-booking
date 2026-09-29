@@ -115,6 +115,11 @@ Room types now list their rooms by floor: add, rename, set maintenance or out of
 Room numbers are unique across the hotel; removed rooms keep their number.
 New Bulk add: create a range of rooms like A1–A12 with a preview; existing numbers skipped.
 Move a room to another room type, with a warning listing its upcoming bookings.
+New Rate plans screen: stay windows like Half Day or Overnight, with a live window preview.
+Fresh installs start with three rate plans: Half Day, Overnight and 24 Hours Flexible.
+New Rates tab per room type: price, sale price and minimum or maximum stay per rate plan.
+Room type cards now list the rate plans each type sells.
+New price simulator on the Rates tab: see what a stay costs and each step behind it.
 
 = 1.0.0 =
 Initial release.

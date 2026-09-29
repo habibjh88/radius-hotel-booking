@@ -255,6 +255,19 @@ function render( p, format ) {
 }
 
 /**
+ * The site currency's symbol and decimals, for price inputs.
+ *
+ * @return {{symbol: string, decimals: number}} Currency.
+ */
+export function currencyInfo() {
+	const currency = config().currency || {};
+	return {
+		symbol: currency.symbol ?? '',
+		decimals: Number.isInteger( currency.decimals ) ? currency.decimals : 2,
+	};
+}
+
+/**
  * Date with the site's date format.
  *
  * @param {Date|string} value Date value.

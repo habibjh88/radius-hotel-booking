@@ -318,7 +318,7 @@ never affects inventory, except through the deadline release.
 
 | Part | Class | Module |
 |---|---|---|
-| Window derivation | `Services\Availability\StayWindow` (pure) | M08 T1 |
+| Window derivation | `Services\Availability\StayWindow` (pure) | M07 T1 (M08 reuses it) |
 | Overlap and conflicts | `Repositories\AvailabilityRepository` + `Services\Availability\Overlap` (pure) | M08 T1–T2 |
 | Search | `Services\Availability\AvailabilityService::search()` | M08 T2 |
 | Holds | `Services\Availability\HoldService` | M08 T3 |

@@ -253,7 +253,7 @@ export default function BulkAddDialog( { type, floors, floorId, onClose } ) {
 					) : null }
 
 					{ plan ? (
-						<div className="space-y-2 rounded-lg border border-border bg-muted/40 p-3">
+						<div className="space-y-2 rounded-lg border border-border bg-muted p-3">
 							<p className="m-0 text-sm font-semibold text-heading">
 								{ sprintf(
 									/* translators: %d: number of rooms. */

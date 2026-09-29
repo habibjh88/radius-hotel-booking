@@ -198,7 +198,9 @@ in each module doc.
 | `rtbp_room_in_use` (filter) | RoomService (M06); M02/M03 fill it | false, room id. An occupied room is not moved |
 | `rtbp_room_moved` | RoomService (M06) | room, from type id, to type id, upcoming count |
 | `rtbp_access_changed` / `rtbp_access_denied` / `rtbp_passcode_failed` / `rtbp_page_viewed` | M13 | … |
-| `rtbp_price_steps` (filter) | PriceResolver | steps, context. An add-on can add a pricing step |
+| `rtbp_price_steps` (filter) | PriceResolver (M07) | `name => [ position, apply( float $before, array $context ): ?[ after, label, rule_id ] ]`. Core positions: base 10, sale 20, date_override 30, floor_round 90 (base stays first, floor_round last; add-ons are clamped to 11–89). Pro: seasonal 40, occupancy 50, booking_window 60. Context: room_type_id, rate_plan_id, date (the unit's local date), unit, units, arrival, booked_at, rate (row), window (StayWindow) |
+| `rtbp_price_date_override` (filter) | PriceResolver (M07); M08 fills it | null, room type id, rate plan id, local date → a price replacing base + sale |
+| `rtbp_occupied_rooms` (filter) | OccupancyCalculator (M07); M02/M08 fill it | 0, room type id, local date → rooms occupied that day |
 | `rtbp_access_keys`, `rtbp_activity_actions`, `rtbp_settings`, `rtbp_email_classes`, `rtbp_id_document_types` (filters) | registries | add-on extension points |
 
 ## 7. Performance budget

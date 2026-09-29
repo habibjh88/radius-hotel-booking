@@ -94,6 +94,12 @@ function lazyParts( load, names ) {
 	);
 }
 
+// Pulls in the Radix popover: lazy, like the families below.
+const PriceBreakdownParts = lazyParts(
+	() => import( '@/components/common/PriceBreakdown' ),
+	[ 'PriceBreakdown', 'PriceBreakdownPopover' ]
+);
+
 const DialogParts = lazyParts(
 	() => import( '@/components/ui/dialog' ),
 	[
@@ -152,6 +158,20 @@ const TabsParts = lazyParts(
 	[ 'Tabs', 'TabsList', 'TabsTrigger', 'TabsContent' ]
 );
 
+// M07: side-panel editors for add-on screens (e.g. Pro's pricing rules).
+const SheetParts = lazyParts(
+	() => import( '@/components/ui/sheet' ),
+	[
+		'Sheet',
+		'SheetContent',
+		'SheetHeader',
+		'SheetFooter',
+		'SheetTitle',
+		'SheetDescription',
+		'SheetClose',
+	]
+);
+
 /**
  * Attach the runtime to `window.rtbp`. Runs once, before the app renders, so
  * add-on scripts (which depend on the admin handle) can use it immediately.
@@ -182,6 +202,7 @@ export function publishRuntime() {
 			...DropdownMenuParts,
 			...SelectParts,
 			...TabsParts,
+			...SheetParts,
 			Badge,
 			ConfirmDialog,
 			DataTable,
@@ -207,6 +228,8 @@ export function publishRuntime() {
 			MediaField,
 			GalleryField,
 			TagInput,
+			// M07: "why this price?" (inline and as a popover), lazy.
+			...PriceBreakdownParts,
 			// Settings field rows (a number with its unit; an on/off row).
 			NumberInput,
 			ToggleRow,

@@ -206,7 +206,7 @@ const baseRoutes = [
 		icon: Clock,
 		capability: VIEW,
 		accessKey: 'page.rates',
-		module: 'M07',
+		element: lazy( () => import( '@/modules/RatePlans' ) ),
 	},
 	{
 		path: '/reports',

@@ -20,11 +20,12 @@ final class RoomTypeResource {
 	/**
 	 * One room type.
 	 *
-	 * @param RoomType $type   Room type.
-	 * @param array    $counts State => count for this type.
+	 * @param RoomType $type       Room type.
+	 * @param array    $counts     State => count for this type.
+	 * @param string[] $rate_plans Names of the active rate plans it sells (M07), in grid order.
 	 * @return array
 	 */
-	public static function make( RoomType $type, array $counts = array() ): array {
+	public static function make( RoomType $type, array $counts = array(), array $rate_plans = array() ): array {
 		$gallery = array();
 		foreach ( (array) $type->gallery as $id ) {
 			$gallery[] = self::image( (int) $id );
@@ -54,6 +55,7 @@ final class RoomTypeResource {
 			'is_active'         => (bool) $type->is_active,
 			'sort_order'        => (int) $type->sort_order,
 			'rooms'             => $rooms,
+			'rate_plans'        => array_values( $rate_plans ),
 			'readiness'         => $rooms['available'] > 0 ? 'ready' : 'no_rooms',
 		);
 	}

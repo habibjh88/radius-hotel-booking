@@ -87,6 +87,12 @@ final class ActionCatalog {
 			'rooms.move'                 => array( self::DATA, __( 'Moved a room to another type', 'radius-hotel-booking' ) ),
 			'rooms.bulk_create'          => array( self::DATA, __( 'Added rooms in bulk', 'radius-hotel-booking' ) ),
 
+			// Rate plans and pricing (M07).
+			'rate_plans.create'          => array( self::DATA, __( 'Added a rate plan', 'radius-hotel-booking' ) ),
+			'rate_plans.update'          => array( self::DATA, __( 'Changed a rate plan', 'radius-hotel-booking' ) ),
+			'rate_plans.delete'          => array( self::DATA, __( 'Deleted a rate plan', 'radius-hotel-booking' ) ),
+			'rates.update'               => array( self::DATA, __( 'Changed a price', 'radius-hotel-booking' ) ),
+
 			// Bookings (14.2), reserved for M02/M03.
 			'bookings.create'            => array( self::DATA, __( 'Created a booking', 'radius-hotel-booking' ) ),
 			'bookings.approve'           => array( self::DATA, __( 'Approved a booking', 'radius-hotel-booking' ) ),

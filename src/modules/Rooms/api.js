@@ -265,3 +265,75 @@ export function useMoveRoom() {
 		},
 	} );
 }
+
+/**
+ * The query key of a room type's Price & Rates grid.
+ *
+ * @param {number} typeId Room type id.
+ * @return {Array} Key.
+ */
+export const typeRatesKey = ( typeId ) => [
+	...ROOM_TYPES_KEY,
+	Number( typeId ),
+	'rates',
+];
+
+/**
+ * A room type's Price & Rates grid: one row per rate plan.
+ *
+ * @param {number}  typeId  Room type id.
+ * @param {boolean} enabled Load it (false while the tab is hidden).
+ * @return {Object} React Query result.
+ */
+export function useTypeRates( typeId, enabled = true ) {
+	return useQuery( {
+		queryKey: typeRatesKey( typeId ),
+		queryFn: () =>
+			get( `room-types/${ typeId }/rates` ).then(
+				( { data } ) => data.rates
+			),
+		enabled: Boolean( typeId ) && enabled,
+	} );
+}
+
+/**
+ * Save the whole grid (rows in display order). Refreshes the grid, the
+ * room type (its card lists the plans it sells) and the rate plan library
+ * (where each plan is used).
+ *
+ * @param {number} typeId Room type id.
+ * @return {Object} Mutation; `mutateAsync( rows )` resolves with the saved grid.
+ */
+export function useSaveTypeRates( typeId ) {
+	const client = useQueryClient();
+	return useMutation( {
+		mutationFn: ( rows ) =>
+			put( `room-types/${ typeId }/rates`, { rates: rows } ).then(
+				( { data } ) => data.rates
+			),
+		onSuccess: ( rates ) => {
+			client.setQueryData( typeRatesKey( typeId ), rates );
+			client.invalidateQueries( {
+				queryKey: [ ...ROOM_TYPES_KEY, Number( typeId ) ],
+				exact: true,
+			} );
+			client.invalidateQueries( {
+				queryKey: ROOM_TYPES_KEY,
+				exact: true,
+			} );
+			client.invalidateQueries( { queryKey: [ 'rate-plans' ] } );
+		},
+	} );
+}
+
+/**
+ * The price of a stay, with every step (`POST pricing/quote`; writes nothing).
+ *
+ * @return {Object} Mutation; `mutateAsync( { room_type_id, rate_plan_id, arrival, units, checkin_time, booked_at } )`.
+ */
+export function useQuote() {
+	return useMutation( {
+		mutationFn: ( values ) =>
+			post( 'pricing/quote', values ).then( ( { data } ) => data.quote ),
+	} );
+}

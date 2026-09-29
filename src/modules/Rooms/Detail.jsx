@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAccess } from '@/lib/access';
 import { toast } from '@/lib/toast';
 import RoomTypeForm from './components/RoomTypeForm';
+import RatesTab from './components/RatesTab';
 import RoomsTab from './components/RoomsTab';
 import { useDeleteRoomType, useRoomType } from './api';
 
@@ -28,6 +29,7 @@ export default function RoomTypeDetail() {
 	const id = isNew ? 0 : Number( param ) || 0;
 	const navigate = useNavigate();
 	const canManage = useAccess( 'room_types.manage' ) !== 'locked';
+	const canSeeRates = useAccess( 'page.rates' ) !== 'locked';
 	const { data: type, isPending, error, refetch } = useRoomType( id );
 	const remove = useDeleteRoomType();
 	const [ confirmDelete, setConfirmDelete ] = useState( false );
@@ -183,6 +185,11 @@ export default function RoomTypeDetail() {
 							type.rooms.total
 						) }
 					</TabsTrigger>
+					{ canSeeRates ? (
+						<TabsTrigger value="rates">
+							{ __( 'Rates', 'radius-hotel-booking' ) }
+						</TabsTrigger>
+					) : null }
 				</TabsList>
 				<TabsContent value="details" className="mt-4">
 					<RoomTypeForm
@@ -194,6 +201,11 @@ export default function RoomTypeDetail() {
 				<TabsContent value="rooms" className="mt-4">
 					<RoomsTab type={ type } />
 				</TabsContent>
+				{ canSeeRates ? (
+					<TabsContent value="rates" className="mt-4">
+						<RatesTab type={ type } />
+					</TabsContent>
+				) : null }
 			</Tabs>
 
 			<ConfirmDialog

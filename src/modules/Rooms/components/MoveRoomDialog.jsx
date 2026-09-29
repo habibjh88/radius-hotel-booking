@@ -219,7 +219,7 @@ export default function MoveRoomDialog( { type, room, onClose } ) {
 								) : null }
 							</div>
 						) : (
-							<p className="m-0 rounded-lg border border-border bg-muted/40 p-3 text-sm text-heading">
+							<p className="m-0 rounded-lg border border-border bg-muted p-3 text-sm text-heading">
 								{ __(
 									'No upcoming bookings. The room can be moved.',
 									'radius-hotel-booking'

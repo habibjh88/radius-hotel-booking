@@ -250,7 +250,16 @@ function RoomTypeCard( { type } ) {
 						</div>
 					) : null }
 					<p className="m-0 text-[13px] text-muted-foreground">
-						{ __( 'Rate plans: none yet', 'radius-hotel-booking' ) }
+						{ type.rate_plans?.length
+							? sprintf(
+									/* translators: %s: rate plan names, e.g. "Half Day, Overnight". */
+									__( 'Sells: %s', 'radius-hotel-booking' ),
+									type.rate_plans.join( ', ' )
+							  )
+							: __(
+									'No rate plans on sale yet',
+									'radius-hotel-booking'
+							  ) }
 					</p>
 				</div>
 			</div>

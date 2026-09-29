@@ -1,6 +1,6 @@
 <?php
 /**
- * Room types API controller.
+ * Rate plans API controller.
  *
  * @package RadiusTheme\RadiusHotelBooking\Controllers
  */
@@ -14,58 +14,47 @@ use RadiusTheme\RadiusHotelBooking\Core\Api\Middleware\AuthMiddleware;
 use RadiusTheme\RadiusHotelBooking\Core\Api\Middleware\PermissionMiddleware;
 use RadiusTheme\RadiusHotelBooking\Core\Container\Container;
 use RadiusTheme\RadiusHotelBooking\Core\Permissions\Capabilities;
-use RadiusTheme\RadiusHotelBooking\Models\RoomType;
-use RadiusTheme\RadiusHotelBooking\Repositories\RoomRepository;
-use RadiusTheme\RadiusHotelBooking\Repositories\RoomTypeRateRepository;
-use RadiusTheme\RadiusHotelBooking\Repositories\RoomTypeRepository;
-use RadiusTheme\RadiusHotelBooking\Resources\RoomTypeResource;
-use RadiusTheme\RadiusHotelBooking\Services\Inventory\RoomTypeService;
+use RadiusTheme\RadiusHotelBooking\Models\RatePlan;
+use RadiusTheme\RadiusHotelBooking\Repositories\RatePlanRepository;
+use RadiusTheme\RadiusHotelBooking\Services\Pricing\RatePlanService;
 use WP_REST_Request;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * `room-types` CRUD (M06). Reading needs `page.rooms`, changing needs
- * `room_types.manage`. Validation lives in RoomTypeService.
+ * `rate-plans` CRUD (M07). Reading needs `page.rates`, changing needs
+ * `rates.manage`. Validation lives in RatePlanService.
  */
-class RoomTypeController extends BaseController {
+class RatePlanController extends BaseController {
 
 	/**
-	 * Room type service.
+	 * Rate plan service.
 	 *
-	 * @var RoomTypeService
+	 * @var RatePlanService
 	 */
-	private RoomTypeService $service;
-
-	/**
-	 * Rooms, for the counts.
-	 *
-	 * @var RoomRepository
-	 */
-	private RoomRepository $rooms;
+	private RatePlanService $service;
 
 	/**
 	 * Resolve dependencies.
 	 */
 	public function __construct() {
-		parent::__construct( Container::resolve( RoomTypeRepository::class ) );
-		$this->service      = Container::resolve( RoomTypeService::class );
-		$this->rooms        = Container::resolve( RoomRepository::class );
+		parent::__construct( Container::resolve( RatePlanRepository::class ) );
+		$this->service      = Container::resolve( RatePlanService::class );
 		$this->middleware[] = new AuthMiddleware();
 		$this->middleware[] = new PermissionMiddleware( Capabilities::VIEW_DASHBOARD );
 		$this->middleware[] = new AccessMiddleware(
 			array(
-				'index'   => 'page.rooms',
-				'show'    => 'page.rooms',
-				'store'   => 'room_types.manage',
-				'update'  => 'room_types.manage',
-				'destroy' => 'room_types.manage',
+				'index'   => 'page.rates',
+				'show'    => 'page.rates',
+				'store'   => 'rates.manage',
+				'update'  => 'rates.manage',
+				'destroy' => 'rates.manage',
 			)
 		);
 	}
 
 	/**
-	 * GET /room-types: every type with its room counts.
+	 * GET /rate-plans: the library, with where each plan is used.
 	 *
 	 * @param WP_REST_Request $request Request.
 	 * @return mixed
@@ -73,12 +62,12 @@ class RoomTypeController extends BaseController {
 	public function index( WP_REST_Request $request ) {
 		return $this->respond(
 			$request,
-			fn() => ApiResponse::success( array( 'room_types' => $this->transformCollection( $this->service->all() ) ) )
+			fn() => ApiResponse::success( array( 'rate_plans' => $this->transformCollection( $this->service->all() ) ) )
 		);
 	}
 
 	/**
-	 * GET /room-types/{id}.
+	 * GET /rate-plans/{id}.
 	 *
 	 * @param WP_REST_Request $request Request.
 	 * @return mixed
@@ -86,12 +75,12 @@ class RoomTypeController extends BaseController {
 	public function show( WP_REST_Request $request ) {
 		return $this->respond(
 			$request,
-			fn( $request ) => ApiResponse::success( array( 'room_type' => $this->transformItem( $this->service->get( (int) $request->get_param( 'id' ) ) ) ) )
+			fn( $request ) => ApiResponse::success( array( 'rate_plan' => $this->transformItem( $this->service->get( (int) $request->get_param( 'id' ) ) ) ) )
 		);
 	}
 
 	/**
-	 * POST /room-types.
+	 * POST /rate-plans.
 	 *
 	 * @param WP_REST_Request $request Request.
 	 * @return mixed
@@ -100,14 +89,14 @@ class RoomTypeController extends BaseController {
 		return $this->respond(
 			$request,
 			fn( $request ) => ApiResponse::created(
-				array( 'room_type' => $this->transformItem( $this->service->create( (array) $request->get_json_params() ) ) ),
-				__( 'Room type added.', 'radius-hotel-booking' )
+				array( 'rate_plan' => $this->transformItem( $this->service->create( (array) $request->get_json_params() ) ) ),
+				__( 'Rate plan added.', 'radius-hotel-booking' )
 			)
 		);
 	}
 
 	/**
-	 * PUT/PATCH /room-types/{id}: only the fields given change.
+	 * PUT/PATCH /rate-plans/{id}.
 	 *
 	 * @param WP_REST_Request $request Request.
 	 * @return mixed
@@ -116,14 +105,14 @@ class RoomTypeController extends BaseController {
 		return $this->respond(
 			$request,
 			fn( $request ) => ApiResponse::success(
-				array( 'room_type' => $this->transformItem( $this->service->update( (int) $request->get_param( 'id' ), (array) $request->get_json_params() ) ) ),
-				__( 'Room type saved.', 'radius-hotel-booking' )
+				array( 'rate_plan' => $this->transformItem( $this->service->update( (int) $request->get_param( 'id' ), (array) $request->get_json_params() ) ) ),
+				__( 'Rate plan saved.', 'radius-hotel-booking' )
 			)
 		);
 	}
 
 	/**
-	 * DELETE /room-types/{id}: refused while the type has rooms.
+	 * DELETE /rate-plans/{id}: refused while in use.
 	 *
 	 * @param WP_REST_Request $request Request.
 	 * @return mixed
@@ -133,37 +122,49 @@ class RoomTypeController extends BaseController {
 			$request,
 			function ( $request ) {
 				$this->service->delete( (int) $request->get_param( 'id' ) );
-				return ApiResponse::success( array(), __( 'Room type deleted.', 'radius-hotel-booking' ) );
+				return ApiResponse::success( array(), __( 'Rate plan deleted.', 'radius-hotel-booking' ) );
 			}
 		);
 	}
 
 	/**
-	 * One room type for the API.
+	 * One plan for the API.
 	 *
-	 * @param mixed $item RoomType.
+	 * @param mixed $item RatePlan.
 	 * @return array
 	 */
 	protected function transformItem( $item ): array {
-		$counts = $this->rooms->stateCounts( array( (int) $item->id ) );
-		$plans  = Container::resolve( RoomTypeRateRepository::class )->enabledPlanNames();
-		return RoomTypeResource::make( $item, $counts[ (int) $item->id ] ?? array(), $plans[ (int) $item->id ] ?? array() );
+		return array(
+			'id'               => (int) $item->id,
+			'name'             => (string) $item->name,
+			'code'             => (string) $item->code,
+			'type'             => (string) $item->type,
+			'start_time'       => $item->start_time,
+			'end_time'         => $item->end_time,
+			'duration_minutes' => (int) $item->duration_minutes,
+			'checkin_from'     => $item->checkin_from,
+			'checkin_until'    => $item->checkin_until,
+			'multi_unit'       => (bool) $item->multi_unit,
+			'features'         => array_values( (array) $item->features ),
+			'policy'           => (string) $item->policy,
+			'is_active'        => (bool) $item->is_active,
+			'sort_order'       => (int) $item->sort_order,
+			'usage'            => $this->service->usage( (int) $item->id ),
+		);
 	}
 
 	/**
-	 * Room types for the API (one count query for all).
+	 * Plans for the API.
 	 *
-	 * @param array $items RoomType[].
+	 * @param array $items Plans.
 	 * @return array
 	 */
 	protected function transformCollection( array $items ): array {
-		$counts = $this->rooms->stateCounts();
-		$plans  = Container::resolve( RoomTypeRateRepository::class )->enabledPlanNames();
-		return array_map( static fn( RoomType $type ) => RoomTypeResource::make( $type, $counts[ (int) $type->id ] ?? array(), $plans[ (int) $type->id ] ?? array() ), $items );
+		return array_map( fn( RatePlan $plan ) => $this->transformItem( $plan ), $items );
 	}
 
 	/**
-	 * No request rules: RoomTypeService validates.
+	 * No request rules: RatePlanService validates.
 	 *
 	 * @param WP_REST_Request $request Request.
 	 * @param string          $context Context.
@@ -180,7 +181,7 @@ class RoomTypeController extends BaseController {
 	 * @return string
 	 */
 	protected function getResourceType(): string {
-		return 'RoomType';
+		return 'RatePlan';
 	}
 
 	/**

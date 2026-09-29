@@ -24,6 +24,9 @@ use RadiusTheme\RadiusHotelBooking\Controllers\AccessController;
 use RadiusTheme\RadiusHotelBooking\Controllers\DashboardController;
 use RadiusTheme\RadiusHotelBooking\Controllers\FileController;
 use RadiusTheme\RadiusHotelBooking\Controllers\FloorController;
+use RadiusTheme\RadiusHotelBooking\Controllers\PricingController;
+use RadiusTheme\RadiusHotelBooking\Controllers\RatePlanController;
+use RadiusTheme\RadiusHotelBooking\Controllers\RoomTypeRateController;
 use RadiusTheme\RadiusHotelBooking\Controllers\RoomController;
 use RadiusTheme\RadiusHotelBooking\Controllers\RoomTypeController;
 use RadiusTheme\RadiusHotelBooking\Controllers\SettingsController;
@@ -57,6 +60,12 @@ $this->router->post( 'rooms/bulk', array( RoomController::class, 'bulk' ) );
 $this->router->resource( 'rooms', RoomController::class );
 $this->router->post( 'rooms/(?P<id>\d+)/state', array( RoomController::class, 'state' ) );
 $this->router->post( 'rooms/(?P<id>\d+)/move', array( RoomController::class, 'move' ) );
+
+/** Rate plans and pricing (M07). */
+$this->router->resource( 'rate-plans', RatePlanController::class );
+$this->router->get( 'room-types/(?P<id>\d+)/rates', array( RoomTypeRateController::class, 'grid' ) );
+$this->router->put( 'room-types/(?P<id>\d+)/rates', array( RoomTypeRateController::class, 'save' ) );
+$this->router->post( 'pricing/quote', array( PricingController::class, 'quote' ) );
 
 /**
  * Add-on routes — an add-on plugin registers its own endpoints here rather than
