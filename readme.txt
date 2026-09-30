@@ -132,6 +132,16 @@ New booking screen: choose dates and guests, then see every rate with its live p
 Pick rooms floor by floor; each is held while the booking is completed, several per booking.
 Find the guest by name, phone or e-mail, or add them with their ID; banned guests are flagged.
 Confirm a booking with its payment state; a changed price or taken room is shown first.
+New booking record screen: rooms with their own status, money summary, guest and note.
+Approve, decline, cancel, check in, check out or mark a no-show, per room or booking.
+Checking in can move the guest to another free room of the same type.
+Guests get an e-mail when their booking is approved, declined or cancelled.
+A declined or cancelled room no longer counts towards the booking total.
+Add a room to a booking, change its room, rate or dates, or remove it.
+Changing a booked room keeps its price unless the rate, room type or times change.
+Booking notes for the team, and the guest's own notes, right on the booking.
+Edit the guest's contact and identity document from the booking.
+Early arrivals can be checked in on the arrival day; the room is held from then.
 
 = 1.0.0 =
 Initial release.

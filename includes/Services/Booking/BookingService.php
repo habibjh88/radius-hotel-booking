@@ -15,7 +15,6 @@ use RadiusTheme\RadiusHotelBooking\Models\Booking;
 use RadiusTheme\RadiusHotelBooking\Models\Guest;
 use RadiusTheme\RadiusHotelBooking\Repositories\BookingRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\BookingRoomRepository;
-use RadiusTheme\RadiusHotelBooking\Repositories\FloorRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\HoldRepository;
 use RadiusTheme\RadiusHotelBooking\Services\Availability\AvailabilityService;
 use RadiusTheme\RadiusHotelBooking\Services\Availability\HoldService;
@@ -149,10 +148,6 @@ class BookingService {
 				$this->refuseBanned( $guest );
 
 				// 4. Write.
-				$floors = array();
-				foreach ( ( new FloorRepository() )->findMany( array_values( array_unique( array_map( static fn( $item ) => (int) $item['room']['floor_id'], $checked ) ) ) ) as $floor ) {
-					$floors[ (int) $floor->id ] = (string) $floor->name;
-				}
 				$status   = BookingWriter::initialStatus( $source );
 				$total    = Money::sum( array_map( static fn( $item ) => (float) $item['quote']['total'], $checked ) );
 				$paid     = 'paid' === $data['payment_state'];
@@ -185,32 +180,12 @@ class BookingService {
 				$logged_lines = array();
 				foreach ( $checked as $index => $item ) {
 					$request = $data['requests'][ $index ];
-					$quote   = $item['quote'];
-					$row     = $item['window']->toRow();
-					$line = $this->lines->create(
+					$line    = $this->lines->create(
 						array_merge(
-							$row,
+							BookingWriter::lineFields( $item, $request ),
 							array(
-								'booking_id'         => (int) $booking->id,
-								'room_id'            => (int) $item['room']['id'],
-								'room_type_id'       => (int) $item['room_type_id'],
-								'rate_plan_id'       => (int) $item['rate_plan_id'],
-								'rate_plan_name'     => (string) $item['plan']->name,
-								'room_number'        => (string) $item['room']['number'],
-								'floor_name'         => $floors[ (int) $item['room']['floor_id'] ] ?? '',
-								'occupied_until_gmt' => $row['end_at_gmt'],
-								'units'              => $item['window']->units(),
-								'adults'             => $request['adults'],
-								'children'           => $request['children'],
-								'status'             => $status,
-								'unit_price'         => Money::round( (float) $quote['total'] / max( 1, $item['window']->units() ) ),
-								'total'              => (float) $quote['total'],
-								'price_breakdown'    => wp_json_encode(
-									array(
-										'unit_prices' => $quote['unit_prices'],
-										'steps'       => $quote['steps'],
-									)
-								),
+								'booking_id' => (int) $booking->id,
+								'status'     => $status,
 							)
 						)
 					);
@@ -218,7 +193,7 @@ class BookingService {
 						// A failed insert must not commit a booking without its room (the room would stay sellable).
 						throw new \RuntimeException( 'A booking line could not be saved.' );
 					}
-					$logged_lines[] = sprintf( '%s · %s · %s', $item['room']['number'], $item['plan']->name, $row['start_at'] );
+					$logged_lines[] = sprintf( '%s · %s · %s', $item['room']['number'], $item['plan']->name, $line->start_at );
 				}
 
 				// The holds were for this booking.
@@ -381,6 +356,48 @@ class BookingService {
 	}
 
 	/**
+	 * One room request from the input, for `BookingWriter::lockAndCheck()`
+	 * (creation, and a line added or edited on the booking, 3.11–3.12).
+	 *
+	 * @param array  $line   `{ room_id, rate_plan_id, arrival, units?, checkin_time?, adults, children?,
+	 *                       room_type_id?, expected_total? }`.
+	 * @param string $prefix Error key prefix (`lines.0.`, or '' for a single line).
+	 * @param array  $errors Field errors, added to.
+	 * @return array The request.
+	 */
+	public static function lineRequest( array $line, string $prefix, array &$errors ): array {
+		$arrival = sanitize_text_field( (string) ( $line['arrival'] ?? '' ) );
+		$adults  = (int) ( $line['adults'] ?? 1 );
+		$kids    = (int) ( $line['children'] ?? 0 );
+		if ( ! Dates::is_date( $arrival ) ) {
+			$errors[ $prefix . 'arrival' ] = __( 'Choose the arrival date.', 'radius-hotel-booking' );
+		}
+		if ( (int) ( $line['room_id'] ?? 0 ) <= 0 ) {
+			$errors[ $prefix . 'room_id' ] = __( 'Choose a room.', 'radius-hotel-booking' );
+		}
+		if ( (int) ( $line['rate_plan_id'] ?? 0 ) <= 0 ) {
+			$errors[ $prefix . 'rate_plan_id' ] = __( 'Choose a rate.', 'radius-hotel-booking' );
+		}
+		if ( $adults < 1 || $adults > 50 || $kids < 0 || $kids > 50 ) {
+			$errors[ $prefix . 'adults' ] = __( 'Enter the number of guests.', 'radius-hotel-booking' );
+		}
+		$request = array(
+			'room_id'      => (int) ( $line['room_id'] ?? 0 ),
+			'room_type_id' => (int) ( $line['room_type_id'] ?? 0 ),
+			'rate_plan_id' => (int) ( $line['rate_plan_id'] ?? 0 ),
+			'arrival'      => $arrival,
+			'units'        => max( 1, (int) ( $line['units'] ?? 1 ) ),
+			'checkin_time' => sanitize_text_field( (string) ( $line['checkin_time'] ?? '' ) ),
+			'adults'       => $adults,
+			'children'     => $kids,
+		);
+		if ( isset( $line['expected_total'] ) && is_numeric( $line['expected_total'] ) ) {
+			$request['expected_total'] = (float) $line['expected_total'];
+		}
+		return $request;
+	}
+
+	/**
 	 * Validate the input (the engine checks the rooms, windows and prices).
 	 *
 	 * @param array $input Input.
@@ -399,38 +416,7 @@ class BookingService {
 
 		$requests = array();
 		foreach ( $lines as $index => $line ) {
-			$line    = is_array( $line ) ? $line : array();
-			$arrival = sanitize_text_field( (string) ( $line['arrival'] ?? '' ) );
-			$adults  = (int) ( $line['adults'] ?? 1 );
-			$kids    = (int) ( $line['children'] ?? 0 );
-			if ( ! Dates::is_date( $arrival ) ) {
-				$errors[ "lines.$index.arrival" ] = __( 'Choose the arrival date.', 'radius-hotel-booking' );
-			}
-			if ( (int) ( $line['room_id'] ?? 0 ) <= 0 ) {
-				$errors[ "lines.$index.room_id" ] = __( 'Choose a room.', 'radius-hotel-booking' );
-			}
-			if ( (int) ( $line['rate_plan_id'] ?? 0 ) <= 0 ) {
-				$errors[ "lines.$index.rate_plan_id" ] = __( 'Choose a rate.', 'radius-hotel-booking' );
-			}
-			if ( $adults < 1 || $adults > 50 || $kids < 0 || $kids > 50 ) {
-				$errors[ "lines.$index.adults" ] = __( 'Enter the number of guests.', 'radius-hotel-booking' );
-			}
-			$checkin   = sanitize_text_field( (string) ( $line['checkin_time'] ?? '' ) );
-			$request   = array(
-				'room_id'      => (int) ( $line['room_id'] ?? 0 ),
-				'room_type_id' => (int) ( $line['room_type_id'] ?? 0 ),
-				'rate_plan_id' => (int) ( $line['rate_plan_id'] ?? 0 ),
-				'arrival'      => $arrival,
-				'units'        => max( 1, (int) ( $line['units'] ?? 1 ) ),
-				'checkin_time' => $checkin,
-				'adults'       => $adults,
-				'children'     => $kids,
-			);
-			$has_price = isset( $line['expected_total'] ) && is_numeric( $line['expected_total'] );
-			if ( $has_price ) {
-				$request['expected_total'] = (float) $line['expected_total'];
-			}
-			$requests[] = $request;
+			$requests[] = self::lineRequest( is_array( $line ) ? $line : array(), "lines.$index.", $errors );
 		}
 
 		$guest_id = (int) ( $input['guest_id'] ?? 0 );

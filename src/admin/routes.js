@@ -163,6 +163,15 @@ const baseRoutes = [
 		element: lazy( () => import( '@/modules/Guests' ) ),
 	},
 	{
+		// One booking (M03). Title comes from the `/bookings` route.
+		path: '/bookings/:id',
+		hidden: true,
+		label: __( 'Booking', 'radius-hotel-booking' ),
+		capability: VIEW,
+		accessKey: 'page.bookings',
+		element: lazy( () => import( '@/modules/Bookings/Detail' ) ),
+	},
+	{
 		// One guest. Title comes from the `/guests` route.
 		path: '/guests/:id',
 		hidden: true,

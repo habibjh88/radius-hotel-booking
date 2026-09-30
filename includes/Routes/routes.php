@@ -86,6 +86,17 @@ $this->router->delete( 'holds/(?P<token>[A-Za-z0-9]{32})', array( HoldController
 
 // Bookings (M02): creating one at the desk. The booking record (M03) adds the rest.
 $this->router->post( 'bookings', array( BookingController::class, 'store' ) );
+$this->router->get( 'bookings/(?P<id>\d+)', array( BookingController::class, 'show' ) );
+$this->router->post( 'bookings/(?P<id>\d+)/approve', array( BookingController::class, 'approve' ) );
+$this->router->post( 'bookings/(?P<id>\d+)/decline', array( BookingController::class, 'decline' ) );
+$this->router->post( 'bookings/(?P<id>\d+)/cancel', array( BookingController::class, 'cancel' ) );
+$this->router->post( 'booking-lines/(?P<id>\d+)/check-in', array( BookingController::class, 'checkIn' ) );
+$this->router->post( 'booking-lines/(?P<id>\d+)/check-out', array( BookingController::class, 'checkOut' ) );
+$this->router->post( 'booking-lines/(?P<id>\d+)/no-show', array( BookingController::class, 'noShow' ) );
+$this->router->get( 'booking-lines/(?P<id>\d+)/rooms', array( BookingController::class, 'freeRooms' ) );
+$this->router->post( 'bookings/(?P<id>\d+)/lines', array( BookingController::class, 'addLine' ) );
+$this->router->put( 'booking-lines/(?P<id>\d+)', array( BookingController::class, 'editLine' ) );
+$this->router->delete( 'booking-lines/(?P<id>\d+)', array( BookingController::class, 'removeLine' ) );
 
 // Guests (M09). `guests/lookup` before the resource: it is not an id.
 $this->router->get( 'guests/lookup', array( GuestController::class, 'lookup' ) );

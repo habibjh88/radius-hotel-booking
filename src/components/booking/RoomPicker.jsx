@@ -36,9 +36,17 @@ export function roomReason( reason, state ) {
  * @param {number[]} props.taken   Room ids already in this booking for this time.
  * @param {number}   props.pending The room being held right now (spinner).
  * @param {Function} props.onPick  Called with the room.
+ * @param {number}   props.selected The room chosen without a hold (a room edited on a booking).
  * @return {JSX.Element} Picker.
  */
-export default function RoomPicker( { type, rate, taken, pending, onPick } ) {
+export default function RoomPicker( {
+	type,
+	rate,
+	taken,
+	pending,
+	onPick,
+	selected = 0,
+} ) {
 	const floors = ( type.floors || [] ).filter(
 		( floor ) => ( floor.rooms || [] ).length
 	);
@@ -95,7 +103,17 @@ export default function RoomPicker( { type, rate, taken, pending, onPick } ) {
 									type="button"
 									onClick={ () => onPick( room ) }
 									disabled={ Boolean( pending ) }
-									className="flex h-14 min-w-[4.5rem] flex-col items-center justify-center rounded-lg border border-border bg-white px-3 text-sm font-semibold text-heading transition-colors hover:border-primary hover:bg-primary-softer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+									aria-pressed={
+										selected
+											? selected === room.id
+											: undefined
+									}
+									className={ cn(
+										'flex h-14 min-w-[4.5rem] flex-col items-center justify-center rounded-lg border px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60',
+										selected === room.id
+											? 'border-primary bg-primary text-white'
+											: 'border-border bg-white text-heading hover:border-primary hover:bg-primary-softer'
+									) }
 									aria-label={ sprintf(
 										/* translators: %s: room number. */
 										__(

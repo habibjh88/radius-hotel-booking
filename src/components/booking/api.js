@@ -25,7 +25,7 @@ export const searchIsValid = ( search ) =>
  * Every sellable rate grouped by room type, with live prices, and the
  * unsellable ones with their reason (2.2–2.4).
  *
- * @param {Object} search `{ arrival, departure, adults, children, checkin_time?, hold_token? }`.
+ * @param {Object} search `{ arrival, departure, adults, children, checkin_time?, hold_token?, exclude_booking_line? }`.
  * @return {Object} React Query result; data `{ span, room_types, other_options }`.
  */
 export function useAvailability( search ) {
@@ -40,6 +40,10 @@ export function useAvailability( search ) {
 	}
 	if ( search.hold_token ) {
 		params.hold_token = search.hold_token;
+	}
+	if ( search.exclude_booking_line ) {
+		// A room being edited: its own stay is not busy, nor counted for occupancy pricing.
+		params.exclude_booking_line = search.exclude_booking_line;
 	}
 	return useQuery( {
 		queryKey: [ ...AVAILABILITY_KEY, params ],

@@ -67,6 +67,29 @@ abstract class BaseRepository {
 	}
 
 	/**
+	 * Lock a row for the rest of the transaction and return it (`SELECT * … FOR UPDATE`).
+	 *
+	 * @param string $table     Table name without the prefixes (`bookings`).
+	 * @param int    $id        Row id.
+	 * @param bool   $live_only Skip soft-deleted rows.
+	 * @return array|null The row, or null when it does not exist.
+	 * @throws \RadiusTheme\RadiusHotelBooking\Exceptions\DomainException 503 `busy` when the lock cannot be taken.
+	 */
+	protected function lockedRow( string $table, int $id, bool $live_only = false ): ?array {
+		global $wpdb;
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- row lock inside a transaction.
+		$row = $live_only
+			? $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM %i WHERE id = %d AND deleted_at IS NULL FOR UPDATE', rtbp_table( $table ), $id ), ARRAY_A )
+			: $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM %i WHERE id = %d FOR UPDATE', rtbp_table( $table ), $id ), ARRAY_A );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		if ( '' !== (string) $wpdb->last_error ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw new \RadiusTheme\RadiusHotelBooking\Exceptions\DomainException( 'busy', __( 'Someone else is changing this right now. Please try again.', 'radius-hotel-booking' ), 503 );
+		}
+		return $row ? $row : null;
+	}
+
+	/**
 	 * Retrieves all records from the model.
 	 *
 	 * @return array An array of all model instances.

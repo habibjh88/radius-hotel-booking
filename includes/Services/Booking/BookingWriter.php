@@ -14,6 +14,7 @@ use RadiusTheme\RadiusHotelBooking\Exceptions\DomainException;
 use RadiusTheme\RadiusHotelBooking\Models\RatePlan;
 use RadiusTheme\RadiusHotelBooking\Models\Room;
 use RadiusTheme\RadiusHotelBooking\Repositories\AvailabilityRepository;
+use RadiusTheme\RadiusHotelBooking\Repositories\FloorRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\RatePlanRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\RoomTypeRepository;
 use RadiusTheme\RadiusHotelBooking\Services\Availability\AvailabilityService;
@@ -261,7 +262,65 @@ class BookingWriter {
 			$this->unavailable( $index, (int) $room['id'], (string) $room['number'], (string) $conflict['reason'], $conflict['interval'], $audience );
 		}
 
+		// The floor name, for the line's snapshot (after the lock: it reads nothing the check depends on).
+		$floors = array();
+		foreach ( ( new FloorRepository() )->findMany( array_values( array_unique( array_map( static fn( $item ) => (int) $item['room']['floor_id'], $checked ) ) ) ) as $floor ) {
+			$floors[ (int) $floor->id ] = (string) $floor->name;
+		}
+		foreach ( $checked as $index => $item ) {
+			$checked[ $index ]['floor_name'] = $floors[ (int) $item['room']['floor_id'] ] ?? '';
+		}
+
 		return $checked;
+	}
+
+	/**
+	 * A line's stored fields from a checked request: the window, the room
+	 * and rate snapshots and the **frozen price** (3.16). The caller adds
+	 * `booking_id` and `status`.
+	 *
+	 * @param array $item    One entry of `lockAndCheck()`'s result.
+	 * @param array $request The request it came from (`adults`, `children`).
+	 * @return array
+	 */
+	public static function lineFields( array $item, array $request ): array {
+		$row = $item['window']->toRow();
+		return array_merge(
+			$row,
+			array(
+				'room_id'            => (int) $item['room']['id'],
+				'room_type_id'       => (int) $item['room_type_id'],
+				'rate_plan_id'       => (int) $item['rate_plan_id'],
+				'rate_plan_name'     => (string) $item['plan']->name,
+				'room_number'        => (string) $item['room']['number'],
+				'floor_name'         => (string) ( $item['floor_name'] ?? '' ),
+				'occupied_until_gmt' => $row['end_at_gmt'],
+				'units'              => $item['window']->units(),
+				'adults'             => (int) ( $request['adults'] ?? 1 ),
+				'children'           => (int) ( $request['children'] ?? 0 ),
+			),
+			self::priceFields( $item )
+		);
+	}
+
+	/**
+	 * The frozen price of a checked request.
+	 *
+	 * @param array $item One entry of `lockAndCheck()`'s result.
+	 * @return array `{ unit_price, total, price_breakdown }`.
+	 */
+	public static function priceFields( array $item ): array {
+		$quote = $item['quote'];
+		return array(
+			'unit_price'      => Money::round( (float) $quote['total'] / max( 1, $item['window']->units() ) ),
+			'total'           => (float) $quote['total'],
+			'price_breakdown' => wp_json_encode(
+				array(
+					'unit_prices' => $quote['unit_prices'],
+					'steps'       => $quote['steps'],
+				)
+			),
+		);
 	}
 
 	/**

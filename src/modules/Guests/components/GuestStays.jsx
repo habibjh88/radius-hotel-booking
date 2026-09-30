@@ -1,8 +1,9 @@
 /**
  * A guest's stays (9.4): each booking with its dates, rooms, rate plans,
  * booking and payment status and total, newest first. Bookings are written
- * from M02 on; the link to the booking record comes with M03.
+ * from M02 on; each reference opens the booking record (M03).
  */
+import { Link } from 'react-router-dom';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { BedDouble } from 'lucide-react';
 
@@ -11,6 +12,7 @@ import Money from '@/components/common/Money';
 import StatusBadge from '@/components/common/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAccess } from '@/lib/access';
 import { formatDateRange } from '@/lib/format';
 import { useGuestStays } from '../api';
 
@@ -21,6 +23,7 @@ import { useGuestStays } from '../api';
  */
 export default function GuestStays( { guestId } ) {
 	const stays = useGuestStays( guestId );
+	const canOpen = 'locked' !== useAccess( 'page.bookings' );
 
 	if ( stays.isPending ) {
 		return (
@@ -67,9 +70,18 @@ export default function GuestStays( { guestId } ) {
 				<li key={ stay.id } className="m-0 space-y-1.5 py-3">
 					<div className="flex flex-wrap items-center justify-between gap-2">
 						<div className="flex flex-wrap items-center gap-2">
-							<span className="font-semibold text-heading">
-								{ stay.reference }
-							</span>
+							{ canOpen ? (
+								<Link
+									to={ `/bookings/${ stay.id }` }
+									className="font-semibold text-heading no-underline hover:underline"
+								>
+									{ stay.reference }
+								</Link>
+							) : (
+								<span className="font-semibold text-heading">
+									{ stay.reference }
+								</span>
+							) }
 							<StatusBadge domain="stay" value={ stay.status } />
 							<StatusBadge
 								domain="payment"

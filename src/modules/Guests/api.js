@@ -76,6 +76,8 @@ export function useUpdateGuest( id ) {
 				( old ) => ( old ? { ...old, guest } : old )
 			);
 			client.invalidateQueries( { queryKey: [ ...GUESTS_KEY, 'list' ] } );
+			// Booking screens show the guest too (M03's guest panel).
+			client.invalidateQueries( { queryKey: [ 'bookings' ] } );
 		},
 	} );
 }

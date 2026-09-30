@@ -2,12 +2,14 @@
  * The booking was made: its reference, guest, rooms and total, and a way to
  * take the next one.
  */
+import { Link } from 'react-router-dom';
 import { __, sprintf } from '@wordpress/i18n';
 import { CheckCircle2, Plus } from 'lucide-react';
 
 import Money from '@/components/common/Money';
 import StatusBadge from '@/components/common/StatusBadge';
 import { Button } from '@/components/ui/button';
+import { useAccess } from '@/lib/access';
 import { formatDateRange } from '@/lib/format';
 
 /**
@@ -18,6 +20,8 @@ import { formatDateRange } from '@/lib/format';
  * @return {JSX.Element} Screen.
  */
 export default function BookingDone( { booking, guestName, onAnother } ) {
+	// The booking record (M03) is a staff screen.
+	const canOpen = 'locked' !== useAccess( 'page.bookings' );
 	return (
 		<div className="space-y-4 text-center">
 			<CheckCircle2
@@ -84,10 +88,19 @@ export default function BookingDone( { booking, guestName, onAnother } ) {
 					value={ booking.payment_status }
 				/>
 			</div>
-			<Button type="button" onClick={ onAnother }>
-				<Plus className="h-4 w-4" aria-hidden="true" />
-				{ __( 'Take another booking', 'radius-hotel-booking' ) }
-			</Button>
+			<div className="flex flex-wrap items-center justify-center gap-2">
+				{ canOpen ? (
+					<Button asChild variant="outline">
+						<Link to={ `/bookings/${ booking.id }` }>
+							{ __( 'Open the booking', 'radius-hotel-booking' ) }
+						</Link>
+					</Button>
+				) : null }
+				<Button type="button" onClick={ onAnother }>
+					<Plus className="h-4 w-4" aria-hidden="true" />
+					{ __( 'Take another booking', 'radius-hotel-booking' ) }
+				</Button>
+			</div>
 		</div>
 	);
 }

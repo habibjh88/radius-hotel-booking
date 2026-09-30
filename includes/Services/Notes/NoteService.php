@@ -10,6 +10,7 @@ namespace RadiusTheme\RadiusHotelBooking\Services\Notes;
 use RadiusTheme\RadiusHotelBooking\ActivityLog\ChangeDiff;
 use RadiusTheme\RadiusHotelBooking\Exceptions\DomainException;
 use RadiusTheme\RadiusHotelBooking\Models\Note;
+use RadiusTheme\RadiusHotelBooking\Repositories\BookingRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\GuestRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\NoteRepository;
 
@@ -19,8 +20,8 @@ defined( 'ABSPATH' ) || exit;
  * Author-stamped notes (9.8, 9.9) on any record type registered through
  * `rtbp_note_types`: `type => { read, add, edit, remove (access keys),
  * find (callable id → subject array|null), activity (action prefix) }`.
- * Free registers `guest`; the booking record (M03) and staff records (M12)
- * add theirs. Every change is logged against the record.
+ * Free registers `guest` and `booking` (M03); staff records (M12, Pro) add
+ * theirs. Every change is logged against the record.
  */
 class NoteService {
 
@@ -64,6 +65,22 @@ class NoteService {
 						'type'  => 'guest',
 						'id'    => (int) $guest->id,
 						'label' => $guest->fullName(),
+					) : null;
+				},
+			),
+			// The booking record (M03, 3.13): general / caution / warning notes for the team.
+			'booking' => array(
+				'read'     => 'page.bookings',
+				'add'      => 'bookings.note_add',
+				'edit'     => 'bookings.note_edit',
+				'remove'   => 'bookings.note_remove',
+				'activity' => 'bookings.note',
+				'find'     => static function ( int $id ): ?array {
+					$booking = ( new BookingRepository() )->find( $id );
+					return $booking ? array(
+						'type'  => 'booking',
+						'id'    => (int) $booking->id,
+						'label' => (string) $booking->reference,
 					) : null;
 				},
 			),

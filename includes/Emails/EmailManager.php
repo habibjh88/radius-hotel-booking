@@ -55,7 +55,12 @@ class EmailManager {
 		 */
 		$classes = (array) apply_filters(
 			'rtbp_email_classes',
-			array()
+			array(
+				// The guest's booking status e-mails (M03).
+				Booking\GuestBookingApproved::class,
+				Booking\GuestBookingDeclined::class,
+				Booking\GuestBookingCancelled::class,
+			)
 		);
 
 		foreach ( $classes as $class_name ) {

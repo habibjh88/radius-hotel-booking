@@ -36,4 +36,16 @@ class BookingRoomRepository extends BaseRepository {
 		$rows = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i WHERE booking_id = %d ORDER BY id', rtbp_table( 'booking_rooms' ), $booking_id ), ARRAY_A );
 		return array_map( array( BookingRoom::class, 'hydrate' ), (array) $rows );
 	}
+
+	/**
+	 * Lock one line and read it in the same statement (see
+	 * `BookingRepository::lockedFind()`).
+	 *
+	 * @param int $id Line id.
+	 * @return BookingRoom|null
+	 */
+	public function lockedFind( int $id ): ?BookingRoom {
+		$row = $this->lockedRow( 'booking_rooms', $id );
+		return $row ? BookingRoom::hydrate( $row ) : null;
+	}
 }

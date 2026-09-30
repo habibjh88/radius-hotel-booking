@@ -273,6 +273,10 @@ Transaction::run(function () {
   **Where it is skipped, the guarantee rests on no plain read inside the transaction before
   `lockRooms()`.** `HoldService` honours that; every M02 service must too (read the booking or
   guest *after* `lockAndCheck()`, or make `conflicts()` a locking read on such hosts).
+  A write that must read its booking or line **before** locking the rooms (a line edit, a room
+  change at check-in) reads them with a locking read (`BookingRepository::lockedFind()`,
+  `BookingRoomRepository::lockedFind()`, `SELECT … FOR UPDATE`), which does not open the
+  snapshot (M03).
 - **Fail closed** (M08 critical review): an engine read that errors — `busy()`, the rate calendar
   — throws 503 `busy`; it never reads as "nothing booked" or "nothing closed".
 - Steps 2–3 apply the same rules as the search: the public booking window and same-day cut-off
@@ -335,6 +339,16 @@ never affects inventory, except through the deadline release.
 | 28 | New-guest details invalid, found only after the rooms are locked | 422; the transaction rolls back, the rooms stay free (M02) |
 | 29 | A booking sends another session's hold token | 403 `hold_forbidden`: a foreign token would make that hold "its own" and bypass it (M02) |
 | 30 | A banned guest reached by phone through the *new guest* form | 409 `guest_banned` inside the lock; nothing written (M02) |
+| 31 | Room change at check-in onto a room booked for an overlapping window | 409 `room_unavailable` with that booking's reference; the line keeps its room and status (M03) |
+| 32 | Two check-ins moving into the same free room at the same instant | exactly one succeeds (both rooms locked in id order), the other 409 (M03) |
+| 33 | Declined line, no-show | leaves the occupying set in the same transaction (M03) |
+| 34 | One room of a booking declined or cancelled; a no-show | the declined / cancelled room leaves the booking's total and balance (total − paid); a no-show stays charged (M03) |
+| 35 | Edit a line onto a window or room another booking holds | 409 `room_unavailable` with that booking's reference; the line is unchanged (M03, acceptance 3) |
+| 36 | Edit a line on its own window (guests, or a room of the same type) | its own occupancy is left out (`exclude_line`); the frozen price is kept (M03) |
+| 37 | Two edits (or an added room and a new booking) racing for the same free room | exactly one succeeds, the other 409 (M03) |
+| 38 | The rate's price changes after booking | existing lines keep their price; only an edit of the plan, room type or window re-prices that one line (M03, acceptance 2) |
+| 39 | Guest arrives before the stay's start and is checked in | allowed on the arrival day only (else 409 `too_early`); the room is locked and checked free for `[now, start)` (else `room_unavailable`); the line's start becomes now, end and price unchanged (M03 critical review) |
+| 40 | The last live room of a booking is removed while its other rooms are cancelled | refused, 409 `last_line`: the booking is cancelled, not emptied (M03 critical review) |
 
 ## 11. Where each part lives
 

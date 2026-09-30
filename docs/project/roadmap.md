@@ -65,7 +65,7 @@ The commands read and update this table. Keep the columns.
 | 6 | M08 | [Availability engine, calendar and rules](../modules/M08-availability.md) | Free + Pro | M07 | done | module/m08-availability | 2026-09-29 | 2026-09-30 |
 | 7 | M09 | [Guest records](../modules/M09-guests.md) | Free | M14 | done | module/m09-guests | 2026-09-30 | 2026-09-30 |
 | 8 | M02 | [Taking a booking at the front desk](../modules/M02-front-desk-booking.md) | Free | M08, M09 | done | module/m02-front-desk-booking | 2026-09-30 | 2026-09-30 |
-| 9 | M03 | [The booking record](../modules/M03-booking-record.md) | Free | M02 | todo | module/m03-booking-record | | |
+| 9 | M03 | [The booking record](../modules/M03-booking-record.md) | Free | M02 | done | module/m03-booking-record | 2026-09-30 | 2026-09-30 |
 | 10 | M05 | [Manual payment, invoice and confirmation](../modules/M05-payments-invoices.md) | Free + Pro | M03 | todo | module/m05-payments | | |
 | 11 | M01 | [Front desk dashboard](../modules/M01-front-desk-dashboard.md) | Free | M05 | todo | module/m01-dashboard | | |
 | 12 | M04 | [Guest booking on the website](../modules/M04-public-booking.md) | Free | M05 | todo | module/m04-public-booking | | |
