@@ -106,7 +106,11 @@ class GuestController extends BaseController {
 		return $this->respond(
 			$request,
 			fn( $request ) => ApiResponse::success(
-				array( 'guests' => array_map( array( GuestResource::class, 'summary' ), $this->service->lookup( sanitize_text_field( (string) $request->get_param( 'q' ) ) ) ) )
+				array(
+					'guests'   => array_map( array( GuestResource::class, 'summary' ), $this->service->lookup( sanitize_text_field( (string) $request->get_param( 'q' ) ) ) ),
+					// The booking flow's new-guest form needs them; its staff may not see the guest list.
+					'id_types' => GuestService::idTypes(),
+				)
 			)
 		);
 	}

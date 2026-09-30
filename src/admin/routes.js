@@ -122,7 +122,7 @@ const baseRoutes = [
 		icon: CalendarPlus,
 		capability: VIEW,
 		accessKey: 'bookings.create',
-		module: 'M02',
+		element: lazy( () => import( '@/modules/Bookings/New' ) ),
 	},
 	{
 		path: '/bookings',

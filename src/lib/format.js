@@ -348,6 +348,16 @@ export function siteToday() {
 }
 
 /**
+ * The time now in the site time zone, `HH:MM`.
+ *
+ * @return {string} Time.
+ */
+export function siteNowTime() {
+	const parts = toParts( new Date() );
+	return `${ pad( parts.hour ) }:${ pad( parts.minute ) }`;
+}
+
+/**
  * Add calendar days to a `Y-m-d` date (pure date arithmetic, no time zone).
  *
  * @param {string} ymd  Date.

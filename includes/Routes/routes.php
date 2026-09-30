@@ -24,6 +24,7 @@ use RadiusTheme\RadiusHotelBooking\Controllers\AccessController;
 use RadiusTheme\RadiusHotelBooking\Controllers\DashboardController;
 use RadiusTheme\RadiusHotelBooking\Controllers\FileController;
 use RadiusTheme\RadiusHotelBooking\Controllers\FloorController;
+use RadiusTheme\RadiusHotelBooking\Controllers\BookingController;
 use RadiusTheme\RadiusHotelBooking\Controllers\GuestController;
 use RadiusTheme\RadiusHotelBooking\Controllers\NoteController;
 use RadiusTheme\RadiusHotelBooking\Controllers\AvailabilityController;
@@ -82,6 +83,9 @@ $this->router->resource( 'blocks', BlockController::class );
 $this->router->post( 'holds', array( HoldController::class, 'store' ) );
 $this->router->put( 'holds/(?P<token>[A-Za-z0-9]{32})', array( HoldController::class, 'extend' ) );
 $this->router->delete( 'holds/(?P<token>[A-Za-z0-9]{32})', array( HoldController::class, 'destroy' ) );
+
+// Bookings (M02): creating one at the desk. The booking record (M03) adds the rest.
+$this->router->post( 'bookings', array( BookingController::class, 'store' ) );
 
 // Guests (M09). `guests/lookup` before the resource: it is not an id.
 $this->router->get( 'guests/lookup', array( GuestController::class, 'lookup' ) );

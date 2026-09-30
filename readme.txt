@@ -128,6 +128,10 @@ New Guests screen: search by name, phone or e-mail; guests already on file are o
 Guest page: edit contact details, and reveal the ID number (logged) when allowed.
 Guest page: stay history, and ban or lift a ban with a recorded reason.
 Guest notes: add, edit and remove notes marked note, caution or warning, with author and time.
+New booking screen: choose dates and guests, then see every rate with its live price.
+Pick rooms floor by floor; each is held while the booking is completed, several per booking.
+Find the guest by name, phone or e-mail, or add them with their ID; banned guests are flagged.
+Confirm a booking with its payment state; a changed price or taken room is shown first.
 
 = 1.0.0 =
 Initial release.

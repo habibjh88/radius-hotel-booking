@@ -167,6 +167,11 @@ class AvailabilityService {
 					'name'         => $rate['name'],
 					'type'         => $rate['type'],
 					'multi_unit'   => $rate['multi_unit'],
+					// Flexible plans: the check-in times the guest may choose (the flow's time field).
+					'checkin'      => 'flexible' === $rate['type'] ? array(
+						'from'  => substr( (string) ( $rate['checkin_from'] ?? '00:00' ), 0, 5 ),
+						'until' => substr( (string) ( $rate['checkin_until'] ?? '23:30' ), 0, 5 ),
+					) : null,
 					'window'       => $window ? $window->toArray() : null,
 					'units'        => $candidate['units'],
 					'available'    => false,

@@ -350,6 +350,25 @@ class HoldService {
 	}
 
 	/**
+	 * Check a booking may consume a token's holds (M02): the same ownership
+	 * rule as extend / release. `lockAndCheck()` ignores the token's own holds,
+	 * so a foreign token would let a booking take someone else's held room.
+	 * A token with no rows left (expired and swept) is fine: the booking is
+	 * then checked against the rooms as they are.
+	 *
+	 * @param string $token Token ('' for none).
+	 * @param array  $actor `{ audience, user_id?, session_key? }`.
+	 * @return void
+	 * @throws DomainException 403 / 422.
+	 */
+	public function assertUsable( string $token, array $actor ): void {
+		if ( '' === $token ) {
+			return;
+		}
+		$this->assertOwner( $token, $this->actor( $actor ), true );
+	}
+
+	/**
 	 * Check the actor may use a token: staff tokens belong to staff, a web
 	 * token to the session that made it.
 	 *

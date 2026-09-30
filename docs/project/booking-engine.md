@@ -331,6 +331,10 @@ never affects inventory, except through the deadline release.
 | 24 | Seasonal +20 % and early-bird −10 % both apply | the steps show 4 then 6; the total is correct and rounded |
 | 25 | Sale price 0 vs NULL | 0 is a real (free) price only if explicitly set; NULL means no sale |
 | 26 | Staff creates a walk-in 10 min after the window start | allowed for staff (grace 30 min), refused on the web |
+| 27 | Three-room booking where the third room was taken meanwhile | 409 `room_unavailable` with `index` 2; no booking, line or new guest is written (M02) |
+| 28 | New-guest details invalid, found only after the rooms are locked | 422; the transaction rolls back, the rooms stay free (M02) |
+| 29 | A booking sends another session's hold token | 403 `hold_forbidden`: a foreign token would make that hold "its own" and bypass it (M02) |
+| 30 | A banned guest reached by phone through the *new guest* form | 409 `guest_banned` inside the lock; nothing written (M02) |
 
 ## 11. Where each part lives
 

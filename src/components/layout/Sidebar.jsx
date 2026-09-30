@@ -58,7 +58,8 @@ function NavItem( { route, collapsed, onNavigate } ) {
 	return (
 		<NavLink
 			to={ route.path }
-			end={ route.path === '/' }
+			// `/bookings` must not light up on `/bookings/new` (as the tab bar does).
+			end={ route.path === '/' || route.path === '/bookings' }
 			onClick={ onNavigate }
 			title={ collapsed ? route.label : undefined }
 			aria-label={ collapsed ? route.label : undefined }
