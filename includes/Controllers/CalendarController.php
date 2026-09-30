@@ -23,7 +23,8 @@ defined( 'ABSPATH' ) || exit;
 /**
  * `GET availability/calendar?room_type_id=&month=` (`page.availability`) and
  * `PUT availability/calendar` `{ room_type_id, cells: [ … ] }`
- * (`availability.manage`), features 8.1–8.4 and 8.6.
+ * (`availability.manage`), features 8.1–8.4 and 8.6, and
+ * `POST availability/calendar/bulk` (`availability.manage`), feature 8.5.
  */
 class CalendarController extends BaseController {
 
@@ -39,6 +40,7 @@ class CalendarController extends BaseController {
 			array(
 				'grid' => 'page.availability',
 				'save' => 'availability.manage',
+				'bulk' => 'availability.manage',
 			)
 		);
 	}
@@ -78,6 +80,36 @@ class CalendarController extends BaseController {
 					$cells  = isset( $body['cells'] ) && is_array( $body['cells'] ) ? $body['cells'] : array();
 					$result = Container::resolve( CalendarService::class )->save( absint( $body['room_type_id'] ?? 0 ), $cells );
 					return ApiResponse::success( $result, __( 'Calendar saved.', 'radius-hotel-booking' ) )->send();
+				} catch ( \Throwable $e ) {
+					return ApiResponse::fromThrowable( $e )->send();
+				}
+			}
+		);
+	}
+
+	/**
+	 * POST: bulk update, or its preview when `preview` is true.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function bulk( WP_REST_Request $request ) {
+		return $this->applyMiddleware(
+			$request,
+			static function ( $request ) {
+				try {
+					$body    = (array) $request->get_json_params();
+					$preview = rest_sanitize_boolean( $body['preview'] ?? false );
+					$input   = array(
+						'from'          => sanitize_text_field( (string) ( $body['from'] ?? '' ) ),
+						'to'            => sanitize_text_field( (string) ( $body['to'] ?? '' ) ),
+						'weekdays'      => is_array( $body['weekdays'] ?? null ) ? $body['weekdays'] : array(),
+						'rate_plan_ids' => is_array( $body['rate_plan_ids'] ?? null ) ? $body['rate_plan_ids'] : array(),
+						'action'        => sanitize_key( (string) ( $body['action'] ?? '' ) ),
+						'price'         => isset( $body['price'] ) && is_scalar( $body['price'] ) ? $body['price'] : null,
+					);
+					$result  = Container::resolve( CalendarService::class )->bulk( absint( $body['room_type_id'] ?? 0 ), $input, ! $preview );
+					return ApiResponse::success( $result, $preview ? null : __( 'Calendar saved.', 'radius-hotel-booking' ) )->send();
 				} catch ( \Throwable $e ) {
 					return ApiResponse::fromThrowable( $e )->send();
 				}

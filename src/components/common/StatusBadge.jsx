@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 
 /**
  * @param {Object} props           Props.
- * @param {string} props.domain    'stay' | 'payment' | 'room' | 'availability'.
+ * @param {string} props.domain    'stay' | 'payment' | 'room' | 'availability' | 'sync'.
  * @param {string} props.value     Status value.
  * @param {string} props.className Extra classes.
  * @return {JSX.Element} Badge.

@@ -122,6 +122,8 @@ Room type cards now list the rate plans each type sells.
 New price simulator on the Rates tab: see what a stay costs and each step behind it.
 New Availability calendar: prices, free rooms and closed dates per room type and month.
 Set a one-day price, or close a rate or a whole room type that day.
+Update many calendar dates at once: set or clear prices, open or close, by weekday.
+New Blocked dates screen: close a room, room type, floor or the whole property for a while.
 
 = 1.0.0 =
 Initial release.

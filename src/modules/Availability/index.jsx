@@ -12,11 +12,17 @@
 import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import { BedDouble, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+	BedDouble,
+	CalendarCog,
+	ChevronLeft,
+	ChevronRight,
+} from 'lucide-react';
 
 import CalendarGrid from '@/components/common/CalendarGrid';
 import EmptyState from '@/components/common/EmptyState';
 import Panel from '@/components/common/Panel';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
 	Select,
@@ -31,6 +37,9 @@ import { formatDate, formatDateAs, formatMoney, siteToday } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { useRoomTypes } from '@/modules/Rooms/api';
 import { useCalendar } from './api';
+import { blockPeriod } from './blockText';
+import BlockEditor from './components/BlockEditor';
+import BulkEditor from './components/BulkEditor';
 import CellEditor from './components/CellEditor';
 
 /**
@@ -90,11 +99,111 @@ function Legend() {
 	);
 }
 
+/**
+ * Blocks touching this room type in the month (8.12 overlay): what, when,
+ * why, and how many of this type's rooms each one closes.
+ *
+ * @param {Object}        props        Props.
+ * @param {Array}         props.blocks The grid's blocks.
+ * @param {string}        props.month  `YYYY-MM`.
+ * @param {Function|null} props.onAdd  Opens the block dialog (managers only).
+ * @return {JSX.Element} List.
+ */
+function BlockList( { blocks, month, onAdd } ) {
+	return (
+		<section
+			aria-labelledby="rtbp-calendar-blocks"
+			className="space-y-2 rounded-lg border border-border p-3"
+		>
+			<div className="flex flex-wrap items-center justify-between gap-2">
+				<h3
+					id="rtbp-calendar-blocks"
+					className="m-0 text-sm font-semibold text-heading"
+				>
+					{ sprintf(
+						/* translators: %s: month and year. */
+						__( 'Blocked in %s', 'radius-hotel-booking' ),
+						formatDateAs( `${ month }-01`, 'F Y' )
+					) }
+				</h3>
+				<div className="flex flex-wrap items-center gap-3">
+					{ onAdd ? (
+						<Button
+							type="button"
+							variant="link"
+							className="h-auto p-0 text-xs"
+							onClick={ onAdd }
+						>
+							{ __( 'Block dates', 'radius-hotel-booking' ) }
+						</Button>
+					) : null }
+					<Button
+						asChild
+						variant="link"
+						className="h-auto p-0 text-xs"
+					>
+						<Link to="/blocks">
+							{ __(
+								'All blocked dates',
+								'radius-hotel-booking'
+							) }
+						</Link>
+					</Button>
+				</div>
+			</div>
+			{ blocks.length ? (
+				<ul className="m-0 list-none space-y-1.5 p-0">
+					{ blocks.map( ( block ) => (
+						<li
+							key={ block.id }
+							className="m-0 flex flex-wrap items-baseline gap-x-2 text-sm"
+						>
+							<span className="font-semibold text-heading">
+								{ block.label }
+							</span>
+							<span className="text-muted-foreground">
+								{ blockPeriod( block ) }
+							</span>
+							<span className="text-muted-foreground">
+								{ sprintf(
+									/* translators: 1: reason, 2: rooms of this type closed. */
+									_n(
+										'%1$s · %2$d room here',
+										'%1$s · %2$d rooms here',
+										block.rooms,
+										'radius-hotel-booking'
+									),
+									block.reason,
+									block.rooms
+								) }
+							</span>
+							{ block.source !== 'manual' ? (
+								<Badge variant="secondary">
+									{ block.source_label }
+								</Badge>
+							) : null }
+						</li>
+					) ) }
+				</ul>
+			) : (
+				<p className="m-0 text-xs text-muted-foreground">
+					{ __(
+						'Nothing blocked for this room type this month.',
+						'radius-hotel-booking'
+					) }
+				</p>
+			) }
+		</section>
+	);
+}
+
 export default function Availability() {
 	const [ params, setParams ] = useSearchParams();
 	const types = useRoomTypes();
 	const canManage = useAccess( 'availability.manage' ) !== 'locked';
 	const [ editing, setEditing ] = useState( null );
+	const [ bulk, setBulk ] = useState( false );
+	const [ blocking, setBlocking ] = useState( null );
 
 	const month = /^\d{4}-\d{2}$/.test( params.get( 'month' ) || '' )
 		? params.get( 'month' )
@@ -154,6 +263,10 @@ export default function Availability() {
 	}, [ grid ] );
 
 	const dayOf = ( index ) => grid.days[ index ];
+	// Every sellable room is under a block that day: say so rather than "Full".
+	const allBlocked = ( index ) =>
+		dayOf( index ).sellable > 0 &&
+		dayOf( index ).blocked_rooms >= dayOf( index ).sellable;
 
 	const renderCell = ( row, cell, index ) => {
 		if ( row.kind === 'type' ) {
@@ -169,7 +282,13 @@ export default function Availability() {
 					<span className="block text-sm font-semibold tabular-nums text-heading">
 						{ `${ cell.free_rooms }/${ cell.sellable }` }
 					</span>
-					{ __( 'free all day', 'radius-hotel-booking' ) }
+					{ cell.blocked_rooms
+						? sprintf(
+								/* translators: %d: rooms a block touches that day. */
+								__( '%d blocked', 'radius-hotel-booking' ),
+								cell.blocked_rooms
+						  )
+						: __( 'free all day', 'radius-hotel-booking' ) }
 				</span>
 			);
 		}
@@ -187,6 +306,8 @@ export default function Availability() {
 				</span>
 				{ cell.closed || typeClosed
 					? __( 'Closed', 'radius-hotel-booking' )
+					: cell.free === 0 && allBlocked( index )
+					? __( 'Blocked', 'radius-hotel-booking' )
 					: cell.free === 0
 					? __( 'Full', 'radius-hotel-booking' )
 					: sprintf(
@@ -225,14 +346,15 @@ export default function Availability() {
 						date
 				  )
 				: sprintf(
-						/* translators: 1: date, 2: free rooms, 3: rooms. */
+						/* translators: 1: date, 2: free rooms, 3: rooms, 4: rooms blocked. */
 						__(
-							'Whole room type, %1$s: %2$d of %3$d rooms free all day',
+							'Whole room type, %1$s: %2$d of %3$d rooms free all day, %4$d blocked',
 							'radius-hotel-booking'
 						),
 						date,
 						cell.free_rooms,
-						cell.sellable
+						cell.sellable,
+						cell.blocked_rooms
 				  );
 		}
 		const state =
@@ -333,6 +455,17 @@ export default function Availability() {
 					}
 				>
 					{ __( 'This month', 'radius-hotel-booking' ) }
+				</Button>
+			) : null }
+			{ canManage && grid?.rates.length ? (
+				<Button
+					type="button"
+					variant="outline"
+					className="sm:ml-auto"
+					onClick={ () => setBulk( true ) }
+				>
+					<CalendarCog className="h-4 w-4" aria-hidden="true" />
+					{ __( 'Update several dates', 'radius-hotel-booking' ) }
 				</Button>
 			) : null }
 		</div>
@@ -444,6 +577,19 @@ export default function Availability() {
 						formatDateAs( `${ month }-01`, 'F Y' )
 					) }
 				/>
+				<BlockList
+					blocks={ grid.blocks }
+					month={ month }
+					onAdd={
+						canManage
+							? () =>
+									setBlocking( {
+										scope: 'room_type',
+										scope_id: typeId,
+									} )
+							: undefined
+					}
+				/>
 				{ ! canManage ? (
 					<p className="m-0 text-xs text-muted-foreground">
 						{ __(
@@ -467,7 +613,7 @@ export default function Availability() {
 				description={
 					canManage
 						? __(
-								'Prices are for a stay starting that day. Click a date to change it.',
+								'Prices are for a stay starting that day. Click a date to change it, or update several dates at once.',
 								'radius-hotel-booking'
 						  )
 						: __(
@@ -489,6 +635,23 @@ export default function Availability() {
 					}-${ editing.day.date }` }
 					target={ editing }
 					onClose={ () => setEditing( null ) }
+				/>
+			) : null }
+			{ blocking ? (
+				<BlockEditor
+					block={ null }
+					preset={ blocking }
+					onClose={ () => setBlocking( null ) }
+				/>
+			) : null }
+			{ bulk && grid ? (
+				<BulkEditor
+					typeId={ typeId }
+					typeName={ grid.room_type.name }
+					rates={ grid.rates }
+					month={ month }
+					today={ grid.today }
+					onClose={ () => setBulk( false ) }
 				/>
 			) : null }
 		</>

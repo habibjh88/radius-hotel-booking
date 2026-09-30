@@ -30,6 +30,7 @@ import { __, _x } from '@wordpress/i18n';
 import { canAccess } from '@/lib/access';
 import {
 	BarChart3,
+	Ban,
 	BedDouble,
 	CalendarDays,
 	CalendarPlus,
@@ -90,6 +91,19 @@ const baseRoutes = [
 		capability: VIEW,
 		accessKey: 'page.availability',
 		element: lazy( () => import( '@/modules/Availability' ) ),
+	},
+	{
+		path: '/blocks',
+		group: 'overview',
+		label: __( 'Blocked dates', 'radius-hotel-booking' ),
+		description: __(
+			'Close the hotel, a floor, a room type or a room for a while',
+			'radius-hotel-booking'
+		),
+		icon: Ban,
+		capability: VIEW,
+		accessKey: 'page.availability',
+		element: lazy( () => import( '@/modules/Availability/Blocks' ) ),
 	},
 	{
 		path: '/bookings/new',

@@ -25,6 +25,7 @@ use RadiusTheme\RadiusHotelBooking\Controllers\DashboardController;
 use RadiusTheme\RadiusHotelBooking\Controllers\FileController;
 use RadiusTheme\RadiusHotelBooking\Controllers\FloorController;
 use RadiusTheme\RadiusHotelBooking\Controllers\AvailabilityController;
+use RadiusTheme\RadiusHotelBooking\Controllers\BlockController;
 use RadiusTheme\RadiusHotelBooking\Controllers\CalendarController;
 use RadiusTheme\RadiusHotelBooking\Controllers\HoldController;
 use RadiusTheme\RadiusHotelBooking\Controllers\PricingController;
@@ -74,6 +75,8 @@ $this->router->post( 'pricing/quote', array( PricingController::class, 'quote' )
 $this->router->get( 'availability', array( AvailabilityController::class, 'search' ) );
 $this->router->get( 'availability/calendar', array( CalendarController::class, 'grid' ) );
 $this->router->put( 'availability/calendar', array( CalendarController::class, 'save' ) );
+$this->router->post( 'availability/calendar/bulk', array( CalendarController::class, 'bulk' ) );
+$this->router->resource( 'blocks', BlockController::class );
 $this->router->post( 'holds', array( HoldController::class, 'store' ) );
 $this->router->put( 'holds/(?P<token>[A-Za-z0-9]{32})', array( HoldController::class, 'extend' ) );
 $this->router->delete( 'holds/(?P<token>[A-Za-z0-9]{32})', array( HoldController::class, 'destroy' ) );

@@ -177,7 +177,7 @@ neither.
 | `PriceResolver` steps + the `rtbp_price_steps` filter | Pro adds the seasonal, occupancy and booking-window steps |
 | `rtbp_document_renderers` (invoice, receipt) with an HTML print view in free | Pro adds the PDF renderer |
 | `rtbp_report_definitions`, the `rtbp_export_formats` filter (CSV in free) | Pro adds reports, XLSX, schedules and archiving |
-| `rtbp_block_sources` | Pro adds iCal feeds |
+| `rtbp_block_sources` filter (**live**, M08 T5b): `key => { label, editable }`, default `manual` (Staff, editable). Blocks of a non-editable source are listed with its label but refused on update/delete (409 `block_read_only`). Also the action `rtbp_block_changed( $id, create\|update\|delete )` for staff blocks | Pro adds `ical` (not editable) and writes its blocks through the free `BlockRepository` with `source = ical`, `feed_id`, `external_uid`; it reconciles with **`BlockRepository::forFeed( $source, $feed_id )`** (**live**, M08 T6b) → UID => row. The JS status palette gained a generic `sync` domain (`ok`, `warning`, `error`, `never`) for `StatusBadge` |
 | `SettingsSchema::register()`, `rtbp_migration_classes`, `rtbp_register_addon_routes`, `rtbp_email_classes` | registering an add-on's own sections, tables, routes and e-mails. Migration keys carry the **free** DB version, so an add-on also re-runs its own tables when its own DB version changes (Pro: `Databases\Installer`, M13 T5a) |
 | `rtbp_settings` filter (**live**) + the generic `GET/PUT settings/{section}` | an add-on settings section with defaults and storage (`rtbp_<section>_settings`) |
 | `rtbp_admin_enqueue_scripts( $handle )` action (**live**) | enqueuing an add-on bundle after the free admin app, with `$handle` as a dependency |

@@ -97,6 +97,9 @@ final class ActionCatalog {
 			'availability.close'         => array( self::DATA, __( 'Closed dates', 'radius-hotel-booking' ) ),
 			'availability.open'          => array( self::DATA, __( 'Opened dates', 'radius-hotel-booking' ) ),
 			'availability.bulk'          => array( self::DATA, __( 'Updated the calendar in bulk', 'radius-hotel-booking' ) ),
+			'blocks.create'              => array( self::DATA, __( 'Blocked dates', 'radius-hotel-booking' ) ),
+			'blocks.update'              => array( self::DATA, __( 'Changed a block', 'radius-hotel-booking' ) ),
+			'blocks.delete'              => array( self::DATA, __( 'Removed a block', 'radius-hotel-booking' ) ),
 			'holds.create'               => array( self::DATA, __( 'Held a room', 'radius-hotel-booking' ) ),
 			'holds.release'              => array( self::DATA, __( 'Released a held room', 'radius-hotel-booking' ) ),
 

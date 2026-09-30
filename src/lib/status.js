@@ -46,6 +46,13 @@ export const STATUS = {
 		blocked: { label: __( 'Blocked', 'radius-hotel-booking' ), tone: 'neutral', pattern: 'hatch' },
 		closed: { label: __( 'Closed', 'radius-hotel-booking' ), tone: 'neutral' },
 	},
+	// The last read of an external calendar or feed (M08: iCal import).
+	sync: {
+		ok: { label: __( 'Up to date', 'radius-hotel-booking' ), tone: 'success' },
+		warning: { label: __( 'Check bookings', 'radius-hotel-booking' ), tone: 'warning' },
+		error: { label: __( 'Could not read', 'radius-hotel-booking' ), tone: 'danger' },
+		never: { label: __( 'Not read yet', 'radius-hotel-booking' ), tone: 'neutral', outline: true },
+	},
 };
 
 /**
@@ -77,7 +84,7 @@ export const TONE_COLOR = {
  * Look up a status. Unknown values fall back to a neutral badge showing the
  * raw value, so a new server status never breaks a screen.
  *
- * @param {string} domain 'stay' | 'payment' | 'room' | 'readiness' | 'availability'.
+ * @param {string} domain 'stay' | 'payment' | 'room' | 'readiness' | 'availability' | 'sync'.
  * @param {string} value  Status value.
  * @return {{label: string, tone: string, outline?: boolean, pattern?: string}} Status.
  */
