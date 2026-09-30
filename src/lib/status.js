@@ -46,6 +46,13 @@ export const STATUS = {
 		blocked: { label: __( 'Blocked', 'radius-hotel-booking' ), tone: 'neutral', pattern: 'hatch' },
 		closed: { label: __( 'Closed', 'radius-hotel-booking' ), tone: 'neutral' },
 	},
+	// Whether a record is in use: an employee file (M12), and the like.
+	active: {
+		active: { label: __( 'Active', 'radius-hotel-booking' ), tone: 'success' },
+		inactive: { label: __( 'Inactive', 'radius-hotel-booking' ), tone: 'neutral', outline: true },
+		// Something that ran its course: an ended contract (M12).
+		ended: { label: __( 'Ended', 'radius-hotel-booking' ), tone: 'neutral', outline: true },
+	},
 	// A guest's standing (M09, 9.11).
 	standing: {
 		normal: { label: __( 'Normal', 'radius-hotel-booking' ), tone: 'neutral', outline: true },
@@ -95,7 +102,7 @@ export const TONE_COLOR = {
  * Look up a status. Unknown values fall back to a neutral badge showing the
  * raw value, so a new server status never breaks a screen.
  *
- * @param {string} domain 'stay' | 'payment' | 'room' | 'readiness' | 'availability' | 'standing' | 'note' | 'sync'.
+ * @param {string} domain 'stay' | 'payment' | 'room' | 'readiness' | 'availability' | 'active' | 'standing' | 'note' | 'sync'.
  * @param {string} value  Status value.
  * @return {{label: string, tone: string, outline?: boolean, pattern?: string}} Status.
  */

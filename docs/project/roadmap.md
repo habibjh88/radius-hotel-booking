@@ -62,8 +62,8 @@ The commands read and update this table. Keep the columns.
 | 3 | M14 | [Activity log](../modules/M14-activity-log.md) | Free (emitter) + **Pro** | M13 | done | module/m14-activity-log | 2026-09-29 | 2026-09-29 |
 | 4 | M06 | [Rooms, floors and inventory](../modules/M06-rooms-floors.md) | Free | M14 | done | module/m06-rooms-floors | 2026-09-29 | 2026-09-29 |
 | 5 | M07 | [Rate plans and pricing](../modules/M07-rate-plans-pricing.md) | Free + Pro | M06 | done | module/m07-rate-plans | 2026-09-29 | 2026-09-29 |
-| 6 | M08 | [Availability engine, calendar and rules](../modules/M08-availability.md) | Free + Pro | M07 | review | module/m08-availability | 2026-09-29 | |
-| 7 | M09 | [Guest records](../modules/M09-guests.md) | Free | M14 | review | module/m09-guests | 2026-09-30 | |
+| 6 | M08 | [Availability engine, calendar and rules](../modules/M08-availability.md) | Free + Pro | M07 | done | module/m08-availability | 2026-09-29 | 2026-09-30 |
+| 7 | M09 | [Guest records](../modules/M09-guests.md) | Free | M14 | done | module/m09-guests | 2026-09-30 | 2026-09-30 |
 | 8 | M02 | [Taking a booking at the front desk](../modules/M02-front-desk-booking.md) | Free | M08, M09 | todo | module/m02-front-desk-booking | | |
 | 9 | M03 | [The booking record](../modules/M03-booking-record.md) | Free | M02 | todo | module/m03-booking-record | | |
 | 10 | M05 | [Manual payment, invoice and confirmation](../modules/M05-payments-invoices.md) | Free + Pro | M03 | todo | module/m05-payments | | |
@@ -71,7 +71,7 @@ The commands read and update this table. Keep the columns.
 | 12 | M04 | [Guest booking on the website](../modules/M04-public-booking.md) | Free | M05 | todo | module/m04-public-booking | | |
 | 13 | M10 | [Reports](../modules/M10-reports.md) | Free + Pro | M05 | todo | module/m10-reports | | |
 | 14 | M11 | [Exporting and archiving data](../modules/M11-export-archive.md) | Free + Pro | M10 | todo | module/m11-export | | |
-| 15 | M12 | [Staff records and employment](../modules/M12-staff-records.md) | **Pro** | M13 | todo | module/m12-staff | | |
+| 15 | M12 | [Staff records and employment](../modules/M12-staff-records.md) | **Pro** | M13 | done | module/m12-staff | 2026-09-30 | 2026-09-30 |
 | 16 | M16 | [Staff self-service](../modules/M16-staff-self-service.md) | **Pro** | M12 | todo | module/m16-self-service | | |
 | 17 | M15 | [Payroll and HR](../modules/M15-payroll-hr.md) | **Client** | M12, D1 | todo | module/m15-payroll | | |
 | 18 | M18 | [Language, currency, migration and go-live](../modules/M18-foundations-migration.md) | Free + Client | all | todo | module/m18-go-live | | |

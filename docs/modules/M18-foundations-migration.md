@@ -54,7 +54,7 @@ Each module's **Migration notes** section is the source map for its entity.
 - [ ] T3 [Client] Inventory import: room types, floors, rooms, rate plans (dedupe), rates, calendar, pricing rules (into Pro), blocks, iCal (into Pro)
 - [ ] T4 [Client] People import: guests, staff/employees (Pro), access settings (Pro, PINs hashed), payroll data (client)
 - [ ] T5 [Client] Future-bookings import through `BookingService`; optional read-only past bookings
-- [ ] T6 [Client] Staging parallel run, UAT script, training notes FR/EN, cutover runbook, rollback plan
+- [ ] T6 [Client] Staging parallel run, UAT script, training notes FR/EN, cutover runbook, rollback plan — the cutover runbook checks that protected files are not web-reachable on the client's server (nginx: a deny rule for `uploads/radius-hotel-booking/`, or `RTBP_PROTECTED_DIR` outside the web root; M12 acceptance 3, ADR-009)
 
 ## Acceptance
 

@@ -9,7 +9,7 @@ choice that a later module has to live with. Never edit an accepted ADR; superse
 
 | # | Question | Blocks | Default if unanswered |
 |---|---|---|---|
-| **D1** | Is payroll and HR (Module 15, 21 features) in scope? | M15 (client add-on), the pay fields of M12 and the payslips in M16 | Build M12 without the pay fields, and hold M15 and the payslip parts of M16 until answered |
+| **D1** | Is payroll and HR (Module 15, 21 features) in scope? | M15 (client add-on), the pay fields of M12 and the payslips in M16 | Build M12 without the pay fields, and hold M15 and the payslip parts of M16 until answered. **2026-09-30: M12 started with the default — pay fields (12.12–12.15) deferred** |
 | **D2** | Is the restaurant "Food Order and Inventory" area in scope? | Nothing | **Out of scope.** Keep the sidebar link to the existing system |
 | **D3** | Online payment (Wave / Orange Money) later? | Nothing in this build | Design `payments` so a gateway can attach later (ADR-010) |
 | D4 | Buffer time between two stays in the same room (cleaning)? | M08 | 0 minutes, configurable per room type in Settings |
