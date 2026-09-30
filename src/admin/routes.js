@@ -160,7 +160,16 @@ const baseRoutes = [
 		icon: Users,
 		capability: VIEW,
 		accessKey: 'page.guests',
-		module: 'M09',
+		element: lazy( () => import( '@/modules/Guests' ) ),
+	},
+	{
+		// One guest. Title comes from the `/guests` route.
+		path: '/guests/:id',
+		hidden: true,
+		label: __( 'Guest', 'radius-hotel-booking' ),
+		capability: VIEW,
+		accessKey: 'page.guests',
+		element: lazy( () => import( '@/modules/Guests/Detail' ) ),
 	},
 	{
 		path: '/payments',

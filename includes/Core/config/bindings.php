@@ -19,6 +19,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 use RadiusTheme\RadiusHotelBooking\Core\Container\Container;
 use RadiusTheme\RadiusHotelBooking\Repositories\BlockRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\FloorRepository;
+use RadiusTheme\RadiusHotelBooking\Repositories\GuestRepository;
+use RadiusTheme\RadiusHotelBooking\Repositories\NoteRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\RatePlanRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\AvailabilityRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\HoldRepository;
@@ -28,6 +30,8 @@ use RadiusTheme\RadiusHotelBooking\Repositories\RoomRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\RoomTypeRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\SettingsRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\StoredFileRepository;
+use RadiusTheme\RadiusHotelBooking\Services\Guests\GuestService;
+use RadiusTheme\RadiusHotelBooking\Services\Notes\NoteService;
 use RadiusTheme\RadiusHotelBooking\Services\Inventory\FloorService;
 use RadiusTheme\RadiusHotelBooking\Services\Availability\AvailabilityService;
 use RadiusTheme\RadiusHotelBooking\Services\Availability\BlockService;
@@ -56,6 +60,8 @@ return array(
 	RateCalendarRepository::class => fn() => new RateCalendarRepository(),
 	HoldRepository::class         => fn() => new HoldRepository(),
 	BlockRepository::class        => fn() => new BlockRepository(),
+	GuestRepository::class        => fn() => new GuestRepository(),
+	NoteRepository::class         => fn() => new NoteRepository(),
 
 	// Services.
 	SettingsService::class    => fn() => new SettingsService(),
@@ -68,6 +74,8 @@ return array(
 	AvailabilityService::class => fn() => new AvailabilityService( Container::resolve( AvailabilityRepository::class ), Container::resolve( PriceResolver::class ) ),
 	BookingWriter::class       => fn() => new BookingWriter( Container::resolve( AvailabilityRepository::class ), Container::resolve( RatePlanRepository::class ), Container::resolve( PriceResolver::class ) ),
 	CalendarService::class     => fn() => new CalendarService( Container::resolve( AvailabilityRepository::class ), Container::resolve( RateCalendarRepository::class ), Container::resolve( RoomTypeRepository::class ), Container::resolve( PriceResolver::class ), Container::resolve( BlockRepository::class ) ),
+	NoteService::class         => fn() => new NoteService( Container::resolve( NoteRepository::class ) ),
+	GuestService::class        => fn() => new GuestService( Container::resolve( GuestRepository::class ) ),
 	BlockService::class        => fn() => new BlockService( Container::resolve( BlockRepository::class ) ),
 	HoldService::class         => fn() => new HoldService( Container::resolve( HoldRepository::class ), Container::resolve( BookingWriter::class ) ),
 	RoomTypeRateService::class => fn() => new RoomTypeRateService( Container::resolve( RoomTypeRateRepository::class ), Container::resolve( RatePlanRepository::class ), Container::resolve( RoomTypeRepository::class ) ),

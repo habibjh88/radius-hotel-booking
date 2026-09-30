@@ -63,7 +63,7 @@ The commands read and update this table. Keep the columns.
 | 4 | M06 | [Rooms, floors and inventory](../modules/M06-rooms-floors.md) | Free | M14 | done | module/m06-rooms-floors | 2026-09-29 | 2026-09-29 |
 | 5 | M07 | [Rate plans and pricing](../modules/M07-rate-plans-pricing.md) | Free + Pro | M06 | done | module/m07-rate-plans | 2026-09-29 | 2026-09-29 |
 | 6 | M08 | [Availability engine, calendar and rules](../modules/M08-availability.md) | Free + Pro | M07 | review | module/m08-availability | 2026-09-29 | |
-| 7 | M09 | [Guest records](../modules/M09-guests.md) | Free | M14 | todo | module/m09-guests | | |
+| 7 | M09 | [Guest records](../modules/M09-guests.md) | Free | M14 | review | module/m09-guests | 2026-09-30 | |
 | 8 | M02 | [Taking a booking at the front desk](../modules/M02-front-desk-booking.md) | Free | M08, M09 | todo | module/m02-front-desk-booking | | |
 | 9 | M03 | [The booking record](../modules/M03-booking-record.md) | Free | M02 | todo | module/m03-booking-record | | |
 | 10 | M05 | [Manual payment, invoice and confirmation](../modules/M05-payments-invoices.md) | Free + Pro | M03 | todo | module/m05-payments | | |

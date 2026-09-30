@@ -15,6 +15,7 @@ choice that a later module has to live with. Never edit an accepted ADR; superse
 | D4 | Buffer time between two stays in the same room (cleaning)? | M08 | 0 minutes, configurable per room type in Settings |
 | D5 | Does a *pending* (unapproved) booking hold its room? | M08 | **Yes.** The legacy system does this, and feature 2.13 requires it |
 | D6 | Payment deadline default | M05 | 24 hours after booking, capped at 2 hours before arrival |
+| D7 | Old 8-digit **landline** numbers on file (first digit 2 or 3): which new prefix (21 Moov, 25 MTN, 27 Orange) does each map to? | Nothing (M09 matches them by their last 8 digits) | Not converted: kept as typed, no E.164, matched by tail; the import (M18) can map them once answered |
 
 ## Open: internal
 
@@ -178,6 +179,7 @@ neither.
 | `rtbp_document_renderers` (invoice, receipt) with an HTML print view in free | Pro adds the PDF renderer |
 | `rtbp_report_definitions`, the `rtbp_export_formats` filter (CSV in free) | Pro adds reports, XLSX, schedules and archiving |
 | `rtbp_block_sources` filter (**live**, M08 T5b): `key => { label, editable }`, default `manual` (Staff, editable). Blocks of a non-editable source are listed with its label but refused on update/delete (409 `block_read_only`). Also the action `rtbp_block_changed( $id, create\|update\|delete )` for staff blocks | Pro adds `ical` (not editable) and writes its blocks through the free `BlockRepository` with `source = ical`, `feed_id`, `external_uid`; it reconciles with **`BlockRepository::forFeed( $source, $feed_id )`** (**live**, M08 T6b) → UID => row. The JS status palette gained a generic `sync` domain (`ok`, `warning`, `error`, `never`) for `StatusBadge` |
+| `rtbp_note_types` filter (**live**, M09 T4): `type => { read, add, edit, remove (access keys), find( $id ) → activity subject or null, activity (prefix of `<prefix>_add|_edit|_remove`) }`; free registers `guest`. The generic `notes` API resolves its access keys from it, and an unregistered type is refused. JS: `<NotesPanel type id />` (also on `window.rtbp.ui`) | M03 registers `booking`, M12 (Pro) `employee`, each with its own keys and catalogue actions |
 | `SettingsSchema::register()`, `rtbp_migration_classes`, `rtbp_register_addon_routes`, `rtbp_email_classes` | registering an add-on's own sections, tables, routes and e-mails. Migration keys carry the **free** DB version, so an add-on also re-runs its own tables when its own DB version changes (Pro: `Databases\Installer`, M13 T5a) |
 | `rtbp_settings` filter (**live**) + the generic `GET/PUT settings/{section}` | an add-on settings section with defaults and storage (`rtbp_<section>_settings`) |
 | `rtbp_admin_enqueue_scripts( $handle )` action (**live**) | enqueuing an add-on bundle after the free admin app, with `$handle` as a dependency |
@@ -185,7 +187,7 @@ neither.
 **JavaScript.** The free admin bundle publishes a runtime on `window.rtbp` (**live**):
 
 - `ui`: the shadcn primitives and composites. Dialog, DropdownMenu, Select and Tabs parts, plus
-  DataTable, DateRangePicker and ConfirmDialog, are `React.lazy` stand-ins under their usual names.
+  DataTable, DateRangePicker, ConfirmDialog and NotesPanel (M09), are `React.lazy` stand-ins under their usual names.
   They load as one chunk on first render (eager, they would add about 220 KB to every page), so
   wrap them in a `Suspense`.
 - `lib`: format, status, the API client, the shared `queryClient`, `toast`, `usePageActions`, and

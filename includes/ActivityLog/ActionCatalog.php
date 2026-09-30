@@ -103,6 +103,16 @@ final class ActionCatalog {
 			'holds.create'               => array( self::DATA, __( 'Held a room', 'radius-hotel-booking' ) ),
 			'holds.release'              => array( self::DATA, __( 'Released a held room', 'radius-hotel-booking' ) ),
 
+			// Guests (M09). Revealing an ID number is a sensitive read.
+			'guests.create'              => array( self::DATA, __( 'Added a guest', 'radius-hotel-booking' ) ),
+			'guests.edit'                => array( self::DATA, __( 'Changed a guest', 'radius-hotel-booking' ) ),
+			'guests.ban'                 => array( self::DATA, __( 'Banned a guest', 'radius-hotel-booking' ) ),
+			'guests.unban'               => array( self::DATA, __( 'Lifted a guest ban', 'radius-hotel-booking' ) ),
+			'guests.view_id'             => array( self::VIEW, __( 'Viewed a guest identity document', 'radius-hotel-booking' ) ),
+			'guests.note_add'            => array( self::DATA, __( 'Added a guest note', 'radius-hotel-booking' ) ),
+			'guests.note_edit'           => array( self::DATA, __( 'Edited a guest note', 'radius-hotel-booking' ) ),
+			'guests.note_remove'         => array( self::DATA, __( 'Removed a guest note', 'radius-hotel-booking' ) ),
+
 			// Bookings (14.2), reserved for M02/M03.
 			'bookings.create'            => array( self::DATA, __( 'Created a booking', 'radius-hotel-booking' ) ),
 			'bookings.approve'           => array( self::DATA, __( 'Approved a booking', 'radius-hotel-booking' ) ),

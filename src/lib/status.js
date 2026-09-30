@@ -46,6 +46,17 @@ export const STATUS = {
 		blocked: { label: __( 'Blocked', 'radius-hotel-booking' ), tone: 'neutral', pattern: 'hatch' },
 		closed: { label: __( 'Closed', 'radius-hotel-booking' ), tone: 'neutral' },
 	},
+	// A guest's standing (M09, 9.11).
+	standing: {
+		normal: { label: __( 'Normal', 'radius-hotel-booking' ), tone: 'neutral', outline: true },
+		banned: { label: __( 'Banned', 'radius-hotel-booking' ), tone: 'danger' },
+	},
+	// The kind of a note on a guest, booking or employee (M09, 9.8).
+	note: {
+		general: { label: __( 'Note', 'radius-hotel-booking' ), tone: 'neutral' },
+		caution: { label: __( 'Caution', 'radius-hotel-booking' ), tone: 'warning' },
+		warning: { label: __( 'Warning', 'radius-hotel-booking' ), tone: 'danger' },
+	},
 	// The last read of an external calendar or feed (M08: iCal import).
 	sync: {
 		ok: { label: __( 'Up to date', 'radius-hotel-booking' ), tone: 'success' },
@@ -84,7 +95,7 @@ export const TONE_COLOR = {
  * Look up a status. Unknown values fall back to a neutral badge showing the
  * raw value, so a new server status never breaks a screen.
  *
- * @param {string} domain 'stay' | 'payment' | 'room' | 'readiness' | 'availability' | 'sync'.
+ * @param {string} domain 'stay' | 'payment' | 'room' | 'readiness' | 'availability' | 'standing' | 'note' | 'sync'.
  * @param {string} value  Status value.
  * @return {{label: string, tone: string, outline?: boolean, pattern?: string}} Status.
  */

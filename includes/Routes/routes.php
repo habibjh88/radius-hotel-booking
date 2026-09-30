@@ -24,6 +24,8 @@ use RadiusTheme\RadiusHotelBooking\Controllers\AccessController;
 use RadiusTheme\RadiusHotelBooking\Controllers\DashboardController;
 use RadiusTheme\RadiusHotelBooking\Controllers\FileController;
 use RadiusTheme\RadiusHotelBooking\Controllers\FloorController;
+use RadiusTheme\RadiusHotelBooking\Controllers\GuestController;
+use RadiusTheme\RadiusHotelBooking\Controllers\NoteController;
 use RadiusTheme\RadiusHotelBooking\Controllers\AvailabilityController;
 use RadiusTheme\RadiusHotelBooking\Controllers\BlockController;
 use RadiusTheme\RadiusHotelBooking\Controllers\CalendarController;
@@ -80,6 +82,16 @@ $this->router->resource( 'blocks', BlockController::class );
 $this->router->post( 'holds', array( HoldController::class, 'store' ) );
 $this->router->put( 'holds/(?P<token>[A-Za-z0-9]{32})', array( HoldController::class, 'extend' ) );
 $this->router->delete( 'holds/(?P<token>[A-Za-z0-9]{32})', array( HoldController::class, 'destroy' ) );
+
+// Guests (M09). `guests/lookup` before the resource: it is not an id.
+$this->router->get( 'guests/lookup', array( GuestController::class, 'lookup' ) );
+$this->router->resource( 'guests', GuestController::class );
+$this->router->post( 'guests/(?P<id>\d+)/ban', array( GuestController::class, 'ban' ) );
+$this->router->post( 'guests/(?P<id>\d+)/unban', array( GuestController::class, 'unban' ) );
+$this->router->get( 'guests/(?P<id>\d+)/stays', array( GuestController::class, 'stays' ) );
+$this->router->get( 'guests/(?P<id>\d+)/id-number', array( GuestController::class, 'idNumber' ) );
+// Notes on guests (and, later, bookings and staff): `rtbp_note_types`.
+$this->router->resource( 'notes', NoteController::class );
 
 /**
  * Add-on routes — an add-on plugin registers its own endpoints here rather than

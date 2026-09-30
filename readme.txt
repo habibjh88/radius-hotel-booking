@@ -124,6 +124,10 @@ New Availability calendar: prices, free rooms and closed dates per room type and
 Set a one-day price, or close a rate or a whole room type that day.
 Update many calendar dates at once: set or clear prices, open or close, by weekday.
 New Blocked dates screen: close a room, room type, floor or the whole property for a while.
+New Guests screen: search by name, phone or e-mail; guests already on file are offered.
+Guest page: edit contact details, and reveal the ID number (logged) when allowed.
+Guest page: stay history, and ban or lift a ban with a recorded reason.
+Guest notes: add, edit and remove notes marked note, caution or warning, with author and time.
 
 = 1.0.0 =
 Initial release.
