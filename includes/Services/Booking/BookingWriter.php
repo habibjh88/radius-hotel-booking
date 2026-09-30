@@ -15,7 +15,9 @@ use RadiusTheme\RadiusHotelBooking\Models\RatePlan;
 use RadiusTheme\RadiusHotelBooking\Models\Room;
 use RadiusTheme\RadiusHotelBooking\Repositories\AvailabilityRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\RatePlanRepository;
+use RadiusTheme\RadiusHotelBooking\Repositories\RoomTypeRepository;
 use RadiusTheme\RadiusHotelBooking\Services\Availability\AvailabilityService;
+use RadiusTheme\RadiusHotelBooking\Services\Availability\OccupancyCalculator;
 use RadiusTheme\RadiusHotelBooking\Services\Availability\Overlap;
 use RadiusTheme\RadiusHotelBooking\Services\Availability\RateCalendar;
 use RadiusTheme\RadiusHotelBooking\Services\Availability\StayWindow;
@@ -89,13 +91,15 @@ class BookingWriter {
 	 * Lock the rooms and prove every request can still be written.
 	 *
 	 * @param array[] $requests   Each `{ room_id, rate_plan_id, arrival (Y-m-d), units?, checkin_time?,
-	 *                            room_type_id? (must match the room), expected_total? (the price shown) }`.
+	 *                            room_type_id? (must match the room), expected_total? (the price shown),
+	 *                            adults?, children?, child_ages? (checked against the type's limits) }`.
 	 * @param string  $hold_token The caller's hold token: its own holds are not conflicts.
 	 * @param array   $options    `audience` (staff|public), `exclude_line` (a line being edited),
 	 *                            `accept_new_price` (bool), `now` (DateTimeImmutable, checks).
 	 * @return array[] Per request `{ room, room_type_id, rate_plan_id, plan, window: StayWindow, quote, buffer_minutes }`.
 	 * @throws LogicException  Outside a transaction (a programming error).
-	 * @throws DomainException 409 `room_unavailable` / `rate_closed` / `rate_not_sold` / `price_changed`, 422 input.
+	 * @throws DomainException 409 `room_unavailable` / `rate_closed` / `rate_not_sold` / `price_changed` /
+	 *                         `booking_window` / `same_day_cutoff` (public) / `occupancy`, 422 input.
 	 */
 	public function lockAndCheck( array $requests, string $hold_token = '', array $options = array() ): array {
 		if ( ! Transaction::active() ) {
@@ -113,8 +117,9 @@ class BookingWriter {
 		// 1. Lock, ascending id.
 		$rooms = $this->availability->lockRooms( array_column( $requests, 'room_id' ) );
 
-		// 2. Per request: the room, the rate, the window, the price.
+		// 2. Per request: the room, the rate, the window, the rules, the price.
 		$checked = array();
+		$types   = array();
 		foreach ( array_values( $requests ) as $index => $request ) {
 			$room_id = (int) ( $request['room_id'] ?? 0 );
 			$room    = $rooms[ $room_id ] ?? null;
@@ -136,7 +141,13 @@ class BookingWriter {
 			$arrival = (string) ( $request['arrival'] ?? '' );
 
 			// Refuses a rate no longer sold, a bad date, units outside the bounds.
-			$quote = $this->prices->quote( $type_id, $plan_id, $arrival, $units, $checkin, $booked_at );
+			// Occupancy as the search counted it: without the requester's own
+			// holds or the line being edited, else the price shown never matches.
+			$quote = OccupancyCalculator::excluding(
+				$hold_token,
+				(int) ( $options['exclude_line'] ?? 0 ),
+				fn() => $this->prices->quote( $type_id, $plan_id, $arrival, $units, $checkin, $booked_at )
+			);
 			$plan  = $this->plans->find( $plan_id );
 			if ( ! $plan instanceof RatePlan ) {
 				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
@@ -165,6 +176,24 @@ class BookingWriter {
 					)
 				);
 				// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
+			}
+
+			// The search's public date rules and the guest limits: a request
+			// posted directly must not skip them (critical review, M08).
+			$rule = AvailabilityService::dateRuleReason( $arrival, $audience, $now );
+			if ( $rule ) {
+				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+				throw DomainException::conflict( $rule['code'], $rule['message'], array( 'index' => $index ) );
+			}
+			if ( isset( $request['adults'] ) || isset( $request['children'] ) || ! empty( $request['child_ages'] ) ) {
+				list( $adults, $children ) = AvailabilityService::guestCounts( $request );
+				$type                      = $types[ $type_id ] ?? ( new RoomTypeRepository() )->find( $type_id );
+				$types[ $type_id ]         = $type;
+				if ( ! $type || $adults > (int) $type->max_adults || $children > (int) $type->max_children ) {
+					$reason = AvailabilityService::reason( 'occupancy' );
+					// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+					throw DomainException::conflict( 'occupancy', $reason['message'], array( 'index' => $index ) );
+				}
 			}
 
 			// 3. The price moved since it was shown.

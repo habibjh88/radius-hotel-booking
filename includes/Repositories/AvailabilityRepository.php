@@ -109,6 +109,7 @@ class AvailabilityRepository {
 	 * @return array<int, array<int, array>> Room id => intervals `{ s, e, kind, ref_id, label }`,
 	 *                                       sorted by start. `label` is the booking reference
 	 *                                       for a line and the reason for a block.
+	 * @throws \RadiusTheme\RadiusHotelBooking\Exceptions\DomainException 503 when the read fails.
 	 */
 	public function busy( array $room_ids, string $from_gmt, string $to_gmt, string $hold_token = '', int $exclude_line = 0, string $now_gmt = '' ): array {
 		global $wpdb;
@@ -161,6 +162,12 @@ class AvailabilityRepository {
 		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $rooms / $statuses are only "%d,…" / "%s,…" placeholder lists; every value is bound. Live inventory: never cached.
 		$rows = $wpdb->get_results( $wpdb->prepare( $sql, $args ), ARRAY_A );
 		// phpcs:enable
+		// A failed read must never look like "nothing booked": that would let
+		// the write path book over existing stays (critical review, M08).
+		if ( '' !== (string) $wpdb->last_error ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw new \RadiusTheme\RadiusHotelBooking\Exceptions\DomainException( 'busy', __( 'Availability could not be checked right now. Please try again.', 'radius-hotel-booking' ), 503 );
+		}
 
 		$out = array();
 		foreach ( (array) $rows as $row ) {

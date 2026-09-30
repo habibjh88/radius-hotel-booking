@@ -270,6 +270,16 @@ Transaction::run(function () {
   processes held the same room in 10 of 10 runs. With it on, exactly one wins in 50 of 50. The
   level is skipped only where the binary log is in STATEMENT format, which refuses writes at that
   level.
+  **Where it is skipped, the guarantee rests on no plain read inside the transaction before
+  `lockRooms()`.** `HoldService` honours that; every M02 service must too (read the booking or
+  guest *after* `lockAndCheck()`, or make `conflicts()` a locking read on such hosts).
+- **Fail closed** (M08 critical review): an engine read that errors — `busy()`, the rate calendar
+  — throws 503 `busy`; it never reads as "nothing booked" or "nothing closed".
+- Steps 2–3 apply the same rules as the search: the public booking window and same-day cut-off
+  (`AvailabilityService::dateRuleReason()`), the room type's guest limits when the request
+  carries `adults` / `children` / `child_ages` (`guestCounts()`, 8.9), and occupancy for pricing
+  counted without the requester's own holds (`OccupancyCalculator::excluding()`), as the search
+  does. A block write locks the rooms in its scope the same way.
 
 ## 8. Release paths
 

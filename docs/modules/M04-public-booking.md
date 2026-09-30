@@ -75,3 +75,4 @@ A honeypot field plus the rate limits provide spam protection; no CAPTCHA depend
 `legacy-reference.md` → Module 4, including the account-takeover and PII-leak **anti-patterns**.
 
 ## Progress notes
+- From M08's critical review (2026-09-30): `BookingWriter::lockAndCheck()` with `audience = public` now enforces the booking window and same-day cut-off itself, and the room type's guest limits **when the request carries `adults` / `children` / `child_ages`** — the guest hold and booking routes must always pass them.

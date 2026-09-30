@@ -95,11 +95,12 @@ final class StayWindow {
 			throw DomainException::invalid( array( 'date' => __( 'Choose a valid date.', 'radius-hotel-booking' ) ) );
 		}
 		if ( $units > self::MAX_UNITS ) {
-			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 			throw DomainException::invalid(
 				/* translators: %d: the most nights or days in one stay. */
 				array( 'units' => sprintf( __( 'A stay can cover at most %d nights or days.', 'radius-hotel-booking' ), self::MAX_UNITS ) )
 			);
+			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		}
 		if ( $units < 1 || ( $units > 1 && empty( $plan['multi_unit'] ) ) ) {
 			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).

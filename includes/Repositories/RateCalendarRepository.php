@@ -23,6 +23,7 @@ class RateCalendarRepository {
 	 * @param string $from          First local date `Y-m-d`.
 	 * @param string $to            Last local date (inclusive).
 	 * @return array<int, array> `{ room_type_id, rate_plan_id, date, price_override (float|null), is_closed (bool) }`.
+	 * @throws \RadiusTheme\RadiusHotelBooking\Exceptions\DomainException 503 when the read fails.
 	 */
 	public function between( array $room_type_ids, string $from, string $to ): array {
 		global $wpdb;
@@ -40,6 +41,11 @@ class RateCalendarRepository {
 			ARRAY_A
 		);
 		// phpcs:enable
+		// A failed read must not look like "nothing closed" (critical review, M08).
+		if ( '' !== (string) $wpdb->last_error ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw new \RadiusTheme\RadiusHotelBooking\Exceptions\DomainException( 'busy', __( 'Availability could not be checked right now. Please try again.', 'radius-hotel-booking' ), 503 );
+		}
 		return array_map(
 			static fn( $row ) => array(
 				'room_type_id'   => (int) $row['room_type_id'],

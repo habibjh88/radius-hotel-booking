@@ -232,6 +232,54 @@ class AvailabilityService {
 	}
 
 	/**
+	 * The public date rules (§5.2): the booking window and the same-day
+	 * cut-off. Staff are not bound by them. Shared by the search and the
+	 * write path, so a guest cannot skip them by posting directly.
+	 *
+	 * @param string            $arrival  Local arrival date.
+	 * @param string            $audience `staff` or `public`.
+	 * @param DateTimeImmutable $now      Now.
+	 * @return array|null Reason, or null when allowed.
+	 */
+	public static function dateRuleReason( string $arrival, string $audience, DateTimeImmutable $now ): ?array {
+		if ( self::PUBLIC !== $audience ) {
+			return null;
+		}
+		$today = $now->setTimezone( Dates::timezone() )->format( 'Y-m-d' );
+		$ahead = max( 0, (int) rtbp_setting( 'booking', 'bookingWindowDays', 0 ) );
+		if ( $ahead && $arrival > Dates::add_days( Dates::local( $today ), $ahead )->format( 'Y-m-d' ) ) {
+			return self::reason( 'booking_window' );
+		}
+		if ( $arrival === $today ) {
+			$cutoff = (string) rtbp_setting( 'booking', 'sameDayCutoff', '14:00' );
+			if ( ! rtbp_setting( 'booking', 'sameDayEnabled', false ) || $now->setTimezone( Dates::timezone() )->format( 'H:i' ) >= $cutoff ) {
+				return self::reason( 'same_day_cutoff' );
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Adults and children as the occupancy rule counts them (8.9): with ages
+	 * given, a child older than the maximum child age counts as an adult.
+	 *
+	 * @param array $input `adults`, `children`, `child_ages[]`.
+	 * @return int[] `[ adults, children ]`.
+	 */
+	public static function guestCounts( array $input ): array {
+		$adults   = isset( $input['adults'] ) ? (int) $input['adults'] : 1;
+		$children = isset( $input['children'] ) ? (int) $input['children'] : 0;
+		if ( isset( $input['child_ages'] ) && is_array( $input['child_ages'] ) && $input['child_ages'] ) {
+			$max_age  = (int) rtbp_setting( 'booking', 'maxChildAge', 16 );
+			$ages     = array_map( 'intval', array_slice( $input['child_ages'], 0, 99 ) );
+			$older    = count( array_filter( $ages, static fn( $age ) => $age > $max_age ) );
+			$children = count( $ages ) - $older;
+			$adults  += $older;
+		}
+		return array( $adults, $children );
+	}
+
+	/**
 	 * A reason object with its translated message.
 	 *
 	 * @param string $code  Reason code.
@@ -311,14 +359,7 @@ class AvailabilityService {
 		if ( $children < 0 || $children > 99 ) {
 			$errors['children'] = __( 'Enter between 0 and 99 children.', 'radius-hotel-booking' );
 		}
-		// 8.9: with ages given, a child older than the maximum child age counts as an adult.
-		if ( isset( $input['child_ages'] ) && is_array( $input['child_ages'] ) && $input['child_ages'] ) {
-			$max_age  = (int) rtbp_setting( 'booking', 'maxChildAge', 16 );
-			$ages     = array_map( 'intval', array_slice( $input['child_ages'], 0, 99 ) );
-			$older    = count( array_filter( $ages, static fn( $age ) => $age > $max_age ) );
-			$children = count( $ages ) - $older;
-			$adults  += $older;
-		}
+		list( $adults, $children ) = self::guestCounts( $input );
 
 		$checkin = isset( $input['checkin_time'] ) ? (string) $input['checkin_time'] : '';
 		if ( '' !== $checkin && ! preg_match( '/^([01]\d|2[0-3]):[0-5]\d$/', $checkin ) ) {
@@ -469,18 +510,9 @@ class AvailabilityService {
 			return self::reason( 'past' );
 		}
 
-		if ( self::PUBLIC === $audience ) {
-			$today = $now->setTimezone( Dates::timezone() )->format( 'Y-m-d' );
-			$ahead = max( 0, (int) rtbp_setting( 'booking', 'bookingWindowDays', 0 ) );
-			if ( $ahead && $request['arrival'] > Dates::add_days( Dates::local( $today ), $ahead )->format( 'Y-m-d' ) ) {
-				return self::reason( 'booking_window' );
-			}
-			if ( $request['arrival'] === $today ) {
-				$cutoff = (string) rtbp_setting( 'booking', 'sameDayCutoff', '14:00' );
-				if ( ! rtbp_setting( 'booking', 'sameDayEnabled', false ) || $now->setTimezone( Dates::timezone() )->format( 'H:i' ) >= $cutoff ) {
-					return self::reason( 'same_day_cutoff' );
-				}
-			}
+		$date_rule = self::dateRuleReason( $request['arrival'], $audience, $now );
+		if ( $date_rule ) {
+			return $date_rule;
 		}
 
 		if ( ! $rate['sold'] ) {

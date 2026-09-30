@@ -98,3 +98,4 @@ Future legacy bookings (`hbfwc_restata_booking` with checkout ≥ cutover) are i
 through `BookingService` with the `importing` flag.
 
 ## Progress notes
+- From M08's critical review (2026-09-30): when READ COMMITTED is unavailable (binlog in STATEMENT format), the double-booking guarantee needs **no plain read inside the transaction before `BookingWriter::lockAndCheck()`** — read the booking/guest after it, or add a `FOR SHARE` to `AvailabilityRepository::conflicts()` on such hosts (booking-engine §7.1). Pass `adults` / `children` / `child_ages` on each `lockAndCheck()` request so the type's guest limits are enforced.

@@ -49,6 +49,38 @@ class OccupancyCalculator {
 	private static array $primed = array();
 
 	/**
+	 * While set, what the engine's answer leaves out: `{ token, line }` — the
+	 * requester's own holds and the line being edited, as the search does.
+	 * Cached and primed counts are skipped meanwhile.
+	 *
+	 * @var array|null
+	 */
+	private static ?array $excluding = null;
+
+	/**
+	 * Run a callback (a re-quote inside the write path) with the requester's
+	 * own holds and edited line left out of occupancy, so the price matches
+	 * the one the search showed (critical review, M08).
+	 *
+	 * @param string   $hold_token   The requester's hold token.
+	 * @param int      $exclude_line A line being edited.
+	 * @param callable $callback     Work to run.
+	 * @return mixed The callback's result.
+	 */
+	public static function excluding( string $hold_token, int $exclude_line, callable $callback ) {
+		$previous        = self::$excluding;
+		self::$excluding = array(
+			'token' => $hold_token,
+			'line'  => $exclude_line,
+		);
+		try {
+			return $callback();
+		} finally {
+			self::$excluding = $previous;
+		}
+	}
+
+	/**
 	 * Register the engine's `rtbp_occupied_rooms` answer.
 	 *
 	 * @return void
@@ -136,7 +168,7 @@ class OccupancyCalculator {
 			return 0;
 		}
 		$start = Dates::start_of_day( (string) $date );
-		$busy  = ( new AvailabilityRepository() )->busy( $room_ids, Dates::to_gmt_db( $start ), Dates::to_gmt_db( Dates::add_days( $start, 1 ) ) );
+		$busy  = ( new AvailabilityRepository() )->busy( $room_ids, Dates::to_gmt_db( $start ), Dates::to_gmt_db( Dates::add_days( $start, 1 ) ), self::$excluding['token'] ?? '', self::$excluding['line'] ?? 0 );
 		return count( array_filter( $busy ) );
 	}
 
@@ -158,11 +190,13 @@ class OccupancyCalculator {
 	 */
 	public function percent( int $room_type_id, string $date ): float {
 		$key = $room_type_id . ':' . $date;
-		if ( isset( $this->cache[ $key ] ) ) {
+		// Inside excluding(): always ask the engine, with the exclusions.
+		$fresh = null !== self::$excluding;
+		if ( ! $fresh && isset( $this->cache[ $key ] ) ) {
 			return $this->cache[ $key ];
 		}
 
-		if ( isset( self::$primed[ $key ] ) ) {
+		if ( ! $fresh && isset( self::$primed[ $key ] ) ) {
 			list( $occupied, $sellable ) = self::$primed[ $key ];
 			$percent                     = $sellable > 0 ? min( 100.0, round( $occupied * 100 / $sellable, 2 ) ) : 0.0;
 			$this->cache[ $key ]         = $percent;
@@ -183,7 +217,9 @@ class OccupancyCalculator {
 
 		$percent = $sellable > 0 ? min( 100.0, round( $occupied * 100 / $sellable, 2 ) ) : 0.0;
 
-		$this->cache[ $key ] = $percent;
+		if ( ! $fresh ) {
+			$this->cache[ $key ] = $percent;
+		}
 		return $percent;
 	}
 
