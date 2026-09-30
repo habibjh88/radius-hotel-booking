@@ -27,6 +27,9 @@ use RadiusTheme\RadiusHotelBooking\Databases\Table\FloorsTable;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\GuestsTable;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\HoldsTable;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\NotesTable;
+use RadiusTheme\RadiusHotelBooking\Databases\Table\InvoicesTable;
+use RadiusTheme\RadiusHotelBooking\Databases\Table\InvoiceVersionsTable;
+use RadiusTheme\RadiusHotelBooking\Databases\Table\PaymentsTable;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\RateCalendarTable;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\RatePlansTable;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\RoomsTable;
@@ -113,6 +116,10 @@ class DatabaseManager {
 			// Guests and the shared notes (M09).
 			GuestsTable::class,
 			NotesTable::class,
+			// Payments and invoices (M05).
+			PaymentsTable::class,
+			InvoicesTable::class,
+			InvoiceVersionsTable::class,
 		);
 
 		/**

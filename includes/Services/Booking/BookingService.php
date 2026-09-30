@@ -17,6 +17,10 @@ use RadiusTheme\RadiusHotelBooking\Repositories\BookingRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\BookingRoomRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\HoldRepository;
 use RadiusTheme\RadiusHotelBooking\Services\Availability\AvailabilityService;
+use RadiusTheme\RadiusHotelBooking\Services\Payments\InvoiceService;
+use RadiusTheme\RadiusHotelBooking\Services\Payments\PaymentDeadline;
+use RadiusTheme\RadiusHotelBooking\Services\Payments\PaymentService;
+use RadiusTheme\RadiusHotelBooking\Settings\PaymentSettings;
 use RadiusTheme\RadiusHotelBooking\Services\Availability\HoldService;
 use RadiusTheme\RadiusHotelBooking\Services\Guests\GuestService;
 use RadiusTheme\RadiusHotelBooking\Support\Dates;
@@ -103,7 +107,8 @@ class BookingService {
 	 * @param array                  $input  `{ hold_token?, lines: [ { room_id, rate_plan_id, arrival, units?,
 	 *                                       checkin_time?, adults, children?, room_type_id?, expected_total? } ],
 	 *                                       guest_id | guest: { first_name, last_name, phone, email?, id_type?,
-	 *                                       id_number? }, payment_state (unpaid|paid), note?, accept_new_price? }`.
+	 *                                       id_number? }, payment_state (unpaid|paid), payment_method?, payment_reference?,
+	 *                                       note?, accept_new_price? }`.
 	 * @param array                  $actor  `{ audience (staff|public), user_id?, session_key? }`.
 	 * @param string                 $source `desk` (default), `web`, `import`.
 	 * @param DateTimeImmutable|null $now    Now (checks).
@@ -120,8 +125,19 @@ class BookingService {
 		// Outside the transaction: fast answers before any lock is taken.
 		$this->holds->assertUsable( $token, $actor );
 		// "Paid now" marks money as taken: M13's `payments.record` (legacy mark-as-paid).
+		$paid_now = null;
 		if ( 'paid' === $data['payment_state'] ) {
 			self::requireKey( 'payments.record' );
+			// A real ledger row (ADR-010), checked before any lock; the amount is the total, known after the quote.
+			$paid_now = ( new PaymentService() )->validate(
+				array(
+					'type'      => 'payment',
+					'amount'    => 1,
+					'method'    => $data['payment_method'],
+					'reference' => $data['payment_reference'],
+				),
+				$now
+			);
 		}
 		if ( ! $data['guest_id'] ) {
 			self::requireKey( 'guests.create' );
@@ -130,8 +146,8 @@ class BookingService {
 			$this->refuseBanned( $this->guests->get( $data['guest_id'] ) );
 		}
 
-		$id = Transaction::run(
-			function () use ( $data, $token, $audience, $source, $now ) {
+		$result = Transaction::run(
+			function () use ( $data, $token, $audience, $source, $now, $paid_now ) {
 				// 1–3. Lock the rooms, re-check, re-quote. Nothing is read before this.
 				$checked = $this->writer->lockAndCheck(
 					$data['requests'],
@@ -150,7 +166,7 @@ class BookingService {
 				// 4. Write.
 				$status   = BookingWriter::initialStatus( $source );
 				$total    = Money::sum( array_map( static fn( $item ) => (float) $item['quote']['total'], $checked ) );
-				$paid     = 'paid' === $data['payment_state'];
+				$paid     = null !== $paid_now;
 				$year     = $now->setTimezone( Dates::timezone() )->format( 'Y' );
 				$user_id  = get_current_user_id();
 				$booking  = $this->bookings->create(
@@ -159,11 +175,12 @@ class BookingService {
 						'guest_id'         => (int) $guest->id,
 						'source'           => $source,
 						'status'           => $status,
-						'payment_status'   => $paid ? 'paid' : 'unpaid',
+						// Unpaid until the ledger says otherwise (*Paid now* writes its row below).
+						'payment_status'   => 'unpaid',
 						'subtotal'         => $total,
 						'total'            => $total,
-						'paid_total'       => $paid ? $total : 0,
-						'balance_due'      => $paid ? 0 : $total,
+						'paid_total'       => 0,
+						'balance_due'      => $total,
 						'currency'         => (string) rtbp_setting( 'general', 'currencyCode', 'XOF' ),
 						'adults'           => array_sum( array_column( $data['requests'], 'adults' ) ),
 						'children'         => array_sum( array_column( $data['requests'], 'children' ) ),
@@ -194,6 +211,15 @@ class BookingService {
 						throw new \RuntimeException( 'A booking line could not be saved.' );
 					}
 					$logged_lines[] = sprintf( '%s · %s · %s', $item['room']['number'], $item['plan']->name, $line->start_at );
+				}
+
+				// The payment deadline (5.4, D6), from the booking's first stay.
+				$due = PaymentDeadline::fields( $booking, $this->lines->forBooking( (int) $booking->id ) );
+				if ( $due ) {
+					$this->bookings->update( (int) $booking->id, $due );
+					foreach ( $due as $key => $value ) {
+						$booking->{$key} = $value;
+					}
 				}
 
 				// The holds were for this booking.
@@ -228,11 +254,21 @@ class BookingService {
 						),
 					)
 				);
-				return (int) $booking->id;
+
+				// The invoice, numbered in this transaction: a rolled-back booking gives its number back (5.8).
+				( new InvoiceService() )->issue( $booking, $now );
+
+				// *Paid now* (2.11): the payment, as the desk records any other (M05), logged after the creation.
+				$paid_row = null;
+				if ( $paid && $total > 0 ) {
+					$paid_row = ( new PaymentService() )->insert( $booking, array_merge( $paid_now, array( 'amount' => $total ) ) );
+				}
+				return array( (int) $booking->id, $paid_row );
 			}
 		);
 
-		$booking = $this->get( $id );
+		list( $id, $paid_row ) = $result;
+		$booking               = $this->get( $id );
 
 		// After the outermost commit: an import (M18) may wrap many bookings in one transaction.
 		Transaction::afterCommit(
@@ -246,6 +282,10 @@ class BookingService {
 				do_action( 'rtbp_booking_created', $booking, $source );
 			}
 		);
+		// *Paid now*'s payment after the booking itself: the guest hears "booking received", then "payment received".
+		if ( $paid_row ) {
+			( new PaymentService() )->announce( $id, $paid_row );
+		}
 
 		return $booking;
 	}
@@ -434,6 +474,11 @@ class BookingService {
 			$errors['note'] = __( 'This is too long.', 'radius-hotel-booking' );
 		}
 		$token = sanitize_text_field( (string) ( $input['hold_token'] ?? '' ) );
+		// *Paid now*: how it was paid (default: the first method offered) and its reference.
+		$method = sanitize_key( (string) ( $input['payment_method'] ?? '' ) );
+		if ( '' === $method ) {
+			$method = (string) ( PaymentSettings::enabled_methods()[0]['key'] ?? '' );
+		}
 
 		if ( $errors ) {
 			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
@@ -444,6 +489,8 @@ class BookingService {
 			'guest_id'         => $guest_id,
 			'guest'            => $guest,
 			'payment_state'    => $payment,
+			'payment_method'   => $method,
+			'payment_reference' => sanitize_text_field( (string) ( $input['payment_reference'] ?? '' ) ),
 			'note'             => $note,
 			'hold_token'       => $token,
 			'accept_new_price' => ! empty( $input['accept_new_price'] ) && 'false' !== $input['accept_new_price'],

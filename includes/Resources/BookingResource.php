@@ -7,11 +7,14 @@
 
 namespace RadiusTheme\RadiusHotelBooking\Resources;
 
+use RadiusTheme\RadiusHotelBooking\Documents\DocumentService;
 use RadiusTheme\RadiusHotelBooking\Models\Booking;
 use RadiusTheme\RadiusHotelBooking\Models\BookingRoom;
 use RadiusTheme\RadiusHotelBooking\Models\Guest;
+use RadiusTheme\RadiusHotelBooking\Repositories\InvoiceRepository;
 use RadiusTheme\RadiusHotelBooking\Services\Booking\BookingLineService;
 use RadiusTheme\RadiusHotelBooking\Services\Booking\StatusMachine;
+use RadiusTheme\RadiusHotelBooking\Services\Payments\PaymentDeadline;
 use RadiusTheme\RadiusHotelBooking\Support\Dates;
 
 defined( 'ABSPATH' ) || exit;
@@ -43,6 +46,9 @@ final class BookingResource {
 			'source'           => (string) $booking->source,
 			'status'           => (string) $booking->status,
 			'payment_status'   => (string) $booking->payment_status,
+			'on_hold'          => (bool) (int) $booking->on_hold,
+			'payment_due_at'   => $booking->payment_due_at_gmt ? Dates::to_iso( Dates::from_gmt( (string) $booking->payment_due_at_gmt ) ) : null,
+			'overdue'          => PaymentDeadline::overdue( $booking ),
 			'total'            => (float) $booking->total,
 			'paid_total'       => (float) $booking->paid_total,
 			'balance_due'      => (float) $booking->balance_due,
@@ -52,6 +58,31 @@ final class BookingResource {
 			'special_requests' => (string) $booking->special_requests,
 			'created_at'       => $booking->created_at_gmt ? Dates::to_iso( Dates::from_gmt( (string) $booking->created_at_gmt ) ) : null,
 			'lines'            => array_map( array( self::class, 'line' ), $lines ),
+		);
+	}
+
+	/**
+	 * One booking in a list (the overdue follow-up, M05; M01's bookings list
+	 * builds on it): reference, guest, stay, money and deadline.
+	 *
+	 * @param Booking $booking Booking.
+	 * @param array   $extra   `{ guest_name, guest_phone, first_start }` read with the list.
+	 * @return array
+	 */
+	public static function summary( Booking $booking, array $extra ): array {
+		return array(
+			'id'             => (int) $booking->id,
+			'reference'      => (string) $booking->reference,
+			'status'         => (string) $booking->status,
+			'payment_status' => (string) $booking->payment_status,
+			'on_hold'        => (bool) (int) $booking->on_hold,
+			'total'          => (float) $booking->total,
+			'balance_due'    => (float) $booking->balance_due,
+			'payment_due_at' => $booking->payment_due_at_gmt ? Dates::to_iso( Dates::from_gmt( (string) $booking->payment_due_at_gmt ) ) : null,
+			'overdue'        => PaymentDeadline::overdue( $booking ),
+			'guest_name'     => (string) ( $extra['guest_name'] ?? '' ),
+			'guest_phone'    => (string) ( $extra['guest_phone'] ?? '' ),
+			'first_start'    => ! empty( $extra['first_start'] ) ? Dates::to_iso( Dates::from_gmt( (string) $extra['first_start'] ) ) : null,
 		);
 	}
 
@@ -124,11 +155,44 @@ final class BookingResource {
 							$any( array( StatusMachine::PENDING ) ) ? 'decline' : null,
 							$any( array( StatusMachine::PENDING, StatusMachine::CONFIRMED ) ) ? 'cancel' : null,
 							in_array( (string) $booking->status, BookingLineService::OPEN, true ) ? 'line_add' : null,
+							// M05: remind while money is due on a booking going ahead; release once it is overdue.
+							(float) $booking->balance_due > 0 && in_array( (string) $booking->status, PaymentDeadline::OPEN, true ) ? 'remind' : null,
+							PaymentDeadline::overdue( $booking ) ? 'release' : null,
 						)
 					)
 				),
 				'cancelled_reason' => (string) $booking->cancelled_reason,
+				// The invoice (M05): its number and version, and the links to print it (issued on first open for older bookings).
+				'invoice'          => self::invoice( $booking ),
 			)
+		);
+	}
+
+	/**
+	 * The booking's invoice for its screen: number, version, status and the
+	 * print / download links of every format (and of each earlier version).
+	 *
+	 * @param Booking $booking Booking.
+	 * @return array
+	 */
+	private static function invoice( Booking $booking ): array {
+		$invoice = ( new InvoiceRepository() )->forBooking( (int) $booking->id );
+		$older   = array();
+		if ( $invoice ) {
+			for ( $v = (int) $invoice->version - 1; $v >= 1; $v-- ) {
+				$older[] = array(
+					'version' => $v,
+					'url'     => DocumentService::url( 'invoice', (int) $booking->id, 'html', array( 'version' => $v ) ),
+				);
+			}
+		}
+		return array(
+			'number'    => $invoice ? (string) $invoice->number : '',
+			'version'   => $invoice ? (int) $invoice->version : 0,
+			'status'    => $invoice ? (string) $invoice->status : '',
+			'issued_at' => $invoice ? Dates::to_iso( Dates::from_gmt( (string) $invoice->issued_at_gmt ) ) : null,
+			'urls'      => DocumentService::urls( 'invoice', (int) $booking->id ),
+			'older'     => $older,
 		);
 	}
 

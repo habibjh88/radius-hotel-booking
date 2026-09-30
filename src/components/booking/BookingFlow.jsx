@@ -93,6 +93,8 @@ export default function BookingFlow( { mode = 'desk' } ) {
 	} );
 	// Summary (2.10, 2.11) and the answer of Confirm.
 	const [ payment, setPayment ] = useState( 'unpaid' );
+	// *Paid now*: how it was paid (a ledger row, M05) and its reference.
+	const [ paidWith, setPaidWith ] = useState( { method: '', reference: '' } );
 	const [ note, setNote ] = useState( '' );
 	const [ submitting, setSubmitting ] = useState( false );
 	const [ failed, setFailed ] = useState( -1 );
@@ -285,6 +287,12 @@ export default function BookingFlow( { mode = 'desk' } ) {
 					? { guest_id: guest.guest.id }
 					: { guest: guest.fields } ),
 				payment_state: payment,
+				...( 'paid' === payment
+					? {
+							payment_method: paidWith.method,
+							payment_reference: paidWith.reference,
+					  }
+					: {} ),
 				note,
 			} );
 			// The booking consumed the holds.
@@ -368,6 +376,7 @@ export default function BookingFlow( { mode = 'desk' } ) {
 		setChoice( null );
 		setGuest( { mode: 'find', guest: null, fields: EMPTY_GUEST } );
 		setPayment( 'unpaid' );
+		setPaidWith( { method: '', reference: '' } );
 		setNote( '' );
 		setFailed( -1 );
 		setPriceChange( null );
@@ -585,8 +594,15 @@ export default function BookingFlow( { mode = 'desk' } ) {
 					<SummaryStep
 						total={ total }
 						payment={ payment }
+						paidWith={ paidWith }
 						note={ note }
 						onChange={ ( changed ) => {
+							if ( 'paidWith' in changed ) {
+								setPaidWith( ( prev ) => ( {
+									...prev,
+									...changed.paidWith,
+								} ) );
+							}
 							if ( 'payment' in changed ) {
 								setPayment( changed.payment );
 							}

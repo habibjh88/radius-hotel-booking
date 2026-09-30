@@ -60,6 +60,10 @@ class EmailManager {
 				Booking\GuestBookingApproved::class,
 				Booking\GuestBookingDeclined::class,
 				Booking\GuestBookingCancelled::class,
+				Booking\GuestBookingReceived::class,
+				Booking\GuestPaymentReceived::class,
+				Booking\GuestPaymentReminder::class,
+				Booking\GuestBookingReleased::class,
 			)
 		);
 

@@ -17,6 +17,7 @@ use RadiusTheme\RadiusHotelBooking\Repositories\AvailabilityRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\BookingRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\BookingRoomRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\FloorRepository;
+use RadiusTheme\RadiusHotelBooking\Services\Payments\PaymentDeadline;
 use RadiusTheme\RadiusHotelBooking\Support\Dates;
 
 defined( 'ABSPATH' ) || exit;
@@ -110,6 +111,37 @@ class BookingStatusService {
 	 */
 	public function cancel( int $booking_id, string $reason, int $line_id = 0 ): int {
 		return $this->bookingMove( 'cancel', $booking_id, $line_id, self::reason( $reason ) );
+	}
+
+	/**
+	 * Release an unpaid booking past its deadline (5.14): its rooms are
+	 * cancelled and free at once, the guest gets the *released* e-mail (not
+	 * the cancelled one), the invoice is marked cancelled, and it is logged
+	 * `bookings.release_overdue` — by the staff member, or as `system` from
+	 * Pro's automatic release (T8). Refused unless the booking is still
+	 * overdue **under the lock** (a payment may have arrived meanwhile).
+	 *
+	 * @param int    $booking_id Booking id.
+	 * @param string $reason     Why ('' = not paid by the deadline).
+	 * @return int Booking id.
+	 * @throws DomainException 404, 409 `not_overdue` / `illegal_transition`, 422 reason.
+	 */
+	public function release( int $booking_id, string $reason = '' ): int {
+		$reason = '' === trim( $reason ) ? __( 'Not paid by the deadline.', 'radius-hotel-booking' ) : self::reason( $reason );
+		return $this->bookingMove(
+			'cancel',
+			$booking_id,
+			0,
+			$reason,
+			'release_overdue',
+			'release',
+			static function ( Booking $booking ) {
+				if ( ! PaymentDeadline::overdue( $booking ) ) {
+					// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+					throw DomainException::conflict( 'not_overdue', __( 'This booking is not overdue any more: it cannot be released.', 'radius-hotel-booking' ), array( 'payment_status' => (string) $booking->payment_status ) );
+				}
+			}
+		);
 	}
 
 	/**
@@ -307,15 +339,22 @@ class BookingStatusService {
 	 * @param int    $booking_id Booking id.
 	 * @param int    $line_id    One line, or 0.
 	 * @param string $reason     Reason (decline, cancel).
+	 * @param string $log_as     Log the move under another action (`release_overdue`).
+	 * @param string $announce_as Announce it under another action (`release`: its own guest e-mail).
+	 * @param callable|null $guard Checked on the booking under the lock; throws to refuse.
 	 * @return int Booking id.
 	 * @throws DomainException 404, 409 `illegal_transition`.
 	 */
-	private function bookingMove( string $action, int $booking_id, int $line_id, string $reason ): int {
+	private function bookingMove( string $action, int $booking_id, int $line_id, string $reason, string $log_as = '', string $announce_as = '', ?callable $guard = null ): int {
 		$this->booking( $booking_id );
 		$changes = Transaction::run(
-			function () use ( $action, $booking_id, $line_id, $reason ) {
+			function () use ( $action, $booking_id, $line_id, $reason, $log_as, $guard ) {
 				$this->bookings->lock( $booking_id );
 				$booking = $this->booking( $booking_id );
+				if ( $guard ) {
+					// A condition checked on the booking as it is under the lock (the release: still overdue).
+					$guard( $booking );
+				}
 				$lines   = $this->lines->forBooking( $booking_id );
 				$targets = array();
 				foreach ( $lines as $line ) {
@@ -360,7 +399,7 @@ class BookingStatusService {
 				}
 				$this->bookings->update( $booking_id, $fields );
 				$this->log(
-					$action,
+					'' !== $log_as ? $log_as : $action,
 					$booking,
 					$changes,
 					$reason,
@@ -372,7 +411,7 @@ class BookingStatusService {
 				return $changes;
 			}
 		);
-		$this->announce( $booking_id, $action, $changes, $reason, $line_id );
+		$this->announce( $booking_id, '' !== $announce_as ? $announce_as : $action, $changes, $reason, $line_id );
 		return $booking_id;
 	}
 
@@ -653,6 +692,7 @@ class BookingStatusService {
 			'check_in'  => __( 'Checked in', 'radius-hotel-booking' ),
 			'check_out' => __( 'Checked out', 'radius-hotel-booking' ),
 			'no_show'   => __( 'No-show for', 'radius-hotel-booking' ),
+			'release_overdue' => __( 'Released (unpaid)', 'radius-hotel-booking' ),
 		);
 		return $verbs[ $action ] ?? $action;
 	}

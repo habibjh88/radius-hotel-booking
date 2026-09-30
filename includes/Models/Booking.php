@@ -44,6 +44,13 @@ class Booking extends BaseModel {
 	const PAYMENT_STATES = array( 'unpaid', 'paid' );
 
 	/**
+	 * Stored payment statuses, derived from the ledger by
+	 * `PaymentService::recalculate()` (3.4, M05). *On hold* is a separate
+	 * flag (`on_hold`); *overdue* is derived from the deadline.
+	 */
+	const PAYMENT_STATUSES = array( 'unpaid', 'partially_paid', 'paid', 'refunded' );
+
+	/**
 	 * Sources.
 	 */
 	const SOURCES = array( 'desk', 'web', 'import', 'ical' );

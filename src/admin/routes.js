@@ -191,7 +191,7 @@ const baseRoutes = [
 		icon: Wallet,
 		capability: VIEW,
 		accessKey: 'page.bookings',
-		module: 'M05',
+		element: lazy( () => import( '@/modules/Payments' ) ),
 	},
 	{
 		path: '/rooms',

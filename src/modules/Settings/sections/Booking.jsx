@@ -1,6 +1,7 @@
 /**
  * Settings → Booking rules: what guests may book online and how rooms turn
- * over between stays (features 17.7, 17.8, 17.9, 17.11, 8.9).
+ * over between stays (features 17.7, 17.8, 17.9, 17.11, 8.9), and the payment
+ * deadline of unpaid bookings (5.4, D6).
  */
 import { __ } from '@wordpress/i18n';
 
@@ -228,6 +229,49 @@ export default function Booking( { value, setField, errors, schema } ) {
 							onChange={ ( event ) =>
 								setField( 'checkOutTime' )( event.target.value )
 							}
+						/>
+					</Field>
+				</div>
+			</SettingsSection>
+
+			<SettingsSection
+				title={ __( 'Payment deadline', 'radius-hotel-booking' ) }
+				description={ __(
+					'When an unpaid booking must be paid: so many hours after it is made, but no later than so many hours before arrival. Guests see the deadline counted down.',
+					'radius-hotel-booking'
+				) }
+			>
+				<div className="grid gap-4 sm:grid-cols-2">
+					<Field
+						label={ __(
+							'Due after booking',
+							'radius-hotel-booking'
+						) }
+						description={ __(
+							'0 means no deadline.',
+							'radius-hotel-booking'
+						) }
+						error={ errors.paymentDueHours }
+					>
+						<NumberInput
+							value={ value.paymentDueHours }
+							onChange={ setField( 'paymentDueHours' ) }
+							unit={ __( 'hours', 'radius-hotel-booking' ) }
+							limits={ schema.paymentDueHours }
+						/>
+					</Field>
+					<Field
+						label={ __(
+							'At the latest, before arrival',
+							'radius-hotel-booking'
+						) }
+						error={ errors.paymentBeforeArrivalHours }
+					>
+						<NumberInput
+							value={ value.paymentBeforeArrivalHours }
+							onChange={ setField( 'paymentBeforeArrivalHours' ) }
+							unit={ __( 'hours', 'radius-hotel-booking' ) }
+							limits={ schema.paymentBeforeArrivalHours }
 						/>
 					</Field>
 				</div>

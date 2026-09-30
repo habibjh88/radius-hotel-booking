@@ -142,6 +142,20 @@ Changing a booked room keeps its price unless the rate, room type or times chang
 Booking notes for the team, and the guest's own notes, right on the booking.
 Edit the guest's contact and identity document from the booking.
 Early arrivals can be checked in on the arrival day; the room is held from then.
+New Settings → Payments: the payment methods you accept, with instructions guests receive.
+New Settings → Invoices: invoice number prefix, first number, included tax and footer text.
+Booking rules gain a payment deadline: hours after booking, capped before arrival.
+Record payments and refunds on a booking; the status follows what was actually received.
+Payment history on each booking; a mistaken payment is voided with a reason, never edited.
+Paid now at the front desk records the method and reference as a real payment.
+Unpaid bookings get a payment deadline, counted down on the booking; overdue ones are flagged.
+Every booking gets a numbered invoice; changes re-issue it under the same number.
+Print the invoice and a receipt for each payment from the booking screen.
+Guests get an e-mail with how to pay, the deadline and their invoice.
+Guests get a receipt e-mail for each payment recorded.
+A booking page for guests: status, amount to pay, instructions, invoice and receipts.
+New Payments screen lists unpaid bookings past their deadline, to remind or release.
+Remind a guest to pay by e-mail, or release an overdue booking to free its rooms.
 
 = 1.0.0 =
 Initial release.

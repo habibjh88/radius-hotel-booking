@@ -23,6 +23,8 @@ import {
 	Mail,
 	MoreHorizontal,
 	Plus,
+	BellRing,
+	Unlock,
 	Phone,
 	X,
 } from 'lucide-react';
@@ -50,7 +52,9 @@ import { cn } from '@/lib/utils';
 import { useBooking, useBookingAction, useLineChange } from './api';
 import CheckInDialog from './components/CheckInDialog';
 import EditBookingGuest from './components/EditBookingGuest';
+import PaymentDue from '@/components/booking/PaymentDue';
 import LineEditor from './components/LineEditor';
+import PaymentsPanel from './components/PaymentsPanel';
 
 /**
  * Where a booking came from, in words.
@@ -346,65 +350,6 @@ function Line( { line, actions = [], onAction } ) {
 }
 
 /**
- * The money summary (3.2): only the rows that carry something, then total,
- * paid and balance.
- *
- * @param {Object} props       Props.
- * @param {Object} props.money `{ subtotal, discount_total, tax_total, total, paid_total, balance_due }`.
- * @return {JSX.Element} Summary.
- */
-function MoneySummary( { money } ) {
-	const row = ( label, value, className = '' ) => (
-		<div
-			className={ cn(
-				'flex items-baseline justify-between gap-3',
-				className
-			) }
-		>
-			<dt className="text-sm text-muted-foreground">{ label }</dt>
-			<dd className="m-0 text-sm text-heading">
-				<Money value={ value } />
-			</dd>
-		</div>
-	);
-	return (
-		<dl className="m-0 space-y-2">
-			{ row( __( 'Rooms', 'radius-hotel-booking' ), money.subtotal ) }
-			{ Number( money.discount_total )
-				? row(
-						__( 'Discount', 'radius-hotel-booking' ),
-						-Math.abs( money.discount_total )
-				  )
-				: null }
-			{ Number( money.tax_total )
-				? row( __( 'Tax', 'radius-hotel-booking' ), money.tax_total )
-				: null }
-			{ row(
-				__( 'Total', 'radius-hotel-booking' ),
-				money.total,
-				'border-t border-border pt-2 font-semibold [&_dd]:font-semibold [&_dt]:text-heading'
-			) }
-			{ row( __( 'Paid', 'radius-hotel-booking' ), money.paid_total ) }
-			<div className="flex items-baseline justify-between gap-3 border-t border-border pt-2">
-				<dt className="text-sm font-semibold text-heading">
-					{ __( 'Balance due', 'radius-hotel-booking' ) }
-				</dt>
-				<dd
-					className={ cn(
-						'm-0 text-base font-semibold',
-						Number( money.balance_due ) > 0
-							? 'text-warning'
-							: 'text-success'
-					) }
-				>
-					<Money value={ money.balance_due } />
-				</dd>
-			</div>
-		</dl>
-	);
-}
-
-/**
  * @return {JSX.Element} Screen.
  */
 export default function BookingDetail() {
@@ -426,6 +371,8 @@ export default function BookingDetail() {
 		line_add: useAccess( 'bookings.line_add' ),
 		line_edit: useAccess( 'bookings.line_edit' ),
 		line_remove: useAccess( 'bookings.line_remove' ),
+		remind: useAccess( 'invoices.send' ),
+		release: useAccess( 'bookings.cancel' ),
 	};
 	const allowed = ( list ) =>
 		( list || [] ).filter( ( action ) => 'locked' !== levels[ action ] );
@@ -493,7 +440,9 @@ export default function BookingDetail() {
 
 	// The header's buttons: the whole booking's status moves.
 	const headerActions = allowed( booking?.actions ).filter( ( action ) =>
-		[ 'approve', 'decline', 'cancel' ].includes( action )
+		[ 'approve', 'decline', 'cancel', 'remind', 'release' ].includes(
+			action
+		)
 	);
 
 	const back = (
@@ -580,6 +529,9 @@ export default function BookingDetail() {
 								domain="payment"
 								value={ booking.payment_status }
 							/>
+							{ booking.on_hold ? (
+								<StatusBadge domain="payment" value="on_hold" />
+							) : null }
 						</div>
 						<p className="m-0 text-sm text-muted-foreground">
 							{ [
@@ -618,6 +570,7 @@ export default function BookingDetail() {
 								.filter( Boolean )
 								.join( ' · ' ) }
 						</p>
+						<PaymentDue booking={ booking } className="pt-1" />
 						{ booking.cancelled_reason ? (
 							<p className="m-0 text-sm text-destructive">
 								{ sprintf(
@@ -673,6 +626,38 @@ export default function BookingDetail() {
 									) }
 								</Button>
 							) : null }
+							{ headerActions.includes( 'remind' ) ? (
+								<Button
+									type="button"
+									variant="outline"
+									disabled={ act.isPending }
+									onClick={ () =>
+										run( 'remind' ).catch( () => {} )
+									}
+								>
+									<BellRing
+										className="h-4 w-4"
+										aria-hidden="true"
+									/>
+									{ __( 'Remind', 'radius-hotel-booking' ) }
+								</Button>
+							) : null }
+							{ headerActions.includes( 'release' ) ? (
+								<Button
+									type="button"
+									variant="outline"
+									className="text-destructive"
+									onClick={ () =>
+										setDialog( { action: 'release' } )
+									}
+								>
+									<Unlock
+										className="h-4 w-4"
+										aria-hidden="true"
+									/>
+									{ __( 'Release', 'radius-hotel-booking' ) }
+								</Button>
+							) : null }
 						</div>
 					) : null }
 				</div>
@@ -717,9 +702,7 @@ export default function BookingDetail() {
 							) ) }
 						</ul>
 					</Panel>
-					<Panel title={ __( 'Money', 'radius-hotel-booking' ) }>
-						<MoneySummary money={ booking.money } />
-					</Panel>
+					<PaymentsPanel booking={ booking } />
 				</div>
 
 				<div className="space-y-4">
@@ -849,6 +832,23 @@ export default function BookingDetail() {
 				</div>
 			</div>
 
+			<ConfirmDialog
+				open={ 'release' === dialog?.action }
+				onOpenChange={ ( open ) => ! open && setDialog( null ) }
+				title={ __(
+					'Release this unpaid booking?',
+					'radius-hotel-booking'
+				) }
+				description={ __(
+					'Its rooms are free again at once, and the guest is told by e-mail that the booking was released for non-payment.',
+					'radius-hotel-booking'
+				) }
+				confirmLabel={ __( 'Release booking', 'radius-hotel-booking' ) }
+				destructive
+				onConfirm={ () =>
+					run( 'release' ).then( () => setDialog( null ) )
+				}
+			/>
 			<LineEditor
 				booking={ booking }
 				line={ editor?.line || null }

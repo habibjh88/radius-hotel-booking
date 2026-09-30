@@ -189,6 +189,8 @@ in each module doc.
 | `rtbp_booking_created` | BookingService | booking |
 | `rtbp_booking_status_changed` | `BookingStatusService`, after the commit | booking, action, changes (line id → `{ room, from, to }`), reason, line id (0 = whole booking) |
 | `rtbp_booking_changed` | `BookingLineService` (a room added, edited or removed), after the commit | booking, action (`line_add` / `line_edit` / `line_remove`), line id, before, after |
+| `rtbp_payment_recorded` | `PaymentService` (a payment, refund or void; *Paid now* too), after the commit | payment row, booking as it is now |
+| `rtbp_document_renderers` (filter) | `DocumentService` | format => `callable( type, data ) → { body, content_type, filename }`; free `html`, Pro `pdf` |
 | `rtbp_payment_recorded` | PaymentService | payment, booking |
 | `rtbp_settings_updated` | SettingsService | section, before, after |
 | `rtbp_room_type_created` / `_updated` / `_deleted` | RoomTypeService (M06) | room type (+ diff on update) |

@@ -30,6 +30,8 @@ final class CoreSettings {
 		SettingsSchema::register( 'display', self::display() );
 		SettingsSchema::register( 'notifications', self::notifications() );
 		SettingsSchema::register( 'email', self::email() );
+		SettingsSchema::register( 'payments', PaymentSettings::payments() );
+		SettingsSchema::register( 'invoices', PaymentSettings::invoices() );
 		SettingsSchema::register( 'access', self::access() );
 	}
 
@@ -222,6 +224,20 @@ final class CoreSettings {
 			'checkOutTime'      => array(
 				'type'    => 'time',
 				'default' => '12:00',
+			),
+			// An unpaid booking is due this many hours after it is made; 0 = no deadline (5.4, D6).
+			'paymentDueHours'   => array(
+				'type'    => 'int',
+				'default' => 24,
+				'min'     => 0,
+				'max'     => 720,
+			),
+			// … and at the latest this many hours before arrival (D6).
+			'paymentBeforeArrivalHours' => array(
+				'type'    => 'int',
+				'default' => 2,
+				'min'     => 0,
+				'max'     => 168,
 			),
 		);
 	}

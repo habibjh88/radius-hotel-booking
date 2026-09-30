@@ -135,6 +135,12 @@ final class ActionCatalog {
 			'payments.void'              => array( self::PAYMENT, __( 'Voided a payment', 'radius-hotel-booking' ) ),
 			'invoices.send'              => array( self::PAYMENT, __( 'Sent an invoice', 'radius-hotel-booking' ) ),
 			'invoices.regenerate'        => array( self::PAYMENT, __( 'Regenerated an invoice', 'radius-hotel-booking' ) ),
+			'payments.on_hold'           => array( self::PAYMENT, __( 'Put a payment on hold', 'radius-hotel-booking' ) ),
+			'invoices.issue'             => array( self::PAYMENT, __( 'Issued an invoice', 'radius-hotel-booking' ) ),
+			'invoices.revise'            => array( self::PAYMENT, __( 'Revised an invoice', 'radius-hotel-booking' ) ),
+			'receipts.send'              => array( self::PAYMENT, __( 'Sent a receipt', 'radius-hotel-booking' ) ),
+			'payments.remind'            => array( self::PAYMENT, __( 'Sent a payment reminder', 'radius-hotel-booking' ) ),
+			'bookings.release_overdue'   => array( self::DATA, __( 'Released an unpaid booking', 'radius-hotel-booking' ) ),
 		);
 
 		$actions = array();

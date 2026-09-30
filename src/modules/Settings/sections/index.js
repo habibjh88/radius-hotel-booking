@@ -7,7 +7,7 @@
  * `{ value, setField, errors, schema, saving }` (see ../index.jsx);
  * `onSaved( values )` runs after a save or reset of the tab.
  *
- * Later modules add their tab here (M05 payments, M13 access …). Add-ons use
+ * Later modules add their tab here (M05 payments and invoices, M13 access …). Add-ons use
  * the `rtbp.settings.sections` filter instead.
  */
 import { lazy } from 'react';
@@ -16,9 +16,11 @@ import {
 	Bell,
 	Building2,
 	CalendarCheck,
+	FileText,
 	Mail,
 	Palette,
 	ShieldCheck,
+	Wallet,
 } from 'lucide-react';
 
 import { refreshAccess } from '@/lib/access';
@@ -64,6 +66,35 @@ export default function coreSections() {
 			),
 			icon: CalendarCheck,
 			Component: lazy( () => import( './Booking' ) ),
+		},
+		{
+			key: 'payments',
+			label: __( 'Payments', 'radius-hotel-booking' ),
+			description: __(
+				'How guests can pay, with the instructions they receive',
+				'radius-hotel-booking'
+			),
+			icon: Wallet,
+			Component: lazy( () => import( './Payments' ) ),
+			// *Paid now* at the desk offers the new list without a reload.
+			onSaved: ( payments ) => {
+				const params = window.radius_hotel_booking_param;
+				if ( params ) {
+					params.payment_methods = ( payments.methods || [] )
+						.filter( ( method ) => method.enabled )
+						.map( ( { key, label } ) => ( { key, label } ) );
+				}
+			},
+		},
+		{
+			key: 'invoices',
+			label: __( 'Invoices', 'radius-hotel-booking' ),
+			description: __(
+				'Invoice numbers, tax and the footer text',
+				'radius-hotel-booking'
+			),
+			icon: FileText,
+			Component: lazy( () => import( './Invoices' ) ),
 		},
 		{
 			key: 'notifications',

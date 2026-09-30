@@ -46,7 +46,7 @@ abstract class GuestBookingEmail extends BaseEmail {
 	public $recipient_type = 'guest';
 
 	/**
-	 * The status action this e-mail answers: approve|decline|cancel.
+	 * The status action this e-mail answers: approve|decline|cancel|release.
 	 *
 	 * @return string
 	 */
@@ -132,6 +132,7 @@ abstract class GuestBookingEmail extends BaseEmail {
 			case 'decline':
 				return StatusMachine::DECLINED === $status;
 			case 'cancel':
+			case 'release':
 				return StatusMachine::CANCELLED === $status;
 		}
 		return false;

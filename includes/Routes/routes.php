@@ -27,6 +27,8 @@ use RadiusTheme\RadiusHotelBooking\Controllers\FloorController;
 use RadiusTheme\RadiusHotelBooking\Controllers\BookingController;
 use RadiusTheme\RadiusHotelBooking\Controllers\GuestController;
 use RadiusTheme\RadiusHotelBooking\Controllers\NoteController;
+use RadiusTheme\RadiusHotelBooking\Controllers\PaymentController;
+use RadiusTheme\RadiusHotelBooking\Controllers\PublicBookingController;
 use RadiusTheme\RadiusHotelBooking\Controllers\AvailabilityController;
 use RadiusTheme\RadiusHotelBooking\Controllers\BlockController;
 use RadiusTheme\RadiusHotelBooking\Controllers\CalendarController;
@@ -86,10 +88,13 @@ $this->router->delete( 'holds/(?P<token>[A-Za-z0-9]{32})', array( HoldController
 
 // Bookings (M02): creating one at the desk. The booking record (M03) adds the rest.
 $this->router->post( 'bookings', array( BookingController::class, 'store' ) );
+$this->router->get( 'bookings', array( BookingController::class, 'index' ) );
 $this->router->get( 'bookings/(?P<id>\d+)', array( BookingController::class, 'show' ) );
 $this->router->post( 'bookings/(?P<id>\d+)/approve', array( BookingController::class, 'approve' ) );
 $this->router->post( 'bookings/(?P<id>\d+)/decline', array( BookingController::class, 'decline' ) );
 $this->router->post( 'bookings/(?P<id>\d+)/cancel', array( BookingController::class, 'cancel' ) );
+$this->router->post( 'bookings/(?P<id>\d+)/remind', array( BookingController::class, 'remind' ) );
+$this->router->post( 'bookings/(?P<id>\d+)/release', array( BookingController::class, 'release' ) );
 $this->router->post( 'booking-lines/(?P<id>\d+)/check-in', array( BookingController::class, 'checkIn' ) );
 $this->router->post( 'booking-lines/(?P<id>\d+)/check-out', array( BookingController::class, 'checkOut' ) );
 $this->router->post( 'booking-lines/(?P<id>\d+)/no-show', array( BookingController::class, 'noShow' ) );
@@ -97,6 +102,14 @@ $this->router->get( 'booking-lines/(?P<id>\d+)/rooms', array( BookingController:
 $this->router->post( 'bookings/(?P<id>\d+)/lines', array( BookingController::class, 'addLine' ) );
 $this->router->put( 'booking-lines/(?P<id>\d+)', array( BookingController::class, 'editLine' ) );
 $this->router->delete( 'booking-lines/(?P<id>\d+)', array( BookingController::class, 'removeLine' ) );
+
+// Payments (M05): the ledger per booking; a mistake is voided, never edited (ADR-010).
+$this->router->get( 'bookings/(?P<id>\d+)/payments', array( PaymentController::class, 'ledger' ) );
+$this->router->post( 'bookings/(?P<id>\d+)/payments', array( PaymentController::class, 'record' ) );
+$this->router->post( 'payments/(?P<id>\d+)/void', array( PaymentController::class, 'voidRow' ) );
+$this->router->post( 'bookings/(?P<id>\d+)/payment-status', array( PaymentController::class, 'setOnHold' ) );
+// The guest's own booking, by its public token (public, rate-limited).
+$this->router->get( 'public/bookings/(?P<token>[a-f0-9]{32})', array( PublicBookingController::class, 'showByToken' ) );
 
 // Guests (M09). `guests/lookup` before the resource: it is not an id.
 $this->router->get( 'guests/lookup', array( GuestController::class, 'lookup' ) );

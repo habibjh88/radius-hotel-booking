@@ -9,6 +9,8 @@ namespace RadiusTheme\RadiusHotelBooking\Services\Booking;
 
 use RadiusTheme\RadiusHotelBooking\Models\Booking;
 use RadiusTheme\RadiusHotelBooking\Models\BookingRoom;
+use RadiusTheme\RadiusHotelBooking\Services\Payments\PaymentDeadline;
+use RadiusTheme\RadiusHotelBooking\Services\Payments\PaymentService;
 use RadiusTheme\RadiusHotelBooking\Support\Money;
 
 defined( 'ABSPATH' ) || exit;
@@ -19,8 +21,8 @@ defined( 'ABSPATH' ) || exit;
  * removed room): a declined or cancelled room is not charged and not counted;
  * a no-show still is. Each line's own price stays frozen (3.16) — only the
  * sum moves. Discount and tax stay as stored (none is set before M05), and the
- * balance is total − paid (M05's `PaymentService::recalculate()` re-derives
- * the payment status).
+ * balance is total − paid, and the payment status is re-derived with
+ * `PaymentService::statusFor()` (the ledger itself is `recalculate()`).
  */
 class BookingTotals {
 
@@ -56,12 +58,15 @@ class BookingTotals {
 			$fields['subtotal']    = $subtotal;
 			$fields['total']       = $total;
 			$fields['balance_due'] = $total - (float) $booking->paid_total;
+			// The payment status follows (M05): what was paid against the new total.
+			$fields['payment_status'] = PaymentService::statusFor( (float) $booking->paid_total, $total, 'refunded' === (string) $booking->payment_status );
 		}
 		// A booking with every room declined keeps its last counts (they say who was expected).
 		if ( $charged && ( $adults !== (int) $booking->adults || $children !== (int) $booking->children ) ) {
 			$fields['adults']   = $adults;
 			$fields['children'] = $children;
 		}
-		return $fields;
+		// The payment deadline follows the first stay (5.4): a room added, changed or removed can move it.
+		return array_merge( $fields, PaymentDeadline::fields( $booking, $lines ) );
 	}
 }

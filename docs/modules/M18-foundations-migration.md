@@ -66,3 +66,5 @@ Each module's **Migration notes** section is the source map for its entity.
 4. One full week of parallel running with no discrepancy and no critical defect.
 
 ## Progress notes
+
+- 2026-09-30 (from M05 T4a): the go-live checklist must start the production site with **clean counters** — the `sequences` rows `booking_<year>`, `invoice_<year>` (and `guest`) are advanced by test bookings on any staging copy; invoice numbers must run unbroken from the first real invoice (5.8). Never rewind a counter on a site that has issued real invoices.

@@ -50,6 +50,9 @@ class BookingController extends BaseController {
 				// Every key the booking needs, so one PIN prompt can unlock them all:
 				// "Paid now" records money taken, and a new guest is a guest created.
 				'show'     => 'page.bookings',
+				'index'    => 'page.bookings',
+				'remind'   => 'invoices.send',
+				'release'  => 'bookings.cancel',
 				'approve'  => 'bookings.approve',
 				'decline'  => 'bookings.decline',
 				'cancel'   => 'bookings.cancel',
@@ -73,6 +76,78 @@ class BookingController extends BaseController {
 				},
 			)
 		);
+	}
+
+	/**
+	 * GET bookings?overdue=1&page=&per_page=: the bookings past their payment
+	 * deadline (M05, 5.14), oldest deadline first. The full list with its
+	 * filters is M01's; until then only `overdue=1` is answered.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function index( $request ) {
+		return $this->applyMiddleware(
+			$request,
+			static function ( $request ) {
+				try {
+					if ( ! rest_sanitize_boolean( $request->get_param( 'overdue' ) ) ) {
+						// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+						throw \RadiusTheme\RadiusHotelBooking\Exceptions\DomainException::invalid( array( 'overdue' => __( 'Only the overdue list is available here.', 'radius-hotel-booking' ) ) );
+					}
+					$page     = max( 1, (int) $request->get_param( 'page' ) );
+					$per_page = (int) ( $request->get_param( 'per_page' ) ?? 25 );
+					$result   = ( new BookingRepository() )->overdue( \RadiusTheme\RadiusHotelBooking\Support\Dates::to_gmt_db( \RadiusTheme\RadiusHotelBooking\Support\Dates::now() ), $page, $per_page );
+					return ApiResponse::success(
+						array(
+							'bookings' => array_map( static fn( $row ) => BookingResource::summary( $row['booking'], $row ), $result['rows'] ),
+						),
+						null,
+						array(
+							'total'    => $result['total'],
+							'page'     => $page,
+							'per_page' => max( 1, min( 100, $per_page ) ),
+						)
+					)->send();
+				} catch ( \Throwable $e ) {
+					return ApiResponse::fromThrowable( $e )->send();
+				}
+			}
+		);
+	}
+
+	/**
+	 * POST bookings/{id}/remind: e-mail the guest a payment reminder (5.14).
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function remind( WP_REST_Request $request ) {
+		return $this->applyMiddleware(
+			$request,
+			static function ( $request ) {
+				try {
+					$id = (int) $request->get_param( 'id' );
+					( new \RadiusTheme\RadiusHotelBooking\Services\Payments\PaymentService() )->remind( $id );
+					return ApiResponse::success(
+						array( 'booking' => BookingResource::record( ( new BookingQuery() )->load( $id ) ) ),
+						__( 'Reminder sent to the guest.', 'radius-hotel-booking' )
+					)->send();
+				} catch ( \Throwable $e ) {
+					return ApiResponse::fromThrowable( $e )->send();
+				}
+			}
+		);
+	}
+
+	/**
+	 * POST bookings/{id}/release `{ reason? }`: release an overdue unpaid booking (5.14).
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function release( WP_REST_Request $request ) {
+		return $this->transition( $request, static fn( $service, $body, $id ) => $service->release( $id, (string) ( $body['reason'] ?? '' ) ), __( 'Booking released. The rooms are free again.', 'radius-hotel-booking' ) );
 	}
 
 	/**

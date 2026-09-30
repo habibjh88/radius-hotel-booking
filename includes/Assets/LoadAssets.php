@@ -381,6 +381,14 @@ class LoadAssets {
 					'notifications' => SettingsHelper::get_setting( 'notifications' ),
 				),
 				'notify_sound_url' => $this->notification_sound_url(),
+				// *Paid now* at the desk picks one of these (M05); the instructions stay on the server.
+				'payment_methods'  => array_map(
+					static fn( $method ) => array(
+						'key'   => (string) $method['key'],
+						'label' => (string) $method['label'],
+					),
+					\RadiusTheme\RadiusHotelBooking\Settings\PaymentSettings::enabled_methods()
+				),
 				// Settings → E-mail lists these with an on/off switch each.
 				'email_templates'  => $this->email_templates(),
 				// The one dismissible upsell, on Settings only (ADR-016).

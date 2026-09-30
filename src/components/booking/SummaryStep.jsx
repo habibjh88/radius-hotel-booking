@@ -11,6 +11,14 @@ import { Field } from '@/components/common/Form';
 import Money from '@/components/common/Money';
 import SegmentedControl from '@/components/common/SegmentedControl';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useAccess } from '@/lib/access';
 import { formatMoney } from '@/lib/format';
@@ -19,8 +27,9 @@ import { formatMoney } from '@/lib/format';
  * @param {Object}      props             Props.
  * @param {number}      props.total       Sum of the lines.
  * @param {string}      props.payment     `unpaid` | `paid`.
+ * @param {Object}      props.paidWith    *Paid now*: `{ method, reference }` (a ledger row, M05).
  * @param {string}      props.note        Note.
- * @param {Function}    props.onChange    Called with `{ payment?, note? }`.
+ * @param {Function}    props.onChange    Called with `{ payment?, paidWith?, note? }`.
  * @param {string}      props.blocked     Why confirming is not possible yet ('' = ready).
  * @param {boolean}     props.banned      The guest is banned.
  * @param {Object|null} props.priceChange `{ index, room, from, to }` from the server.
@@ -31,6 +40,7 @@ import { formatMoney } from '@/lib/format';
 export default function SummaryStep( {
 	total,
 	payment,
+	paidWith = { method: '', reference: '' },
 	note,
 	onChange,
 	blocked,
@@ -41,6 +51,9 @@ export default function SummaryStep( {
 } ) {
 	// "Paid now" records money taken: `payments.record` (legacy mark-as-paid).
 	const canMarkPaid = 'locked' !== useAccess( 'payments.record' );
+	// The methods offered (Settings → Payments); the first is the default.
+	const methods = window.radius_hotel_booking_param?.payment_methods || [];
+	const method = paidWith.method || methods[ 0 ]?.key || '';
 	return (
 		<div className="space-y-4">
 			<div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-border pb-3">
@@ -78,6 +91,56 @@ export default function SummaryStep( {
 							: [] ),
 					] }
 				/>
+				{ 'paid' === payment ? (
+					<div className="grid gap-3 pt-2 sm:grid-cols-2">
+						<Field
+							label={ __( 'Paid by', 'radius-hotel-booking' ) }
+						>
+							<Select
+								value={ method || undefined }
+								onValueChange={ ( value ) =>
+									onChange( { paidWith: { method: value } } )
+								}
+							>
+								<SelectTrigger>
+									<SelectValue
+										placeholder={ __(
+											'Choose',
+											'radius-hotel-booking'
+										) }
+									/>
+								</SelectTrigger>
+								<SelectContent>
+									{ methods.map( ( item ) => (
+										<SelectItem
+											key={ item.key }
+											value={ item.key }
+										>
+											{ item.label }
+										</SelectItem>
+									) ) }
+								</SelectContent>
+							</Select>
+						</Field>
+						<Field
+							label={ __( 'Reference', 'radius-hotel-booking' ) }
+							description={ __(
+								'Optional: the transaction number.',
+								'radius-hotel-booking'
+							) }
+						>
+							<Input
+								value={ paidWith.reference }
+								maxLength={ 100 }
+								onChange={ ( e ) =>
+									onChange( {
+										paidWith: { reference: e.target.value },
+									} )
+								}
+							/>
+						</Field>
+					</div>
+				) : null }
 			</div>
 
 			<Field
