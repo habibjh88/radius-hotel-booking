@@ -141,7 +141,7 @@ const baseRoutes = [
 		icon: BedDouble,
 		capability: VIEW,
 		accessKey: 'page.bookings',
-		module: 'M01',
+		element: lazy( () => import( '@/modules/Bookings' ) ),
 	},
 	{
 		path: '/guests',

@@ -67,7 +67,7 @@ The commands read and update this table. Keep the columns.
 | 8 | M02 | [Taking a booking at the front desk](../modules/M02-front-desk-booking.md) | Free | M08, M09 | done | module/m02-front-desk-booking | 2026-09-30 | 2026-09-30 |
 | 9 | M03 | [The booking record](../modules/M03-booking-record.md) | Free | M02 | done | module/m03-booking-record | 2026-09-30 | 2026-09-30 |
 | 10 | M05 | [Manual payment, invoice and confirmation](../modules/M05-payments-invoices.md) | Free + Pro | M03 | done | module/m05-payments | 2026-09-30 | 2026-10-01 |
-| 11 | M01 | [Front desk dashboard](../modules/M01-front-desk-dashboard.md) | Free | M05 | todo | module/m01-dashboard | | |
+| 11 | M01 | [Front desk dashboard](../modules/M01-front-desk-dashboard.md) | Free | M05 | done | module/m01-dashboard | 2026-10-01 | 2026-10-01 |
 | 12 | M04 | [Guest booking on the website](../modules/M04-public-booking.md) | Free | M05 | todo | module/m04-public-booking | | |
 | 13 | M10 | [Reports](../modules/M10-reports.md) | Free + Pro | M05 | todo | module/m10-reports | | |
 | 14 | M11 | [Exporting and archiving data](../modules/M11-export-archive.md) | Free + Pro | M10 | todo | module/m11-export | | |

@@ -350,6 +350,9 @@ final class RadiusHotelBooking {
 		RadiusTheme\RadiusHotelBooking\Services\Availability\HoldService::init();
 		// Invoices follow the booking's rooms and status (M05).
 		RadiusTheme\RadiusHotelBooking\Services\Payments\InvoiceService::init();
+		// The front desk counters on the dashboard summary (M01).
+		RadiusTheme\RadiusHotelBooking\Services\Dashboard\DashboardCounters::init();
+		RadiusTheme\RadiusHotelBooking\Services\Dashboard\DashboardToday::init();
 		// Invoice and receipt print views (M05).
 		RadiusTheme\RadiusHotelBooking\Documents\DocumentEndpoint::init();
 		// The guest's booking page and its JSON (M05).

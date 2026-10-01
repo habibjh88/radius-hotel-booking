@@ -51,6 +51,7 @@ class BookingController extends BaseController {
 				// "Paid now" records money taken, and a new guest is a guest created.
 				'show'     => 'page.bookings',
 				'index'    => 'page.bookings',
+				'lines'    => 'page.bookings',
 				'remind'   => 'invoices.send',
 				'release'  => 'bookings.cancel',
 				'approve'  => 'bookings.approve',
@@ -107,6 +108,48 @@ class BookingController extends BaseController {
 							'total'    => $result['total'],
 							'page'     => $page,
 							'per_page' => max( 1, min( 100, $per_page ) ),
+						)
+					)->send();
+				} catch ( \Throwable $e ) {
+					return ApiResponse::fromThrowable( $e )->send();
+				}
+			}
+		);
+	}
+
+	/**
+	 * GET booking-lines?tab=&from=&to=&mode=&q=&page=&per_page=: the front desk
+	 * list, one row per booked room, with every tab's count (M01, 1.5–1.9).
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function lines( WP_REST_Request $request ) {
+		return $this->applyMiddleware(
+			$request,
+			static function ( $request ) {
+				try {
+					$result = ( new \RadiusTheme\RadiusHotelBooking\Services\Booking\BookingLineList() )->search(
+						array(
+							'tab'      => $request->get_param( 'tab' ),
+							'from'     => $request->get_param( 'from' ),
+							'to'       => $request->get_param( 'to' ),
+							'mode'     => $request->get_param( 'mode' ),
+							'q'        => $request->get_param( 'q' ),
+							'page'     => $request->get_param( 'page' ),
+							'per_page' => $request->get_param( 'per_page' ),
+						)
+					);
+					return ApiResponse::success(
+						array(
+							'lines'  => $result['rows'],
+							'counts' => $result['counts'],
+						),
+						null,
+						array(
+							'total'    => $result['total'],
+							'page'     => $result['page'],
+							'per_page' => $result['per_page'],
 						)
 					)->send();
 				} catch ( \Throwable $e ) {

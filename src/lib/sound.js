@@ -71,3 +71,37 @@ export async function playNotificationSound( url ) {
 		return false;
 	}
 }
+
+/**
+ * Let sound play later: browsers keep audio locked until the person clicks or
+ * types on the page. Call once; the first click or key press creates and
+ * resumes the audio context the chime uses (a file sound is allowed by the
+ * same interaction).
+ *
+ * @return {Function} Removes the listeners.
+ */
+export function unlockAudio() {
+	const unlock = () => {
+		const AudioContext =
+			typeof window !== 'undefined' &&
+			( window.AudioContext || window.webkitAudioContext );
+		if ( AudioContext ) {
+			try {
+				context = context || new AudioContext();
+				if ( context.state === 'suspended' ) {
+					context.resume();
+				}
+			} catch ( e ) {
+				// No audio on this device: the alert still shows.
+			}
+		}
+		remove();
+	};
+	const remove = () => {
+		window.removeEventListener( 'pointerdown', unlock );
+		window.removeEventListener( 'keydown', unlock );
+	};
+	window.addEventListener( 'pointerdown', unlock );
+	window.addEventListener( 'keydown', unlock );
+	return remove;
+}

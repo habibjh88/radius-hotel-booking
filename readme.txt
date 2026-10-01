@@ -156,6 +156,12 @@ Guests get a receipt e-mail for each payment recorded.
 A booking page for guests: status, amount to pay, instructions, invoice and receipts.
 New Payments screen lists unpaid bookings past their deadline, to remind or release.
 Remind a guest to pay by e-mail, or release an overdue booking to free its rooms.
+Dashboard counters now show live figures, plus in-house guests and overdue payments.
+New Bookings screen: quick tabs with counts, date range by arrival or booking date, search.
+Approve, check in, check out, cancel or record a payment straight from a booking row.
+Choosing an item from a list row's menu no longer opens the row as well.
+Today's overview on the dashboard: arrivals, departures and check-ins in one timeline, late ones flagged.
+New bookings now chime and pop up on every staff screen; the bell counts those awaiting approval.
 
 = 1.0.0 =
 Initial release.

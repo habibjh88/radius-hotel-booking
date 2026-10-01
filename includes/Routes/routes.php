@@ -22,6 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use RadiusTheme\RadiusHotelBooking\Controllers\AccessController;
 use RadiusTheme\RadiusHotelBooking\Controllers\DashboardController;
+use RadiusTheme\RadiusHotelBooking\Controllers\NotificationController;
 use RadiusTheme\RadiusHotelBooking\Controllers\FileController;
 use RadiusTheme\RadiusHotelBooking\Controllers\FloorController;
 use RadiusTheme\RadiusHotelBooking\Controllers\BookingController;
@@ -45,6 +46,8 @@ $this->router->get( 'access/me', array( AccessController::class, 'me' ) );
 $this->router->get( 'access/registry', array( AccessController::class, 'registry' ) );
 
 $this->router->get( 'dashboard/summary', array( DashboardController::class, 'summary' ) );
+// New-booking alerts on every staff screen (M01, ADR-006).
+$this->router->get( 'notifications/poll', array( NotificationController::class, 'poll' ) );
 
 /** Protected file download (plain links; see FileController). */
 $this->router->get( 'files/(?P<token>[a-f0-9]{32})', array( FileController::class, 'download' ) );
@@ -95,6 +98,8 @@ $this->router->post( 'bookings/(?P<id>\d+)/decline', array( BookingController::c
 $this->router->post( 'bookings/(?P<id>\d+)/cancel', array( BookingController::class, 'cancel' ) );
 $this->router->post( 'bookings/(?P<id>\d+)/remind', array( BookingController::class, 'remind' ) );
 $this->router->post( 'bookings/(?P<id>\d+)/release', array( BookingController::class, 'release' ) );
+// The front desk list, one row per booked room (M01).
+$this->router->get( 'booking-lines', array( BookingController::class, 'lines' ) );
 $this->router->post( 'booking-lines/(?P<id>\d+)/check-in', array( BookingController::class, 'checkIn' ) );
 $this->router->post( 'booking-lines/(?P<id>\d+)/check-out', array( BookingController::class, 'checkOut' ) );
 $this->router->post( 'booking-lines/(?P<id>\d+)/no-show', array( BookingController::class, 'noShow' ) );

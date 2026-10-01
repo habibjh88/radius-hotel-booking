@@ -9,6 +9,7 @@ import { CalendarDays, Menu, Search } from 'lucide-react';
 import { matchRoute } from '@/admin/routes';
 import { isMac } from './shortcuts';
 import { useCurrentPageActions } from './PageActions';
+import NotificationBell from './NotificationBell';
 
 /**
  * Today's date, formatted in the site's time zone and the user's locale.
@@ -43,7 +44,10 @@ export default function Topbar( { onOpenMenu, onOpenSearch, isDesktop } ) {
 	const route = matchRoute( location.pathname );
 	const actions = useCurrentPageActions();
 
-	const title = route?.title || route?.label || __( 'Page not found', 'radius-hotel-booking' );
+	const title =
+		route?.title ||
+		route?.label ||
+		__( 'Page not found', 'radius-hotel-booking' );
 
 	return (
 		<header className="rtbp-shell-topbar flex min-h-[72px] items-center gap-4 border-b border-border bg-card px-4 md:px-8">
@@ -74,10 +78,15 @@ export default function Topbar( { onOpenMenu, onOpenSearch, isDesktop } ) {
 					type="button"
 					onClick={ onOpenSearch }
 					className="flex h-10 items-center gap-2 rounded-lg border border-border bg-card px-3 text-[13px] text-muted-foreground transition-colors hover:border-primary hover:text-heading"
-					aria-label={ __( 'Search and go to a screen', 'radius-hotel-booking' ) }
+					aria-label={ __(
+						'Search and go to a screen',
+						'radius-hotel-booking'
+					) }
 				>
 					<Search className="h-4 w-4" aria-hidden="true" />
-					<span className="hidden md:inline">{ __( 'Search…', 'radius-hotel-booking' ) }</span>
+					<span className="hidden md:inline">
+						{ __( 'Search…', 'radius-hotel-booking' ) }
+					</span>
 					<kbd className="hidden rounded border border-border bg-muted px-1.5 font-sans text-[11px] font-medium md:inline">
 						{ isMac() ? '⌘K' : 'Ctrl K' }
 					</kbd>
@@ -89,6 +98,7 @@ export default function Topbar( { onOpenMenu, onOpenSearch, isDesktop } ) {
 					/>
 					{ todayLabel() }
 				</span>
+				<NotificationBell />
 				{ actions }
 			</div>
 		</header>

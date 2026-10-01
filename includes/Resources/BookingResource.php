@@ -87,6 +87,29 @@ final class BookingResource {
 	}
 
 	/**
+	 * The status moves a booked room allows now (one rule for the booking
+	 * screen and the front desk list): the status machine's moves, a no-show
+	 * only once the stay should have begun, a check-in from the arrival day
+	 * (early arrival).
+	 *
+	 * @param string $status    Line status.
+	 * @param string $start_gmt Stay start, GMT `Y-m-d H:i:s`.
+	 * @param int    $now       Now (timestamp).
+	 * @param string $today     Today in site time, `Y-m-d`.
+	 * @return string[]
+	 */
+	public static function lineActions( string $status, string $start_gmt, int $now, string $today ): array {
+		$actions = StatusMachine::actions( $status );
+		if ( strtotime( $start_gmt . ' UTC' ) > $now ) {
+			$actions = array_values( array_diff( $actions, array( 'no_show' ) ) );
+		}
+		if ( Dates::from_gmt( $start_gmt )->setTimezone( Dates::timezone() )->format( 'Y-m-d' ) > $today ) {
+			$actions = array_values( array_diff( $actions, array( 'check_in' ) ) );
+		}
+		return $actions;
+	}
+
+	/**
 	 * The booking screen (M03, 3.1, 3.2): the booking, its money, its guest,
 	 * its lines with their rooms and the actions each allows, and who did
 	 * what. From `BookingQuery::load()`.
@@ -110,14 +133,7 @@ final class BookingResource {
 			$item['checked_out_at'] = $line->checked_out_at ? Dates::to_iso( Dates::local( (string) $line->checked_out_at ) ) : null;
 			$item['checked_in_by']  = $line->checked_in_by ? ( $users[ (int) $line->checked_in_by ] ?? '' ) : '';
 			$item['checked_out_by'] = $line->checked_out_by ? ( $users[ (int) $line->checked_out_by ] ?? '' ) : '';
-			$actions                = StatusMachine::actions( (string) $line->status );
-			// A no-show only once the stay should have begun; a check-in from the arrival day (early arrival).
-			if ( strtotime( (string) $line->start_at_gmt . ' UTC' ) > $now ) {
-				$actions = array_values( array_diff( $actions, array( 'no_show' ) ) );
-			}
-			if ( Dates::from_gmt( (string) $line->start_at_gmt )->setTimezone( Dates::timezone() )->format( 'Y-m-d' ) > $today ) {
-				$actions = array_values( array_diff( $actions, array( 'check_in' ) ) );
-			}
+			$actions                = self::lineActions( (string) $line->status, (string) $line->start_at_gmt, $now, $today );
 			// A room can be changed or removed while not yet in use (the booking's only room is cancelled, not removed).
 			if ( in_array( (string) $line->status, BookingLineService::EDITABLE, true ) ) {
 				$actions[] = 'line_edit';

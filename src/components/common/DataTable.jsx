@@ -154,7 +154,12 @@ function RowActions( { actions, stretch = false } ) {
 							<MoreHorizontal aria-hidden="true" />
 						</Button>
 					</DropdownMenuTrigger>
-					<DropdownMenuContent align="end" className="min-w-[10rem]">
+					<DropdownMenuContent
+						align="end"
+						className="min-w-[10rem]"
+						// React bubbles clicks out of a portal to the row: an item must not open it too.
+						onClick={ ( event ) => event.stopPropagation() }
+					>
 						{ rest.map( ( action ) => (
 							<DropdownMenuItem
 								key={ action.label }
@@ -392,7 +397,7 @@ export default function DataTable( {
 										{ rowActions ? (
 											<th
 												scope="col"
-												className="px-4 py-3"
+												className="sticky right-0 bg-muted px-4 py-3"
 											>
 												<span className="sr-only">
 													{ __(
@@ -412,7 +417,7 @@ export default function DataTable( {
 												key={ rowKey( row ) }
 												{ ...extra }
 												className={ cn(
-													'border-t border-border hover:bg-primary-softer',
+													'group border-t border-border hover:bg-primary-softer',
 													extra.className
 												) }
 											>
@@ -437,7 +442,7 @@ export default function DataTable( {
 													</td>
 												) ) }
 												{ rowActions ? (
-													<td className="whitespace-nowrap px-4 py-2 text-right">
+													<td className="sticky right-0 whitespace-nowrap bg-card px-4 py-2 text-right shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.12)] group-hover:bg-primary-softer">
 														<RowActions
 															actions={ rowActions(
 																row

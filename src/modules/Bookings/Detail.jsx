@@ -46,6 +46,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAccess } from '@/lib/access';
+import { actionLabel, lineQuestion } from './moves';
 import { formatDateRange, formatDateTime, formatMoney } from '@/lib/format';
 import { toast, toastError } from '@/lib/toast';
 import { cn } from '@/lib/utils';
@@ -98,44 +99,6 @@ const guestsLabel = ( line ) =>
 	]
 		.filter( Boolean )
 		.join( ' · ' );
-
-/**
- * An action in words.
- *
- * @param {string} action Action.
- * @return {string} Label.
- */
-const actionLabel = ( action ) =>
-	( {
-		approve: __( 'Approve', 'radius-hotel-booking' ),
-		decline: __( 'Decline', 'radius-hotel-booking' ),
-		cancel: __( 'Cancel', 'radius-hotel-booking' ),
-		check_in: __( 'Check in', 'radius-hotel-booking' ),
-		check_out: __( 'Check out', 'radius-hotel-booking' ),
-		no_show: __( 'No-show', 'radius-hotel-booking' ),
-	} )[ action ] || action;
-
-/**
- * The question asked before a move on one room.
- *
- * @param {string} action Action.
- * @param {string} room   Room number.
- * @return {string} Question.
- */
-const lineQuestion = ( action, room ) =>
-	sprintf(
-		{
-			/* translators: %s: room number. */
-			decline: __( 'Decline room %s?', 'radius-hotel-booking' ),
-			/* translators: %s: room number. */
-			cancel: __( 'Cancel room %s?', 'radius-hotel-booking' ),
-			/* translators: %s: room number. */
-			check_out: __( 'Check out room %s?', 'radius-hotel-booking' ),
-			/* translators: %s: room number. */
-			no_show: __( 'Mark room %s as a no-show?', 'radius-hotel-booking' ),
-		}[ action ] || '%s',
-		room
-	);
 
 /**
  * One room line.
