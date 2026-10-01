@@ -4,13 +4,29 @@
  * Built from src/admin/routes.js, so a route added there (or by an add-on
  * through `rtbp.admin.routes`) appears here with no other change.
  */
-import { NavLink } from 'react-router-dom';
+import { useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { applyFilters } from '@wordpress/hooks';
 import { __ } from '@wordpress/i18n';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import {
+	ChevronLeft,
+	ChevronRight,
+	ChevronsUpDown,
+	LogOut,
+	X,
+} from 'lucide-react';
 
 import Logo from '@/components/brand/Logo';
 import { NAV_GROUPS, canSee, getRoutes } from '@/admin/routes';
 import { useAccessMap } from '@/lib/access';
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
 /**
@@ -117,6 +133,118 @@ const initials = ( name = '' ) =>
 		.join( '' ) || '?';
 
 /**
+ * The sign-out link, coming back to the page the app runs on (the hotel
+ * dashboard page shows its sign-in screen; wp-admin goes to the login).
+ *
+ * @param {string} base `wp_logout_url()` (carries its nonce).
+ * @return {string} URL.
+ */
+const signOutUrl = ( base ) => {
+	try {
+		const url = new URL( base, window.location.href );
+		url.searchParams.set(
+			'redirect_to',
+			window.location.href.split( '#' )[ 0 ]
+		);
+		return url.toString();
+	} catch ( e ) {
+		return base;
+	}
+};
+
+/**
+ * The current user, opening the account menu: items add-ons register on
+ * `rtbp.user.menu` (`{ key, label, icon, to }` — `to` is a dashboard route),
+ * then *Sign out*.
+ *
+ * @param {Object}   props           Props.
+ * @param {Object}   props.user      `{ name, email, logout_url }`.
+ * @param {boolean}  props.collapsed Icon-only mode.
+ * @param {Function} props.onClose   Closes the mobile drawer (optional).
+ * @return {JSX.Element} Menu.
+ */
+function UserMenu( { user, collapsed, onClose } ) {
+	const navigate = useNavigate();
+	// Controlled, so the items are read again each time the menu opens.
+	const [ open, setOpen ] = useState( false );
+	const items = (
+		applyFilters( 'rtbp.user.menu', [], { user } ) || []
+	).filter( ( item ) => item && item.key && item.label && item.to );
+
+	return (
+		<DropdownMenu open={ open } onOpenChange={ setOpen }>
+			<DropdownMenuTrigger asChild>
+				<button
+					type="button"
+					className={ cn(
+						'flex w-full min-w-0 items-center gap-3 rounded-lg border-0 bg-transparent p-1.5 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+						collapsed && 'w-auto justify-center'
+					) }
+					title={ collapsed ? user.name : undefined }
+					aria-label={ __( 'Account menu', 'radius-hotel-booking' ) }
+				>
+					<span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-soft text-xs font-semibold text-primary">
+						{ initials( user.name ) }
+					</span>
+					{ ! collapsed ? (
+						<>
+							<span className="min-w-0 flex-1">
+								<span className="block truncate text-sm font-semibold text-heading">
+									{ user.name }
+								</span>
+								<span className="block truncate text-xs text-muted-foreground">
+									{ user.email }
+								</span>
+							</span>
+							<ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+						</>
+					) : null }
+				</button>
+			</DropdownMenuTrigger>
+			<DropdownMenuContent
+				className="rtbp-root w-56"
+				side={ collapsed ? 'right' : 'top' }
+				align="start"
+			>
+				<DropdownMenuLabel className="truncate font-normal text-muted-foreground">
+					{ user.email || user.name }
+				</DropdownMenuLabel>
+				{ items.map( ( item ) => {
+					const Icon = item.icon;
+					return (
+						<DropdownMenuItem
+							key={ item.key }
+							onSelect={ () => {
+								navigate( item.to );
+								onClose?.();
+							} }
+						>
+							{ Icon ? <Icon className="h-4 w-4" /> : null }
+							{ item.label }
+						</DropdownMenuItem>
+					);
+				} ) }
+				{ user.logout_url ? (
+					<>
+						<DropdownMenuSeparator />
+						<DropdownMenuItem
+							onSelect={ () => {
+								window.location.href = signOutUrl(
+									user.logout_url
+								);
+							} }
+						>
+							<LogOut className="h-4 w-4" />
+							{ __( 'Sign out', 'radius-hotel-booking' ) }
+						</DropdownMenuItem>
+					</>
+				) : null }
+			</DropdownMenuContent>
+		</DropdownMenu>
+	);
+}
+
+/**
  * The sidebar.
  *
  * @param {Object}   props                 Props.
@@ -191,9 +319,15 @@ export default function Sidebar( {
 					aria-expanded={ ! collapsed }
 				>
 					{ collapsed ? (
-						<ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+						<ChevronRight
+							className="h-3.5 w-3.5"
+							aria-hidden="true"
+						/>
 					) : (
-						<ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
+						<ChevronLeft
+							className="h-3.5 w-3.5"
+							aria-hidden="true"
+						/>
 					) }
 				</button>
 			) }
@@ -217,7 +351,9 @@ export default function Sidebar( {
 									<NavItem
 										route={ route }
 										collapsed={ collapsed }
-										onNavigate={ mobile ? onClose : undefined }
+										onNavigate={
+											mobile ? onClose : undefined
+										}
 									/>
 								</li>
 							) ) }
@@ -228,26 +364,15 @@ export default function Sidebar( {
 
 			<div
 				className={ cn(
-					'flex shrink-0 items-center gap-3 border-t border-border py-3',
-					collapsed ? 'justify-center px-0' : 'px-4'
+					'flex shrink-0 items-center border-t border-border py-2',
+					collapsed ? 'justify-center px-0' : 'px-2.5'
 				) }
 			>
-				<span
-					className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-soft text-xs font-semibold text-primary"
-					title={ collapsed ? user.name : undefined }
-				>
-					{ initials( user.name ) }
-				</span>
-				{ ! collapsed ? (
-					<div className="min-w-0">
-						<p className="m-0 truncate text-sm font-semibold text-heading">
-							{ user.name }
-						</p>
-						<p className="m-0 truncate text-xs text-muted-foreground">
-							{ user.email }
-						</p>
-					</div>
-				) : null }
+				<UserMenu
+					user={ user }
+					collapsed={ collapsed }
+					onClose={ mobile ? onClose : undefined }
+				/>
 			</div>
 		</aside>
 	);

@@ -186,6 +186,7 @@ Pro features can now add their own sections to the Exports screen.
 Fixed: stored files could be reached directly by anyone who had seen their download link.
 Fixed: a failed database read or disk write could leave an export file silently incomplete.
 Only an administrator can delete an archive file whose bookings were removed.
+Click your name in the dashboard sidebar for the account menu, with Sign out.
 
 = 1.0.0 =
 Initial release.

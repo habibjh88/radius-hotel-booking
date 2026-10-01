@@ -373,9 +373,12 @@ class LoadAssets {
 				// The M13 access map (key => open | passcode | locked); `access/me` refreshes it.
 				'access'        => AccessController::payload(),
 				'current_user'  => array(
-					'id'    => get_current_user_id(),
-					'name'  => wp_get_current_user()->display_name,
-					'email' => wp_get_current_user()->user_email,
+					'id'         => get_current_user_id(),
+					'name'       => wp_get_current_user()->display_name,
+					'email'      => wp_get_current_user()->user_email,
+					// The account menu's *Sign out* (the app adds where to come back to);
+					// decoded, wp_logout_url() escapes its `&` for HTML.
+					'logout_url' => wp_specialchars_decode( wp_logout_url() ),
 				),
 				'settings'      => array(
 					'general'       => SettingsHelper::get_setting( 'general' ),

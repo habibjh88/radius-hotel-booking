@@ -72,7 +72,7 @@ The commands read and update this table. Keep the columns.
 | 13 | M10 | [Reports](../modules/M10-reports.md) | Free + Pro | M05 | done | module/m10-reports | 2026-10-01 | 2026-10-01 |
 | 14 | M11 | [Exporting and archiving data](../modules/M11-export-archive.md) | Free + Pro | M10 | done | module/m11-export | 2026-10-01 | 2026-10-01 |
 | 15 | M12 | [Staff records and employment](../modules/M12-staff-records.md) | **Pro** | M13 | done | module/m12-staff | 2026-09-30 | 2026-09-30 |
-| 16 | M16 | [Staff self-service](../modules/M16-staff-self-service.md) | **Pro** | M12 | todo | module/m16-self-service | | |
+| 16 | M16 | [Staff self-service](../modules/M16-staff-self-service.md) | **Pro** | M12 | in-progress | module/m16-self-service | 2026-10-01 | |
 | 17 | M15 | [Payroll and HR](../modules/M15-payroll-hr.md) | **Client** | M12, D1 | todo | module/m15-payroll | | |
 | 18 | M18 | [Language, currency, migration and go-live](../modules/M18-foundations-migration.md) | Free + Client | all | todo | module/m18-go-live | | |
 
