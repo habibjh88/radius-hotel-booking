@@ -22,6 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use RadiusTheme\RadiusHotelBooking\Controllers\AccessController;
 use RadiusTheme\RadiusHotelBooking\Controllers\DashboardController;
+use RadiusTheme\RadiusHotelBooking\Controllers\ReportController;
 use RadiusTheme\RadiusHotelBooking\Controllers\NotificationController;
 use RadiusTheme\RadiusHotelBooking\Controllers\FileController;
 use RadiusTheme\RadiusHotelBooking\Controllers\FloorController;
@@ -46,6 +47,10 @@ $this->router->get( 'access/me', array( AccessController::class, 'me' ) );
 $this->router->get( 'access/registry', array( AccessController::class, 'registry' ) );
 
 $this->router->get( 'dashboard/summary', array( DashboardController::class, 'summary' ) );
+
+// Reports (M10): every report of the `rtbp_report_definitions` registry.
+$this->router->get( 'reports/(?P<name>[a-z0-9-]+)/export', array( ReportController::class, 'export' ) );
+$this->router->get( 'reports/(?P<name>[a-z0-9-]+)', array( ReportController::class, 'show' ) );
 // New-booking alerts on every staff screen (M01, ADR-006).
 $this->router->get( 'notifications/poll', array( NotificationController::class, 'poll' ) );
 

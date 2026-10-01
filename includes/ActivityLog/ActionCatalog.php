@@ -111,6 +111,7 @@ final class ActionCatalog {
 			'guests.ban'                 => array( self::DATA, __( 'Banned a guest', 'radius-hotel-booking' ) ),
 			'guests.unban'               => array( self::DATA, __( 'Lifted a guest ban', 'radius-hotel-booking' ) ),
 			'guests.view_id'             => array( self::VIEW, __( 'Viewed a guest identity document', 'radius-hotel-booking' ) ),
+			'reports.export'             => array( self::VIEW, __( 'Exported a report', 'radius-hotel-booking' ) ),
 			'guests.note_add'            => array( self::DATA, __( 'Added a guest note', 'radius-hotel-booking' ) ),
 			'guests.note_edit'           => array( self::DATA, __( 'Edited a guest note', 'radius-hotel-booking' ) ),
 			'guests.note_remove'         => array( self::DATA, __( 'Removed a guest note', 'radius-hotel-booking' ) ),

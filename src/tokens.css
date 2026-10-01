@@ -56,6 +56,14 @@
 	--caution: #c4320a;
 	--caution-soft: #fff6ed;
 
+	/* Report series, in order (M10). The first follows the brand colour. */
+	--chart-1: var(--primary);
+	--chart-2: #079455;
+	--chart-3: #dc6803;
+	--chart-4: #7a5af8;
+	--chart-5: #0086c9;
+	--chart-6: #98a2b3;
+
 	--border: #dbe1e6;
 	--input: #dbe1e6;
 	--ring: var(--primary);

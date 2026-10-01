@@ -353,6 +353,8 @@ final class RadiusHotelBooking {
 		// The front desk counters on the dashboard summary (M01).
 		RadiusTheme\RadiusHotelBooking\Services\Dashboard\DashboardCounters::init();
 		RadiusTheme\RadiusHotelBooking\Services\Dashboard\DashboardToday::init();
+		// Reports: drop cached figures when bookings or payments change (M10).
+		RadiusTheme\RadiusHotelBooking\Services\Reports\ReportService::init();
 		// Invoice and receipt print views (M05).
 		RadiusTheme\RadiusHotelBooking\Documents\DocumentEndpoint::init();
 		// The guest's booking page and its JSON (M05).

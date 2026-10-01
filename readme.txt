@@ -172,6 +172,12 @@ Fixed booking scripts loading on search results pages when the booking page was 
 Website bookings use a guest on file only when the name and identity document match.
 Banned guests are now also recognised on the website by their identity document.
 Website room holds are capped per visitor and can no longer be extended indefinitely.
+New Sales report: net sales, tax, money collected, paid and unsuccessful bookings, by payment method.
+Reports can be read by arrival date or by booking date.
+Fixed the date range picker overflowing its box on narrow screens.
+New Rooms report: rented and empty rooms, empty rooms by floor, and the period's bookings.
+New Room availability report: every room booked, held, blocked or free for any time window.
+Every report can be exported as a CSV spreadsheet; exports are recorded in the activity log.
 
 = 1.0.0 =
 Initial release.

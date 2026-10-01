@@ -155,18 +155,20 @@ export default function DateRangePicker( {
 	};
 
 	return (
-		<div className={ cn( 'inline-flex items-center', className ) }>
+		<div
+			className={ cn( 'inline-flex max-w-full items-center', className ) }
+		>
 			<Popover open={ open } onOpenChange={ setOpen }>
 				<PopoverTrigger asChild>
 					<Button
 						variant="outline"
 						className={ cn(
-							'justify-start gap-2 font-medium',
+							'min-w-0 justify-start gap-2 font-medium',
 							active && 'rounded-r-none border-r-0'
 						) }
 					>
 						<CalendarRange
-							className="text-primary"
+							className="shrink-0 text-primary"
 							aria-hidden="true"
 						/>
 						{ mode ? (
@@ -179,7 +181,10 @@ export default function DateRangePicker( {
 									  ) }
 							</span>
 						) : null }
-						<span>{ rangeLabel( value ) }</span>
+						{ /* Truncates on a phone, so the clear button stays in view. */ }
+						<span className="truncate">
+							{ rangeLabel( value ) }
+						</span>
 					</Button>
 				</PopoverTrigger>
 				<PopoverContent

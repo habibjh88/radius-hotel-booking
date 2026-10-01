@@ -146,7 +146,12 @@ class Dates {
 	 * @return DateTimeImmutable
 	 */
 	public static function end_of_day( $day ): DateTimeImmutable {
-		return self::add_days( self::start_of_day( $day ), 1 );
+		// The next calendar date's start, not "start + 1 day": where a
+		// daylight-saving change happens at midnight, a day can start at 01:00,
+		// and adding a day to that would overlap the next day by an hour.
+		$date = self::start_of_day( $day )->format( 'Y-m-d' );
+		$next = ( new DateTimeImmutable( $date, self::utc() ) )->modify( '+1 day' )->format( 'Y-m-d' );
+		return self::start_of_day( $next );
 	}
 
 	/**

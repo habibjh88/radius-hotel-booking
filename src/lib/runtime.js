@@ -75,6 +75,8 @@ const NotesPanel = lazy( () => import( '@/components/common/NotesPanel' ) );
 const DateRangePicker = lazy( () =>
 	import( '@/components/common/DateRangePicker' )
 );
+// recharts lives only in this chunk: add-on reports reuse it (M10).
+const ReportChart = lazy( () => import( '@/components/common/ReportChart' ) );
 
 /**
  * Lazy stand-ins for every named export of a module, so a family of Radix
@@ -214,6 +216,8 @@ export function publishRuntime() {
 			ConfirmDialog,
 			DataTable,
 			DateRangePicker,
+			// M10: the reports' bar chart (lazy: wrap in Suspense).
+			ReportChart,
 			Field,
 			DateTime,
 			FilterTabs,

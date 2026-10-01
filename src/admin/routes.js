@@ -251,7 +251,7 @@ const baseRoutes = [
 		icon: BarChart3,
 		capability: VIEW,
 		accessKey: [ 'page.reports_sales', 'page.reports_rooms' ],
-		module: 'M10',
+		element: lazy( () => import( '@/modules/Reports' ) ),
 	},
 	{
 		path: '/exports',
