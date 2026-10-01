@@ -70,7 +70,7 @@ The commands read and update this table. Keep the columns.
 | 11 | M01 | [Front desk dashboard](../modules/M01-front-desk-dashboard.md) | Free | M05 | done | module/m01-dashboard | 2026-10-01 | 2026-10-01 |
 | 12 | M04 | [Guest booking on the website](../modules/M04-public-booking.md) | Free | M05 | done | module/m04-public-booking | 2026-10-01 | 2026-10-01 |
 | 13 | M10 | [Reports](../modules/M10-reports.md) | Free + Pro | M05 | done | module/m10-reports | 2026-10-01 | 2026-10-01 |
-| 14 | M11 | [Exporting and archiving data](../modules/M11-export-archive.md) | Free + Pro | M10 | todo | module/m11-export | | |
+| 14 | M11 | [Exporting and archiving data](../modules/M11-export-archive.md) | Free + Pro | M10 | done | module/m11-export | 2026-10-01 | 2026-10-01 |
 | 15 | M12 | [Staff records and employment](../modules/M12-staff-records.md) | **Pro** | M13 | done | module/m12-staff | 2026-09-30 | 2026-09-30 |
 | 16 | M16 | [Staff self-service](../modules/M16-staff-self-service.md) | **Pro** | M12 | todo | module/m16-self-service | | |
 | 17 | M15 | [Payroll and HR](../modules/M15-payroll-hr.md) | **Client** | M12, D1 | todo | module/m15-payroll | | |

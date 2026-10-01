@@ -22,7 +22,8 @@ use RuntimeException;
  * exports and archives, employee documents.
  *
  * - Stored under `uploads/radius-hotel-booking/<kind>/` with a random
- *   32-hex name and the original extension; the folder carries `.htaccess`,
+ *   32-hex name — independent of the download token — and the original
+ *   extension; the folder carries `.htaccess`,
  *   `web.config` and `index.php` denying direct access. nginx ignores those:
  *   there the 128-bit random names are the protection, unless the host adds
  *   a deny rule or sets RTBP_PROTECTED_DIR outside the web root (base_dir()).
@@ -269,13 +270,47 @@ class ProtectedFiles {
 		$token     = bin2hex( random_bytes( 16 ) );
 		$extension = strtolower( (string) pathinfo( $filename, PATHINFO_EXTENSION ) );
 		$extension = preg_match( '/^[a-z0-9]{1,8}$/', $extension ) ? '.' . $extension : '';
-		$relative  = $kind . '/' . $token . $extension;
+		// The name on disk is its own secret, never the token: the token travels
+		// in download links (history, logs, referrers), and where the server
+		// ignores .htaccess (nginx) a name derived from it would make the file
+		// reachable without signing in (M11 review of ADR-009).
+		$relative = $kind . '/' . bin2hex( random_bytes( 16 ) ) . $extension;
 
 		return array(
 			'token'    => $token,
 			'relative' => $relative,
 			'absolute' => trailingslashit( self::base_dir() ) . $relative,
 		);
+	}
+
+	/**
+	 * Give every file still named after its download token on disk a random
+	 * name of its own (files stored before M11; see new_target()). Run once,
+	 * by the installer.
+	 *
+	 * @return int Files renamed.
+	 */
+	public static function rename_token_named(): int {
+		global $wpdb;
+		$renamed = 0;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- a one-off upgrade over our own index.
+		$rows = (array) $wpdb->get_results( $wpdb->prepare( 'SELECT id, token, path FROM %i', rtbp_table( 'files' ) ), ARRAY_A );
+		foreach ( $rows as $row ) {
+			$path = (string) $row['path'];
+			if ( pathinfo( $path, PATHINFO_FILENAME ) !== (string) $row['token'] ) {
+				continue;
+			}
+			$extension = pathinfo( $path, PATHINFO_EXTENSION );
+			$relative  = trailingslashit( dirname( $path ) ) . bin2hex( random_bytes( 16 ) ) . ( '' !== $extension ? '.' . $extension : '' );
+			$from      = trailingslashit( self::base_dir() ) . $path;
+			$to        = trailingslashit( self::base_dir() ) . $relative;
+			if ( is_file( $from ) && rename( $from, $to ) ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename -- inside our own protected folder.
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- our own index.
+				$wpdb->update( rtbp_table( 'files' ), array( 'path' => $relative ), array( 'id' => (int) $row['id'] ) );
+				++$renamed;
+			}
+		}
+		return $renamed;
 	}
 
 	/**

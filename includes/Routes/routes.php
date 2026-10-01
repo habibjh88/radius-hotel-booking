@@ -22,6 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use RadiusTheme\RadiusHotelBooking\Controllers\AccessController;
 use RadiusTheme\RadiusHotelBooking\Controllers\DashboardController;
+use RadiusTheme\RadiusHotelBooking\Controllers\ExportController;
 use RadiusTheme\RadiusHotelBooking\Controllers\ReportController;
 use RadiusTheme\RadiusHotelBooking\Controllers\NotificationController;
 use RadiusTheme\RadiusHotelBooking\Controllers\FileController;
@@ -47,6 +48,11 @@ $this->router->get( 'access/me', array( AccessController::class, 'me' ) );
 $this->router->get( 'access/registry', array( AccessController::class, 'registry' ) );
 
 $this->router->get( 'dashboard/summary', array( DashboardController::class, 'summary' ) );
+
+// Exports and their file library (M11).
+$this->router->get( 'exports', array( ExportController::class, 'index' ) );
+$this->router->post( 'exports', array( ExportController::class, 'store' ) );
+$this->router->delete( 'exports/(?P<id>\d+)', array( ExportController::class, 'destroy' ) );
 
 // Reports (M10): every report of the `rtbp_report_definitions` registry.
 $this->router->get( 'reports/(?P<name>[a-z0-9-]+)/export', array( ReportController::class, 'export' ) );

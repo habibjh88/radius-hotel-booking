@@ -45,7 +45,7 @@ final class RadiusHotelBooking {
 	 *
 	 * @var string
 	 */
-	const DBVERSION = '1.0.11';
+	const DBVERSION = '1.0.13';
 
 	/**
 	 * Plugin slug — the admin page slug and the asset handle prefix.
@@ -355,6 +355,8 @@ final class RadiusHotelBooking {
 		RadiusTheme\RadiusHotelBooking\Services\Dashboard\DashboardToday::init();
 		// Reports: drop cached figures when bookings or payments change (M10).
 		RadiusTheme\RadiusHotelBooking\Services\Reports\ReportService::init();
+		// Export files: their protected file kind and download access (M11).
+		RadiusTheme\RadiusHotelBooking\Services\Export\ExportService::init();
 		// Invoice and receipt print views (M05).
 		RadiusTheme\RadiusHotelBooking\Documents\DocumentEndpoint::init();
 		// The guest's booking page and its JSON (M05).

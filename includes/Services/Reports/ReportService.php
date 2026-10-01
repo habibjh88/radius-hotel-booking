@@ -442,7 +442,7 @@ class ReportService {
 	 * @param string $status Stay, payment, grid or room status.
 	 * @return string
 	 */
-	private static function statusLabel( string $status ): string {
+	public static function statusLabel( string $status ): string {
 		$labels = array(
 			'pending'        => __( 'Awaiting approval', 'radius-hotel-booking' ),
 			'confirmed'      => __( 'Confirmed', 'radius-hotel-booking' ),

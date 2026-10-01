@@ -22,6 +22,7 @@ use RadiusTheme\RadiusHotelBooking\Core\Database\Schema\Migrations\MigrationRunn
 use RadiusTheme\RadiusHotelBooking\Databases\Table\BlocksTable;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\BookingRoomsTable;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\BookingsTable;
+use RadiusTheme\RadiusHotelBooking\Databases\Table\ExportsTable;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\FilesTable;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\FloorsTable;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\GuestsTable;
@@ -120,6 +121,8 @@ class DatabaseManager {
 			PaymentsTable::class,
 			InvoicesTable::class,
 			InvoiceVersionsTable::class,
+			// Exports and their file library (M11).
+			ExportsTable::class,
 		);
 
 		/**

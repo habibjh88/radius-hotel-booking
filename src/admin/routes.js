@@ -264,7 +264,7 @@ const baseRoutes = [
 		icon: Download,
 		capability: VIEW,
 		accessKey: 'page.exports',
-		module: 'M11',
+		element: lazy( () => import( '@/modules/Exports' ) ),
 	},
 	{
 		path: '/permissions',

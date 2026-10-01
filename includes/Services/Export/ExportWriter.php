@@ -20,6 +20,7 @@ defined( 'ABSPATH' ) || exit;
  *         'extension' => 'csv',
  *         'mime'      => 'text/csv',
  *         'write'     => callable( array $tables ): string,   // the file's bytes
+ *         'stream'    => callable(): ExportStream,             // optional: row by row (M11)
  *     )
  *
  * The free plugin ships CSV; Pro adds XLSX (one sheet per table) to the same
@@ -46,6 +47,8 @@ class ExportWriter {
 				'extension' => 'csv',
 				'mime'      => 'text/csv',
 				'write'     => array( self::class, 'csv' ),
+				// Large exports (M11): written row by row.
+				'stream'    => static fn() => new CsvStream(),
 			),
 		);
 
@@ -65,6 +68,15 @@ class ExportWriter {
 				&& ! empty( $format['extension'] ) && ! empty( $format['mime'] ) && is_callable( $format['write'] ?? null ),
 			ARRAY_FILTER_USE_BOTH
 		);
+	}
+
+	/**
+	 * The formats that can write row by row (the booking and guest exports).
+	 *
+	 * @return array<string, array> Key => format.
+	 */
+	public static function streamed(): array {
+		return array_filter( self::formats(), static fn( $format ) => is_callable( $format['stream'] ?? null ) );
 	}
 
 	/**

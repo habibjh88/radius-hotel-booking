@@ -178,6 +178,14 @@ Fixed the date range picker overflowing its box on narrow screens.
 New Rooms report: rented and empty rooms, empty rooms by floor, and the period's bookings.
 New Room availability report: every room booked, held, blocked or free for any time window.
 Every report can be exported as a CSV spreadsheet; exports are recorded in the activity log.
+New booking export: one row per booked room, legacy columns first, any date range.
+Settings → Exports: choose a comma or semicolon separator for CSV files.
+New Exports screen: make a booking file for any period and see the file library.
+Export the whole guest list; download or delete export files, each recorded in the activity log.
+Pro features can now add their own sections to the Exports screen.
+Fixed: stored files could be reached directly by anyone who had seen their download link.
+Fixed: a failed database read or disk write could leave an export file silently incomplete.
+Only an administrator can delete an archive file whose bookings were removed.
 
 = 1.0.0 =
 Initial release.

@@ -124,6 +124,12 @@ class Installer {
 	public static function finish(): void {
 		PageInstaller::create_missing_pages();
 
+		// Once: files named after their download token get a secret name (M11).
+		if ( ! get_option( 'rtbp_files_renamed' ) ) {
+			\RadiusTheme\RadiusHotelBooking\Storage\ProtectedFiles::rename_token_named();
+			update_option( 'rtbp_files_renamed', 1, false );
+		}
+
 		/**
 		 * Fires after the installer has finished.
 		 *

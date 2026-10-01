@@ -34,6 +34,18 @@ final class CoreSettings {
 		SettingsSchema::register( 'invoices', PaymentSettings::invoices() );
 		// How guests book on the website (M04).
 		SettingsSchema::register( 'website', WebsiteSettings::schema() );
+		// Export files (M11).
+		SettingsSchema::register(
+			'exports',
+			array(
+				// CSV column separator: `,` (the legacy file, most spreadsheets) or `;` (Excel in French).
+				'csvSeparator' => array(
+					'type'    => 'enum',
+					'options' => array( ',', ';' ),
+					'default' => ',',
+				),
+			)
+		);
 		SettingsSchema::register( 'access', self::access() );
 	}
 

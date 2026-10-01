@@ -120,6 +120,11 @@ does one of these:
 (a) adds a deny rule:
     `location ^~ /wp-content/uploads/radius-hotel-booking/ { deny all; return 404; }`
 (b) sets `RTBP_PROTECTED_DIR` in wp-config.php to a folder outside the web root.
+*Amendment (M11 T1a, 2026-10-01):* the random name on disk was the download token itself, which
+travels in download links (history, logs, referrers) — on nginx anyone who saw a link reached the
+file directly, without the access check. New files get a disk name **independent of the token**
+(`ProtectedFiles::new_target()`); the index's `path` keeps them reachable through the endpoint.
+Files stored before keep their names.
 The admin notes and the cutover runbook (M18) must include this. A Site Health check that warns
 when the folder is publicly reachable is a follow-up for M18 T1.
 
@@ -190,6 +195,8 @@ neither.
 | `rtbp_document_renderers` (invoice, receipt) with an HTML print view in free (**live**, M05 T4b) | Pro adds the PDF renderer (**live**, M05 T7: `pdf`, and the PDFs attached through `rtbp_be_before_send_email_{id}`) |
 | `BookingStatusService::release( $id, $reason, $only_if )` (**live**, M05 T6; `$only_if` M05 T8): releases an overdue booking under the lock, logged `bookings.release_overdue`; `$only_if` adds conditions checked under the same lock — `as_of` (overdue already at that time) and `unless_held` (409 `on_hold`) | Pro's automatic release (M05 T8) runs it with no user signed in (logged as system), a grace period and `unless_held`; an older free ignores the third argument |
 | `rtbp_report_definitions`, the `rtbp_export_formats` filter (CSV in free) (**live**, M10) | Pro adds reports, XLSX, schedules and archiving. A report: `name => { label, access, build( ReportRange, input ), export?( ReportRange, input ): tables, cache? }`; a format: `key => { label, extension, mime, write( tables ): bytes }` (`ExportWriter`). Pro `occupancy` live (M10 T6a) |
+| `rtbp_export_kinds`, the `stream` entry of `rtbp_export_formats` (`ExportStream`: `begin( path, columns )`, `write( row )`, `finish()`) (**live**, M11) | Pro adds streamed XLSX for exports (M11 T3a); a kind may declare `period => false` (the guest list) |
+| `rtbp.exports.panels` (**live**, M11) | Panels on the Exports screen between the form and the library: `{ key, Component( { kinds, formats } ) }`; Pro adds *Archive and remove* (T3b); invalidate `[ 'exports' ]` to refresh the library |
 | `rtbp_block_sources` filter (**live**, M08 T5b): `key => { label, editable }`, default `manual` (Staff, editable). Blocks of a non-editable source are listed with its label but refused on update/delete (409 `block_read_only`). Also the action `rtbp_block_changed( $id, create\|update\|delete )` for staff blocks | Pro adds `ical` (not editable) and writes its blocks through the free `BlockRepository` with `source = ical`, `feed_id`, `external_uid`; it reconciles with **`BlockRepository::forFeed( $source, $feed_id )`** (**live**, M08 T6b) → UID => row. The JS status palette gained a generic `sync` domain (`ok`, `warning`, `error`, `never`) for `StatusBadge` |
 | `rtbp_note_types` filter (**live**, M09 T4): `type => { read, add, edit, remove (access keys), find( $id ) → activity subject or null, activity (prefix of `<prefix>_add|_edit|_remove`) }`; free registers `guest`. The generic `notes` API resolves its access keys from it, and an unregistered type is refused. JS: `<NotesPanel type id />` (also on `window.rtbp.ui`) | M03 registers `booking`, M12 (Pro) `employee`, each with its own keys and catalogue actions |
 | `SettingsSchema::register()`, `rtbp_migration_classes`, `rtbp_register_addon_routes`, `rtbp_email_classes` | registering an add-on's own sections, tables, routes and e-mails. Migration keys carry the **free** DB version, so an add-on also re-runs its own tables when its own DB version changes (Pro: `Databases\Installer`, M13 T5a) |

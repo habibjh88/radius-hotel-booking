@@ -22,6 +22,7 @@ import {
 	ShieldCheck,
 	Wallet,
 	Globe,
+	FileDown,
 } from 'lucide-react';
 
 import { refreshAccess } from '@/lib/access';
@@ -106,6 +107,16 @@ export default function coreSections() {
 			),
 			icon: FileText,
 			Component: lazy( () => import( './Invoices' ) ),
+		},
+		{
+			key: 'exports',
+			label: __( 'Exports', 'radius-hotel-booking' ),
+			description: __(
+				'How export files are written',
+				'radius-hotel-booking'
+			),
+			icon: FileDown,
+			Component: lazy( () => import( './Exports' ) ),
 		},
 		{
 			key: 'notifications',
