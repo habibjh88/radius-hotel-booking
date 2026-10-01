@@ -8,6 +8,7 @@
 namespace RadiusTheme\RadiusHotelBooking\Services\Availability;
 
 use DateTimeImmutable;
+use RadiusTheme\RadiusHotelBooking\Core\Api\Middleware\RateLimitMiddleware;
 use RadiusTheme\RadiusHotelBooking\Core\Database\Transaction;
 use RadiusTheme\RadiusHotelBooking\Exceptions\DomainException;
 use RadiusTheme\RadiusHotelBooking\Repositories\HoldRepository;
@@ -27,6 +28,11 @@ defined( 'ABSPATH' ) || exit;
  *   key. A token can only be used by the kind of owner that made it.
  * - Expired holds stop counting at once (every query compares the expiry) and
  *   are deleted by the sweep every 5 minutes.
+ * - **Web limits (M04 critical review):** one visitor (session) and one network
+ *   (`client_key`) hold at most `rtbp_public_hold_limit` rooms (10) at once, and a
+ *   web token lives at most its first hold + (1 + PUBLIC_EXTENSIONS) hold periods
+ *   — extending or adding rooms never moves it past that, so a script cannot keep
+ *   rooms held forever.
  * - Activity: staff holds are logged (`holds.create` / `holds.release`); web
  *   holds are only counted per day (option `rtbp_web_hold_counts`), so the
  *   log is not flooded by visitors.
@@ -37,6 +43,16 @@ class HoldService {
 	 * Most live holds one token may have (one booking's rooms).
 	 */
 	public const MAX_PER_TOKEN = 10;
+
+	/**
+	 * Extensions a web token gets on top of its first hold period.
+	 */
+	public const PUBLIC_EXTENSIONS = 2;
+
+	/**
+	 * Live holds one web visitor (or network) may have, by default.
+	 */
+	public const PUBLIC_LIVE_LIMIT = 10;
 
 	/**
 	 * Days of web hold counts kept.
@@ -101,28 +117,34 @@ class HoldService {
 		$now   = $now ?? Dates::now();
 		$actor = $this->actor( $actor );
 		$token = isset( $input['token'] ) ? (string) $input['token'] : '';
+		$rows  = array();
 		if ( '' !== $token ) {
-			$this->assertOwner( $token, $actor, true );
+			$rows = $this->assertOwner( $token, $actor, true );
 		} else {
 			$token = self::newToken();
 		}
 
-		$expires = Dates::to_gmt_db( $now->modify( '+' . $this->minutes() . ' minutes' ) );
+		$expires = $this->expiry( $rows, $actor, $now );
 		$now_gmt = Dates::to_gmt_db( $now );
 
 		$result = Transaction::run(
 			function () use ( $input, $actor, $token, $expires, $now, $now_gmt ) {
+				$request = array(
+					'room_id'      => (int) ( $input['room_id'] ?? 0 ),
+					'room_type_id' => (int) ( $input['room_type_id'] ?? 0 ),
+					'rate_plan_id' => (int) ( $input['rate_plan_id'] ?? 0 ),
+					'arrival'      => (string) ( $input['arrival'] ?? '' ),
+					'units'        => (int) ( $input['units'] ?? 1 ),
+					'checkin_time' => (string) ( $input['checkin_time'] ?? '' ),
+				);
+				// The party, when given, is checked against the room type's limits (M04: the website always sends it).
+				foreach ( array( 'adults', 'children', 'child_ages' ) as $key ) {
+					if ( isset( $input[ $key ] ) ) {
+						$request[ $key ] = $input[ $key ];
+					}
+				}
 				$checked = $this->writer->lockAndCheck(
-					array(
-						array(
-							'room_id'      => (int) ( $input['room_id'] ?? 0 ),
-							'room_type_id' => (int) ( $input['room_type_id'] ?? 0 ),
-							'rate_plan_id' => (int) ( $input['rate_plan_id'] ?? 0 ),
-							'arrival'      => (string) ( $input['arrival'] ?? '' ),
-							'units'        => (int) ( $input['units'] ?? 1 ),
-							'checkin_time' => (string) ( $input['checkin_time'] ?? '' ),
-						),
-					),
+					array( $request ),
 					$token,
 					array(
 						'audience' => $actor['audience'],
@@ -146,6 +168,9 @@ class HoldService {
 						// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 						throw DomainException::conflict( 'too_many_holds', __( 'Too many rooms are held for this booking.', 'radius-hotel-booking' ) );
 					}
+					if ( AvailabilityService::PUBLIC === $actor['audience'] ) {
+						$this->assertWebLimit( $actor, $now_gmt );
+					}
 					$hold_id = $this->holds->insert(
 						array(
 							'room_id'        => (int) $item['room']['id'],
@@ -156,6 +181,7 @@ class HoldService {
 							'token'          => $token,
 							'user_id'        => $actor['user_id'] ? $actor['user_id'] : null,
 							'session_key'    => $actor['session_key'],
+							'client_key'     => $actor['client_key'],
 							'expires_at_gmt' => $expires,
 						)
 					);
@@ -231,9 +257,9 @@ class HoldService {
 	public function extend( string $token, array $actor, ?DateTimeImmutable $now = null ): array {
 		$now   = $now ?? Dates::now();
 		$actor = $this->actor( $actor );
-		$this->assertOwner( $token, $actor, false );
+		$rows  = $this->assertOwner( $token, $actor, false );
 
-		$expires = Dates::to_gmt_db( $now->modify( '+' . $this->minutes() . ' minutes' ) );
+		$expires = $this->expiry( $rows, $actor, $now );
 		$count   = $this->holds->extend( $token, $expires, Dates::to_gmt_db( $now ) );
 		if ( ! $count ) {
 			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
@@ -346,7 +372,74 @@ class HoldService {
 			'audience'    => $audience,
 			'user_id'     => AvailabilityService::STAFF === $audience ? (int) ( $actor['user_id'] ?? get_current_user_id() ) : 0,
 			'session_key' => AvailabilityService::PUBLIC === $audience ? $session : '',
+			'client_key'  => AvailabilityService::PUBLIC === $audience
+				? preg_replace( '/[^a-f0-9]/', '', substr( (string) ( $actor['client_key'] ?? RateLimitMiddleware::clientKey() ), 0, 32 ) )
+				: '',
 		);
+	}
+
+	/**
+	 * When a token's holds expire after this request: a hold period from now,
+	 * but for the web never past the token's lifetime (its first hold +
+	 * 1 + PUBLIC_EXTENSIONS periods).
+	 *
+	 * @param array[]           $rows  The token's rows (none for a new token).
+	 * @param array             $actor Actor.
+	 * @param DateTimeImmutable $now   Now.
+	 * @return string Expiry (GMT, DB format).
+	 * @throws DomainException 410 `hold_expired` once the lifetime is over.
+	 */
+	private function expiry( array $rows, array $actor, DateTimeImmutable $now ): string {
+		$expires = Dates::to_gmt_db( $now->modify( '+' . $this->minutes() . ' minutes' ) );
+		if ( AvailabilityService::PUBLIC !== $actor['audience'] || ! $rows ) {
+			return $expires;
+		}
+		$first = min( array_map( static fn( $row ) => (string) $row['created_at'], $rows ) );
+		$last  = gmdate( 'Y-m-d H:i:s', (int) strtotime( $first . ' UTC' ) + ( 1 + self::PUBLIC_EXTENSIONS ) * $this->minutes() * MINUTE_IN_SECONDS );
+		if ( $last <= Dates::to_gmt_db( $now ) ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw new DomainException( 'hold_expired', __( 'The room is no longer held. Check that it is still free and choose it again.', 'radius-hotel-booking' ), 410 );
+		}
+		return min( $expires, $last );
+	}
+
+	/**
+	 * Refuse a new web hold when the visitor or their network already holds
+	 * the most rooms allowed.
+	 *
+	 * @param array  $actor   Actor.
+	 * @param string $now_gmt Now (GMT).
+	 * @return void
+	 * @throws DomainException 409 `too_many_holds`.
+	 */
+	private function assertWebLimit( array $actor, string $now_gmt ): void {
+		/**
+		 * Filters how many rooms one web visitor, or one network, may hold at once.
+		 *
+		 * @param int $limit Live holds (default 10).
+		 */
+		$limit = max( 1, (int) apply_filters( 'rtbp_public_hold_limit', self::PUBLIC_LIVE_LIMIT ) );
+		if ( $this->holds->countLive( 'session_key', $actor['session_key'], $now_gmt ) >= $limit
+			|| $this->holds->countLive( 'client_key', $actor['client_key'], $now_gmt ) >= $limit ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw DomainException::conflict( 'too_many_holds', __( 'Too many rooms are held from your connection. Finish or cancel a booking first, or contact the hotel.', 'radius-hotel-booking' ) );
+		}
+	}
+
+	/**
+	 * A token's live holds, for the actor that owns it (a web booking is made
+	 * from exactly these, M04).
+	 *
+	 * @param string                 $token Token.
+	 * @param array                  $actor Actor.
+	 * @param DateTimeImmutable|null $now   Now.
+	 * @return array[] Rows.
+	 * @throws DomainException 403 / 404 / 422.
+	 */
+	public function live( string $token, array $actor, ?DateTimeImmutable $now = null ): array {
+		$now_gmt = Dates::to_gmt_db( $now ?? Dates::now() );
+		$rows    = $this->assertOwner( $token, $this->actor( $actor ), false );
+		return array_values( array_filter( $rows, static fn( $row ) => $row['expires_at_gmt'] > $now_gmt ) );
 	}
 
 	/**

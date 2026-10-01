@@ -41,12 +41,16 @@ class HoldsTable extends Migration {
 				$table->string( 'token', 64 );
 				$table->unsignedBigInteger( 'user_id' )->nullable();
 				$table->string( 'session_key', 64 )->default( '' );
+				// Web holds: the visitor's network (`RateLimitMiddleware::clientKey()`), for the live-hold cap (M04).
+				$table->string( 'client_key', 32 )->default( '' );
 				$table->dateTime( 'expires_at_gmt' );
 				$table->timestamps();
 
 				$table->index( array( 'room_id', 'start_at_gmt', 'end_at_gmt' ), 'room_window' );
 				$table->index( 'expires_at_gmt', 'expires' );
 				$table->index( 'token', 'token' );
+				$table->index( array( 'session_key', 'expires_at_gmt' ), 'session' );
+				$table->index( array( 'client_key', 'expires_at_gmt' ), 'client' );
 			}
 		);
 	}

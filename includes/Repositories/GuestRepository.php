@@ -74,6 +74,31 @@ class GuestRepository extends BaseRepository {
 	}
 
 	/**
+	 * A banned guest with this identity document (0 = none).
+	 *
+	 * @param string $id_type Document type.
+	 * @param string $number  Number, letters and digits upper case.
+	 * @return int Guest id.
+	 */
+	public function bannedByDocument( string $id_type, string $number ): int {
+		global $wpdb;
+		if ( '' === $id_type || '' === $number ) {
+			return 0;
+		}
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- ban check, banned guests only (indexed).
+		return (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT id FROM %i WHERE deleted_at IS NULL AND standing = 'banned' AND id_type = %s
+					AND UPPER( REPLACE( REPLACE( REPLACE( REPLACE( id_number, ' ', '' ), '-', '' ), '.', '' ), '/', '' ) ) = %s
+				LIMIT 1",
+				rtbp_table( 'guests' ),
+				$id_type,
+				$number
+			)
+		);
+	}
+
+	/**
 	 * A page of guests.
 	 *
 	 * @param array $filters `{ q?: search terms (see terms()), standing?: normal|banned }`.

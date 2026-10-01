@@ -34,6 +34,7 @@ wp radius-hotel-booking artisan migrate:status
 # Packaging & i18n
 bun run package          # Build plugin zip via bin/build-plugin-zip.sh
 bun run check:woocommerce # Fail on any WooCommerce dependency (18.6); run by package
+bun run check:bundle-size # Fail when site.js + site.css exceed 150 KB gzip (4.10); run by package
 bun run i18n:pot         # Regenerate languages/radius-hotel-booking.pot
 msgmerge --update languages/radius-hotel-booking-fr_FR.po languages/radius-hotel-booking.pot
 bin/i18n-build.sh --all  # Compile .po -> .mo / .l10n.php / .json

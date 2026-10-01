@@ -44,6 +44,23 @@ class HoldRepository {
 	}
 
 	/**
+	 * Live holds of one web visitor, by session or by network (the cap, M04).
+	 *
+	 * @param string $column  `session_key` or `client_key`.
+	 * @param string $value   Its value.
+	 * @param string $now_gmt Now (GMT).
+	 * @return int
+	 */
+	public function countLive( string $column, string $value, string $now_gmt ): int {
+		global $wpdb;
+		if ( '' === $value || ! in_array( $column, array( 'session_key', 'client_key' ), true ) ) {
+			return 0;
+		}
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- live inventory, indexed.
+		return (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i WHERE %i = %s AND expires_at_gmt > %s', rtbp_table( 'holds' ), $column, $value, $now_gmt ) );
+	}
+
+	/**
 	 * The holds of a token, expired ones included.
 	 *
 	 * @param string $token Token.

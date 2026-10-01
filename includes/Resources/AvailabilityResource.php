@@ -37,12 +37,45 @@ final class AvailabilityResource {
 	}
 
 	/**
-	 * The public shape.
+	 * The public shape: no state notes and no staff-only reason fields (booking
+	 * references); optionally without sold-out rates and rooms, or without the
+	 * room list at all.
 	 *
-	 * @param array $result Search result.
+	 * @param array $result  Search result.
+	 * @param array $options `hide_unavailable` (bool), `rooms` (bool, default true).
 	 * @return array
 	 */
-	public static function public( array $result ): array {
+	public static function public( array $result, array $options = array() ): array {
+		$hide  = ! empty( $options['hide_unavailable'] );
+		$rooms = ! array_key_exists( 'rooms', $options ) || ! empty( $options['rooms'] );
+
+		// M04: sold-out rates and rooms disappear when the hotel hides them (4.4,
+		// `booking.unavailableRooms` = hide); a room type with nothing to sell goes too.
+		if ( $hide ) {
+			foreach ( $result['room_types'] as $index => &$type ) {
+				$type['rates'] = array_values( array_filter( (array) $type['rates'], static fn( $rate ) => ! empty( $rate['available'] ) ) );
+				foreach ( $type['floors'] as &$floor ) {
+					$floor['rooms'] = array_values( array_filter( (array) $floor['rooms'], static fn( $room ) => ! empty( $room['available_for'] ) ) );
+				}
+				unset( $floor );
+				$type['floors'] = array_values( array_filter( (array) $type['floors'], static fn( $floor ) => ! empty( $floor['rooms'] ) ) );
+				if ( ! $type['rates'] ) {
+					unset( $result['room_types'][ $index ] );
+				}
+			}
+			unset( $type );
+			$result['room_types'] = array_values( $result['room_types'] );
+		}
+
+		// When guests do not choose their room (`website.guestPicksRoom` off),
+		// the room list is not needed and is not sent.
+		if ( ! $rooms ) {
+			foreach ( $result['room_types'] as &$type ) {
+				$type['floors'] = array();
+			}
+			unset( $type );
+		}
+
 		foreach ( $result['room_types'] as &$type ) {
 			foreach ( $type['floors'] as &$floor ) {
 				foreach ( $floor['rooms'] as &$room ) {

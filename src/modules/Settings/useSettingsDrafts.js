@@ -186,5 +186,6 @@ export default function useSettingsDrafts() {
 		save,
 		discard,
 		reset,
+		accept,
 	};
 }

@@ -12,6 +12,7 @@
     "packages-update": "wp-scripts packages-update",
     "package": "bash ./bin/build-plugin-zip.sh",
     "check:woocommerce": "bash ./bin/check-woocommerce-free.sh",
+    "check:bundle-size": "bash ./bin/check-bundle-size.sh",
     "i18n:pot": "wp i18n make-pot . languages/radius-hotel-booking.pot --domain=radius-hotel-booking --exclude=node_modules,build,vendor,docs,bin,resources"
   },
   "dependencies": {

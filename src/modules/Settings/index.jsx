@@ -16,6 +16,8 @@
  *   save       saves the tab (the sticky bar does this too); resolves with
  *              the saved values, or null when the server refused them
  *   saving     true while this tab saves
+ *   accept     accept( values ): take values the server already saved (no
+ *              unsaved bar); replaces the tab's draft
  *
  * The active tab is in the URL: `#/settings?section=display`.
  */
@@ -301,6 +303,8 @@ export default function Settings() {
 		schema: state.schema[ key ] ?? {},
 		save: () => state.save( key ).then( after ),
 		saving: state.saving === key,
+		// Values the server already saved (an action such as *Create the booking page*): no unsaved bar.
+		accept: ( values ) => state.accept( key, values ),
 	};
 	const { Component } = active;
 

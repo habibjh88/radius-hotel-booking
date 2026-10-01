@@ -6,3 +6,7 @@
  * No blocks yet: the booking search and booking form blocks arrive with M04,
  * each in its own folder imported here.
  */
+
+import './search';
+
+import './booking';

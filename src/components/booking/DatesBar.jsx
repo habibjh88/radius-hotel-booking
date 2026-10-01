@@ -22,7 +22,7 @@ import { addDaysYmd, siteToday, ymdToDate } from '@/lib/format';
  * @param {Function} props.onChange Called with the new value.
  * @return {JSX.Element} Stepper.
  */
-function Stepper( { label, value, min, max, onChange } ) {
+export function Stepper( { label, value, min, max, onChange } ) {
 	return (
 		<Field label={ label }>
 			<div className="flex items-center gap-2">
@@ -46,6 +46,7 @@ function Stepper( { label, value, min, max, onChange } ) {
 					min={ min }
 					max={ max }
 					value={ value }
+					aria-label={ label }
 					onChange={ ( e ) => {
 						const next = parseInt( e.target.value, 10 );
 						onChange(
@@ -80,10 +81,13 @@ function Stepper( { label, value, min, max, onChange } ) {
  * @param {Object}      props.search   `{ arrival, departure, adults, children, checkin_time }`.
  * @param {Function}    props.onChange Called with the changed fields.
  * @param {Object|null} props.checkin  The flexible rates' `{ from, until }` (null: no time field).
+ * @param {Object}      props.limits   Optional `{ min, max }` arrivals (`Y-m-d`; the website's rules, M04).
  * @return {JSX.Element} Bar.
  */
-export default function DatesBar( { search, onChange, checkin } ) {
+export default function DatesBar( { search, onChange, checkin, limits } ) {
 	const today = siteToday();
+	const first = limits?.min && limits.min > today ? limits.min : today;
+	const last = limits?.max || undefined;
 	const badSpan = search.departure && search.departure < search.arrival;
 
 	return (
@@ -91,7 +95,8 @@ export default function DatesBar( { search, onChange, checkin } ) {
 			<Field label={ __( 'Arrival', 'radius-hotel-booking' ) } required>
 				<Input
 					type="date"
-					min={ today }
+					min={ first }
+					max={ last }
 					value={ search.arrival }
 					onChange={ ( e ) => {
 						const arrival = e.target.value;
@@ -136,7 +141,7 @@ export default function DatesBar( { search, onChange, checkin } ) {
 			>
 				<Input
 					type="date"
-					min={ search.arrival || today }
+					min={ search.arrival || first }
 					value={ search.departure }
 					onChange={ ( e ) =>
 						onChange( { departure: e.target.value } )

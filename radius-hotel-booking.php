@@ -45,7 +45,7 @@ final class RadiusHotelBooking {
 	 *
 	 * @var string
 	 */
-	const DBVERSION = '1.0.10';
+	const DBVERSION = '1.0.11';
 
 	/**
 	 * Plugin slug — the admin page slug and the asset handle prefix.
@@ -358,6 +358,10 @@ final class RadiusHotelBooking {
 		// The guest's booking page and its JSON (M05).
 		RadiusTheme\RadiusHotelBooking\Frontend\BookingConfirmationPage::init();
 		RadiusTheme\RadiusHotelBooking\Controllers\PublicBookingController::init();
+		// The public embeds: search bar (and, later in M04, the booking flow) as shortcode, block and Elementor widget.
+		RadiusTheme\RadiusHotelBooking\Frontend\Embeds::init();
+		// A page per room type at /rooms/{slug} (M04).
+		RadiusTheme\RadiusHotelBooking\Frontend\RoomTypePage::init();
 
 		$this->shortcode = new RadiusTheme\RadiusHotelBooking\Shortcodes\Shortcodes();
 		$this->emails    = new RadiusTheme\RadiusHotelBooking\Emails\EmailManager();

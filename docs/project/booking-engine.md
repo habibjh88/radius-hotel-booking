@@ -239,6 +239,13 @@ write path and inserts a `holds` row with a TTL (setting, default 15 min). The t
 the form. Creating the booking consumes the holds. Expired holds are ignored by queries at once
 and deleted by a cron sweep every 5 min.
 
+**Web holds** (M04 critical review). A visitor's holds belong to their session cookie, and each
+row also records their network (`client_key`, a hash of the IPv4 address or IPv6 /64). One
+session and one network hold at most `rtbp_public_hold_limit` rooms at once (10). A web token
+lives at most its first hold + 3 hold periods: extending it, or adding rooms, never moves the
+expiry past that. A web booking is made from exactly the token's live holds (same room and
+window per line, `hold_mismatch` otherwise; no live hold → 410 `hold_expired`).
+
 ### 7.1 The locked write path (used by: create hold, create booking, add line, edit line, change room at check-in, import)
 
 ```

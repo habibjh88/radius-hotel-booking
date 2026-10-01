@@ -1,30 +1,95 @@
+@import './tokens.css';
+
+@config '../tailwind.site.config.js';
+
+/*
+ * Public styles (shortcodes, blocks, Elementor widgets on guest pages).
+ *
+ * The site config turns Tailwind's global preflight off — it would restyle
+ * the whole theme — so `@tailwind base` here only emits the `--tw-*`
+ * variables the utilities need. The reset below does the same job as
+ * preflight, inside the plugin's own `.rtbp-root` elements only. `:where()`
+ * keeps it at the lowest specificity, so every utility still wins.
+ */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/*
- * Public styles. The tokens are duplicated here (rather than imported from
- * index.css) so the site bundle never pulls in the admin stylesheet.
- */
-:root {
-	--background: #ffffff;
-	--foreground: #111827;
-	--card: #ffffff;
-	--card-foreground: #111827;
-	--popover: #ffffff;
-	--popover-foreground: #111827;
-	--primary: #0040ff;
-	--primary-foreground: #ffffff;
-	--secondary: #f3f4f6;
-	--secondary-foreground: #111827;
-	--muted: #f3f4f6;
-	--muted-foreground: #6b7280;
-	--accent: #eef2ff;
-	--accent-foreground: #1e293b;
-	--destructive: #dc2626;
-	--destructive-foreground: #ffffff;
-	--border: #e5e7eb;
-	--input: #e5e7eb;
-	--ring: #0040ff;
-	--radius: 0.5rem;
+.rtbp-root,
+.rtbp-root :where( *, ::before, ::after ) {
+	box-sizing: border-box;
+	border-width: 0;
+	border-style: solid;
+	border-color: var( --border );
+}
+
+.rtbp-root {
+	line-height: 1.5;
+	-webkit-text-size-adjust: 100%;
+	tab-size: 4;
+	color: var( --foreground );
+}
+
+.rtbp-root :where( h1, h2, h3, h4, h5, h6 ) {
+	margin: 0;
+	font-size: inherit;
+	font-weight: inherit;
+}
+
+.rtbp-root :where( p, blockquote, figure, dl, dd, pre, hr ) {
+	margin: 0;
+}
+
+.rtbp-root :where( ol, ul, menu ) {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.rtbp-root :where( a ) {
+	color: inherit;
+	text-decoration: inherit;
+}
+
+.rtbp-root :where( button, input, optgroup, select, textarea ) {
+	margin: 0;
+	padding: 0;
+	font: inherit;
+	letter-spacing: inherit;
+	color: inherit;
+	line-height: inherit;
+	text-transform: none;
+}
+
+.rtbp-root :where( button, [type='button'], [type='reset'], [type='submit'] ) {
+	appearance: button;
+	background-color: transparent;
+	background-image: none;
+	cursor: pointer;
+	box-shadow: none;
+}
+
+.rtbp-root :where( input::placeholder, textarea::placeholder ) {
+	color: var( --muted-foreground );
+	opacity: 1;
+}
+
+.rtbp-root :where( img, svg, video, canvas ) {
+	display: block;
+	vertical-align: middle;
+}
+
+.rtbp-root :where( img, video ) {
+	max-width: 100%;
+	height: auto;
+}
+
+.rtbp-root :where( table ) {
+	border-collapse: collapse;
+	text-indent: 0;
+	border-color: inherit;
+}
+
+.rtbp-root :where( [hidden] ) {
+	display: none;
 }

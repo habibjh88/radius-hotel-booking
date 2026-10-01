@@ -124,6 +124,16 @@ class BookingService {
 
 		// Outside the transaction: fast answers before any lock is taken.
 		$this->holds->assertUsable( $token, $actor );
+		// The web books exactly what it holds (M04 critical review): a visitor
+		// cannot post another room, or one with no hold at all.
+		$held = array();
+		if ( AvailabilityService::PUBLIC === $audience ) {
+			$held = '' !== $token ? $this->holds->live( $token, $actor, $now ) : array();
+			if ( ! $held ) {
+				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+				throw new DomainException( 'hold_expired', __( 'The room is no longer held. Check that it is still free and choose it again.', 'radius-hotel-booking' ), 410 );
+			}
+		}
 		// "Paid now" marks money as taken: M13's `payments.record` (legacy mark-as-paid).
 		$paid_now = null;
 		if ( 'paid' === $data['payment_state'] ) {
@@ -139,7 +149,8 @@ class BookingService {
 				$now
 			);
 		}
-		if ( ! $data['guest_id'] ) {
+		// Staff need the key to add a guest; a web booking brings its own guest (M04, public rules).
+		if ( ! $data['guest_id'] && AvailabilityService::STAFF === $audience ) {
 			self::requireKey( 'guests.create' );
 		}
 		if ( $data['guest_id'] ) {
@@ -147,7 +158,7 @@ class BookingService {
 		}
 
 		$result = Transaction::run(
-			function () use ( $data, $token, $audience, $source, $now, $paid_now ) {
+			function () use ( $data, $token, $audience, $source, $now, $paid_now, $held ) {
 				// 1–3. Lock the rooms, re-check, re-quote. Nothing is read before this.
 				$checked = $this->writer->lockAndCheck(
 					$data['requests'],
@@ -159,8 +170,12 @@ class BookingService {
 					)
 				);
 
+				if ( AvailabilityService::PUBLIC === $audience ) {
+					self::assertHeld( $checked, $held );
+				}
+
 				// The guest after the lock (a new one is created in this transaction).
-				$guest = $data['guest_id'] ? $this->guests->get( $data['guest_id'] ) : $this->newGuest( $data['guest'] );
+				$guest = $data['guest_id'] ? $this->guests->get( $data['guest_id'] ) : $this->newGuest( $data['guest'], AvailabilityService::PUBLIC === $audience );
 				$this->refuseBanned( $guest );
 
 				// 4. Write.
@@ -323,17 +338,28 @@ class BookingService {
 	 * booking under someone else. Under the same name, that guest is used and
 	 * their empty details are filled in only with `guests.edit`.
 	 *
-	 * @param array $input New guest fields.
+	 * A **web** booking (M04) never learns who is on file: a phone or e-mail
+	 * already known is matched silently to that guest (their details are not
+	 * changed), and a ban is then refused by the caller.
+	 *
+	 * @param array $input  New guest fields.
+	 * @param bool  $public A web booking.
 	 * @return Guest
 	 * @throws DomainException 409 `guest_exists`, 422 fields.
 	 */
-	private function newGuest( array $input ): Guest {
+	private function newGuest( array $input, bool $public = false ): Guest {
 		try {
 			return $this->guests->create( $input );
 		} catch ( DomainException $e ) {
 			$match = $e->getContext()['guests'][0] ?? null;
 			if ( 'guest_exists' !== $e->getErrorCode() || ! $match ) {
 				throw $e;
+			}
+			if ( $public ) {
+				// The web never books under a guest it was not matched to (M04
+				// critical review): that would show their details to the visitor.
+				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+				throw DomainException::conflict( 'booking_refused', __( 'We could not take this booking online. Please contact the hotel.', 'radius-hotel-booking' ) );
 			}
 			$existing = $this->guests->get( (int) $match['id'] );
 			$typed    = trim( (string) ( $input['first_name'] ?? '' ) . ' ' . (string) ( $input['last_name'] ?? '' ) );
@@ -353,6 +379,34 @@ class BookingService {
 				// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 			}
 			return Access::can( 'guests.edit' ) ? $this->guests->findOrCreate( $input ) : $existing;
+		}
+	}
+
+	/**
+	 * Each web line must be one of the visitor's live holds: the same room
+	 * and the same window, each hold used once.
+	 *
+	 * @param array[] $checked `lockAndCheck()` items.
+	 * @param array[] $held    The token's live hold rows.
+	 * @return void
+	 * @throws DomainException 409 `hold_mismatch`.
+	 */
+	private static function assertHeld( array $checked, array $held ): void {
+		foreach ( $checked as $index => $item ) {
+			$start = Dates::to_gmt_db( $item['window']->startGmt() );
+			$end   = Dates::to_gmt_db( $item['window']->endGmt() );
+			$found = null;
+			foreach ( $held as $key => $row ) {
+				if ( (int) $row['room_id'] === (int) $item['room']['id'] && (string) $row['start_at_gmt'] === $start && (string) $row['end_at_gmt'] === $end ) {
+					$found = $key;
+					break;
+				}
+			}
+			if ( null === $found ) {
+				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+				throw DomainException::conflict( 'hold_mismatch', __( 'This booking does not match the rooms held for you. Choose the rooms again.', 'radius-hotel-booking' ), array( 'index' => $index ) );
+			}
+			unset( $held[ $found ] );
 		}
 	}
 

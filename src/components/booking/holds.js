@@ -20,14 +20,17 @@ export const MAX_EXTENSIONS = 2;
  * @param {string} token Token.
  * @return {void}
  */
-function releaseOnUnload( token ) {
-	const params = window.radius_hotel_booking_param || {};
+function releaseOnUnload( token, base ) {
+	const params =
+		window.radius_hotel_booking_param ||
+		window.radius_hotel_booking_site_param ||
+		{};
 	if ( ! token || ! params.rest_url ) {
 		return;
 	}
 	try {
 		window.fetch(
-			`${ params.rest_url.replace( /\/+$/, '' ) }/holds/${ token }`,
+			`${ params.rest_url.replace( /\/+$/, '' ) }/${ base }/${ token }`,
 			{
 				method: 'DELETE',
 				keepalive: true,
@@ -41,9 +44,10 @@ function releaseOnUnload( token ) {
 }
 
 /**
+ * @param {string} base `holds` (staff) or `public/holds` (the website, M04; held for the visitor's cookie).
  * @return {Object} `{ token, expiresAt, extensions, expired, place, release, releaseAll, touch }`.
  */
-export function useHolds() {
+export function useHolds( base = 'holds' ) {
 	const [ token, setToken ] = useState( '' );
 	const [ expiresAt, setExpiresAt ] = useState( null );
 	const [ extensions, setExtensions ] = useState( 0 );
@@ -59,7 +63,7 @@ export function useHolds() {
 	 * @return {Promise<Object>} The hold `{ id, room_id, room, window, total, … }`.
 	 */
 	const place = useCallback( async ( request ) => {
-		const { data } = await post( 'holds', {
+		const { data } = await post( base, {
 			...request,
 			...( tokenRef.current ? { token: tokenRef.current } : {} ),
 		} );
@@ -81,7 +85,7 @@ export function useHolds() {
 			return;
 		}
 		try {
-			await del( `holds/${ tokenRef.current }?hold_id=${ holdId }` );
+			await del( `${ base }/${ tokenRef.current }?hold_id=${ holdId }` );
 		} catch ( e ) {
 			// Already gone (expired): nothing held any more.
 		}
@@ -95,7 +99,7 @@ export function useHolds() {
 	 */
 	const releaseAll = useCallback( ( remote = true ) => {
 		if ( remote && tokenRef.current ) {
-			del( `holds/${ tokenRef.current }` ).catch( () => {} );
+			del( `${ base }/${ tokenRef.current }` ).catch( () => {} );
 		}
 		setToken( '' );
 		setExpiresAt( null );
@@ -138,7 +142,7 @@ export function useHolds() {
 			) {
 				setExtensions( ( n ) => n + 1 );
 				try {
-					const { data } = await put( `holds/${ token }` );
+					const { data } = await put( `${ base }/${ token }` );
 					setExpiresAt( data.expires_at );
 				} catch ( e ) {
 					setExpired( true );
@@ -150,12 +154,12 @@ export function useHolds() {
 
 	// Leaving the flow (another screen, closing the tab) releases the holds.
 	useEffect( () => {
-		const onUnload = () => releaseOnUnload( tokenRef.current );
+		const onUnload = () => releaseOnUnload( tokenRef.current, base );
 		window.addEventListener( 'pagehide', onUnload );
 		return () => {
 			window.removeEventListener( 'pagehide', onUnload );
 			if ( tokenRef.current ) {
-				del( `holds/${ tokenRef.current }` ).catch( () => {} );
+				del( `${ base }/${ tokenRef.current }` ).catch( () => {} );
 			}
 		};
 	}, [] );

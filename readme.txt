@@ -162,6 +162,16 @@ Approve, check in, check out, cancel or record a payment straight from a booking
 Choosing an item from a list row's menu no longer opens the row as well.
 Today's overview on the dashboard: arrivals, departures and check-ins in one timeline, late ones flagged.
 New bookings now chime and pop up on every staff screen; the bell counts those awaiting approval.
+New Settings → Public booking tab: booking page, preselected adults, rooms field, room choice, privacy consent.
+New hotel search bar for your website: [rtbp_search] shortcode, block or Elementor widget.
+Settings → Public booking can create the booking page for you in one click.
+Guests can now book online: rates, room choice, their details and ID, then payment instructions.
+Website booking requests are rate-limited per visitor; forged forwarded-IP headers are ignored.
+New page per room type at /rooms/{name}: photos, details, prices "from" and Book this room.
+Fixed booking scripts loading on search results pages when the booking page was found.
+Website bookings use a guest on file only when the name and identity document match.
+Banned guests are now also recognised on the website by their identity document.
+Website room holds are capped per visitor and can no longer be extended indefinitely.
 
 = 1.0.0 =
 Initial release.

@@ -27,6 +27,13 @@ import RateList from './RateList';
 import RoomPicker from './RoomPicker';
 import SummaryStep from './SummaryStep';
 import { AVAILABILITY_KEY, searchIsValid, useAvailability } from './api';
+import GuestBookingSteps from './GuestBookingSteps';
+import { EMPTY_GUEST_FORM } from './GuestForm';
+import {
+	guestDateLimits,
+	searchFromUrl,
+	siteBookingRules,
+} from './guestLimits';
 import { useHolds } from './holds';
 import { checkinRange, defaultCheckin } from './rates';
 
@@ -68,7 +75,26 @@ const overlaps = ( a, b ) =>
  * @return {JSX.Element} Flow.
  */
 export default function BookingFlow( { mode = 'desk' } ) {
+	// The website (M04): its own endpoints and rules; the flow is the same.
+	const guestMode = 'guest' === mode;
+	const [ rules ] = useState( () => ( guestMode ? siteBookingRules() : {} ) );
+	const [ limits ] = useState( () =>
+		guestMode ? guestDateLimits( rules ) : null
+	);
 	const [ search, setSearch ] = useState( () => {
+		if ( guestMode ) {
+			// The search the guest brought from the search bar.
+			const { arrival, departure, adults, children, room_type_id } =
+				searchFromUrl( rules, limits );
+			return {
+				arrival,
+				departure,
+				adults,
+				children,
+				room_type_id,
+				checkin_time: defaultCheckin( arrival ),
+			};
+		}
 		const today = siteToday();
 		return {
 			arrival: today,
@@ -79,6 +105,9 @@ export default function BookingFlow( { mode = 'desk' } ) {
 			checkin_time: defaultCheckin( today ),
 		};
 	} );
+	// The guest's own details and consent (website only).
+	const [ guestForm, setGuestForm ] = useState( EMPTY_GUEST_FORM );
+	const [ consent, setConsent ] = useState( false );
 	// Until staff set the time themselves, it follows the arrival date.
 	const [ timeTouched, setTimeTouched ] = useState( false );
 	const [ choice, setChoice ] = useState( null );
@@ -104,12 +133,15 @@ export default function BookingFlow( { mode = 'desk' } ) {
 	const [ guestMatch, setGuestMatch ] = useState( null );
 	const [ done, setDone ] = useState( null );
 	const queryClient = useQueryClient();
-	const holds = useHolds();
+	const holds = useHolds( guestMode ? 'public/holds' : 'holds' );
 	// With the token, the booking's own holds do not count as busy.
-	const availability = useAvailability( {
-		...search,
-		hold_token: holds.token,
-	} );
+	const availability = useAvailability(
+		{
+			...search,
+			hold_token: holds.token,
+		},
+		guestMode ? 'public/availability' : 'availability'
+	);
 	const chosen = findChoice( availability.data, choice );
 	const checkin = checkinRange( availability.data, chosen?.rate );
 
@@ -137,11 +169,17 @@ export default function BookingFlow( { mode = 'desk' } ) {
 		} );
 	};
 
-	const select = ( type, rate ) =>
+	const select = ( type, rate ) => {
+		// On the website without a choice of room, choosing the rate holds a room at once.
+		if ( guestMode && false === rules.guestPicksRoom ) {
+			holdRoom( type, rate, null );
+			return;
+		}
 		setChoice( {
 			room_type_id: type.id,
 			rate_plan_id: rate.rate_plan_id,
 		} );
+	};
 
 	// Rooms already in this booking for an overlapping time.
 	const taken = chosen
@@ -153,12 +191,14 @@ export default function BookingFlow( { mode = 'desk' } ) {
 		: [];
 
 	// Picking a room holds it and adds a line; the next room starts from the rates again.
-	const pick = async ( room ) => {
-		const { type, rate } = chosen;
-		setPending( room.id );
+	const pick = ( room ) => holdRoom( chosen.type, chosen.rate, room );
+
+	// Hold a room of this rate (room null: the website assigns the first free one).
+	const holdRoom = async ( type, rate, room ) => {
+		setPending( room ? room.id : -1 );
 		try {
 			const hold = await holds.place( {
-				room_id: room.id,
+				...( room ? { room_id: room.id } : {} ),
 				room_type_id: type.id,
 				rate_plan_id: rate.rate_plan_id,
 				arrival: search.arrival,
@@ -166,13 +206,21 @@ export default function BookingFlow( { mode = 'desk' } ) {
 				...( rate.checkin
 					? { checkin_time: search.checkin_time }
 					: {} ),
+				// The website always sends the party (checked against the room type) and the span.
+				...( guestMode
+					? {
+							departure: search.departure,
+							adults: Number( search.adults ),
+							children: Number( search.children ),
+					  }
+					: {} ),
 			} );
 			setLines( ( prev ) => [
 				...prev,
 				{
 					key: hold.id,
 					hold_id: hold.id,
-					room_id: room.id,
+					room_id: hold.room_id,
 					room_number: hold.room,
 					room_type_id: type.id,
 					room_type_name: type.name,
@@ -192,10 +240,15 @@ export default function BookingFlow( { mode = 'desk' } ) {
 			toast.success(
 				sprintf(
 					/* translators: %s: room number. */
-					__(
-						'Room %s is held for this booking.',
-						'radius-hotel-booking'
-					),
+					guestMode
+						? __(
+								'Room %s is held for you while you book.',
+								'radius-hotel-booking'
+						  )
+						: __(
+								'Room %s is held for this booking.',
+								'radius-hotel-booking'
+						  ),
 					hold.room
 				)
 			);
@@ -203,14 +256,19 @@ export default function BookingFlow( { mode = 'desk' } ) {
 			if ( 'room_unavailable' === err?.code ) {
 				// Someone was quicker (2.13): say so and show the rooms as they are now.
 				toast.error(
-					sprintf(
-						/* translators: %s: room number. */
-						__(
-							'Room %s was just taken. Choose another room.',
-							'radius-hotel-booking'
-						),
-						room.number
-					)
+					room
+						? sprintf(
+								/* translators: %s: room number. */
+								__(
+									'Room %s was just taken. Choose another room.',
+									'radius-hotel-booking'
+								),
+								room.number
+						  )
+						: __(
+								'The last room at this rate was just taken. Choose another rate.',
+								'radius-hotel-booking'
+						  )
 				);
 				availability.refetch();
 			} else {
@@ -261,6 +319,81 @@ export default function BookingFlow( { mode = 'desk' } ) {
 
 	// Accepting a new price just sends again: the line already carries the new
 	// quote as its expected total, so any other price that moved is refused and shown too.
+	// The website (M04): the guest's own details; on success, their booking page (M05).
+	const confirmGuest = async () => {
+		setSubmitting( true );
+		setGuestErrors( {} );
+		setPriceChange( null );
+		try {
+			const { data } = await post( 'public/bookings', {
+				hold_token: holds.token,
+				lines: lines.map( ( line ) => ( {
+					room_id: line.room_id,
+					room_type_id: line.room_type_id,
+					rate_plan_id: line.rate_plan_id,
+					arrival: line.arrival,
+					units: line.units,
+					...( line.checkin_time
+						? { checkin_time: line.checkin_time }
+						: {} ),
+					adults: line.adults,
+					children: line.children,
+					// The price shown: the server refuses if it moved (price_changed).
+					expected_total: line.total,
+				} ) ),
+				guest: {
+					first_name: guestForm.first_name,
+					last_name: guestForm.last_name,
+					phone: guestForm.phone,
+					email: guestForm.email,
+					id_type: guestForm.id_type,
+					id_number: guestForm.id_number,
+				},
+				special_requests: guestForm.special_requests,
+				consent,
+				company_website: guestForm.company_website,
+			} );
+			// The booking consumed the holds; the guest's page has the instructions and invoice.
+			holds.releaseAll( false );
+			window.location.assign( data.page_url );
+		} catch ( err ) {
+			const index = Number.isInteger( err?.data?.index )
+				? err.data.index
+				: -1;
+			if ( 'price_changed' === err?.code && index >= 0 ) {
+				setFailed( index );
+				setPriceChange( {
+					index,
+					room: lines[ index ]?.room_number,
+					from: lines[ index ]?.total,
+					to: err.data.quote?.total,
+				} );
+				setLines( ( prev ) =>
+					prev.map( ( line, i ) =>
+						i === index
+							? { ...line, total: err.data.quote?.total }
+							: line
+					)
+				);
+			} else if ( index >= 0 ) {
+				// A room was taken, a rate closed, the time passed: mark it, keep the rest.
+				setFailed( index );
+				toast.error( err.message );
+				availability.refetch();
+			} else if ( err?.errors && Object.keys( err.errors ).length ) {
+				const mapped = {};
+				Object.entries( err.errors ).forEach( ( [ field, value ] ) => {
+					mapped[ field ] = value?.first_message || String( value );
+				} );
+				setGuestErrors( mapped );
+				toast.error( err.message );
+			} else {
+				toastError( err );
+			}
+			setSubmitting( false );
+		}
+	};
+
 	const confirm = async () => {
 		setSubmitting( true );
 		setGuestErrors( {} );
@@ -393,6 +526,44 @@ export default function BookingFlow( { mode = 'desk' } ) {
 					onAnother={ another }
 				/>
 			</Panel>
+		);
+	}
+
+	if ( guestMode ) {
+		return (
+			<div data-mode={ mode }>
+				<GuestBookingSteps
+					rules={ rules }
+					search={ search }
+					limits={ limits }
+					onSearch={ change }
+					checkin={ checkin }
+					availability={ availability }
+					choice={ choice }
+					chosen={ chosen }
+					onSelect={ select }
+					onClearChoice={ () => setChoice( null ) }
+					taken={ taken }
+					pending={ pending }
+					onPick={ pick }
+					lines={ lines }
+					onRemove={ remove }
+					failed={ failed }
+					holds={ holds }
+					total={ total }
+					guest={ guestForm }
+					onGuest={ ( fields ) => {
+						setGuestForm( ( prev ) => ( { ...prev, ...fields } ) );
+						setGuestErrors( {} );
+					} }
+					guestErrors={ guestErrors }
+					consent={ consent }
+					onConsent={ setConsent }
+					priceChange={ priceChange }
+					submitting={ submitting }
+					onConfirm={ confirmGuest }
+				/>
+			</div>
 		);
 	}
 

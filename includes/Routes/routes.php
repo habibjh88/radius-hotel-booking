@@ -57,6 +57,8 @@ $this->router->get( 'files/(?P<token>[a-f0-9]{32})', array( FileController::clas
 $this->router->get( 'settings', array( SettingsController::class, 'index' ) );
 $this->router->put( 'settings', array( SettingsController::class, 'update' ) );
 $this->router->get( 'settings/schema', array( SettingsController::class, 'schema' ) );
+// Public booking (M04): create the booking page the search bar sends guests to.
+$this->router->post( 'settings/website/booking-page', array( SettingsController::class, 'bookingPage' ) );
 $this->router->put( 'settings/reset', array( SettingsController::class, 'reset' ) );
 $this->router->put( 'settings/(?P<section>[a-zA-Z0-9_-]+)/reset', array( SettingsController::class, 'resetSection' ) ); // phpcs:ignore
 $this->router->get( 'settings/(?P<section>[a-zA-Z0-9_-]+)', array( SettingsController::class, 'show' ) ); // phpcs:ignore
@@ -114,6 +116,12 @@ $this->router->post( 'bookings/(?P<id>\d+)/payments', array( PaymentController::
 $this->router->post( 'payments/(?P<id>\d+)/void', array( PaymentController::class, 'voidRow' ) );
 $this->router->post( 'bookings/(?P<id>\d+)/payment-status', array( PaymentController::class, 'setOnHold' ) );
 // The guest's own booking, by its public token (public, rate-limited).
+// Booking on the website (M04): public, rate-limited per route (PublicBookingController).
+$this->router->get( 'public/availability', array( PublicBookingController::class, 'availability' ) );
+$this->router->post( 'public/holds', array( PublicBookingController::class, 'holdStore' ) );
+$this->router->delete( 'public/holds/(?P<token>[A-Za-z0-9]{32})', array( PublicBookingController::class, 'holdDestroy' ) );
+$this->router->put( 'public/holds/(?P<token>[A-Za-z0-9]{32})', array( PublicBookingController::class, 'holdExtend' ) );
+$this->router->post( 'public/bookings', array( PublicBookingController::class, 'store' ) );
 $this->router->get( 'public/bookings/(?P<token>[a-f0-9]{32})', array( PublicBookingController::class, 'showByToken' ) );
 
 // Guests (M09). `guests/lookup` before the resource: it is not an id.

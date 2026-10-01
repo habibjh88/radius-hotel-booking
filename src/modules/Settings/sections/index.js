@@ -21,6 +21,7 @@ import {
 	Palette,
 	ShieldCheck,
 	Wallet,
+	Globe,
 } from 'lucide-react';
 
 import { refreshAccess } from '@/lib/access';
@@ -66,6 +67,16 @@ export default function coreSections() {
 			),
 			icon: CalendarCheck,
 			Component: lazy( () => import( './Booking' ) ),
+		},
+		{
+			key: 'website',
+			label: __( 'Public booking', 'radius-hotel-booking' ),
+			description: __(
+				'The search bar, the booking page and the booking form',
+				'radius-hotel-booking'
+			),
+			icon: Globe,
+			Component: lazy( () => import( './Website' ) ),
 		},
 		{
 			key: 'payments',

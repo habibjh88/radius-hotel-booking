@@ -32,6 +32,8 @@ final class CoreSettings {
 		SettingsSchema::register( 'email', self::email() );
 		SettingsSchema::register( 'payments', PaymentSettings::payments() );
 		SettingsSchema::register( 'invoices', PaymentSettings::invoices() );
+		// How guests book on the website (M04).
+		SettingsSchema::register( 'website', WebsiteSettings::schema() );
 		SettingsSchema::register( 'access', self::access() );
 	}
 

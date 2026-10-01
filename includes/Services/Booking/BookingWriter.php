@@ -206,7 +206,8 @@ class BookingWriter {
 					__( 'The price has changed since it was shown. Check the new price and confirm again.', 'radius-hotel-booking' ),
 					array(
 						'index' => $index,
-						'quote' => $quote,
+						// The web sees the new total only, not the pricing rules behind it.
+						'quote' => AvailabilityService::PUBLIC === $audience ? array( 'total' => $quote['total'] ) : $quote,
 					)
 				);
 				// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped

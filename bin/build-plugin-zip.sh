@@ -32,6 +32,9 @@ composer install --no-dev --optimize-autoloader
 status "Building assets…"
 bun run build
 
+status "Checking the public bundle size…"
+bash ./bin/check-bundle-size.sh
+
 # Source maps are dev-only.
 find build -name "*.map" -type f -delete
 

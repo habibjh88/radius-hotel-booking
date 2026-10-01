@@ -57,6 +57,7 @@ class SettingsController extends BaseController {
 				'schema'        => 'page.settings',
 				'show'          => 'page.settings',
 				'updateSection' => fn( WP_REST_Request $r ) => self::accessKey( (string) $r->get_param( 'section' ) ),
+				'bookingPage'   => fn() => self::accessKey( 'website' ),
 				'resetSection'  => fn( WP_REST_Request $r ) => self::accessKey( (string) $r->get_param( 'section' ) ),
 				// Every section in the body (update) or being reset.
 				'update'        => fn( WP_REST_Request $r ) => array_map( array( self::class, 'accessKey' ), array_keys( (array) $r->get_json_params() ) ),
@@ -199,6 +200,56 @@ class SettingsController extends BaseController {
 						'data'    => $data,
 					),
 					__( 'Settings saved.', 'radius-hotel-booking' )
+				);
+			}
+		);
+	}
+
+	/**
+	 * POST /settings/website/booking-page (M04): create the booking page — a
+	 * published page holding `[rtbp_booking]` — and make it the search bar's
+	 * target (`website.resultsPageId`, saved and logged like any setting).
+	 * When a booking page is already set and published, it is returned as is.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function bookingPage( WP_REST_Request $request ) {
+		return $this->respond(
+			$request,
+			function () {
+				if ( ! current_user_can( 'publish_pages' ) ) {
+					// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+					throw new \RadiusTheme\RadiusHotelBooking\Exceptions\DomainException( 'forbidden', __( 'You are not allowed to publish pages.', 'radius-hotel-booking' ), 403 );
+				}
+				$page = (int) rtbp_setting( 'website', 'resultsPageId', 0 );
+				if ( ! $page || 'publish' !== get_post_status( $page ) ) {
+					$page = wp_insert_post(
+						array(
+							'post_type'    => 'page',
+							'post_status'  => 'publish',
+							'post_title'   => __( 'Book a room', 'radius-hotel-booking' ),
+							'post_content' => "<!-- wp:shortcode -->\n[rtbp_booking]\n<!-- /wp:shortcode -->",
+						),
+						true
+					);
+					if ( is_wp_error( $page ) ) {
+						// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+						throw new \RadiusTheme\RadiusHotelBooking\Exceptions\DomainException( 'page_not_created', $page->get_error_message(), 500 );
+					}
+				}
+				$data = $this->settings->updateSection( 'website', array( 'resultsPageId' => (int) $page ) );
+				return ApiResponse::success(
+					array(
+						'section' => 'website',
+						'data'    => $data,
+						'page'    => array(
+							'id'    => (int) $page,
+							'title' => get_the_title( $page ),
+							'url'   => (string) get_permalink( $page ),
+						),
+					),
+					__( 'The booking page is ready.', 'radius-hotel-booking' )
 				);
 			}
 		);

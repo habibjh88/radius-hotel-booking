@@ -326,8 +326,11 @@ class LoadAssets {
 			return false;
 		}
 
-		$post    = get_post();
-		$content = $post ? (string) $post->post_content : '';
+		// Only the page being viewed: on a list (search results, an archive) the first
+		// post's content is not this page — a booking page found by search must not load
+		// the app there (M04). An embed that does render enqueues the bundle itself.
+		$post    = is_singular() ? get_queried_object() : null;
+		$content = $post instanceof \WP_Post ? (string) $post->post_content : '';
 		$needed  = false !== strpos( $content, '<!-- wp:radius-hotel-booking/' );
 
 		/** This filter is documented in includes/Shortcodes/Shortcodes.php */
@@ -389,6 +392,9 @@ class LoadAssets {
 					),
 					\RadiusTheme\RadiusHotelBooking\Settings\PaymentSettings::enabled_methods()
 				),
+				// Settings → Public booking (M04): the booking page to choose, and whether a privacy page exists.
+				'site_pages'       => \RadiusTheme\RadiusHotelBooking\Settings\WebsiteSettings::pages(),
+				'privacy_url'      => (string) get_privacy_policy_url(),
 				// Settings → E-mail lists these with an on/off switch each.
 				'email_templates'  => $this->email_templates(),
 				// The one dismissible upsell, on Settings only (ADR-016).
@@ -480,6 +486,8 @@ class LoadAssets {
 				'settings'    => array(
 					'display' => SettingsHelper::get_setting( 'display' ),
 				),
+				// The public booking rules the search bar and date pickers follow (M04); nothing private.
+				'booking'     => \RadiusTheme\RadiusHotelBooking\Frontend\Embeds::rules(),
 			)
 		);
 	}
