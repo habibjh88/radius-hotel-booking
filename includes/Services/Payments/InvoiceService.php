@@ -78,8 +78,16 @@ class InvoiceService {
 	 */
 	public static function init(): void {
 		$revise = static function ( $booking ) {
-			if ( is_object( $booking ) && ! empty( $booking->id ) ) {
+			if ( ! is_object( $booking ) || empty( $booking->id ) ) {
+				return;
+			}
+			try {
 				( new self() )->revise( (int) $booking->id );
+			} catch ( \Throwable $e ) {
+				// The change is already committed: a failed revision must not turn it into an
+				// error for the caller (critical review). The next change revises again.
+				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- the invoice is behind the booking; say so.
+				error_log( '[radius-hotel-booking] Invoice revision failed for booking ' . (int) $booking->id . ': ' . $e->getMessage() );
 			}
 		};
 		add_action( 'rtbp_booking_changed', $revise, 5 );

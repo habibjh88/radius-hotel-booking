@@ -49,6 +49,8 @@ class BookingsTable extends Migration {
 				$table->string( 'currency', 8 )->default( '' );
 				$table->dateTime( 'payment_due_at' )->nullable();
 				$table->dateTime( 'payment_due_at_gmt' )->nullable();
+				// The first stay the deadline was computed from: only a move of it re-derives the deadline.
+				$table->dateTime( 'payment_due_start_gmt' )->nullable();
 				$table->unsignedInteger( 'adults' )->default( 1 );
 				$table->unsignedInteger( 'children' )->default( 0 );
 				$table->text( 'special_requests' )->nullable();

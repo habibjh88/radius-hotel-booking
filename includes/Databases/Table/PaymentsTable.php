@@ -44,6 +44,8 @@ class PaymentsTable extends Migration {
 				$table->dateTime( 'received_at_gmt' );
 				$table->unsignedBigInteger( 'recorded_by' )->nullable();
 				$table->string( 'receipt_no', 40 )->nullable();
+				// What was still due right after this row (printed on its receipt).
+				$table->decimal( 'balance_after', 12, 2 )->nullable();
 				$table->timestamps();
 
 				$table->index( 'booking_id', 'booking' );

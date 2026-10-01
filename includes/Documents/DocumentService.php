@@ -154,11 +154,12 @@ class DocumentService {
 		$guest   = $booking && $booking->guest_id ? ( new GuestRepository() )->find( (int) $booking->guest_id ) : null;
 		$general = (array) SettingsHelper::get_setting( 'general' );
 
-		// What was paid up to and including this payment, and whether it was voided since.
+		// What the ledger held right after this payment: every row up to it, voids of
+		// earlier payments included (critical review); and whether it was voided since.
 		$paid   = 0.0;
 		$voided = '';
 		foreach ( $payments->forBooking( (int) $payment->booking_id ) as $row ) {
-			if ( (int) $row->id <= (int) $payment->id && 'void' !== $row->type ) {
+			if ( (int) $row->id <= (int) $payment->id ) {
 				$paid += (float) $row->amount;
 			}
 			if ( 'void' === $row->type && (int) $row->voids_payment_id === (int) $payment->id ) {
@@ -166,7 +167,11 @@ class DocumentService {
 			}
 		}
 		$recorder = $payment->recorded_by ? get_userdata( (int) $payment->recorded_by ) : null;
-		$total    = $booking ? (float) $booking->total : 0.0;
+		// The balance frozen when the payment was recorded; the total then is paid + that balance.
+		// Rows from before it was stored fall back to today's total.
+		$total = null !== $payment->balance_after
+			? $paid + (float) $payment->balance_after
+			: ( $booking ? (float) $booking->total : 0.0 );
 
 		return array(
 			'type'           => 'receipt',

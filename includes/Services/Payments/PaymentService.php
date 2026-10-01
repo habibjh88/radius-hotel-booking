@@ -164,6 +164,9 @@ class PaymentService {
 			$this->bookings->update( (int) $booking->id, array( 'on_hold' => 0 ) );
 		}
 		$after = $this->recalculate( $booking );
+		// Frozen for the receipt: a later room change must not alter what it printed (critical review).
+		$this->payments->update( (int) $payment->id, array( 'balance_after' => $after['balance_due'] ) );
+		$payment->balance_after = $after['balance_due'];
 
 		rtbp_activity(
 			'payments.record',
@@ -247,11 +250,19 @@ class PaymentService {
 					// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 					throw DomainException::conflict( 'not_voidable', __( 'A void cannot be voided.', 'radius-hotel-booking' ), array( 'payment_id' => $payment_id ) );
 				}
+				$net = 0.0;
 				foreach ( $this->payments->forBooking( $booking_id ) as $row ) {
 					if ( (int) $row->voids_payment_id === $payment_id ) {
 						// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 						throw DomainException::conflict( 'already_voided', __( 'This payment was already voided.', 'radius-hotel-booking' ), array( 'payment_id' => $payment_id ) );
 					}
+					$net += (float) $row->amount;
+				}
+				// Voiding a payment that was partly refunded would leave more refunded than paid
+				// (and a balance above the total): the refund is voided first (critical review).
+				if ( Money::round( $net - (float) $original->amount ) < 0 ) {
+					// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+					throw DomainException::conflict( 'void_refund_first', __( 'Money was refunded against this payment. Void the refund first.', 'radius-hotel-booking' ), array( 'payment_id' => $payment_id ) );
 				}
 				$void = $this->payments->create(
 					array(

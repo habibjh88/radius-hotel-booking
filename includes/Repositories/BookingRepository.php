@@ -68,7 +68,7 @@ class BookingRepository extends BaseRepository {
 				"SELECT SQL_CALC_FOUND_ROWS b.*, TRIM(CONCAT(COALESCE(g.first_name, ''), ' ', COALESCE(g.last_name, ''))) AS guest_name, COALESCE(g.phone, '') AS guest_phone,
 					(SELECT MIN(r.start_at_gmt) FROM %i r WHERE r.booking_id = b.id AND r.status IN ('pending','confirmed','checked_in')) AS first_start
 				FROM %i b LEFT JOIN %i g ON g.id = b.guest_id
-				WHERE b.deleted_at IS NULL AND b.status IN ('pending','confirmed') AND b.payment_status IN ('unpaid','partially_paid')
+				WHERE b.deleted_at IS NULL AND b.status IN ('pending','confirmed') AND b.payment_status IN ('unpaid','partially_paid') AND b.balance_due > 0
 					AND b.payment_due_at_gmt IS NOT NULL AND b.payment_due_at_gmt < %s
 				ORDER BY b.payment_due_at_gmt ASC, b.id ASC
 				LIMIT %d OFFSET %d",

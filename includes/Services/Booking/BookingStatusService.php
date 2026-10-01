@@ -123,11 +123,17 @@ class BookingStatusService {
 	 *
 	 * @param int    $booking_id Booking id.
 	 * @param string $reason     Why ('' = not paid by the deadline).
+	 * @param array  $only_if    More conditions, checked under the lock (an automatic
+	 *                           release): `as_of` (DateTimeImmutable — overdue already
+	 *                           at that time, i.e. now minus a grace period),
+	 *                           `unless_held` (bool — refuse a booking put on hold).
 	 * @return int Booking id.
-	 * @throws DomainException 404, 409 `not_overdue` / `illegal_transition`, 422 reason.
+	 * @throws DomainException 404, 409 `not_overdue` / `on_hold` / `illegal_transition`, 422 reason.
 	 */
-	public function release( int $booking_id, string $reason = '' ): int {
+	public function release( int $booking_id, string $reason = '', array $only_if = array() ): int {
 		$reason = '' === trim( $reason ) ? __( 'Not paid by the deadline.', 'radius-hotel-booking' ) : self::reason( $reason );
+		$as_of  = ( $only_if['as_of'] ?? null ) instanceof DateTimeImmutable ? $only_if['as_of'] : null;
+		$held   = ! empty( $only_if['unless_held'] );
 		return $this->bookingMove(
 			'cancel',
 			$booking_id,
@@ -135,10 +141,14 @@ class BookingStatusService {
 			$reason,
 			'release_overdue',
 			'release',
-			static function ( Booking $booking ) {
-				if ( ! PaymentDeadline::overdue( $booking ) ) {
+			static function ( Booking $booking ) use ( $as_of, $held ) {
+				if ( ! PaymentDeadline::overdue( $booking, $as_of ) ) {
 					// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 					throw DomainException::conflict( 'not_overdue', __( 'This booking is not overdue any more: it cannot be released.', 'radius-hotel-booking' ), array( 'payment_status' => (string) $booking->payment_status ) );
+				}
+				if ( $held && $booking->on_hold ) {
+					// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+					throw DomainException::conflict( 'on_hold', __( 'This booking is on hold: it is not released automatically.', 'radius-hotel-booking' ) );
 				}
 			}
 		);

@@ -28,6 +28,7 @@ defined( 'ABSPATH' ) || exit;
  * @property string      $received_at_gmt
  * @property int|null    $recorded_by
  * @property string|null $receipt_no
+ * @property float|null  $balance_after
  * @property string      $created_at
  * @property string      $updated_at
  */
@@ -63,6 +64,7 @@ class Payment extends BaseModel {
 		'received_at_gmt',
 		'recorded_by',
 		'receipt_no',
+		'balance_after',
 	);
 
 	/**

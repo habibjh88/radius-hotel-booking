@@ -70,12 +70,23 @@ fallback PIN (feature 13.7).
 *Why:* the client's three-level model does not fit boolean WordPress capabilities, and per-person
 overrides do not fit roles.
 
-## ADR-005: PDF generation — Proposed (confirm in M05)
+## ADR-005: PDF generation — Accepted
 
 Render invoices, receipts and payslips from PHP templates to HTML, then to PDF with `dompdf`,
 installed through Composer and prefixed with PHP-Scoper so it cannot clash with another plugin's
 copy. Store the generated files in the protected uploads folder (ADR-009). The browser print view
 is always available as a fallback.
+
+**Accepted (M05 T7, 2026-10-01), as built:** Pro renders the free plugin's own document HTML
+(`DocumentService::html()`), so the PDF and the print view cannot differ. dompdf 3.1 lives in
+Pro's `scoper/` Composer project and is prefixed into `vendor-prefixed/` under
+`RadiusTheme\RadiusHotelBookingPro\Vendor` by `composer scope` (gitignored, built for the release
+zip; PHP-Scoper needs PHP 8.2–8.4 and silently prefixes nothing on 8.5, so the script checks its
+output). dompdf builds some class names from strings, which PHP-Scoper misses or over-prefixes;
+`scoper/scoper.inc.php` patches each known case, and they must be re-checked after a dompdf update.
+The library loads only when a PDF is made. Remote files, PHP and JS are off; the logo is embedded.
+**Deviation:** PDFs are **not stored**. They are rendered on request (fast, always current) and
+e-mail copies are temporary files deleted after sending, so ADR-009 storage is not needed.
 
 ## ADR-006: New-booking alerts by polling — Accepted
 
@@ -176,7 +187,8 @@ neither.
 | `rtbp_activity( $action, $subject, array $context )` (**live**, M14 T1): builds a normalised event (actor, IP, user agent, subject, before/after diff with secrets masked) and fires `do_action( 'rtbp_activity', $event )`. **Stores nothing**. Also `ActionCatalog` + `rtbp_activity_actions`, `rtbp_activity_event` (alter/drop), `rtbp_activity_ip`, `rtbp_activity_secret_pattern` | Pro's `ActivityLogger` stores it (hash chain, grouping, archive) |
 | `AccessRegistry` + `rtbp_access_keys` filter (and `register()` from `rtbp_access_registry_init`, groups via `rtbp_access_groups`); `Access::level()` passes through the `rtbp_access_level` filter `( $level, $key, $user, $definition )`; `AccessMiddleware` handles `open` / `locked`, and hands `passcode` to `rtbp_access_passcode_check` `( null, $key, $request\|null )` → `true` or a `WP_Error` (null = locked). Also `rtbp_access_role_defaults`, `rtbp_access_locked_message`, and the actions `rtbp_access_denied`, `rtbp_page_viewed`, `rtbp_access_changed( $scope, {before, after}, $user_id )` (**live**, M13 T1–T3) | Pro adds the `passcode` level, PIN verification, custom roles and per-person overrides. **Live (M13 T4a):** Pro answers `rtbp_access_passcode_check` from the `X-RTBP-Passcode` header, fires `rtbp_passcode_failed( $user_id, $key, $failures, $locked )` and `rtbp_pro_pin_changed( $user_id, $removed )` |
 | `PriceResolver` steps + the `rtbp_price_steps` filter | Pro adds the seasonal, occupancy and booking-window steps |
-| `rtbp_document_renderers` (invoice, receipt) with an HTML print view in free | Pro adds the PDF renderer |
+| `rtbp_document_renderers` (invoice, receipt) with an HTML print view in free (**live**, M05 T4b) | Pro adds the PDF renderer (**live**, M05 T7: `pdf`, and the PDFs attached through `rtbp_be_before_send_email_{id}`) |
+| `BookingStatusService::release( $id, $reason, $only_if )` (**live**, M05 T6; `$only_if` M05 T8): releases an overdue booking under the lock, logged `bookings.release_overdue`; `$only_if` adds conditions checked under the same lock — `as_of` (overdue already at that time) and `unless_held` (409 `on_hold`) | Pro's automatic release (M05 T8) runs it with no user signed in (logged as system), a grace period and `unless_held`; an older free ignores the third argument |
 | `rtbp_report_definitions`, the `rtbp_export_formats` filter (CSV in free) | Pro adds reports, XLSX, schedules and archiving |
 | `rtbp_block_sources` filter (**live**, M08 T5b): `key => { label, editable }`, default `manual` (Staff, editable). Blocks of a non-editable source are listed with its label but refused on update/delete (409 `block_read_only`). Also the action `rtbp_block_changed( $id, create\|update\|delete )` for staff blocks | Pro adds `ical` (not editable) and writes its blocks through the free `BlockRepository` with `source = ical`, `feed_id`, `external_uid`; it reconciles with **`BlockRepository::forFeed( $source, $feed_id )`** (**live**, M08 T6b) → UID => row. The JS status palette gained a generic `sync` domain (`ok`, `warning`, `error`, `never`) for `StatusBadge` |
 | `rtbp_note_types` filter (**live**, M09 T4): `type => { read, add, edit, remove (access keys), find( $id ) → activity subject or null, activity (prefix of `<prefix>_add|_edit|_remove`) }`; free registers `guest`. The generic `notes` API resolves its access keys from it, and an unregistered type is refused. JS: `<NotesPanel type id />` (also on `window.rtbp.ui`) | M03 registers `booking`, M12 (Pro) `employee`, each with its own keys and catalogue actions |

@@ -90,6 +90,7 @@ class Booking extends BaseModel {
 		'currency',
 		'payment_due_at',
 		'payment_due_at_gmt',
+		'payment_due_start_gmt',
 		'adults',
 		'children',
 		'special_requests',
