@@ -50,6 +50,13 @@ class BookingService {
 	public const MAX_LINES = 10;
 
 	/**
+	 * Version of the import mode (`create( …, 'import' )`, M18) add-ons check
+	 * before using it: 1 = status, check-in, paid amount, price override;
+	 * 2 = also `paid_at`.
+	 */
+	public const IMPORT_MODE = 2;
+
+	/**
 	 * The locked write path.
 	 *
 	 * @var BookingWriter
@@ -110,8 +117,8 @@ class BookingService {
 	 *                                       id_number? }, payment_state (unpaid|paid), payment_method?, payment_reference?,
 	 *                                       note?, accept_new_price? }`. With `$source = import` (M18, staff
 	 *                                       only) also `status` (pending|confirmed|checked_in, default
-	 *                                       confirmed), `checked_in_at` (site time), `paid_amount`, and per
-	 *                                       line `price_override` — see importFields().
+	 *                                       confirmed), `checked_in_at` (site time), `paid_amount`, `paid_at`
+	 *                                       (site time), and per line `price_override` — see importFields().
 	 * @param array                  $actor  `{ audience (staff|public), user_id?, session_key? }`.
 	 * @param string                 $source `desk` (default), `web`, `import`.
 	 * @param DateTimeImmutable|null $now    Now (checks).
@@ -148,10 +155,12 @@ class BookingService {
 			// A real ledger row (ADR-010), checked before any lock; the amount is the total, known after the quote.
 			$paid_now = ( new PaymentService() )->validate(
 				array(
-					'type'      => 'payment',
-					'amount'    => 1,
-					'method'    => $data['payment_method'],
-					'reference' => $data['payment_reference'],
+					'type'        => 'payment',
+					'amount'      => 1,
+					'method'      => $data['payment_method'],
+					'reference'   => $data['payment_reference'],
+					// An import keeps the day the old desk took the money: reports bucket on it.
+					'received_at' => $import ? $import['paid_at'] : '',
 				),
 				$now
 			);
@@ -190,6 +199,8 @@ class BookingService {
 				$status   = $import ? $import['status'] : BookingWriter::initialStatus( $source );
 				$total    = Money::sum( array_map( static fn( $item ) => (float) $item['quote']['total'], $checked ) );
 				$paid     = null !== $paid_now;
+				// An import records what the old system had received, up to the total.
+				$paid_amount = ! $paid ? 0.0 : ( $import && $import['paid_amount'] > 0 ? min( $total, $import['paid_amount'] ) : $total );
 				$year     = $now->setTimezone( Dates::timezone() )->format( 'Y' );
 				$user_id  = get_current_user_id();
 				$booking  = $this->bookings->create(
@@ -267,7 +278,7 @@ class BookingService {
 							'guest'          => $guest->fullName(),
 							'lines'          => implode( '; ', $logged_lines ),
 							'total'          => $total,
-							'payment_status' => $paid ? 'paid' : 'unpaid',
+							'payment_status' => PaymentService::statusFor( $paid_amount, $total, false ),
 							'status'         => $status,
 							'source'         => $source,
 						),
@@ -287,9 +298,7 @@ class BookingService {
 				// *Paid now* (2.11): the payment, as the desk records any other (M05), logged after the creation.
 				$paid_row = null;
 				if ( $paid && $total > 0 ) {
-					// An import records what the old system had received, up to the total.
-					$amount   = $import && $import['paid_amount'] > 0 ? min( $total, $import['paid_amount'] ) : $total;
-					$paid_row = ( new PaymentService() )->insert( $booking, array_merge( $paid_now, array( 'amount' => $amount ) ) );
+					$paid_row = ( new PaymentService() )->insert( $booking, array_merge( $paid_now, array( 'amount' => $paid_amount ) ) );
 				}
 				return array( (int) $booking->id, $paid_row );
 			}
@@ -430,7 +439,7 @@ class BookingService {
 	 * @param string $name Name.
 	 * @return string
 	 */
-	private static function nameKey( string $name ): string {
+	public static function nameKey( string $name ): string {
 		return (string) preg_replace( '/\s+/', ' ', trim( mb_strtolower( remove_accents( $name ) ) ) );
 	}
 
@@ -509,13 +518,14 @@ class BookingService {
 	 * The import-only fields (M18): the line status (`pending`, `confirmed` or
 	 * `checked_in`; `confirmed` by default), when a stay under way was checked
 	 * in (site time, default now), the amount already paid (`paid_amount`,
-	 * recorded with `payment_method` / `payment_reference`), and each line's
+	 * recorded with `payment_method` / `payment_reference`, received at
+	 * `paid_at`, site time, default now), and each line's
 	 * `price_override` — the legacy price, frozen as is. Adds the overrides to
 	 * the requests.
 	 *
 	 * @param array $input Input.
 	 * @param array $data  Validated data (its `requests` gain `price_override`).
-	 * @return array `{ status, checked_in_at, paid_amount }`.
+	 * @return array `{ status, checked_in_at, paid_amount, paid_at }`.
 	 * @throws DomainException 422.
 	 */
 	private static function importFields( array $input, array &$data ): array {
@@ -527,6 +537,10 @@ class BookingService {
 		$checked_in = trim( (string) ( $input['checked_in_at'] ?? '' ) );
 		if ( '' !== $checked_in && ! preg_match( '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}(:\d{2})?$/', $checked_in ) ) {
 			$errors['checked_in_at'] = __( 'Enter a valid date and time.', 'radius-hotel-booking' );
+		}
+		$paid_at = trim( (string) ( $input['paid_at'] ?? '' ) );
+		if ( '' !== $paid_at && ! preg_match( '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}(:\d{2})?$/', $paid_at ) ) {
+			$errors['paid_at'] = __( 'Enter a valid date and time.', 'radius-hotel-booking' );
 		}
 		$paid = $input['paid_amount'] ?? 0;
 		if ( ! is_numeric( $paid ) || (float) $paid < 0 ) {
@@ -550,6 +564,8 @@ class BookingService {
 			'status'        => $status,
 			'checked_in_at' => '' !== $checked_in ? substr( $checked_in . ':00', 0, 19 ) : Dates::to_db( Dates::now() ),
 			'paid_amount'   => (float) Money::round( (float) $paid ),
+			// PaymentService::validate() reads `Y-m-d H:i`; empty means now.
+			'paid_at'       => substr( $paid_at, 0, 16 ),
 		);
 	}
 

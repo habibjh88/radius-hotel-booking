@@ -46,11 +46,18 @@ the import itself a few minutes. Choose the quietest hour (no arrivals for an ho
 
 ## 3. Dry run (T + 0:15)
 
+Bookings can only be checked against rooms and rate plans that exist, so the inventory goes in
+first, for real (nobody uses the new system yet; it changes nothing in the old one):
+
 ```bash
+wp radius-hotel-booking import:legacy --dry-run --only=room_type,floor,room,rate_plan,room_type_rate,rate_calendar --user=1
+wp radius-hotel-booking import:legacy --only=room_type,floor,room,rate_plan,room_type_rate,rate_calendar --user=1
 wp radius-hotel-booking import:legacy --dry-run --user=1
 ```
 
-(No `--source-prefix`, no `--as-of`: production reads its own tables, cutover = now.)
+(No `--source-prefix`, no `--as-of`: production reads its own tables, cutover = now.) Without the
+inventory step, every booking of the full dry run is *skipped — not checked* and conflicts would
+first appear in the real run.
 
 - [ ] The source summary matches the last parallel-run evening (rooms 38, room types, open booking
       lines, customers, staff …). **14 of 14 legacy tables found**.
@@ -62,10 +69,16 @@ wp radius-hotel-booking import:legacy --dry-run --user=1
   | *The stay … does not fit the window of …* | a legacy booking with odd times | re-create it by hand after cutover; keep the line |
   | *The room is not free for …* | two legacy bookings overlap | the desk decides which stands; the other by hand |
   | *X stays … still "checked in" … not imported* | never checked out in the old system | nothing (they are past) |
+  | *Not checked: its room or rate plan would be created …* (skipped) | the inventory step above was skipped | import the inventory, re-run the dry run |
 
-- [ ] Warnings read (placeholder e-mails, staff without phone, merged guests …) — expected counts
-      from the parallel run.
-- [ ] Note: the dry run briefly row-locks the rooms of the open bookings it checks (seconds).
+- [ ] Warnings read (placeholder and shared e-mails, staff without phone, merged guests — those
+      merged under **another name** and bookings *billed to* another name are checked by the
+      desk this week, rooms *now in maintenance* with an imported booking …) — expected counts from
+      the parallel run.
+- [ ] Note: the booking part of a dry run holds its locks until it ends — the rooms it checks and
+      the booking, invoice, guest and receipt counters — so any other booking waits (and fails
+      after 50 s). That is why it runs while the site is frozen (§1). Only one import or dry run
+      runs at a time; a second one is refused.
 
 ## 4. Import (T + 0:25)
 

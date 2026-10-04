@@ -12,7 +12,9 @@ during this week except for the UAT script (uat-script.md), on staging.
 2. Install free, Pro and the Residence TATA add-on (the build planned for cutover). Settings as
    in cutover-runbook.md §2 (currency, payments, time zone **Africa/Abidjan**).
 3. First dry run: `wp radius-hotel-booking import:legacy --dry-run --user=1`. Read the report with
-   the manager (below). Fix what is ours; list what the hotel must fix in the old system.
+   the manager (below). Fix what is ours; list what the hotel must fix in the old system. On a
+   fresh copy the bookings come out *skipped — not checked*: import the inventory first, then
+   dry-run again (cutover-runbook.md §3).
 4. Real import on staging, then a second dry run: everything *unchanged*.
 
 ## 2. What the first report will say (from the 30 Aug copy)
@@ -23,7 +25,7 @@ during this week except for the UAT script (uat-script.md), on staging.
 | Rate plans | 7, merged by window | check the *flexible* plan: imported as 24 h, check-in any time (the old system stored no hours) |
 | Prices | 14 room-type prices | compare a few with the old product pages |
 | Pricing rules, blocks, iCal | none in the old system | if any appear: recreate by hand (the report says where) |
-| Guests | ~2 858 + ~384 merged duplicates | the duplicates are the same person registered twice; nothing to do |
+| Guests | ~2 868 + ~374 merged duplicates; ~184 of the merges are under **another name** (150 a shared phone, 34 a shared e-mail); 16 guests lose an e-mail several people shared | one phone or e-mail is one guest here: the desk checks the *another name* list (same person, or correct the contact) |
 | Staff | 49 files, **22 without a phone** | add the phones (staff file) |
 | Staff contracts | 27, pay details not imported | payroll waits for D1 |
 | Permissions, PINs | 29 people, PINs carried hashed | a PIN changed in the old system during the week is **not** carried again — staff set it on staging / after cutover |
@@ -42,9 +44,10 @@ during this week except for the UAT script (uat-script.md), on staging.
      (acceptance 2).
    - **Five bookings** made today in the old system: room, window, total, paid, guest.
    - **Sales today**: old report vs Reports → Sales (same day, same method).
-4. Anything changed in the old system *after* it was imported (an edit, a cancellation) is reported
-   as *Changed in the old system since it was imported*: on staging we re-import from a fresh copy;
-   at cutover the desk applies late changes by hand.
+4. Anything changed in the old system *after* it was imported is reported, never re-imported:
+   *Changed in the old system since it was imported* (status, room, dates, price or payment) and
+   *Now "cancelled" in the old system … apply it to booking RT-… by hand*. On staging we re-import
+   from a fresh copy; at cutover the desk applies late changes by hand.
 
 ## 4. Discrepancy log
 

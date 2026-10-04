@@ -103,6 +103,12 @@ class BookingWriter {
 	 *                            closed now, break today's date and guest rules, and keep its own
 	 *                            price (`price_override`); the lock, removed / moved rooms, the
 	 *                            overlap (with the buffer) and duplicates are checked as always.
+	 *                            `keep` (a line being edited: `{ room_id, rate_plan_id, start_at_gmt,
+	 *                            end_at_gmt, total }`): when the request keeps that room, plan and
+	 *                            window, nothing is sold again — the room's state, a rate no longer
+	 *                            sold, a closure or a date rule do not refuse it, and its frozen
+	 *                            `total` stands in for a quote that fails. The guest limits and the
+	 *                            overlap are checked as always.
 	 * @return array[] Per request `{ room, room_type_id, rate_plan_id, plan, window: StayWindow, quote, buffer_minutes }`.
 	 * @throws LogicException  Outside a transaction (a programming error).
 	 * @throws DomainException 409 `room_unavailable` / `rate_closed` / `rate_not_sold` / `price_changed` /
@@ -138,10 +144,6 @@ class BookingWriter {
 				// The room was moved to another type since the page loaded.
 				$this->unavailable( $index, $room_id, (string) $room['number'], 'moved', null, $audience );
 			}
-			if ( Room::AVAILABLE !== $room['state'] && ! $importing ) {
-				$this->unavailable( $index, $room_id, (string) $room['number'], (string) $room['state'], null, $audience );
-			}
-
 			$type_id = (int) $room['room_type_id'];
 			$plan_id = (int) ( $request['rate_plan_id'] ?? 0 );
 			$units   = max( 1, (int) ( $request['units'] ?? 1 ) );
@@ -151,6 +153,7 @@ class BookingWriter {
 			// Refuses a rate no longer sold, a bad date, units outside the bounds.
 			// Occupancy as the search counted it: without the requester's own
 			// holds or the line being edited, else the price shown never matches.
+			$quote_error = null;
 			try {
 				$quote = OccupancyCalculator::excluding(
 					$hold_token,
@@ -160,20 +163,32 @@ class BookingWriter {
 			} catch ( DomainException $e ) {
 				// An imported booking may use a rate the room type no longer sells, or a stay
 				// length outside today's limits: its price is the legacy one.
+				// A kept line (below) may too: it is not sold again.
 				$tolerated = 'rate_not_sold' === $e->getErrorCode() || isset( $e->getFieldErrors()['units'] );
-				if ( ! $importing || ! isset( $request['price_override'] ) || ! $tolerated ) {
+				if ( ! $tolerated ) {
 					throw $e;
 				}
-				$quote = null;
+				$quote       = null;
+				$quote_error = $e;
 			}
-			$plan  = $this->plans->find( $plan_id );
+			$plan = $this->plans->find( $plan_id );
 			if ( ! $plan instanceof RatePlan ) {
 				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 				throw DomainException::invalid( array( 'rate_plan_id' => __( 'Choose a rate plan.', 'radius-hotel-booking' ) ) );
 			}
 			$window = StayWindow::for( $plan, $arrival, $units, $checkin );
+			$kept   = self::keeps( $options['keep'] ?? null, $room_id, $plan_id, $window );
 			if ( $importing && isset( $request['price_override'] ) ) {
 				$quote = self::importedQuote( $quote, (float) $request['price_override'], $window->units() );
+			} elseif ( $quote_error ) {
+				if ( ! $kept ) {
+					throw $quote_error;
+				}
+				$quote = self::importedQuote( null, (float) $options['keep']['total'], $window->units(), 'kept' );
+			}
+			$selling = ! $importing && ! $kept;
+			if ( Room::AVAILABLE !== $room['state'] && $selling ) {
+				$this->unavailable( $index, $room_id, (string) $room['number'], (string) $room['state'], null, $audience );
 			}
 
 			$grace = AvailabilityService::STAFF === $audience ? AvailabilityService::STAFF_GRACE_MINUTES * MINUTE_IN_SECONDS : 0;
@@ -184,7 +199,7 @@ class BookingWriter {
 
 			// The calendar may have closed the date since the search.
 			RateCalendar::flush();
-			$closed = $importing ? null : RateCalendar::closure( $type_id, $plan_id, $window->unitDates() );
+			$closed = ! $selling ? null : RateCalendar::closure( $type_id, $plan_id, $window->unitDates() );
 			if ( $closed ) {
 				$reason = AvailabilityService::reason( $closed['code'], array( 'date' => $closed['date'] ) );
 				// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
@@ -201,7 +216,7 @@ class BookingWriter {
 
 			// The search's public date rules and the guest limits: a request
 			// posted directly must not skip them (critical review, M08).
-			$rule = $importing ? null : AvailabilityService::dateRuleReason( $arrival, $audience, $now );
+			$rule = ! $selling ? null : AvailabilityService::dateRuleReason( $arrival, $audience, $now );
 			if ( $rule ) {
 				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 				throw DomainException::conflict( $rule['code'], $rule['message'], array( 'index' => $index ) );
@@ -347,28 +362,50 @@ class BookingWriter {
 	/**
 	 * An imported line's quote: the legacy price, frozen as is, spread evenly
 	 * over the units; today's price (when the rate is still sold) is kept in
-	 * the breakdown for reference.
+	 * the breakdown for reference. Also a kept line's frozen price (`kept`).
 	 *
 	 * @param array|null $quote Today's quote, or null (the rate is not sold any more).
-	 * @param float      $price Legacy price.
+	 * @param float      $price Legacy (or frozen) price.
 	 * @param int        $units Units.
+	 * @param string     $code  `import` or `kept`.
 	 * @return array
 	 */
-	private static function importedQuote( ?array $quote, float $price, int $units ): array {
+	private static function importedQuote( ?array $quote, float $price, int $units, string $code = 'import' ): array {
 		$price = max( 0.0, (float) Money::round( $price ) );
-		$each  = Money::round( $price / max( 1, $units ) );
-		$steps = $quote ? (array) $quote['steps'] : array();
+		$units = max( 1, $units );
+		$each  = (float) Money::round( $price / $units );
+		// The rounding remainder on the last unit, so the units add up to the total.
+		$unit_prices              = array_fill( 0, $units, $each );
+		$unit_prices[ $units - 1 ] = (float) Money::round( $price - $each * ( $units - 1 ) );
+		$steps                    = $quote ? (array) $quote['steps'] : array();
 		$steps[] = array(
-			'code'     => 'import',
-			'label'    => __( 'Price from the old system', 'radius-hotel-booking' ),
+			'code'     => $code,
+			'label'    => 'kept' === $code ? __( 'Price as booked', 'radius-hotel-booking' ) : __( 'Price from the old system', 'radius-hotel-booking' ),
 			'total'    => $price,
 			'computed' => $quote ? (float) $quote['total'] : null,
 		);
 		return array(
 			'total'       => $price,
-			'unit_prices' => array_fill( 0, max( 1, $units ), $each ),
+			'unit_prices' => $unit_prices,
 			'steps'       => $steps,
 		);
+	}
+
+	/**
+	 * Whether a request keeps the edited line's room, plan and window.
+	 *
+	 * @param array|null $keep    `{ room_id, rate_plan_id, start_at_gmt, end_at_gmt }`, or null.
+	 * @param int        $room_id Requested room.
+	 * @param int        $plan_id Requested plan.
+	 * @param StayWindow $window  Requested window.
+	 * @return bool
+	 */
+	private static function keeps( ?array $keep, int $room_id, int $plan_id, StayWindow $window ): bool {
+		return $keep
+			&& (int) ( $keep['room_id'] ?? 0 ) === $room_id
+			&& (int) ( $keep['rate_plan_id'] ?? 0 ) === $plan_id
+			&& (string) ( $keep['start_at_gmt'] ?? '' ) === Dates::to_gmt_db( $window->startGmt() )
+			&& (string) ( $keep['end_at_gmt'] ?? '' ) === Dates::to_gmt_db( $window->endGmt() );
 	}
 
 	/**

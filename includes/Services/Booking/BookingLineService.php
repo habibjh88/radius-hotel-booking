@@ -232,6 +232,14 @@ class BookingLineService {
 						'audience'     => AvailabilityService::STAFF,
 						'exclude_line' => $line_id,
 						'now'          => $now,
+						// Same room, plan and window: not sold again (an imported line, a room now in maintenance).
+						'keep'         => array(
+							'room_id'      => (int) $line->room_id,
+							'rate_plan_id' => (int) $line->rate_plan_id,
+							'start_at_gmt' => (string) $line->start_at_gmt,
+							'end_at_gmt'   => (string) $line->end_at_gmt,
+							'total'        => (float) $line->total,
+						),
 					)
 				);
 				$item   = $checked[0];
