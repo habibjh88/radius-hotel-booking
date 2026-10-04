@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { formatDateAs, formatMoney } from '@/lib/format';
+import SiteChecks from '@/components/common/SiteChecks';
 import { NumberInput, ToggleRow } from './fields';
 
 /** PHP date formats offered in the list; anything else is "Custom". */
@@ -118,6 +119,7 @@ export default function General( { value, setField, errors, schema } ) {
 
 	return (
 		<>
+			<SiteChecks />
 			<SettingsSection
 				title={ __( 'Hotel details', 'radius-hotel-booking' ) }
 				description={ __(

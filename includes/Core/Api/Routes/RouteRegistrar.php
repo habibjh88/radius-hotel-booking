@@ -246,7 +246,7 @@ class RouteRegistrar {
 			$method = $request->get_method();
 
 			if ( ! isset( $methods[ $method ] ) ) {
-				return ApiResponse::error( 'Method not allowed', 405 )->send();
+				return ApiResponse::error( __( 'Method not allowed', 'radius-hotel-booking' ), 405 )->send();
 			}
 
 			$callback = $methods[ $method ]['callback'];

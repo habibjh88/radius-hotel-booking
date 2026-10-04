@@ -2,7 +2,7 @@
 Contributors: radiustheme
 Tags: hotel booking, room booking, reservation, hotel, front desk
 Requires at least: 6.2
-Tested up to: 6.7
+Tested up to: 7.1
 Requires PHP: 8.0
 Stable tag: 1.0.0
 License: GPLv2 or later
@@ -25,15 +25,20 @@ half day in the afternoon and again overnight.
 * **A dashboard for the desk.** Today's arrivals and departures, bookings
   waiting for approval, and which rooms are free right now.
 * **Walk-in bookings in a few taps**, on a computer, tablet or phone.
-* **Guest records** with stay history.
+* **An availability calendar** to see free rooms by day, change a price for a
+  date, close dates or block a room for maintenance.
+* **Rate plans and prices** per room type, with a price per window.
+* **Guest records** with stay history and notes.
 * **Online booking** on your website, from a shortcode, a block or an
-  Elementor widget.
+  Elementor widget, with a confirmation page and e-mails for the guest.
 * **Manual payments** such as cash, bank transfer or mobile money, with
-  invoices.
-* **Staff accounts** with their own roles. Staff can work from wp-admin or from
-  a Hotel Dashboard page on your website.
+  invoices and receipts.
+* **Reports** on sales, rooms and availability, with CSV export.
+* **Staff accounts** with their own roles and permissions. Staff can work from
+  wp-admin or from a Hotel Dashboard page on your website.
 * **Your brand colour** across the dashboard and the booking pages.
-* **English and French** included.
+* **Translation ready.** Every text can be translated with Loco Translate or
+  on translate.wordpress.org.
 
 = No WooCommerce =
 
@@ -70,11 +75,48 @@ their WordPress account.
 Yes, if the stays do not overlap. A room booked for a half day until 17:00 can
 be booked again from 20:00 overnight.
 
+= Do I need WooCommerce? =
+
+No. Bookings, payments and invoices are handled by the plugin itself. If your
+site already runs a WooCommerce shop, it keeps working as before.
+
+= Which payment methods are supported? =
+
+Payments are recorded by your staff: cash, bank transfer, mobile money or any
+method you add in Settings → Payments. Guests booking online see your payment
+instructions. Online card payments are not included.
+
+= Does it work on a phone? =
+
+Yes. Every staff screen and the guest booking flow work on a phone, so the desk
+can take a walk-in booking from a tablet or phone.
+
+= How do I translate it? =
+
+Install Loco Translate, open Loco Translate → Plugins → Radius Hotel Booking and
+add your language. The plugin's screens, e-mails and documents all pick up the
+translation.
+
+= Why are times one hour off? =
+
+Check Settings → General in WordPress: choose your city as the time zone, not a
+UTC offset such as "UTC+1", which ignores daylight saving. The plugin's
+dashboard shows a warning to administrators when this needs fixing.
+
 = Where are uploaded documents stored? =
 
 In a protected folder in uploads, served only to staff who may see them. On
 nginx, add `define( 'RTBP_PROTECTED_DIR', '/path/outside/the/web/root' );` to
 wp-config.php to keep them outside the public folder.
+
+== Screenshots ==
+
+1. The front desk dashboard: today's arrivals and departures, rooms free now and bookings to approve.
+2. A walk-in booking: choose the stay window, the room and the guest.
+3. The availability calendar with free rooms and prices per date.
+4. A booking with its rooms, payments and invoice.
+5. Online booking on the website, on a phone.
+6. Reports: sales by day and by payment method.
 
 == Changelog ==
 
@@ -187,6 +229,11 @@ Fixed: stored files could be reached directly by anyone who had seen their downl
 Fixed: a failed database read or disk write could leave an export file silently incomplete.
 Only an administrator can delete an archive file whose bookings were removed.
 Click your name in the dashboard sidebar for the account menu, with Sign out.
+Fixed: some screen-reader labels, error messages and room counts could not be translated.
+Administrators are warned when the site time zone is a fixed UTC offset.
+Fixed: the dashboard's Timeline / Arrivals / Departures switch pushed the page sideways on phones.
+The plugin zip no longer bundles a partial French translation; translate with Loco Translate instead.
+Database updates no longer write to the PHP error log unless WP_DEBUG is on.
 
 = 1.0.0 =
 Initial release.

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { __ } from '@wordpress/i18n';
 import { Slot } from '@radix-ui/react-slot';
 import { cva } from 'class-variance-authority';
 import { PanelLeft } from 'lucide-react';
@@ -196,9 +197,14 @@ const Sidebar = React.forwardRef(
 						side={ side }
 					>
 						<SheetHeader className="sr-only">
-							<SheetTitle>Sidebar</SheetTitle>
+							<SheetTitle>
+								{ __( 'Sidebar', 'radius-hotel-booking' ) }
+							</SheetTitle>
 							<SheetDescription>
-								Displays the mobile sidebar.
+								{ __(
+									'Displays the mobile sidebar.',
+									'radius-hotel-booking'
+								) }
 							</SheetDescription>
 						</SheetHeader>
 						<div className="flex h-full w-full flex-col">
@@ -274,7 +280,9 @@ const SidebarTrigger = React.forwardRef(
 				{ ...props }
 			>
 				<PanelLeft />
-				<span className="sr-only">Toggle Sidebar</span>
+				<span className="sr-only">
+					{ __( 'Toggle sidebar', 'radius-hotel-booking' ) }
+				</span>
 			</Button>
 		);
 	}
@@ -288,10 +296,10 @@ const SidebarRail = React.forwardRef( ( { className, ...props }, ref ) => {
 		<button
 			ref={ ref }
 			data-sidebar="rail"
-			aria-label="Toggle Sidebar"
+			aria-label={ __( 'Toggle sidebar', 'radius-hotel-booking' ) }
 			tabIndex={ -1 }
 			onClick={ toggleSidebar }
-			title="Toggle Sidebar"
+			title={ __( 'Toggle sidebar', 'radius-hotel-booking' ) }
 			className={ cn(
 				'absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-sidebar-border group-data-[side=left]:-right-4 group-data-[side=right]:left-0 sm:flex',
 				'[[data-side=left]_&]:cursor-w-resize [[data-side=right]_&]:cursor-e-resize',

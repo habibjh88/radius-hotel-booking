@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { __ } from '@wordpress/i18n';
 import * as SheetPrimitive from '@radix-ui/react-dialog';
 import { cva } from 'class-variance-authority';
 import { X } from 'lucide-react';
@@ -54,7 +55,9 @@ const SheetContent = React.forwardRef(
 				>
 					<SheetPrimitive.Close className="absolute z-9999 right-5 top-[26px] opacity-70 ring-offset-background transition-opacity hover:opacity-100 border border-red-700  p-1 rounded-[4px] focus:outline-none disabled:pointer-events-none data-[state=open]:bg-secondary">
 						<X className="h-4 w-4 text-red-700" />
-						<span className="sr-only">Close</span>
+						<span className="sr-only">
+							{ __( 'Close', 'radius-hotel-booking' ) }
+						</span>
 					</SheetPrimitive.Close>
 					{ children }
 				</SheetPrimitive.Content>

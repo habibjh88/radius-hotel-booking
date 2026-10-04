@@ -7,7 +7,7 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { ArrowDown, ArrowUp, Clock, GripVertical } from 'lucide-react';
 
 import EmptyState from '@/components/common/EmptyState';
@@ -74,7 +74,12 @@ function localErrors( rows ) {
 	const precisionMessage = decimals
 		? sprintf(
 				/* translators: %d: number of decimals. */
-				__( 'Use at most %d decimals.', 'radius-hotel-booking' ),
+				_n(
+					'Use at most %d decimal.',
+					'Use at most %d decimals.',
+					decimals,
+					'radius-hotel-booking'
+				),
 				decimals
 		  )
 		: __( 'Use a whole amount.', 'radius-hotel-booking' );

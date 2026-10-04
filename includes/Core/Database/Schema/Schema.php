@@ -190,7 +190,8 @@ class Schema {
 				$wpdb->query( $sql ); //phpcs:ignore
 			} catch ( Exception $e ) {
 				// Log error but don't stop execution
-				error_log( 'Failed to add foreign key: ' . $e->getMessage() );
+				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- server-side record of a failed schema change.
+				error_log( '[radius-hotel-booking] Failed to add foreign key: ' . $e->getMessage() );
 			}
 		}
 	}

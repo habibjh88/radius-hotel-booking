@@ -93,10 +93,16 @@ class BookingWriter {
 	 *
 	 * @param array[] $requests   Each `{ room_id, rate_plan_id, arrival (Y-m-d), units?, checkin_time?,
 	 *                            room_type_id? (must match the room), expected_total? (the price shown),
-	 *                            adults?, children?, child_ages? (checked against the type's limits) }`.
+	 *                            adults?, children?, child_ages? (checked against the type's limits),
+	 *                            price_override? (importing only: the legacy price, frozen as is) }`.
 	 * @param string  $hold_token The caller's hold token: its own holds are not conflicts.
 	 * @param array   $options    `audience` (staff|public), `exclude_line` (a line being edited),
-	 *                            `accept_new_price` (bool), `now` (DateTimeImmutable, checks).
+	 *                            `accept_new_price` (bool), `now` (DateTimeImmutable, checks),
+	 *                            `importing` (bool, M18): a booking that already exists in the old
+	 *                            system — it may have started already, sit on a date or room that is
+	 *                            closed now, break today's date and guest rules, and keep its own
+	 *                            price (`price_override`); the lock, removed / moved rooms, the
+	 *                            overlap (with the buffer) and duplicates are checked as always.
 	 * @return array[] Per request `{ room, room_type_id, rate_plan_id, plan, window: StayWindow, quote, buffer_minutes }`.
 	 * @throws LogicException  Outside a transaction (a programming error).
 	 * @throws DomainException 409 `room_unavailable` / `rate_closed` / `rate_not_sold` / `price_changed` /
@@ -112,6 +118,7 @@ class BookingWriter {
 		}
 
 		$audience  = AvailabilityService::PUBLIC === ( $options['audience'] ?? '' ) ? AvailabilityService::PUBLIC : AvailabilityService::STAFF;
+		$importing = ! empty( $options['importing'] ) && AvailabilityService::STAFF === $audience;
 		$now       = $options['now'] ?? Dates::now();
 		$booked_at = $now->setTimezone( Dates::timezone() )->format( 'Y-m-d' );
 
@@ -131,7 +138,7 @@ class BookingWriter {
 				// The room was moved to another type since the page loaded.
 				$this->unavailable( $index, $room_id, (string) $room['number'], 'moved', null, $audience );
 			}
-			if ( Room::AVAILABLE !== $room['state'] ) {
+			if ( Room::AVAILABLE !== $room['state'] && ! $importing ) {
 				$this->unavailable( $index, $room_id, (string) $room['number'], (string) $room['state'], null, $audience );
 			}
 
@@ -144,27 +151,40 @@ class BookingWriter {
 			// Refuses a rate no longer sold, a bad date, units outside the bounds.
 			// Occupancy as the search counted it: without the requester's own
 			// holds or the line being edited, else the price shown never matches.
-			$quote = OccupancyCalculator::excluding(
-				$hold_token,
-				(int) ( $options['exclude_line'] ?? 0 ),
-				fn() => $this->prices->quote( $type_id, $plan_id, $arrival, $units, $checkin, $booked_at )
-			);
+			try {
+				$quote = OccupancyCalculator::excluding(
+					$hold_token,
+					(int) ( $options['exclude_line'] ?? 0 ),
+					fn() => $this->prices->quote( $type_id, $plan_id, $arrival, $units, $checkin, $booked_at )
+				);
+			} catch ( DomainException $e ) {
+				// An imported booking may use a rate the room type no longer sells, or a stay
+				// length outside today's limits: its price is the legacy one.
+				$tolerated = 'rate_not_sold' === $e->getErrorCode() || isset( $e->getFieldErrors()['units'] );
+				if ( ! $importing || ! isset( $request['price_override'] ) || ! $tolerated ) {
+					throw $e;
+				}
+				$quote = null;
+			}
 			$plan  = $this->plans->find( $plan_id );
 			if ( ! $plan instanceof RatePlan ) {
 				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 				throw DomainException::invalid( array( 'rate_plan_id' => __( 'Choose a rate plan.', 'radius-hotel-booking' ) ) );
 			}
 			$window = StayWindow::for( $plan, $arrival, $units, $checkin );
+			if ( $importing && isset( $request['price_override'] ) ) {
+				$quote = self::importedQuote( $quote, (float) $request['price_override'], $window->units() );
+			}
 
 			$grace = AvailabilityService::STAFF === $audience ? AvailabilityService::STAFF_GRACE_MINUTES * MINUTE_IN_SECONDS : 0;
-			if ( $window->startGmt()->getTimestamp() < $now->getTimestamp() - $grace ) {
+			if ( ! $importing && $window->startGmt()->getTimestamp() < $now->getTimestamp() - $grace ) {
 				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 				throw DomainException::conflict( 'past', __( 'This time has already passed.', 'radius-hotel-booking' ), array( 'index' => $index ) );
 			}
 
 			// The calendar may have closed the date since the search.
 			RateCalendar::flush();
-			$closed = RateCalendar::closure( $type_id, $plan_id, $window->unitDates() );
+			$closed = $importing ? null : RateCalendar::closure( $type_id, $plan_id, $window->unitDates() );
 			if ( $closed ) {
 				$reason = AvailabilityService::reason( $closed['code'], array( 'date' => $closed['date'] ) );
 				// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
@@ -181,12 +201,12 @@ class BookingWriter {
 
 			// The search's public date rules and the guest limits: a request
 			// posted directly must not skip them (critical review, M08).
-			$rule = AvailabilityService::dateRuleReason( $arrival, $audience, $now );
+			$rule = $importing ? null : AvailabilityService::dateRuleReason( $arrival, $audience, $now );
 			if ( $rule ) {
 				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 				throw DomainException::conflict( $rule['code'], $rule['message'], array( 'index' => $index ) );
 			}
-			if ( isset( $request['adults'] ) || isset( $request['children'] ) || ! empty( $request['child_ages'] ) ) {
+			if ( ! $importing && ( isset( $request['adults'] ) || isset( $request['children'] ) || ! empty( $request['child_ages'] ) ) ) {
 				list( $adults, $children ) = AvailabilityService::guestCounts( $request );
 				$type                      = $types[ $type_id ] ?? ( new RoomTypeRepository() )->find( $type_id );
 				$types[ $type_id ]         = $type;
@@ -198,7 +218,7 @@ class BookingWriter {
 			}
 
 			// 3. The price moved since it was shown.
-			if ( isset( $request['expected_total'] ) && is_numeric( $request['expected_total'] ) && empty( $options['accept_new_price'] )
+			if ( ! $importing && isset( $request['expected_total'] ) && is_numeric( $request['expected_total'] ) && empty( $options['accept_new_price'] )
 				&& ! Money::equals( (float) $request['expected_total'], (float) $quote['total'] ) ) {
 				// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 				throw DomainException::conflict(
@@ -321,6 +341,33 @@ class BookingWriter {
 					'steps'       => $quote['steps'],
 				)
 			),
+		);
+	}
+
+	/**
+	 * An imported line's quote: the legacy price, frozen as is, spread evenly
+	 * over the units; today's price (when the rate is still sold) is kept in
+	 * the breakdown for reference.
+	 *
+	 * @param array|null $quote Today's quote, or null (the rate is not sold any more).
+	 * @param float      $price Legacy price.
+	 * @param int        $units Units.
+	 * @return array
+	 */
+	private static function importedQuote( ?array $quote, float $price, int $units ): array {
+		$price = max( 0.0, (float) Money::round( $price ) );
+		$each  = Money::round( $price / max( 1, $units ) );
+		$steps = $quote ? (array) $quote['steps'] : array();
+		$steps[] = array(
+			'code'     => 'import',
+			'label'    => __( 'Price from the old system', 'radius-hotel-booking' ),
+			'total'    => $price,
+			'computed' => $quote ? (float) $quote['total'] : null,
+		);
+		return array(
+			'total'       => $price,
+			'unit_prices' => array_fill( 0, max( 1, $units ), $each ),
+			'steps'       => $steps,
 		);
 	}
 

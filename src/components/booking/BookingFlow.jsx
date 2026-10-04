@@ -239,13 +239,14 @@ export default function BookingFlow( { mode = 'desk' } ) {
 			setChoice( null );
 			toast.success(
 				sprintf(
-					/* translators: %s: room number. */
 					guestMode
-						? __(
+						? /* translators: %s: room number. */
+						  __(
 								'Room %s is held for you while you book.',
 								'radius-hotel-booking'
 						  )
-						: __(
+						: /* translators: %s: room number. */
+						  __(
 								'Room %s is held for this booking.',
 								'radius-hotel-booking'
 						  ),

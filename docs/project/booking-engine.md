@@ -292,6 +292,19 @@ Transaction::run(function () {
   counted without the requester's own holds (`OccupancyCalculator::excluding()`), as the search
   does. A block write locks the rooms in its scope the same way.
 
+
+**Importing (M18 T5a).** `lockAndCheck( …, [ 'importing' => true ] )` (staff only) writes a booking
+that already exists in the old system: it may have **started already**, sit on a date the calendar
+now closes or a room that is not `available`, break today's date rules and guest limits, and keep
+**its own price** (`price_override`, also when the rate is no longer sold or the stay length is
+outside today's limits — today's price is kept in the breakdown as `computed`). Unchanged: the row
+lock, removed / moved rooms, the **overlap with the buffer**, duplicates within the request — a
+conflict is a `room_unavailable` error, never accepted. `BookingService::create( …, 'import' )`
+adds the line status (`pending` / `confirmed` / `checked_in` + `checked_in_at`), `paid_amount`
+(a ledger row up to the total), **no payment deadline** (so no automatic release), no guest
+e-mail and no payment announcement; `rtbp_booking_created` still fires (counters, reports) with
+source `import`.
+
 ## 8. Release paths
 
 | Event | Effect on inventory |

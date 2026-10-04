@@ -165,7 +165,7 @@ pay_schedules · work_shifts · payroll_runs ──► payroll_lines · statutor
 
 `sequences`, `files` (M00: the protected-file index; `token` UNIQUE, `kind`, `path`, `original_name`, `mime`, `size`, `sha256`, `created_by`) · `pro_access_roles` (M13, **Pro**: `id`, `slug` UNIQUE, `name`, `description`, `levels` JSON, `profile_fields` JSON, `is_template`) · `pro_activity_log`, `pro_log_archives` (M14, **Pro**; hash-chained, append-only) · `guests` (M09: as the M09 doc, plus `phone_tail` — the last 8 digits, matching old and new Ivorian numbers — and `email_key`, the lower-cased real e-mail or NULL for a placeholder, carrying the UNIQUE key), `notes` (M09: `notable_type`, `notable_id`, `type` general/caution/warning, `body`, `author_id`, `author_name`, `edited_by`)
 (M09) · `exports` (M11) · `employees`, `employee_contracts`, `employee_pay_items`,
-`employee_documents` (M12) · the payroll tables (M15) · `import_map` (M18). The column lists are
+`employee_documents` (M12) · the payroll tables (M15) · `tata_import_map` (M18, **client add-on**: `id`, `entity`, `legacy_id`, `new_id`, `checksum`, timestamps; UNIQUE `entity` + `legacy_id`). The column lists are
 in each module doc.
 
 ## 5. Cross-cutting services

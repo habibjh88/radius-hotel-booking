@@ -6,7 +6,7 @@
  *   describeWindow( { type: 'fixed', start_time: '20:00', end_time: '08:00' } )
  *   → "Check-in 20:00, check-out 08:00 the next day (12 h)"
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 
 import { formatTime } from '@/lib/format';
 
@@ -76,7 +76,10 @@ export function formatDuration( minutes ) {
 	const total = Math.max( 0, Math.round( Number( minutes ) || 0 ) );
 	if ( total > 1440 && total % 1440 === 0 ) {
 		/* translators: %d: number of days. */
-		return sprintf( __( '%d days', 'radius-hotel-booking' ), total / 1440 );
+		return sprintf(
+			_n( '%d day', '%d days', total / 1440, 'radius-hotel-booking' ),
+			total / 1440
+		);
 	}
 	const hours = Math.floor( total / 60 );
 	const rest = total % 60;

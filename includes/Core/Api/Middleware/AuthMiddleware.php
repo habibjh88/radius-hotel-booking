@@ -31,7 +31,7 @@ class AuthMiddleware implements MiddlewareInterface {
 	public function handle( WP_REST_Request $request, callable $next ) {
 		// Check if user is authenticated
 		if ( ! is_user_logged_in() ) {
-			return ApiResponse::unauthorized( 'Authentication required' )->send();
+			return ApiResponse::unauthorized( __( 'Authentication required', 'radius-hotel-booking' ) )->send();
 		}
 
 		return $next( $request );

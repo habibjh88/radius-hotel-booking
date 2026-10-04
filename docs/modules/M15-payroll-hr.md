@@ -110,3 +110,4 @@ runs import as `settled` or `voided` and are never recalculated.
 
 ## Progress notes
 - 2026-10-04: M16 closed without its T3; the payslip and time-off self-service (16.7–16.9) moved here as **T7**, since it is Client-tier and needs T3 (runs), T5 (payslip PDF) and T6 (time off). The *My profile* screen, the `staff_self_service` feature and `rtbp.user.menu` (Pro/Free) are in place to hang it on.
+- 2026-10-04: `/next-module` asked D1 — still unanswered. M15 not started (stays `todo`).

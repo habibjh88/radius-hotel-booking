@@ -42,7 +42,7 @@ status "Creating archive…"
 rm -rf "$SLUG" "$SLUG.zip"
 mkdir "$SLUG"
 
-cp "$SLUG.php" uninstall.php readme.txt README.md "$SLUG/"
+cp "$SLUG.php" uninstall.php readme.txt README.md composer.json "$SLUG/"
 cp -r includes languages views build templates vendor "$SLUG/"
 [ -d assets ] && cp -r assets "$SLUG/"
 
@@ -55,8 +55,11 @@ rm -rf "$SLUG/includes/Commands"
 # No hidden files (.DS_Store, .gitkeep …): Plugin Check rejects them.
 find "$SLUG" -name '.*' -not -name '.' -exec rm -rf {} + 2>/dev/null || true
 
-# Translator sources aren't read at runtime — .mo / .l10n.php / .json are.
-find "$SLUG/languages" -type f \( -name '*.po' -o -name '*.pot' -o -name '*.po~' \) -delete 2>/dev/null || true
+# Languages: ship only the template (.pot), which Loco Translate starts from.
+# No bundled locale files: translations come from a translation plugin or
+# translate.wordpress.org (ADR-019), and the M00 fr_FR scaffold covers only a
+# fraction of the strings, so it would show a half-French screen.
+find "$SLUG/languages" -type f ! -name '*.pot' ! -name 'index.php' -delete 2>/dev/null || true
 
 zip -r "$SLUG.zip" "$SLUG/"
 rm -rf "$SLUG"

@@ -7,7 +7,7 @@
  * M05 payments, M06 rooms …), with no change needed here.
  */
 import { Link } from 'react-router-dom';
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import {
 	AlertCircle,
 	BedDouble,
@@ -19,6 +19,7 @@ import {
 	Plus,
 } from 'lucide-react';
 
+import SiteChecks from '@/components/common/SiteChecks';
 import StatCard from '@/components/common/StatCard';
 import { usePageActions } from '@/components/layout/PageActions';
 import { Button } from '@/components/ui/button';
@@ -76,7 +77,12 @@ export default function Dashboard() {
 			label: __( 'Rooms free now', 'radius-hotel-booking' ),
 			hint: sprintf(
 				/* translators: %d: total number of rooms. */
-				__( 'of %d rooms', 'radius-hotel-booking' ),
+				_n(
+					'of %d room',
+					'of %d rooms',
+					stats.rooms_total ?? 0,
+					'radius-hotel-booking'
+				),
 				stats.rooms_total ?? 0
 			),
 			to: '/calendar',
@@ -128,6 +134,7 @@ export default function Dashboard() {
 
 	return (
 		<div className="space-y-6">
+			<SiteChecks />
 			{ /* A strip that scrolls sideways on a phone (M01); a grid from sm up. */ }
 			<div className="-mx-4 flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3 2xl:grid-cols-6">
 				{ counters.map( ( counter ) => (

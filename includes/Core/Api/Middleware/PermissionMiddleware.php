@@ -59,7 +59,7 @@ class PermissionMiddleware implements MiddlewareInterface {
 		$nonce = $request->get_header( 'x-wp-nonce' );
 
 		if ( ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
-			return ApiResponse::forbidden( 'Invalid nonce' )->send();
+			return ApiResponse::forbidden( __( 'Invalid nonce', 'radius-hotel-booking' ) )->send();
 		}
 
 		/**
@@ -69,7 +69,7 @@ class PermissionMiddleware implements MiddlewareInterface {
 		$allowed_domain = home_url();
 
 		if ( empty( $referer ) || strpos( $referer, $allowed_domain ) !== 0 ) {
-			return ApiResponse::forbidden( 'Invalid request source' )->send();
+			return ApiResponse::forbidden( __( 'Invalid request source', 'radius-hotel-booking' ) )->send();
 		}
 
 		/**
@@ -99,7 +99,7 @@ class PermissionMiddleware implements MiddlewareInterface {
 		}
 
 		if ( ! $allowed ) {
-			return ApiResponse::forbidden( 'Insufficient permissions' )->send();
+			return ApiResponse::forbidden( __( 'Insufficient permissions', 'radius-hotel-booking' ) )->send();
 		}
 
 		return $next( $request );

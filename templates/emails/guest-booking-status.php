@@ -25,16 +25,16 @@ do_action( 'rtbp_email_before_content', $email, $data );
 
 <?php if ( ! empty( $data['rooms'] ) ) : ?>
 <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin: 0 0 16px;">
-	<?php foreach ( $data['rooms'] as $room ) : ?>
+	<?php foreach ( $data['rooms'] as $rtbp_room ) : ?>
 	<tr>
 		<td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; font-size: 14px; color: #111827;">
 			<?php
 			/* translators: 1: room number, 2: rate name. */
-			echo esc_html( sprintf( __( 'Room %1$s · %2$s', 'radius-hotel-booking' ), $room['room'], $room['rate'] ) );
+			echo esc_html( sprintf( __( 'Room %1$s · %2$s', 'radius-hotel-booking' ), $rtbp_room['room'], $rtbp_room['rate'] ) );
 			?>
-			<br /><span style="font-size: 13px; color: #6b7280;"><?php echo esc_html( $room['start'] . ' → ' . $room['end'] ); ?></span>
+			<br /><span style="font-size: 13px; color: #6b7280;"><?php echo esc_html( $rtbp_room['start'] . ' → ' . $rtbp_room['end'] ); ?></span>
 		</td>
-		<td align="right" style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; font-size: 14px; color: #111827;"><?php echo esc_html( $room['total'] ); ?></td>
+		<td align="right" style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; font-size: 14px; color: #111827;"><?php echo esc_html( $rtbp_room['total'] ); ?></td>
 	</tr>
 	<?php endforeach; ?>
 	<tr>

@@ -362,7 +362,12 @@ export default function Availability() {
 				? __( 'closed', 'radius-hotel-booking' )
 				: sprintf(
 						/* translators: %d: rooms free. */
-						__( '%d rooms free', 'radius-hotel-booking' ),
+						_n(
+							'%d room free',
+							'%d rooms free',
+							cell.free ?? 0,
+							'radius-hotel-booking'
+						),
 						cell.free ?? 0
 				  );
 		return sprintf(

@@ -95,7 +95,8 @@ class GuestBookingReceived extends BaseEmail {
 	 */
 	protected function prepare_email_data( $args ) {
 		$booking = $args[0] ?? null;
-		if ( ! $booking instanceof Booking ) {
+		// A booking brought over from the old system (M18): the guest booked long ago.
+		if ( ! $booking instanceof Booking || 'import' === ( $args[1] ?? '' ) ) {
 			return array();
 		}
 		// The booking as committed (its invoice, deadline and any *Paid now* payment).

@@ -154,7 +154,10 @@ class MigrationRunner {
 		// Clear cache when clearing all records.
 		wp_cache_delete( 'radius_hotel_booking_executed_migrations' );
 
-		error_log( 'All migration records cleared' );
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- progress, only with WP_DEBUG.
+			error_log( '[radius-hotel-booking] All migration records cleared' );
+		}
 	}
 
 	/**
@@ -183,9 +186,13 @@ class MigrationRunner {
 			$migration->up();
 			$this->recordMigration( $name );
 
-			error_log( "Migration executed: {$name}" );
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- progress, only with WP_DEBUG.
+				error_log( "[radius-hotel-booking] Migration executed: {$name}" );
+			}
 		} catch ( Exception $e ) {
-			error_log( "Migration failed: {$name} - " . $e->getMessage() );
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- server-side record of a failed schema change.
+			error_log( "[radius-hotel-booking] Migration failed: {$name} - " . $e->getMessage() );
 			throw $e;
 		}
 	}
@@ -205,9 +212,13 @@ class MigrationRunner {
 			$migration->down();
 			$this->removeRecord( $name );
 
-			error_log( "Migration rolled back: {$name}" );
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- progress, only with WP_DEBUG.
+				error_log( "[radius-hotel-booking] Migration rolled back: {$name}" );
+			}
 		} catch ( Exception $e ) {
-			error_log( "Migration rollback failed: {$name} - " . $e->getMessage() );
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- server-side record of a failed schema change.
+			error_log( "[radius-hotel-booking] Migration rollback failed: {$name} - " . $e->getMessage() );
 			throw $e;
 		}
 	}

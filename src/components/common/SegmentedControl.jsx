@@ -1,6 +1,7 @@
 /**
  * Segmented control: a small pill of mutually exclusive options
- * (Arrivals / Departures, Week / Month / Year).
+ * (Arrivals / Departures, Week / Month / Year). Never wider than its
+ * container: on a phone it scrolls sideways instead of pushing the page out.
  */
 import { cn } from '@/lib/utils';
 
@@ -12,12 +13,17 @@ import { cn } from '@/lib/utils';
  * @param {string}   props.label    Accessible group name.
  * @return {JSX.Element} Control.
  */
-export default function SegmentedControl( { options, value, onChange, label } ) {
+export default function SegmentedControl( {
+	options,
+	value,
+	onChange,
+	label,
+} ) {
 	return (
 		<div
 			role="radiogroup"
 			aria-label={ label }
-			className="inline-flex items-center gap-0.5 rounded-lg bg-muted p-1"
+			className="rtbp-no-scrollbar inline-flex max-w-full items-center gap-0.5 overflow-x-auto rounded-lg bg-muted p-1"
 		>
 			{ options.map( ( option ) => {
 				const selected = option.value === value;
@@ -29,7 +35,7 @@ export default function SegmentedControl( { options, value, onChange, label } ) 
 						aria-checked={ selected }
 						onClick={ () => onChange( option.value ) }
 						className={ cn(
-							'inline-flex h-8 items-center gap-1.5 rounded-md border-0 px-3 text-[13px] transition-colors',
+							'inline-flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md border-0 px-2.5 text-[13px] transition-colors sm:px-3',
 							selected
 								? 'bg-card font-semibold text-heading shadow-sm'
 								: 'bg-transparent font-medium text-muted-foreground hover:text-heading'

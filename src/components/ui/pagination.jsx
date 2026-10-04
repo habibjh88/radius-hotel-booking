@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { __ } from '@wordpress/i18n';
 import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -7,7 +8,7 @@ import { buttonVariants } from '@/components/ui/button';
 const Pagination = ( { className, ...props } ) => (
 	<nav
 		role="navigation"
-		aria-label="pagination"
+		aria-label={ __( 'Pagination', 'radius-hotel-booking' ) }
 		className={ cn( 'mx-auto flex w-full justify-center', className ) }
 		{ ...props }
 	/>
@@ -55,25 +56,25 @@ PaginationLink.displayName = 'PaginationLink';
 
 const PaginationPrevious = ( { className, ...props } ) => (
 	<PaginationLink
-		aria-label="Go to previous page"
+		aria-label={ __( 'Go to previous page', 'radius-hotel-booking' ) }
 		size="default"
 		className={ cn( 'gap-1 pl-2.5', className ) }
 		{ ...props }
 	>
 		<ChevronLeft className="h-4 w-4" />
-		<span>Previous</span>
+		<span>{ __( 'Previous', 'radius-hotel-booking' ) }</span>
 	</PaginationLink>
 );
 PaginationPrevious.displayName = 'PaginationPrevious';
 
 const PaginationNext = ( { className, ...props } ) => (
 	<PaginationLink
-		aria-label="Go to next page"
+		aria-label={ __( 'Go to next page', 'radius-hotel-booking' ) }
 		size="default"
 		className={ cn( 'gap-1 pr-2.5', className ) }
 		{ ...props }
 	>
-		<span>Next</span>
+		<span>{ __( 'Next', 'radius-hotel-booking' ) }</span>
 		<ChevronRight className="h-4 w-4" />
 	</PaginationLink>
 );
@@ -89,7 +90,9 @@ const PaginationEllipsis = ( { className, ...props } ) => (
 		{ ...props }
 	>
 		<MoreHorizontal className="h-4 w-4" />
-		<span className="sr-only">More pages</span>
+		<span className="sr-only">
+			{ __( 'More pages', 'radius-hotel-booking' ) }
+		</span>
 	</span>
 );
 PaginationEllipsis.displayName = 'PaginationEllipsis';

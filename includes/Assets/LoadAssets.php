@@ -22,6 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use RadiusTheme\RadiusHotelBooking\Admin\SiteChecks;
 use RadiusTheme\RadiusHotelBooking\Admin\UpgradeNotice;
 use RadiusTheme\RadiusHotelBooking\Controllers\AccessController;
 use RadiusTheme\RadiusHotelBooking\Core\Permissions\Capabilities;
@@ -404,6 +405,8 @@ class LoadAssets {
 				'email_templates'  => $this->email_templates(),
 				// The one dismissible upsell, on Settings only (ADR-016).
 				'upgrade'          => UpgradeNotice::params(),
+				// Site configuration warnings, administrators only (M18: time zone; add-ons add theirs).
+				'site_checks'      => SiteChecks::params(),
 				'timezone'      => wp_timezone_string(),
 				'format'        => $this->format_params(),
 				// The developer UI kit route (#/dev/ui): WP_DEBUG sites, admins only.
