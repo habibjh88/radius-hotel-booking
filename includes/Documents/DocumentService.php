@@ -152,7 +152,6 @@ class DocumentService {
 		$booking = ( new BookingRepository() )->find( (int) $payment->booking_id );
 		$invoice = ( new InvoiceRepository() )->forBooking( (int) $payment->booking_id );
 		$guest   = $booking && $booking->guest_id ? ( new GuestRepository() )->find( (int) $booking->guest_id ) : null;
-		$general = (array) SettingsHelper::get_setting( 'general' );
 
 		// What the ledger held right after this payment: every row up to it, voids of
 		// earlier payments included (critical review); and whether it was voided since.
@@ -195,7 +194,22 @@ class DocumentService {
 				'name'  => $guest->fullName(),
 				'phone' => (string) $guest->phone,
 			) : null,
-			'hotel'          => array(
+			'footer'         => (string) rtbp_setting( 'invoices', 'footerText', '' ),
+		) + self::business();
+	}
+
+	/**
+	 * The business block every document prints (Settings → General, 15.21):
+	 * `hotel` (legal or company name, address, phone, e-mail, tax and CNPS
+	 * numbers) and `logo_url`. Add-ons build their own documents on it (the
+	 * client's payslips, M15).
+	 *
+	 * @return array{hotel: array, logo_url: string}
+	 */
+	public static function business(): array {
+		$general = (array) SettingsHelper::get_setting( 'general' );
+		return array(
+			'hotel'    => array(
 				'name'        => (string) ( '' !== (string) ( $general['legalName'] ?? '' ) ? $general['legalName'] : ( $general['companyName'] ?? '' ) ),
 				'address'     => (string) ( $general['address'] ?? '' ),
 				'phone'       => (string) ( $general['phone'] ?? '' ),
@@ -203,8 +217,7 @@ class DocumentService {
 				'tax_number'  => (string) ( $general['taxNumber'] ?? '' ),
 				'cnps_number' => (string) ( $general['cnpsNumber'] ?? '' ),
 			),
-			'logo_url'       => self::logoUrl( (int) ( $general['logo'] ?? 0 ) ),
-			'footer'         => (string) rtbp_setting( 'invoices', 'footerText', '' ),
+			'logo_url' => self::logoUrl( (int) ( $general['logo'] ?? 0 ) ),
 		);
 	}
 

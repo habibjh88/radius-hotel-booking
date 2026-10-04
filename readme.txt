@@ -236,6 +236,8 @@ The plugin zip no longer bundles a partial French translation; translate with Lo
 Database updates no longer write to the PHP error log unless WP_DEBUG is on.
 Fixed: a room's guest count could not be changed while its room was under maintenance.
 Fixed: a booking's room could not be edited once its rate plan was no longer sold.
+New status colours for documents that are drafted, finalised, settled or voided.
+New status colours for requests awaiting approval, approved, declined or cancelled.
 
 = 1.0.0 =
 Initial release.
