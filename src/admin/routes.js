@@ -219,6 +219,18 @@ const baseRoutes = [
 		element: lazy( () => import( '@/modules/Rooms/Floors' ) ),
 	},
 	{
+		path: '/rooms/amenities',
+		hidden: true,
+		label: __( 'Amenities', 'radius-hotel-booking' ),
+		description: __(
+			'The amenities room types pick from',
+			'radius-hotel-booking'
+		),
+		capability: VIEW,
+		accessKey: 'page.rooms',
+		element: lazy( () => import( '@/modules/Rooms/Amenities' ) ),
+	},
+	{
 		// One room type (`new` = add one). Title comes from the `/rooms` route.
 		path: '/rooms/:id',
 		hidden: true,

@@ -8,7 +8,6 @@ import { __ } from '@wordpress/i18n';
 import { Field, FormSection } from '@/components/common/Form';
 import GalleryField from '@/components/common/GalleryField';
 import Panel from '@/components/common/Panel';
-import TagInput from '@/components/common/TagInput';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -16,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { applyServerErrors, useZodForm, z } from '@/lib/forms';
 import { toast, toastError } from '@/lib/toast';
 import { useSaveRoomType } from '../api';
+import AmenityPicker from './AmenityPicker';
 
 /**
  * A whole number typed in a text box: '' allowed when `optional`.
@@ -371,7 +371,7 @@ export default function RoomTypeForm( { type, readOnly = false, onSaved } ) {
 							name="amenities"
 							form={ form }
 							description={ __(
-								'Press Enter after each one: Wi-Fi, Air conditioning, Mini bar…',
+								'Tick what this room type offers. The list is shared by every room type.',
 								'radius-hotel-booking'
 							) }
 						>
@@ -379,10 +379,11 @@ export default function RoomTypeForm( { type, readOnly = false, onSaved } ) {
 								control={ control }
 								name="amenities"
 								render={ ( { field } ) => (
-									<TagInput
+									<AmenityPicker
 										value={ field.value }
 										onChange={ field.onChange }
 										disabled={ readOnly }
+										canManage={ ! readOnly }
 									/>
 								) }
 							/>

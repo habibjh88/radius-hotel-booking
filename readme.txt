@@ -238,6 +238,9 @@ Fixed: a room's guest count could not be changed while its room was under mainte
 Fixed: a booking's room could not be edited once its rate plan was no longer sold.
 New status colours for documents that are drafted, finalised, settled or voided.
 New status colours for requests awaiting approval, approved, declined or cancelled.
+New shared amenity list: tick amenities on each room type instead of typing them again.
+Renaming or deleting an amenity updates every room type; duplicates can be merged into one.
+New "Add common amenities" button adds a ready-made list of standard hotel amenities in one click.
 
 = 1.0.0 =
 Initial release.

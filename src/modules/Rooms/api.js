@@ -55,6 +55,8 @@ export function useSaveRoomType() {
 				queryKey: ROOM_TYPES_KEY,
 				exact: true,
 			} );
+			// A name the library did not know was added to it.
+			client.invalidateQueries( { queryKey: AMENITIES_KEY } );
 		},
 	} );
 }
@@ -150,6 +152,132 @@ export function useReorderFloors() {
 			}
 		},
 		onSuccess: ( floors ) => client.setQueryData( FLOORS_KEY, floors ),
+	} );
+}
+
+export const AMENITIES_KEY = [ 'amenities' ];
+
+/**
+ * The amenity library in order; each with the room types that offer it
+ * (`room_types: [ { id, name } ]`).
+ *
+ * @return {Object} React Query result.
+ */
+export function useAmenities() {
+	return useQuery( {
+		queryKey: AMENITIES_KEY,
+		queryFn: () =>
+			get( 'amenities' ).then( ( { data } ) => data.amenities ),
+	} );
+}
+
+/**
+ * An amenity write. Every amenity endpoint answers with the whole list,
+ * which replaces the cache; a rename, merge, delete or new order also
+ * changes the room types that offer it, so those are refreshed.
+ *
+ * @param {Function} send         Called with the mutation variables; returns the request.
+ * @param {boolean}  touchesTypes The write can change room types (not an add).
+ * @return {Object} Mutation; resolves with the full response data.
+ */
+function useAmenityMutation( send, touchesTypes = true ) {
+	const client = useQueryClient();
+	return useMutation( {
+		mutationFn: ( variables ) =>
+			send( variables ).then( ( { data, message } ) => ( {
+				...data,
+				message,
+			} ) ),
+		onSuccess: ( data ) => {
+			client.setQueryData( AMENITIES_KEY, data.amenities );
+			if ( touchesTypes ) {
+				client.invalidateQueries( { queryKey: ROOM_TYPES_KEY } );
+			}
+		},
+	} );
+}
+
+export const useAddAmenity = () =>
+	useAmenityMutation( ( name ) => post( 'amenities', { name } ), false );
+
+/**
+ * Rename an amenity; with `merge`, fold it into the amenity that already has
+ * that name (the server answers `amenity_name_taken` without it).
+ *
+ * @return {Object} Mutation; `mutate( { id, name, merge? } )`.
+ */
+export const useRenameAmenity = () =>
+	useAmenityMutation( ( { id, name, merge = false } ) =>
+		put( `amenities/${ id }`, { name, merge } )
+	);
+
+/**
+ * The common amenities, grouped, each with `added` when the list already
+ * holds it. Loaded when the "Add common amenities" dialog opens.
+ *
+ * @param {boolean} enabled Load now.
+ * @return {Object} React Query result; data `[ { label, amenities: [ { name, added } ] } ]`.
+ */
+export function useCommonAmenities( enabled ) {
+	return useQuery( {
+		queryKey: [ ...AMENITIES_KEY, 'common' ],
+		queryFn: () =>
+			get( 'amenities/common' ).then( ( { data } ) => data.groups ),
+		enabled,
+		staleTime: 0,
+	} );
+}
+
+/**
+ * Add several amenities at once; names already in the list are skipped.
+ *
+ * @return {Object} Mutation; `mutate( names )` resolves with `{ added, amenities, message }`.
+ */
+export const useImportAmenities = () =>
+	useAmenityMutation(
+		( names ) => post( 'amenities/import', { names } ),
+		false
+	);
+
+export const useDeleteAmenity = () =>
+	useAmenityMutation( ( id ) => del( `amenities/${ id }` ) );
+
+/**
+ * Save a new amenity order. Optimistic: the list moves at once and goes
+ * back if the server refuses.
+ *
+ * @return {Object} Mutation; `mutate( ids )`.
+ */
+export function useReorderAmenities() {
+	const client = useQueryClient();
+	return useMutation( {
+		mutationFn: ( ids ) =>
+			put( 'amenities/order', { ids } ).then(
+				( { data } ) => data.amenities
+			),
+		onMutate: async ( ids ) => {
+			await client.cancelQueries( { queryKey: AMENITIES_KEY } );
+			const previous = client.getQueryData( AMENITIES_KEY );
+			if ( previous ) {
+				const byId = new Map(
+					previous.map( ( amenity ) => [ amenity.id, amenity ] )
+				);
+				client.setQueryData(
+					AMENITIES_KEY,
+					ids.map( ( id ) => byId.get( id ) ).filter( Boolean )
+				);
+			}
+			return { previous };
+		},
+		onError: ( _error, _ids, context ) => {
+			if ( context?.previous ) {
+				client.setQueryData( AMENITIES_KEY, context.previous );
+			}
+		},
+		onSuccess: ( amenities ) => {
+			client.setQueryData( AMENITIES_KEY, amenities );
+			client.invalidateQueries( { queryKey: ROOM_TYPES_KEY } );
+		},
 	} );
 }
 

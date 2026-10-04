@@ -38,14 +38,23 @@ class RoomTypeService {
 	private RoomRepository $rooms;
 
 	/**
+	 * The amenity library.
+	 *
+	 * @var AmenityService
+	 */
+	private AmenityService $amenities;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param RoomTypeRepository|null $types Room types.
-	 * @param RoomRepository|null     $rooms Rooms.
+	 * @param RoomTypeRepository|null $types     Room types.
+	 * @param RoomRepository|null     $rooms     Rooms.
+	 * @param AmenityService|null     $amenities The amenity library.
 	 */
-	public function __construct( ?RoomTypeRepository $types = null, ?RoomRepository $rooms = null ) {
-		$this->types = $types ?? new RoomTypeRepository();
-		$this->rooms = $rooms ?? new RoomRepository();
+	public function __construct( ?RoomTypeRepository $types = null, ?RoomRepository $rooms = null, ?AmenityService $amenities = null ) {
+		$this->types     = $types ?? new RoomTypeRepository();
+		$this->rooms     = $rooms ?? new RoomRepository();
+		$this->amenities = $amenities ?? new AmenityService( null, $this->types );
 	}
 
 	/**
@@ -81,7 +90,7 @@ class RoomTypeService {
 	 * @throws DomainException When the insert did not happen.
 	 */
 	public function create( array $input ): RoomType {
-		$data         = $this->validate( $input, null );
+		$data         = $this->withLibraryAmenities( $this->validate( $input, null ) );
 		$data['slug'] = $this->uniqueSlug( (string) ( $input['slug'] ?? '' ) ? (string) $input['slug'] : $data['name'], 0 );
 		$type         = Db::quietly( fn() => $this->types->create( $data ) );
 		if ( ! $type instanceof RoomType || ! $type->id ) {
@@ -120,7 +129,7 @@ class RoomTypeService {
 	public function update( int $id, array $input ): RoomType {
 		$type   = $this->get( $id );
 		$before = self::audited( $type->toArray() );
-		$data   = $this->validate( $input, $type );
+		$data   = $this->withLibraryAmenities( $this->validate( $input, $type ) );
 		if ( isset( $input['slug'] ) && '' !== (string) $input['slug'] && (string) $input['slug'] !== $type->slug ) {
 			$data['slug'] = $this->uniqueSlug( (string) $input['slug'], $id );
 		}
@@ -310,6 +319,20 @@ class RoomTypeService {
 		if ( $errors ) {
 			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 			throw DomainException::invalid( $errors );
+		}
+		return $data;
+	}
+
+	/**
+	 * Valid fields with the amenities in the library's spelling and order;
+	 * names it does not know yet are added to it.
+	 *
+	 * @param array $data Validated columns.
+	 * @return array
+	 */
+	private function withLibraryAmenities( array $data ): array {
+		if ( isset( $data['amenities'] ) ) {
+			$data['amenities'] = $this->amenities->resolve( $data['amenities'] );
 		}
 		return $data;
 	}

@@ -24,6 +24,7 @@ use RadiusTheme\RadiusHotelBooking\Databases\Table\BookingRoomsTable;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\BookingsTable;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\ExportsTable;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\FilesTable;
+use RadiusTheme\RadiusHotelBooking\Databases\Table\AmenitiesTable;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\FloorsTable;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\GuestsTable;
 use RadiusTheme\RadiusHotelBooking\Databases\Table\HoldsTable;
@@ -105,6 +106,7 @@ class DatabaseManager {
 			FloorsTable::class,
 			RoomTypesTable::class,
 			RoomsTable::class,
+			AmenitiesTable::class,
 			// Rate plans and pricing (M07).
 			RatePlansTable::class,
 			RoomTypeRatesTable::class,

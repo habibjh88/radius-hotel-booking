@@ -11,6 +11,7 @@ import {
 	ImageOff,
 	Layers,
 	Plus,
+	Sparkles,
 	Users,
 } from 'lucide-react';
 
@@ -47,6 +48,14 @@ export default function RoomTypes() {
 
 	usePageActions(
 		<div className="flex items-center gap-2">
+			<Button asChild variant="outline">
+				<Link to="/rooms/amenities">
+					<Sparkles className="h-4 w-4" aria-hidden="true" />
+					<span className="sr-only sm:not-sr-only">
+						{ __( 'Amenities', 'radius-hotel-booking' ) }
+					</span>
+				</Link>
+			</Button>
 			<Button asChild variant="outline">
 				<Link to="/rooms/floors">
 					<Layers className="h-4 w-4" aria-hidden="true" />

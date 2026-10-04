@@ -132,7 +132,8 @@ pay_schedules · work_shifts · payroll_runs ──► payroll_lines · statutor
 | Table | Columns |
 |---|---|
 | `floors` | `id`, `name`, `sort_order` |
-| `room_types` | `id`, `name`, `slug`, `description`, `short_description`, `gallery` (JSON attachment ids), `featured_image_id`, `amenities` (JSON), `bed_info`, `size_m2`, `max_adults`, `max_children`, `buffer_minutes` (NULL → setting), `is_active`, `sort_order`, soft delete |
+| `room_types` | `id`, `name`, `slug`, `description`, `short_description`, `gallery` (JSON attachment ids), `featured_image_id`, `amenities` (JSON names, kept in step with `amenities` below), `bed_info`, `size_m2`, `max_adults`, `max_children`, `buffer_minutes` (NULL → setting), `is_active`, `sort_order`, soft delete |
+| `amenities` | `id`, `name` (unique ignoring case, ≤ 60), `sort_order`, timestamps. The shared library room types tick from; a rename / merge / delete rewrites every room type's list, a name saved on a room type that the library lacks is added to it (DB 1.0.14; seeded once from existing room types, option `rtbp_amenities_seeded`) |
 | `rooms` | `id`, `room_type_id` ★, `floor_id`, `number` **UNIQUE**, `number_sort` (natural-sort key), `state` (available / maintenance / out_of_service), `state_note`, `sort_order`, soft delete. Index `(room_type_id, state)`, `(floor_id)` |
 
 ### 4.2 Pricing (M07)

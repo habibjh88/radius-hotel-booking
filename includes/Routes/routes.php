@@ -26,6 +26,7 @@ use RadiusTheme\RadiusHotelBooking\Controllers\ExportController;
 use RadiusTheme\RadiusHotelBooking\Controllers\ReportController;
 use RadiusTheme\RadiusHotelBooking\Controllers\NotificationController;
 use RadiusTheme\RadiusHotelBooking\Controllers\FileController;
+use RadiusTheme\RadiusHotelBooking\Controllers\AmenityController;
 use RadiusTheme\RadiusHotelBooking\Controllers\FloorController;
 use RadiusTheme\RadiusHotelBooking\Controllers\BookingController;
 use RadiusTheme\RadiusHotelBooking\Controllers\GuestController;
@@ -78,6 +79,10 @@ $this->router->put( 'settings/(?P<section>[a-zA-Z0-9_-]+)', array( SettingsContr
 /** Inventory (M06). */
 $this->router->put( 'floors/order', array( FloorController::class, 'order' ) );
 $this->router->resource( 'floors', FloorController::class );
+$this->router->put( 'amenities/order', array( AmenityController::class, 'order' ) );
+$this->router->get( 'amenities/common', array( AmenityController::class, 'common' ) );
+$this->router->post( 'amenities/import', array( AmenityController::class, 'import' ) );
+$this->router->resource( 'amenities', AmenityController::class );
 $this->router->resource( 'room-types', RoomTypeController::class );
 $this->router->get( 'room-types/(?P<id>\d+)/rooms', array( RoomController::class, 'ofType' ) );
 // Before the resource: `rooms/bulk` is not an id.

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-04T10:12:11+00:00\n"
+"POT-Creation-Date: 2026-10-04T11:55:13+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: radius-hotel-booking\n"
@@ -141,7 +141,7 @@ msgid "Rooms report"
 msgstr ""
 
 #: includes/Access/AccessRegistry.php:218
-#: src/admin/routes.js:259
+#: src/admin/routes.js:271
 #: src/modules/Settings/sections/index.js:113
 msgid "Exports"
 msgstr ""
@@ -149,7 +149,7 @@ msgstr ""
 #: includes/Access/AccessRegistry.php:219
 #: includes/Admin/Menu.php:68
 #: radius-hotel-booking.php:422
-#: src/admin/routes.js:286
+#: src/admin/routes.js:298
 msgid "Settings"
 msgstr ""
 
@@ -442,262 +442,287 @@ msgid "Deleted a room type"
 msgstr ""
 
 #: includes/ActivityLog/ActionCatalog.php:85
-msgid "Added a room"
+msgid "Added an amenity"
 msgstr ""
 
 #: includes/ActivityLog/ActionCatalog.php:86
-msgid "Changed a room"
+msgid "Renamed an amenity"
 msgstr ""
 
 #: includes/ActivityLog/ActionCatalog.php:87
-msgid "Removed a room"
+msgid "Added common amenities"
 msgstr ""
 
 #: includes/ActivityLog/ActionCatalog.php:88
-msgid "Changed a room state"
+msgid "Merged two amenities"
 msgstr ""
 
 #: includes/ActivityLog/ActionCatalog.php:89
-msgid "Moved a room to another type"
+msgid "Deleted an amenity"
 msgstr ""
 
 #: includes/ActivityLog/ActionCatalog.php:90
-msgid "Added rooms in bulk"
+#: includes/Services/Inventory/AmenityService.php:435
+msgid "Reordered the amenities"
+msgstr ""
+
+#: includes/ActivityLog/ActionCatalog.php:91
+msgid "Added a room"
+msgstr ""
+
+#: includes/ActivityLog/ActionCatalog.php:92
+msgid "Changed a room"
 msgstr ""
 
 #: includes/ActivityLog/ActionCatalog.php:93
-msgid "Added a rate plan"
+msgid "Removed a room"
 msgstr ""
 
 #: includes/ActivityLog/ActionCatalog.php:94
-msgid "Changed a rate plan"
+msgid "Changed a room state"
 msgstr ""
 
 #: includes/ActivityLog/ActionCatalog.php:95
-msgid "Deleted a rate plan"
+msgid "Moved a room to another type"
 msgstr ""
 
 #: includes/ActivityLog/ActionCatalog.php:96
-msgid "Changed a price"
-msgstr ""
-
-#: includes/ActivityLog/ActionCatalog.php:98
-msgid "Changed a price for a date"
+msgid "Added rooms in bulk"
 msgstr ""
 
 #: includes/ActivityLog/ActionCatalog.php:99
-msgid "Closed dates"
+msgid "Added a rate plan"
 msgstr ""
 
 #: includes/ActivityLog/ActionCatalog.php:100
-msgid "Opened dates"
+msgid "Changed a rate plan"
 msgstr ""
 
 #: includes/ActivityLog/ActionCatalog.php:101
-msgid "Updated the calendar in bulk"
+msgid "Deleted a rate plan"
 msgstr ""
 
 #: includes/ActivityLog/ActionCatalog.php:102
+msgid "Changed a price"
+msgstr ""
+
+#: includes/ActivityLog/ActionCatalog.php:104
+msgid "Changed a price for a date"
+msgstr ""
+
+#: includes/ActivityLog/ActionCatalog.php:105
+msgid "Closed dates"
+msgstr ""
+
+#: includes/ActivityLog/ActionCatalog.php:106
+msgid "Opened dates"
+msgstr ""
+
+#: includes/ActivityLog/ActionCatalog.php:107
+msgid "Updated the calendar in bulk"
+msgstr ""
+
+#: includes/ActivityLog/ActionCatalog.php:108
 #: src/admin/routes.js:98
 #: src/modules/Availability/Blocks.jsx:115
 #: src/modules/Availability/Blocks.jsx:158
 msgid "Blocked dates"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:103
+#: includes/ActivityLog/ActionCatalog.php:109
 msgid "Changed a block"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:104
+#: includes/ActivityLog/ActionCatalog.php:110
 msgid "Removed a block"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:105
+#: includes/ActivityLog/ActionCatalog.php:111
 msgid "Held a room"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:106
+#: includes/ActivityLog/ActionCatalog.php:112
 msgid "Released a held room"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:109
+#: includes/ActivityLog/ActionCatalog.php:115
 msgid "Added a guest"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:110
+#: includes/ActivityLog/ActionCatalog.php:116
 msgid "Changed a guest"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:111
+#: includes/ActivityLog/ActionCatalog.php:117
 msgid "Banned a guest"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:112
+#: includes/ActivityLog/ActionCatalog.php:118
 msgid "Lifted a guest ban"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:113
+#: includes/ActivityLog/ActionCatalog.php:119
 msgid "Viewed a guest identity document"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:114
+#: includes/ActivityLog/ActionCatalog.php:120
 msgid "Exported a report"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:115
+#: includes/ActivityLog/ActionCatalog.php:121
 msgid "Generated an export file"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:116
+#: includes/ActivityLog/ActionCatalog.php:122
 msgid "Downloaded an export file"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:117
+#: includes/ActivityLog/ActionCatalog.php:123
 msgid "Deleted an export file"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:118
+#: includes/ActivityLog/ActionCatalog.php:124
 msgid "Added a guest note"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:119
+#: includes/ActivityLog/ActionCatalog.php:125
 msgid "Edited a guest note"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:120
+#: includes/ActivityLog/ActionCatalog.php:126
 msgid "Removed a guest note"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:123
+#: includes/ActivityLog/ActionCatalog.php:129
 msgid "Created a booking"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:124
+#: includes/ActivityLog/ActionCatalog.php:130
 msgid "Approved a booking"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:125
+#: includes/ActivityLog/ActionCatalog.php:131
 msgid "Declined a booking"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:126
+#: includes/ActivityLog/ActionCatalog.php:132
 msgid "Cancelled a booking"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:127
+#: includes/ActivityLog/ActionCatalog.php:133
 msgid "Checked a guest in"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:128
+#: includes/ActivityLog/ActionCatalog.php:134
 msgid "Checked a guest out"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:129
+#: includes/ActivityLog/ActionCatalog.php:135
 msgid "Marked a no-show"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:130
+#: includes/ActivityLog/ActionCatalog.php:136
 msgid "Edited a booking"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:131
+#: includes/ActivityLog/ActionCatalog.php:137
 msgid "Added a room to a booking"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:132
+#: includes/ActivityLog/ActionCatalog.php:138
 msgid "Changed a room on a booking"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:133
+#: includes/ActivityLog/ActionCatalog.php:139
 msgid "Removed a room from a booking"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:134
+#: includes/ActivityLog/ActionCatalog.php:140
 msgid "Added a booking note"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:135
+#: includes/ActivityLog/ActionCatalog.php:141
 msgid "Edited a booking note"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:136
+#: includes/ActivityLog/ActionCatalog.php:142
 msgid "Removed a booking note"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:139
+#: includes/ActivityLog/ActionCatalog.php:145
 msgid "Recorded a payment"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:140
+#: includes/ActivityLog/ActionCatalog.php:146
 msgid "Changed a payment status"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:141
+#: includes/ActivityLog/ActionCatalog.php:147
 msgid "Voided a payment"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:142
+#: includes/ActivityLog/ActionCatalog.php:148
 msgid "Sent an invoice"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:143
+#: includes/ActivityLog/ActionCatalog.php:149
 msgid "Regenerated an invoice"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:144
+#: includes/ActivityLog/ActionCatalog.php:150
 msgid "Put a payment on hold"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:145
+#: includes/ActivityLog/ActionCatalog.php:151
 msgid "Issued an invoice"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:146
+#: includes/ActivityLog/ActionCatalog.php:152
 msgid "Revised an invoice"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:147
+#: includes/ActivityLog/ActionCatalog.php:153
 msgid "Sent a receipt"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:148
+#: includes/ActivityLog/ActionCatalog.php:154
 msgid "Sent a payment reminder"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:149
+#: includes/ActivityLog/ActionCatalog.php:155
 msgid "Released an unpaid booking"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:206
+#: includes/ActivityLog/ActionCatalog.php:212
 msgid "Data changes"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:207
+#: includes/ActivityLog/ActionCatalog.php:213
 msgid "Page views"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:208
+#: includes/ActivityLog/ActionCatalog.php:214
 msgid "Sign-in"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:209
+#: includes/ActivityLog/ActionCatalog.php:215
 #: src/admin/routes.js:186
 #: src/modules/Bookings/components/PaymentsPanel.jsx:284
 #: src/modules/Settings/sections/index.js:84
 msgid "Payments"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:210
-#: src/admin/routes.js:272
+#: includes/ActivityLog/ActionCatalog.php:216
+#: src/admin/routes.js:284
 #: src/modules/Settings/sections/index.js:175
 msgid "Permissions"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:211
+#: includes/ActivityLog/ActionCatalog.php:217
 msgid "Security"
 msgstr ""
 
-#: includes/ActivityLog/ActionCatalog.php:212
+#: includes/ActivityLog/ActionCatalog.php:218
 #: includes/Core/Permissions/Capabilities.php:129
 #: src/admin/routes.js:57
 msgid "System"
@@ -727,6 +752,36 @@ msgstr ""
 #: includes/Controllers/AccessController.php:127
 #: includes/Core/Api/Middleware/AccessMiddleware.php:204
 msgid "You do not have access to this. Ask a manager if you need it."
+msgstr ""
+
+#. translators: %d: number of amenities.
+#: includes/Controllers/AmenityController.php:100
+#, php-format
+msgid "%d amenity added."
+msgid_plural "%d amenities added."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/Controllers/AmenityController.php:137
+#: src/modules/Rooms/Amenities.jsx:334
+msgid "Amenity added."
+msgstr ""
+
+#: includes/Controllers/AmenityController.php:162
+#: src/modules/Rooms/Amenities.jsx:432
+msgid "Amenity renamed."
+msgstr ""
+
+#: includes/Controllers/AmenityController.php:162
+msgid "Amenities merged."
+msgstr ""
+
+#: includes/Controllers/AmenityController.php:179
+msgid "Amenity order saved."
+msgstr ""
+
+#: includes/Controllers/AmenityController.php:195
+msgid "Amenity deleted."
 msgstr ""
 
 #: includes/Controllers/BlockController.php:106
@@ -1113,7 +1168,7 @@ msgid "Staff"
 msgstr ""
 
 #. translators: 1: migration class name, 2: comma separated list of available tables.
-#: includes/Databases/DatabaseManager.php:229
+#: includes/Databases/DatabaseManager.php:231
 #, php-format
 msgid "Migration class %1$s not found. Available tables: %2$s"
 msgstr ""
@@ -2651,6 +2706,224 @@ msgstr ""
 msgid "This guest is already on file: %1$s (%2$s)."
 msgstr ""
 
+#: includes/Services/Inventory/AmenityService.php:89
+msgid "This amenity does not exist."
+msgstr ""
+
+#. translators: %s: amenity name.
+#: includes/Services/Inventory/AmenityService.php:110
+#: includes/Services/Inventory/AmenityService.php:497
+#, php-format
+msgid "Added the amenity %s"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:126
+msgid "Room comfort"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:128
+msgid "Air conditioning"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:129
+msgid "Ceiling fan"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:130
+msgid "Wardrobe"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:131
+msgid "Work desk"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:132
+msgid "Seating area"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:133
+msgid "Blackout curtains"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:134
+msgid "Balcony"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:138
+msgid "Technology"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:140
+msgid "Free Wi-Fi"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:141
+msgid "Flat-screen TV"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:142
+msgid "Satellite channels"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:143
+msgid "Telephone"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:144
+msgid "USB charging ports"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:148
+msgid "Bathroom"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:150
+msgid "Private bathroom"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:151
+msgid "Shower"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:152
+msgid "Bathtub"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:153
+msgid "Hair dryer"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:154
+msgid "Free toiletries"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:155
+msgid "Towels"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:156
+msgid "Bathrobe"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:157
+msgid "Slippers"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:161
+msgid "Food and drink"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:163
+msgid "Mini bar"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:164
+msgid "Refrigerator"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:165
+msgid "Electric kettle"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:166
+msgid "Tea and coffee maker"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:167
+msgid "Bottled water"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:168
+msgid "Breakfast included"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:172
+msgid "Services and safety"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:174
+msgid "Room service"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:175
+msgid "Daily housekeeping"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:176
+msgid "Wake-up service"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:177
+msgid "In-room safe"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:178
+msgid "Key card access"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:179
+msgid "Smoke detector"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:180
+msgid "Free parking"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:233
+msgid "Each amenity name can have up to 60 characters."
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:258
+#: includes/Services/Inventory/AmenityService.php:430
+#: templates/booking/room-type.php:88
+#: src/admin/routes.js:224
+#: src/modules/Rooms/Amenities.jsx:202
+#: src/modules/Rooms/components/RoomTypeForm.jsx:370
+#: src/modules/Rooms/index.jsx:55
+msgid "Amenities"
+msgstr ""
+
+#. translators: %d: number of amenities.
+#: includes/Services/Inventory/AmenityService.php:264
+#, php-format
+msgid "Added %d common amenity"
+msgid_plural "Added %d common amenities"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: amenity name.
+#: includes/Services/Inventory/AmenityService.php:298
+#: includes/Services/Inventory/AmenityService.php:608
+#, php-format
+msgid "There is already an amenity called %s."
+msgstr ""
+
+#. translators: 1: old amenity name, 2: new amenity name.
+#: includes/Services/Inventory/AmenityService.php:329
+#, php-format
+msgid "Renamed the amenity %1$s to %2$s"
+msgstr ""
+
+#. translators: 1: amenity merged away, 2: amenity kept.
+#: includes/Services/Inventory/AmenityService.php:376
+#, php-format
+msgid "Merged the amenity %1$s into %2$s"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:403
+msgid "The list of amenities has changed. Reload the page and try again."
+msgstr ""
+
+#. translators: %s: amenity name.
+#: includes/Services/Inventory/AmenityService.php:470
+#, php-format
+msgid "Deleted the amenity %s"
+msgstr ""
+
+#: includes/Services/Inventory/AmenityService.php:605
+msgid "Give the amenity a name of up to 60 characters."
+msgstr ""
+
 #: includes/Services/Inventory/FloorService.php:71
 #: includes/Services/Inventory/FloorService.php:208
 msgid "This floor does not exist."
@@ -2675,7 +2948,7 @@ msgstr ""
 #: includes/Services/Inventory/FloorService.php:181
 #: src/admin/routes.js:212
 #: src/modules/Rooms/Floors.jsx:166
-#: src/modules/Rooms/index.jsx:54
+#: src/modules/Rooms/index.jsx:63
 msgid "Floors"
 msgstr ""
 
@@ -2869,31 +3142,31 @@ msgstr ""
 msgid "Available"
 msgstr ""
 
-#: includes/Services/Inventory/RoomTypeService.php:71
-#: includes/Services/Inventory/RoomTypeService.php:169
+#: includes/Services/Inventory/RoomTypeService.php:80
+#: includes/Services/Inventory/RoomTypeService.php:178
 #: includes/Services/Pricing/RoomTypeRateService.php:150
 #: includes/Services/Pricing/RoomTypeRateService.php:411
 msgid "This room type does not exist."
 msgstr ""
 
-#: includes/Services/Inventory/RoomTypeService.php:90
+#: includes/Services/Inventory/RoomTypeService.php:99
 msgid "The room type could not be saved. Please try again."
 msgstr ""
 
 #. translators: %s: room type name.
-#: includes/Services/Inventory/RoomTypeService.php:99
+#: includes/Services/Inventory/RoomTypeService.php:108
 #, php-format
 msgid "Added the room type %s"
 msgstr ""
 
 #. translators: %s: room type name.
-#: includes/Services/Inventory/RoomTypeService.php:138
+#: includes/Services/Inventory/RoomTypeService.php:147
 #, php-format
 msgid "Changed the room type %s"
 msgstr ""
 
 #. translators: 1: room type name, 2: number of rooms.
-#: includes/Services/Inventory/RoomTypeService.php:178
+#: includes/Services/Inventory/RoomTypeService.php:187
 #, php-format
 msgid "%1$s still has %2$d room. Move or remove it first."
 msgid_plural "%1$s still has %2$d rooms. Move or remove them first."
@@ -2901,34 +3174,34 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: room type name.
-#: includes/Services/Inventory/RoomTypeService.php:196
+#: includes/Services/Inventory/RoomTypeService.php:205
 #, php-format
 msgid "Deleted the room type %s"
 msgstr ""
 
-#: includes/Services/Inventory/RoomTypeService.php:224
+#: includes/Services/Inventory/RoomTypeService.php:233
 msgid "Give the room type a name of up to 120 characters."
 msgstr ""
 
-#: includes/Services/Inventory/RoomTypeService.php:247
+#: includes/Services/Inventory/RoomTypeService.php:256
 msgid "Use 40 amenities or fewer."
 msgstr ""
 
-#: includes/Services/Inventory/RoomTypeService.php:255
+#: includes/Services/Inventory/RoomTypeService.php:264
 msgid "Every photo must be an image from the media library."
 msgstr ""
 
-#: includes/Services/Inventory/RoomTypeService.php:269
+#: includes/Services/Inventory/RoomTypeService.php:278
 #: src/modules/Rooms/components/RoomTypeForm.jsx:82
 msgid "Between 1 and 20 adults."
 msgstr ""
 
-#: includes/Services/Inventory/RoomTypeService.php:270
+#: includes/Services/Inventory/RoomTypeService.php:279
 #: src/modules/Rooms/components/RoomTypeForm.jsx:87
 msgid "Between 0 and 20 children."
 msgstr ""
 
-#: includes/Services/Inventory/RoomTypeService.php:271
+#: includes/Services/Inventory/RoomTypeService.php:280
 #: includes/Settings/CoreSettings.php:353
 #: includes/Settings/CoreSettings.php:374
 #: includes/Settings/CoreSettings.php:410
@@ -2937,12 +3210,12 @@ msgstr ""
 msgid "This value is not valid."
 msgstr ""
 
-#: includes/Services/Inventory/RoomTypeService.php:287
+#: includes/Services/Inventory/RoomTypeService.php:296
 #: src/modules/Rooms/components/RoomTypeForm.jsx:73
 msgid "Give the size in square metres."
 msgstr ""
 
-#: includes/Services/Inventory/RoomTypeService.php:300
+#: includes/Services/Inventory/RoomTypeService.php:309
 #: src/modules/Rooms/components/RoomTypeForm.jsx:92
 msgid "Between 0 and 720 minutes, or empty to use the default."
 msgstr ""
@@ -3470,7 +3743,7 @@ msgstr ""
 #: includes/Services/Reports/ReportService.php:379
 #: includes/Services/Reports/ReportService.php:384
 #: includes/Services/Reports/ReportService.php:432
-#: src/admin/routes.js:225
+#: src/admin/routes.js:237
 #: src/modules/Availability/components/BlockEditor.jsx:306
 #: src/modules/Availability/components/BlockEditor.jsx:324
 #: src/modules/Availability/index.jsx:394
@@ -3916,7 +4189,7 @@ msgstr[1] ""
 #: templates/booking/room-type.php:60
 #: src/components/booking/BookingLines.jsx:72
 #: src/modules/Bookings/Detail.jsx:90
-#: src/modules/Rooms/index.jsx:204
+#: src/modules/Rooms/index.jsx:213
 #, php-format,js-format
 msgid "%d child"
 msgid_plural "%d children"
@@ -3933,11 +4206,6 @@ msgstr ""
 #: templates/booking/room-type.php:74
 #, php-format
 msgid "%s m²"
-msgstr ""
-
-#: templates/booking/room-type.php:88
-#: src/modules/Rooms/components/RoomTypeForm.jsx:370
-msgid "Amenities"
 msgstr ""
 
 #: templates/booking/room-type.php:103
@@ -4287,32 +4555,36 @@ msgstr ""
 msgid "The floors of the hotel, in order"
 msgstr ""
 
-#: src/admin/routes.js:233
+#: src/admin/routes.js:225
+msgid "The amenities room types pick from"
+msgstr ""
+
+#: src/admin/routes.js:245
 msgid "Rate plans"
 msgstr ""
 
-#: src/admin/routes.js:234
+#: src/admin/routes.js:246
 msgid "Stay windows such as Half Day or Overnight, and their prices"
 msgstr ""
 
-#: src/admin/routes.js:246
+#: src/admin/routes.js:258
 #: src/modules/Reports/index.jsx:104
 msgid "Reports"
 msgstr ""
 
-#: src/admin/routes.js:247
+#: src/admin/routes.js:259
 msgid "Sales, rooms and availability reports"
 msgstr ""
 
-#: src/admin/routes.js:260
+#: src/admin/routes.js:272
 msgid "Export bookings and guests to a spreadsheet"
 msgstr ""
 
-#: src/admin/routes.js:273
+#: src/admin/routes.js:285
 msgid "Choose what each staff role may open and do"
 msgstr ""
 
-#: src/admin/routes.js:287
+#: src/admin/routes.js:299
 msgid "Hotel details, booking rules and appearance"
 msgstr ""
 
@@ -4411,11 +4683,14 @@ msgstr ""
 #: src/modules/RatePlans/index.jsx:63
 #: src/modules/Reports/tabs/Rooms.jsx:74
 #: src/modules/Reports/tabs/Sales.jsx:77
+#: src/modules/Rooms/Amenities.jsx:142
+#: src/modules/Rooms/components/AmenityPicker.jsx:98
+#: src/modules/Rooms/components/CommonAmenitiesDialog.jsx:93
 #: src/modules/Rooms/components/RatesTab.jsx:209
 #: src/modules/Rooms/components/RoomsTab.jsx:98
 #: src/modules/Rooms/Detail.jsx:120
 #: src/modules/Rooms/Floors.jsx:121
-#: src/modules/Rooms/index.jsx:94
+#: src/modules/Rooms/index.jsx:103
 #: src/modules/Settings/index.jsx:281
 #: src/modules/Settings/sections/Permissions.jsx:81
 msgid "Try again"
@@ -4487,7 +4762,7 @@ msgstr ""
 #. translators: %d: max adults.
 #: src/components/booking/BookingLines.jsx:61
 #: src/modules/Bookings/Detail.jsx:84
-#: src/modules/Rooms/index.jsx:37
+#: src/modules/Rooms/index.jsx:38
 #, js-format
 msgid "%d adult"
 msgid_plural "%d adults"
@@ -4639,7 +4914,7 @@ msgstr ""
 #: src/modules/Reports/tabs/Rooms.jsx:227
 #: src/modules/Rooms/components/RoomsTab.jsx:148
 #: src/modules/Rooms/Floors.jsx:429
-#: src/modules/Rooms/index.jsx:230
+#: src/modules/Rooms/index.jsx:239
 #, js-format
 msgid "%d room"
 msgid_plural "%d rooms"
@@ -4883,7 +5158,7 @@ msgstr ""
 #: src/modules/Bookings/index.jsx:208
 #: src/modules/Bookings/index.jsx:216
 #: src/modules/Guests/components/AddGuestDialog.jsx:245
-#: src/modules/Rooms/index.jsx:200
+#: src/modules/Rooms/index.jsx:209
 #, js-format
 msgid "%1$s · %2$s"
 msgstr ""
@@ -5118,6 +5393,8 @@ msgid "Booking date"
 msgstr ""
 
 #: src/components/common/DateRangePicker.jsx:267
+#: src/modules/Rooms/components/AmenityPicker.jsx:139
+#: src/modules/Rooms/components/CommonAmenitiesDialog.jsx:138
 msgid "Clear"
 msgstr ""
 
@@ -5255,7 +5532,9 @@ msgstr ""
 #: src/modules/Guests/components/AddGuestDialog.jsx:287
 #: src/modules/Guests/components/EditGuestDialog.jsx:316
 #: src/modules/RatePlans/components/RatePlanSheet.jsx:440
+#: src/modules/Rooms/Amenities.jsx:527
 #: src/modules/Rooms/components/BulkAddDialog.jsx:343
+#: src/modules/Rooms/components/CommonAmenitiesDialog.jsx:226
 #: src/modules/Rooms/components/MoveRoomDialog.jsx:246
 #: src/modules/Rooms/components/RoomsTab.jsx:667
 #: src/modules/Rooms/components/RoomsTab.jsx:792
@@ -5961,7 +6240,7 @@ msgid "Update several dates"
 msgstr ""
 
 #: src/modules/Availability/index.jsx:504
-#: src/modules/Rooms/index.jsx:108
+#: src/modules/Rooms/index.jsx:117
 msgid "No room types yet"
 msgstr ""
 
@@ -6093,7 +6372,7 @@ msgid "Accept the new price and save"
 msgstr ""
 
 #: src/modules/Bookings/components/LineEditor.jsx:449
-#: src/modules/Rooms/components/RoomTypeForm.jsx:474
+#: src/modules/Rooms/components/RoomTypeForm.jsx:475
 #: src/modules/Settings/index.jsx:182
 msgid "Save changes"
 msgstr ""
@@ -7396,6 +7675,209 @@ msgstr ""
 msgid "How these figures are counted"
 msgstr ""
 
+#: src/modules/Rooms/Amenities.jsx:61
+msgid "Not used by any room type"
+msgstr ""
+
+#: src/modules/Rooms/Amenities.jsx:118
+#: src/modules/Rooms/Floors.jsx:97
+msgid "Room types"
+msgstr ""
+
+#: src/modules/Rooms/Amenities.jsx:135
+msgid "The amenities could not be loaded"
+msgstr ""
+
+#: src/modules/Rooms/Amenities.jsx:152
+msgid "No amenities yet"
+msgstr ""
+
+#: src/modules/Rooms/Amenities.jsx:153
+msgid "Add what your rooms offer once, e.g. Wi-Fi, Air conditioning, Mini bar. Then tick them on each room type."
+msgstr ""
+
+#: src/modules/Rooms/Amenities.jsx:164
+#: src/modules/Rooms/Amenities.jsx:217
+#: src/modules/Rooms/components/CommonAmenitiesDialog.jsx:206
+msgid "Add common amenities"
+msgstr ""
+
+#: src/modules/Rooms/Amenities.jsx:203
+msgid "One list for the whole hotel. Room types tick from it, and show their amenities in this order."
+msgstr ""
+
+#. translators: %s: amenity name.
+#. translators: %s: room type name.
+#. translators: %s: floor name.
+#: src/modules/Rooms/Amenities.jsx:243
+#: src/modules/Rooms/Detail.jsx:230
+#: src/modules/Rooms/Floors.jsx:183
+#, js-format
+msgid "Delete %s?"
+msgstr ""
+
+#. translators: 1: number of room types, 2: their names.
+#: src/modules/Rooms/Amenities.jsx:250
+#, js-format
+msgid "It is also taken off %1$d room type: %2$s."
+msgid_plural "It is also taken off %1$d room types: %2$s."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/modules/Rooms/Amenities.jsx:259
+msgid "No room type uses it."
+msgstr ""
+
+#: src/modules/Rooms/Amenities.jsx:261
+msgid "Delete amenity"
+msgstr ""
+
+#. translators: %s: amenity name.
+#. translators: %s: room type name.
+#. translators: %s: floor name.
+#: src/modules/Rooms/Amenities.jsx:268
+#: src/modules/Rooms/Detail.jsx:139
+#: src/modules/Rooms/Floors.jsx:197
+#, js-format
+msgid "%s deleted."
+msgstr ""
+
+#. translators: 1: amenity being renamed, 2: existing amenity.
+#: src/modules/Rooms/Amenities.jsx:281
+#, js-format
+msgid "Merge %1$s into %2$s?"
+msgstr ""
+
+#. translators: 1: amenity being renamed, 2: existing amenity.
+#: src/modules/Rooms/Amenities.jsx:287
+#, js-format
+msgid "There is already an amenity called %2$s. Room types that offer %1$s will offer %2$s instead, and %1$s is removed from the list."
+msgstr ""
+
+#: src/modules/Rooms/Amenities.jsx:294
+msgid "Merge"
+msgstr ""
+
+#: src/modules/Rooms/Amenities.jsx:326
+msgid "Give the amenity a name."
+msgstr ""
+
+#: src/modules/Rooms/Amenities.jsx:343
+#: src/modules/Rooms/components/AmenityPicker.jsx:313
+msgid "New amenity name"
+msgstr ""
+
+#: src/modules/Rooms/Amenities.jsx:351
+msgid "e.g. Balcony"
+msgstr ""
+
+#: src/modules/Rooms/Amenities.jsx:363
+msgid "Add amenity"
+msgstr ""
+
+#: src/modules/Rooms/Amenities.jsx:504
+msgid "Amenity name"
+msgstr ""
+
+#: src/modules/Rooms/Amenities.jsx:518
+#: src/modules/Rooms/Floors.jsx:399
+msgid "Save name"
+msgstr ""
+
+#. translators: 1: number of room types, 2: their names.
+#: src/modules/Rooms/Amenities.jsx:552
+#, js-format
+msgid "%1$d room type: %2$s"
+msgid_plural "%1$d room types: %2$s"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: amenity name.
+#. translators: %s: rate plan name.
+#. translators: %s: floor name.
+#: src/modules/Rooms/Amenities.jsx:577
+#: src/modules/Rooms/components/RatesTab.jsx:405
+#: src/modules/Rooms/Floors.jsx:465
+#, js-format
+msgid "Move %s up"
+msgstr ""
+
+#. translators: %s: amenity name.
+#. translators: %s: rate plan name.
+#. translators: %s: floor name.
+#: src/modules/Rooms/Amenities.jsx:592
+#: src/modules/Rooms/components/RatesTab.jsx:430
+#: src/modules/Rooms/Floors.jsx:480
+#, js-format
+msgid "Move %s down"
+msgstr ""
+
+#. translators: %s: amenity name.
+#. translators: %s: floor name.
+#: src/modules/Rooms/Amenities.jsx:606
+#: src/modules/Rooms/Floors.jsx:494
+#, js-format
+msgid "Rename %s"
+msgstr ""
+
+#. translators: %s: amenity name.
+#. translators: %s: floor name.
+#: src/modules/Rooms/Amenities.jsx:619
+#: src/modules/Rooms/Floors.jsx:516
+#, js-format
+msgid "Delete %s"
+msgstr ""
+
+#: src/modules/Rooms/components/AmenityPicker.jsx:87
+msgid "The amenity list could not be loaded."
+msgstr ""
+
+#. translators: 1: chosen amenities, 2: amenities in the library.
+#. translators: 1: amenities ticked, 2: amenities offered.
+#: src/modules/Rooms/components/AmenityPicker.jsx:116
+#: src/modules/Rooms/components/CommonAmenitiesDialog.jsx:113
+#, js-format
+msgid "%1$d of %2$d selected"
+msgstr ""
+
+#: src/modules/Rooms/components/AmenityPicker.jsx:130
+#: src/modules/Rooms/components/CommonAmenitiesDialog.jsx:129
+msgid "Select all"
+msgstr ""
+
+#: src/modules/Rooms/components/AmenityPicker.jsx:148
+msgid "Manage list"
+msgstr ""
+
+#: src/modules/Rooms/components/AmenityPicker.jsx:164
+#: src/modules/Rooms/components/AmenityPicker.jsx:168
+msgid "Filter amenities"
+msgstr ""
+
+#: src/modules/Rooms/components/AmenityPicker.jsx:213
+msgid "No amenity matches."
+msgstr ""
+
+#: src/modules/Rooms/components/AmenityPicker.jsx:222
+msgid "No amenities yet. Add the first one below."
+msgstr ""
+
+#. translators: %d: most amenities per room type.
+#: src/modules/Rooms/components/AmenityPicker.jsx:233
+#, js-format
+msgid "A room type can have up to %d amenity."
+msgid_plural "A room type can have up to %d amenities."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/modules/Rooms/components/AmenityPicker.jsx:309
+msgid "New amenity, e.g. Balcony"
+msgstr ""
+
+#: src/modules/Rooms/components/AmenityPicker.jsx:330
+msgid "Add"
+msgstr ""
+
 #. translators: 1: rooms added, 2: numbers skipped.
 #: src/modules/Rooms/components/BulkAddDialog.jsx:105
 #, js-format
@@ -7467,6 +7949,30 @@ msgstr[1] ""
 #: src/modules/Rooms/components/BulkAddDialog.jsx:364
 #: src/modules/Settings/BrandColorField.jsx:117
 msgid "Preview"
+msgstr ""
+
+#: src/modules/Rooms/components/CommonAmenitiesDialog.jsx:100
+msgid "Every common amenity is already in your list."
+msgstr ""
+
+#: src/modules/Rooms/components/CommonAmenitiesDialog.jsx:184
+msgid "Added"
+msgstr ""
+
+#: src/modules/Rooms/components/CommonAmenitiesDialog.jsx:209
+msgid "Amenities most hotels offer. Untick any your rooms do not have; you can rename or remove them later."
+msgstr ""
+
+#. translators: %d: number of amenities.
+#: src/modules/Rooms/components/CommonAmenitiesDialog.jsx:238
+#, js-format
+msgid "Add %d amenity"
+msgid_plural "Add %d amenities"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/modules/Rooms/components/CommonAmenitiesDialog.jsx:246
+msgid "Add amenities"
 msgstr ""
 
 #. translators: %s: room number.
@@ -7604,22 +8110,6 @@ msgid "Max"
 msgstr ""
 
 #. translators: %s: rate plan name.
-#. translators: %s: floor name.
-#: src/modules/Rooms/components/RatesTab.jsx:405
-#: src/modules/Rooms/Floors.jsx:465
-#, js-format
-msgid "Move %s up"
-msgstr ""
-
-#. translators: %s: rate plan name.
-#. translators: %s: floor name.
-#: src/modules/Rooms/components/RatesTab.jsx:430
-#: src/modules/Rooms/Floors.jsx:480
-#, js-format
-msgid "Move %s down"
-msgstr ""
-
-#. translators: %s: rate plan name.
 #: src/modules/Rooms/components/RatesTab.jsx:453
 #: src/modules/Rooms/components/RatesTab.jsx:467
 #, js-format
@@ -7639,13 +8129,13 @@ msgid "You have unsaved price changes."
 msgstr ""
 
 #: src/modules/Rooms/components/RatesTab.jsx:547
-#: src/modules/Rooms/components/RoomTypeForm.jsx:464
+#: src/modules/Rooms/components/RoomTypeForm.jsx:465
 #: src/modules/Settings/index.jsx:177
 msgid "Discard"
 msgstr ""
 
 #: src/modules/Rooms/components/RatesTab.jsx:555
-#: src/modules/Rooms/components/RoomTypeForm.jsx:472
+#: src/modules/Rooms/components/RoomTypeForm.jsx:473
 #: src/modules/Settings/index.jsx:181
 msgid "Saving…"
 msgstr ""
@@ -7876,40 +8366,40 @@ msgid "Size (m²)"
 msgstr ""
 
 #: src/modules/Rooms/components/RoomTypeForm.jsx:373
-msgid "Press Enter after each one: Wi-Fi, Air conditioning, Mini bar…"
-msgstr ""
-
-#: src/modules/Rooms/components/RoomTypeForm.jsx:393
-msgid "Selling"
+msgid "Tick what this room type offers. The list is shared by every room type."
 msgstr ""
 
 #: src/modules/Rooms/components/RoomTypeForm.jsx:394
+msgid "Selling"
+msgstr ""
+
+#: src/modules/Rooms/components/RoomTypeForm.jsx:395
 msgid "Whether the type can be booked, and the cleaning time between stays."
 msgstr ""
 
-#: src/modules/Rooms/components/RoomTypeForm.jsx:406
+#: src/modules/Rooms/components/RoomTypeForm.jsx:407
 msgid "Available for booking"
 msgstr ""
 
-#: src/modules/Rooms/components/RoomTypeForm.jsx:412
+#: src/modules/Rooms/components/RoomTypeForm.jsx:413
 msgid "Off hides the type from the booking form and the desk."
 msgstr ""
 
-#: src/modules/Rooms/components/RoomTypeForm.jsx:427
+#: src/modules/Rooms/components/RoomTypeForm.jsx:428
 msgid "Buffer between stays"
 msgstr ""
 
-#: src/modules/Rooms/components/RoomTypeForm.jsx:433
+#: src/modules/Rooms/components/RoomTypeForm.jsx:434
 msgid "Minutes the room stays blocked after checkout. Leave empty to use the Booking rules setting."
 msgstr ""
 
-#: src/modules/Rooms/components/RoomTypeForm.jsx:444
+#: src/modules/Rooms/components/RoomTypeForm.jsx:445
 msgid "Default"
 msgstr ""
 
-#: src/modules/Rooms/components/RoomTypeForm.jsx:475
-#: src/modules/Rooms/index.jsx:63
-#: src/modules/Rooms/index.jsx:121
+#: src/modules/Rooms/components/RoomTypeForm.jsx:476
+#: src/modules/Rooms/index.jsx:72
+#: src/modules/Rooms/index.jsx:130
 msgid "Add room type"
 msgstr ""
 
@@ -7929,14 +8419,6 @@ msgstr ""
 msgid "The room type could not be loaded"
 msgstr ""
 
-#. translators: %s: room type name.
-#. translators: %s: floor name.
-#: src/modules/Rooms/Detail.jsx:139
-#: src/modules/Rooms/Floors.jsx:197
-#, js-format
-msgid "%s deleted."
-msgstr ""
-
 #. translators: 1: number of rooms, 2: number available.
 #: src/modules/Rooms/Detail.jsx:158
 #, js-format
@@ -7953,14 +8435,6 @@ msgstr ""
 msgid "Rooms (%d)"
 msgstr ""
 
-#. translators: %s: room type name.
-#. translators: %s: floor name.
-#: src/modules/Rooms/Detail.jsx:230
-#: src/modules/Rooms/Floors.jsx:183
-#, js-format
-msgid "Delete %s?"
-msgstr ""
-
 #: src/modules/Rooms/Detail.jsx:235
 msgid "A room type with rooms cannot be deleted. Move or remove its rooms first."
 msgstr ""
@@ -7971,10 +8445,6 @@ msgstr ""
 
 #: src/modules/Rooms/Detail.jsx:244
 msgid "Delete room type"
-msgstr ""
-
-#: src/modules/Rooms/Floors.jsx:97
-msgid "Room types"
 msgstr ""
 
 #: src/modules/Rooms/Floors.jsx:114
@@ -8021,10 +8491,6 @@ msgstr ""
 msgid "Floor name"
 msgstr ""
 
-#: src/modules/Rooms/Floors.jsx:399
-msgid "Save name"
-msgstr ""
-
 #. translators: %d: number of removed rooms.
 #: src/modules/Rooms/Floors.jsx:441
 #, js-format
@@ -8033,37 +8499,25 @@ msgid_plural "%d removed rooms"
 msgstr[0] ""
 msgstr[1] ""
 
-#. translators: %s: floor name.
-#: src/modules/Rooms/Floors.jsx:494
-#, js-format
-msgid "Rename %s"
-msgstr ""
-
 #: src/modules/Rooms/Floors.jsx:508
 msgid "A floor with rooms cannot be deleted."
 msgstr ""
 
-#. translators: %s: floor name.
-#: src/modules/Rooms/Floors.jsx:516
-#, js-format
-msgid "Delete %s"
-msgstr ""
-
-#: src/modules/Rooms/index.jsx:87
+#: src/modules/Rooms/index.jsx:96
 msgid "The room types could not be loaded"
 msgstr ""
 
-#: src/modules/Rooms/index.jsx:109
+#: src/modules/Rooms/index.jsx:118
 msgid "Add your first room type, such as Standard Room or Suite, then add its rooms."
 msgstr ""
 
 #. translators: %s: rate plan names, e.g. "Half Day, Overnight".
-#: src/modules/Rooms/index.jsx:256
+#: src/modules/Rooms/index.jsx:265
 #, js-format
 msgid "Sells: %s"
 msgstr ""
 
-#: src/modules/Rooms/index.jsx:259
+#: src/modules/Rooms/index.jsx:268
 msgid "No rate plans on sale yet"
 msgstr ""
 
