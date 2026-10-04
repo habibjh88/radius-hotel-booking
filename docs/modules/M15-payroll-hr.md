@@ -88,6 +88,7 @@ The same keys as the access keys, plus `timeoff.request|approve|decline`, `payro
 - [ ] T4 [Client] Statutory contributions + payments
 - [ ] T5 [Client] Payslip PDF + monthly / yearly / statutory reports + export
 - [ ] T6 [Client] Time off (requests, approvals, balances, quota) + the vacation quota setting
+- [ ] T7 [Client] Staff self-service, carried over from M16 T3: *My payslips* (settled runs; PDF of their own payslip only, another id → 403; `me/payslips`, `me/payslips/{id}/pdf`) and *My time off* (calendar, balance, request, cancel pending; `me/time-off`), behind `page.my_payroll`, logged `self.payslip_download` / `self.timeoff_request` / `self.timeoff_cancel`, registered on the Pro avatar menu (`rtbp.user.menu`) and *My profile* routes (16.7–16.9). Acceptance: M16 step 3
 
 ## Acceptance
 
@@ -108,3 +109,4 @@ history), statutory items and payments, time off, and the per-year balances `sta
 runs import as `settled` or `voided` and are never recalculated.
 
 ## Progress notes
+- 2026-10-04: M16 closed without its T3; the payslip and time-off self-service (16.7–16.9) moved here as **T7**, since it is Client-tier and needs T3 (runs), T5 (payslip PDF) and T6 (time off). The *My profile* screen, the `staff_self_service` feature and `rtbp.user.menu` (Pro/Free) are in place to hang it on.
