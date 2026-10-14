@@ -19,6 +19,8 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import PhoneField from '@/components/common/Phone';
+import { invalidEmailMessage, isEmailValid } from '@/lib/email';
 import { Label } from '@/components/ui/label';
 import {
 	Select,
@@ -120,6 +122,16 @@ export default function EditGuestDialog( { guest, idTypes, onClose } ) {
 			</p>
 		) : null;
 
+	// The e-mail is checked as soon as it is left, not only on save.
+	const checkEmail = () => {
+		if ( ! isEmailValid( values.email ) ) {
+			setErrors( ( prev ) => ( {
+				...prev,
+				email: invalidEmailMessage(),
+			} ) );
+		}
+	};
+
 	const field = ( name, label, props = {} ) => (
 		<div className="space-y-1.5">
 			<Label
@@ -128,14 +140,23 @@ export default function EditGuestDialog( { guest, idTypes, onClose } ) {
 			>
 				{ label }
 			</Label>
-			<Input
-				id={ `rtbp-edit-guest-${ name }` }
-				value={ values[ name ] }
-				onChange={ ( e ) => set( name, e.target.value ) }
-				aria-invalid={ errors[ name ] ? true : undefined }
-				autoComplete="off"
-				{ ...props }
-			/>
+			{ 'phone' === name ? (
+				<PhoneField
+					id={ `rtbp-edit-guest-${ name }` }
+					value={ values[ name ] }
+					onChange={ ( phone ) => set( name, phone ) }
+					aria-invalid={ errors[ name ] ? true : undefined }
+				/>
+			) : (
+				<Input
+					id={ `rtbp-edit-guest-${ name }` }
+					value={ values[ name ] }
+					onChange={ ( e ) => set( name, e.target.value ) }
+					aria-invalid={ errors[ name ] ? true : undefined }
+					autoComplete="off"
+					{ ...props }
+				/>
+			) }
 			{ errorText( name ) }
 		</div>
 	);
@@ -170,15 +191,13 @@ export default function EditGuestDialog( { guest, idTypes, onClose } ) {
 						{ field(
 							'phone',
 							__( 'Phone', 'radius-hotel-booking' ),
-							{
-								type: 'tel',
-								inputMode: 'tel',
-							}
+							{}
 						) }
 						{ field(
 							'email',
 							__( 'E-mail', 'radius-hotel-booking' ),
 							{
+								onBlur: () => checkEmail(),
 								type: 'email',
 								placeholder: guest.email_is_placeholder
 									? __( 'None given', 'radius-hotel-booking' )

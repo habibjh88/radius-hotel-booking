@@ -44,10 +44,13 @@ const sheetVariants = cva(
 );
 
 const SheetContent = React.forwardRef(
-	( { side = 'right', className, children, ...props }, ref ) => (
+	(
+		{ side = 'right', className, overlayClassName, children, ...props },
+		ref
+	) => (
 		<SheetPortal>
 			<div className="rtbp-root">
-				<SheetOverlay />
+				<SheetOverlay className={ overlayClassName } />
 				<SheetPrimitive.Content
 					ref={ ref }
 					className={ cn( sheetVariants( { side } ), className ) }

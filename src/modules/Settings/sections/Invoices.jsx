@@ -2,7 +2,7 @@
  * Settings → Invoices (17.13): how invoice numbers look (prefix, year and a
  * sequence that never skips, 5.8), the tax included in the prices, and the
  * text at the foot of every invoice and receipt. The hotel's name, address,
- * tax and CNPS numbers and logo come from General.
+ * tax and social security numbers and logo come from General.
  */
 import { __, sprintf } from '@wordpress/i18n';
 
@@ -136,7 +136,7 @@ export default function Invoices( { value, setField, errors, schema } ) {
 			<SettingsSection
 				title={ __( 'Footer', 'radius-hotel-booking' ) }
 				description={ __(
-					'Printed at the bottom of every invoice and receipt. Your hotel’s name, address, tax and CNPS numbers and logo come from General.',
+					'Printed at the bottom of every invoice and receipt. Your hotel’s name, address, tax and social security numbers and logo come from General.',
 					'radius-hotel-booking'
 				) }
 			>

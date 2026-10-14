@@ -13,6 +13,7 @@ import SegmentedControl from '@/components/common/SegmentedControl';
 import SettingsSection from '@/components/common/SettingsSection';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import PhoneField from '@/components/common/Phone';
 import {
 	Select,
 	SelectContent,
@@ -38,14 +39,14 @@ const SAMPLE_DATE = '2026-12-24 20:30';
  */
 const currencyPresets = () => [
 	{
-		label: __( 'CFA franc (XOF)', 'radius-hotel-booking' ),
+		label: __( 'US dollar (USD)', 'radius-hotel-booking' ),
 		values: {
-			currencyCode: 'XOF',
-			currencySymbol: 'CFA',
-			currencyPosition: 'right_space',
-			thousandSeparator: ' ',
-			decimalSeparator: ',',
-			decimals: 0,
+			currencyCode: 'USD',
+			currencySymbol: '$',
+			currencyPosition: 'left',
+			thousandSeparator: ',',
+			decimalSeparator: '.',
+			decimals: 2,
 		},
 	},
 	{
@@ -60,14 +61,36 @@ const currencyPresets = () => [
 		},
 	},
 	{
-		label: __( 'US dollar (USD)', 'radius-hotel-booking' ),
+		label: __( 'Pound sterling (GBP)', 'radius-hotel-booking' ),
 		values: {
-			currencyCode: 'USD',
-			currencySymbol: '$',
+			currencyCode: 'GBP',
+			currencySymbol: '£',
 			currencyPosition: 'left',
 			thousandSeparator: ',',
 			decimalSeparator: '.',
 			decimals: 2,
+		},
+	},
+	{
+		label: __( 'Indian rupee (INR)', 'radius-hotel-booking' ),
+		values: {
+			currencyCode: 'INR',
+			currencySymbol: '₹',
+			currencyPosition: 'left',
+			thousandSeparator: ',',
+			decimalSeparator: '.',
+			decimals: 2,
+		},
+	},
+	{
+		label: __( 'CFA franc (XOF)', 'radius-hotel-booking' ),
+		values: {
+			currencyCode: 'XOF',
+			currencySymbol: 'CFA',
+			currencyPosition: 'right_space',
+			thousandSeparator: ' ',
+			decimalSeparator: ',',
+			decimals: 0,
 		},
 	},
 ];
@@ -166,11 +189,9 @@ export default function General( { value, setField, errors, schema } ) {
 						label={ __( 'Phone', 'radius-hotel-booking' ) }
 						error={ errors.phone }
 					>
-						<Input
-							{ ...text( 'phone' ) }
-							type="tel"
-							inputMode="tel"
-							maxLength={ schema.phone?.maxLength }
+						<PhoneField
+							value={ value.phone ?? '' }
+							onChange={ setField( 'phone' ) }
 						/>
 					</Field>
 					<Field
@@ -215,9 +236,12 @@ export default function General( { value, setField, errors, schema } ) {
 						/>
 					</Field>
 					<Field
-						label={ __( 'CNPS number', 'radius-hotel-booking' ) }
+						label={ __(
+							'Social security number',
+							'radius-hotel-booking'
+						) }
 						description={ __(
-							'The employer social-security number, printed on payslips.',
+							'Your employer registration with the social security office, printed on invoices and payslips.',
 							'radius-hotel-booking'
 						) }
 						error={ errors.cnpsNumber }
@@ -366,7 +390,7 @@ export default function General( { value, setField, errors, schema } ) {
 					<Field
 						label={ __( 'Currency code', 'radius-hotel-booking' ) }
 						description={ __(
-							'Three letters, e.g. XOF.',
+							'Three letters, e.g. USD.',
 							'radius-hotel-booking'
 						) }
 						error={ errors.currencyCode }

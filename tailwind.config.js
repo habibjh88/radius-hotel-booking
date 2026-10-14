@@ -4,7 +4,8 @@ module.exports = {
 	// Scopes every utility under the plugin's root elements so the plugin's CSS
 	// can never leak into wp-admin or the theme.
 	important: '.rtbp-root',
-	content: [ './src/**/*.{js,jsx,ts,tsx}' ],
+	// Templates too: the room type page and the embeds are server-rendered.
+	content: [ './src/**/*.{js,jsx,ts,tsx}', './templates/**/*.php' ],
 	// Classes add-on screens (Pro, client) rely on although the free app may
 	// stop using them: add-on bundles are not scanned, so only what free
 	// compiles exists (ADR-015). Keep this list small.

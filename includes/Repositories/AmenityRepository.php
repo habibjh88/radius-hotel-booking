@@ -25,12 +25,21 @@ class AmenityRepository extends BaseRepository {
 	protected string $model = Amenity::class;
 
 	/**
-	 * Every amenity in display order.
+	 * Every amenity in display order: by section, then within it.
 	 *
 	 * @return Amenity[]
 	 */
 	public function ordered(): array {
-		$rows = Amenity::query()->orderBy( 'sort_order' )->orderBy( 'id' )->get();
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- one ordered read of a small table.
+		$rows = (array) $wpdb->get_results(
+			$wpdb->prepare(
+				'SELECT a.* FROM %i a LEFT JOIN %i s ON s.id = a.section_id ORDER BY s.id IS NULL, s.sort_order, s.id, a.sort_order, a.id',
+				rtbp_table( 'amenities' ),
+				rtbp_table( 'amenity_sections' )
+			),
+			ARRAY_A
+		);
 		return array_map( static fn( $row ) => Amenity::hydrate( $row ), $rows );
 	}
 

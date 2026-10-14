@@ -7,9 +7,9 @@
  * check-in time is always part of the search (fixed plans ignore it): today
  * it starts at the next half hour, later days at 08:00.
  */
-import { useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { AlertTriangle } from 'lucide-react';
 
 import Panel from '@/components/common/Panel';
@@ -24,7 +24,6 @@ import DatesBar from './DatesBar';
 import GuestStep, { EMPTY_GUEST } from './GuestStep';
 import HoldChip from './HoldChip';
 import RateList from './RateList';
-import RoomPicker from './RoomPicker';
 import SummaryStep from './SummaryStep';
 import { AVAILABILITY_KEY, searchIsValid, useAvailability } from './api';
 import GuestBookingSteps from './GuestBookingSteps';
@@ -36,6 +35,9 @@ import {
 } from './guestLimits';
 import { useHolds } from './holds';
 import { checkinRange, defaultCheckin } from './rates';
+
+// Desk only, and heavy (Radix dialog): kept out of the website's bundle.
+const RoomDrawer = lazy( () => import( './RoomDrawer' ) );
 
 /**
  * The chosen rate, looked up in the latest search.
@@ -143,7 +145,14 @@ export default function BookingFlow( { mode = 'desk' } ) {
 		guestMode ? 'public/availability' : 'availability'
 	);
 	const chosen = findChoice( availability.data, choice );
-	const checkin = checkinRange( availability.data, chosen?.rate );
+	// The time field stays once shown: a time that leaves no flexible rate in
+	// the results (hidden when sold out) must not take the field away with it.
+	const lastCheckin = useRef( null );
+	const found = checkinRange( availability.data, chosen?.rate );
+	if ( found ) {
+		lastCheckin.current = found;
+	}
+	const checkin = found || lastCheckin.current;
 
 	// Keep the default time inside the flexible plan's allowed range.
 	useEffect( () => {
@@ -190,8 +199,69 @@ export default function BookingFlow( { mode = 'desk' } ) {
 				.map( ( line ) => line.room_id )
 		: [];
 
-	// Picking a room holds it and adds a line; the next room starts from the rates again.
-	const pick = ( room ) => holdRoom( chosen.type, chosen.rate, room );
+	// Rooms the booking may take (Settings → Booking; the server enforces it too).
+	const maxRooms = Math.max(
+		1,
+		Number(
+			guestMode
+				? rules.maxRooms
+				: window.radius_hotel_booking_param?.max_rooms
+		) || ( guestMode ? 10 : 50 )
+	);
+	const left = Math.max( 0, maxRooms - lines.length );
+	// The rate rooms were last held at: "Add another room" reopens it.
+	const [ lastChoice, setLastChoice ] = useState( null );
+	// The desk's room drawer: kept mounted once used, so it can animate closed.
+	const linesRef = useRef( null );
+	const drawerUsed = useRef( false );
+	if ( chosen && ! guestMode ) {
+		drawerUsed.current = true;
+	}
+
+	// What every hold of this rate sends.
+	const holdRequest = ( type, rate ) => ( {
+		room_type_id: type.id,
+		rate_plan_id: rate.rate_plan_id,
+		arrival: search.arrival,
+		units: rate.units,
+		...( rate.checkin ? { checkin_time: search.checkin_time } : {} ),
+		// The website always sends the party (checked against the room type) and the span.
+		...( guestMode
+			? {
+					departure: search.departure,
+					adults: Number( search.adults ),
+					children: Number( search.children ),
+			  }
+			: {} ),
+	} );
+
+	// A held room as a line of the booking.
+	const lineOf = ( hold, type, rate ) => ( {
+		key: hold.id,
+		hold_id: hold.id,
+		room_id: hold.room_id,
+		room_number: hold.room,
+		room_type_id: type.id,
+		room_type_name: type.name,
+		rate_plan_id: rate.rate_plan_id,
+		rate_name: rate.name,
+		arrival: search.arrival,
+		arrival_label: formatDate( search.arrival ),
+		units: rate.units,
+		checkin_time: rate.checkin ? search.checkin_time : '',
+		adults: Number( search.adults ),
+		children: Number( search.children ),
+		window: hold.window,
+		total: hold.total,
+	} );
+
+	// After rooms are held: the desk stays on the rate (more rooms can be
+	// ticked); the website moves on to the details, and remembers the rate.
+	const held = ( type, rate ) => {
+		const at = { room_type_id: type.id, rate_plan_id: rate.rate_plan_id };
+		setLastChoice( at );
+		setChoice( guestMode ? null : at );
+	};
 
 	// Hold a room of this rate (room null: the website assigns the first free one).
 	const holdRoom = async ( type, rate, room ) => {
@@ -199,44 +269,10 @@ export default function BookingFlow( { mode = 'desk' } ) {
 		try {
 			const hold = await holds.place( {
 				...( room ? { room_id: room.id } : {} ),
-				room_type_id: type.id,
-				rate_plan_id: rate.rate_plan_id,
-				arrival: search.arrival,
-				units: rate.units,
-				...( rate.checkin
-					? { checkin_time: search.checkin_time }
-					: {} ),
-				// The website always sends the party (checked against the room type) and the span.
-				...( guestMode
-					? {
-							departure: search.departure,
-							adults: Number( search.adults ),
-							children: Number( search.children ),
-					  }
-					: {} ),
+				...holdRequest( type, rate ),
 			} );
-			setLines( ( prev ) => [
-				...prev,
-				{
-					key: hold.id,
-					hold_id: hold.id,
-					room_id: hold.room_id,
-					room_number: hold.room,
-					room_type_id: type.id,
-					room_type_name: type.name,
-					rate_plan_id: rate.rate_plan_id,
-					rate_name: rate.name,
-					arrival: search.arrival,
-					arrival_label: formatDate( search.arrival ),
-					units: rate.units,
-					checkin_time: rate.checkin ? search.checkin_time : '',
-					adults: Number( search.adults ),
-					children: Number( search.children ),
-					window: hold.window,
-					total: hold.total,
-				},
-			] );
-			setChoice( null );
+			setLines( ( prev ) => [ ...prev, lineOf( hold, type, rate ) ] );
+			held( type, rate );
 			toast.success(
 				sprintf(
 					guestMode
@@ -275,6 +311,69 @@ export default function BookingFlow( { mode = 'desk' } ) {
 			} else {
 				toastError( err );
 			}
+		} finally {
+			setPending( 0 );
+		}
+	};
+
+	/**
+	 * Hold the ticked rooms of the chosen rate, all or none.
+	 *
+	 * @param {Object[]} rooms The rooms.
+	 * @return {Promise<number[]>} Room ids to keep ticked (none after a success).
+	 */
+	const holdRooms = async ( rooms ) => {
+		const { type, rate } = chosen;
+		const ids = rooms.map( ( room ) => room.id );
+		setPending( -1 );
+		try {
+			const placed = await holds.placeMany(
+				holdRequest( type, rate ),
+				ids
+			);
+			setLines( ( prev ) => [
+				...prev,
+				...placed.map( ( hold ) => lineOf( hold, type, rate ) ),
+			] );
+			held( type, rate );
+			const numbers = placed.map( ( hold ) => hold.room ).join( ', ' );
+			toast.success(
+				sprintf(
+					guestMode
+						? /* translators: %s: room numbers. */
+						  _n(
+								'Room %s is held for you while you book.',
+								'Rooms %s are held for you while you book.',
+								placed.length,
+								'radius-hotel-booking'
+						  )
+						: /* translators: %s: room numbers. */
+						  _n(
+								'Room %s is held for this booking.',
+								'Rooms %s are held for this booking.',
+								placed.length,
+								'radius-hotel-booking'
+						  ),
+					numbers
+				)
+			);
+			return [];
+		} catch ( err ) {
+			// Nothing was held. A room someone took meanwhile is unticked; the rest stay.
+			const lost = Number( err?.data?.room_id || 0 );
+			if ( 'room_unavailable' === err?.code ) {
+				toast.error(
+					err?.message ||
+						__(
+							'A room was just taken. Choose another room.',
+							'radius-hotel-booking'
+						)
+				);
+				availability.refetch();
+			} else {
+				toastError( err );
+			}
+			return ids.filter( ( id ) => id !== lost );
 		} finally {
 			setPending( 0 );
 		}
@@ -546,7 +645,9 @@ export default function BookingFlow( { mode = 'desk' } ) {
 					onClearChoice={ () => setChoice( null ) }
 					taken={ taken }
 					pending={ pending }
-					onPick={ pick }
+					onHoldRooms={ holdRooms }
+					left={ left }
+					onAddAnother={ () => setChoice( lastChoice ) }
 					lines={ lines }
 					onRemove={ remove }
 					failed={ failed }
@@ -647,42 +748,35 @@ export default function BookingFlow( { mode = 'desk' } ) {
 				{ body }
 			</Panel>
 
-			{ chosen ? (
-				<Panel
-					title={ sprintf(
-						/* translators: 1: room type, 2: rate name. */
-						__(
-							'Choose a room: %1$s, %2$s',
-							'radius-hotel-booking'
-						),
-						chosen.type.name,
-						chosen.rate.name
-					) }
-					description={ __(
-						'Picking a room holds it while the booking is completed.',
-						'radius-hotel-booking'
-					) }
-				>
-					{ chosen.rate.available ? (
-						<RoomPicker
-							type={ chosen.type }
-							rate={ chosen.rate }
-							taken={ taken }
-							pending={ pending }
-							onPick={ pick }
-						/>
-					) : (
-						<p className="m-0 text-sm text-muted-foreground">
-							{ chosen.rate.reasons?.[ 0 ]?.message ||
-								__(
-									'This rate is no longer available.',
-									'radius-hotel-booking'
-								) }
-						</p>
-					) }
-				</Panel>
-			) : null }
+			{ /* The room step: a drawer over the rates (loaded on first use). */ }
+			<Suspense fallback={ null }>
+				{ ! guestMode && ( chosen || drawerUsed.current ) ? (
+					<RoomDrawer
+						chosen={ chosen }
+						taken={ taken }
+						pending={ Boolean( pending ) }
+						left={ left }
+						onHold={ holdRooms }
+						lines={ lines }
+						holds={ holds }
+						onClose={ () => setChoice( null ) }
+						onDone={ () => {
+							setChoice( null );
+							// On to the booking's rooms and the guest.
+							window.setTimeout(
+								() =>
+									linesRef.current?.scrollIntoView( {
+										behavior: 'smooth',
+										block: 'start',
+									} ),
+								350
+							);
+						} }
+					/>
+				) : null }
+			</Suspense>
 
+			<div ref={ linesRef } className="scroll-mt-20" />
 			{ lines.length ? (
 				<Panel
 					title={ __(
@@ -690,7 +784,7 @@ export default function BookingFlow( { mode = 'desk' } ) {
 						'radius-hotel-booking'
 					) }
 					description={ __(
-						'To add another room, choose a rate above.',
+						'To add more rooms, choose a rate above.',
 						'radius-hotel-booking'
 					) }
 					actions={

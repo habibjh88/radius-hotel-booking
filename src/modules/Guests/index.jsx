@@ -1,8 +1,8 @@
 /**
  * Guest list (`#/guests`, features 9.1, 9.2, 9.11): every guest with
  * reference, name, phone, e-mail, standing, stays and last stay. Search by
- * name (accents and case ignored), phone (any form: `07 07 12 34 56`,
- * `+225…`, the old 8 digits), e-mail or reference; filter the banned ones.
+ * name (accents and case ignored), phone (with or without the country
+ * code; the last 8 digits match), e-mail or reference; filter the banned ones.
  * The search and tab live in the URL, so a reload keeps them.
  */
 import { useState } from 'react';

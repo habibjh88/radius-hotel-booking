@@ -10,71 +10,145 @@
  */
 import { useEffect, useState } from 'react';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import { AlertTriangle, ArrowLeft, Check, Plus } from 'lucide-react';
+import { ArrowLeft, Check, Filter, Plus, X } from 'lucide-react';
 
 import Money from '@/components/common/Money';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { formatDateRange } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import BookingLines from './BookingLines';
-import DatesBar from './DatesBar';
 import GuestForm, { guestFormErrors } from './GuestForm';
+import GuestSearchPanel from './GuestSearchPanel';
 import HoldChip from './HoldChip';
-import RateList from './RateList';
-import RoomPicker from './RoomPicker';
+import RoomSelection from './RoomSelection';
+import RoomTypeResults from './RoomTypeResults';
 
 /**
- * The step indicator.
+ * The step indicator: numbered steps joined by a line that fills as the
+ * guest moves on; on a phone, "Step 2 of 4" with the step's name and a bar.
  *
  * @param {Object}   props       Props.
- * @param {Object[]} props.steps `{ key, label }`.
+ * @param {Object[]} props.steps `{ key, label, hint }`.
  * @param {string}   props.step  Current step.
  * @return {JSX.Element} Steps.
  */
 function Progress( { steps, step } ) {
-	const current = steps.findIndex( ( s ) => s.key === step );
+	const current = Math.max(
+		0,
+		steps.findIndex( ( s ) => s.key === step )
+	);
+	const percent = ( ( current + 1 ) / steps.length ) * 100;
+
 	return (
-		<ol
-			className="flex items-center gap-2 overflow-x-auto text-xs font-semibold"
+		<nav
+			className="rounded-2xl border border-border bg-card px-4 py-3 shadow-sm sm:px-6 sm:py-4"
 			aria-label={ __( 'Booking steps', 'radius-hotel-booking' ) }
 		>
-			{ steps.map( ( s, index ) => (
-				<li
-					key={ s.key }
-					className={ cn(
-						'flex shrink-0 items-center gap-1.5',
-						index === current
-							? 'text-heading'
-							: 'text-muted-foreground'
-					) }
-					aria-current={ index === current ? 'step' : undefined }
-				>
-					<span
-						className={ cn(
-							'flex h-6 w-6 items-center justify-center rounded-full border',
-							index < current &&
-								'border-primary bg-primary text-primary-foreground',
-							index === current && 'border-primary text-primary',
-							index > current && 'border-border'
-						) }
-					>
-						{ index < current ? (
-							<Check className="h-3.5 w-3.5" aria-hidden="true" />
-						) : (
-							index + 1
+			{ /* Phone: where the guest is, and a bar. */ }
+			<div className="sm:hidden">
+				<div className="flex items-baseline justify-between gap-3">
+					<span className="text-sm font-bold text-heading">
+						{ steps[ current ]?.label }
+					</span>
+					<span className="text-xs font-semibold text-muted-foreground">
+						{ sprintf(
+							/* translators: 1: current step number, 2: number of steps. */
+							__( 'Step %1$d of %2$d', 'radius-hotel-booking' ),
+							current + 1,
+							steps.length
 						) }
 					</span>
-					{ s.label }
-					{ index < steps.length - 1 ? (
-						<span
-							className="mx-1 h-px w-4 bg-border"
-							aria-hidden="true"
-						/>
-					) : null }
-				</li>
-			) ) }
-		</ol>
+				</div>
+				<div
+					className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted"
+					role="progressbar"
+					aria-valuemin={ 1 }
+					aria-valuemax={ steps.length }
+					aria-valuenow={ current + 1 }
+				>
+					<div
+						className="h-full rounded-full bg-primary transition-all duration-500"
+						style={ { width: `${ percent }%` } }
+					/>
+				</div>
+			</div>
+
+			{ /* Wider screens: every step. */ }
+			<ol className="m-0 hidden list-none items-center p-0 sm:flex">
+				{ steps.map( ( s, index ) => {
+					const done = index < current;
+					const active = index === current;
+					return (
+						<li
+							key={ s.key }
+							className={ cn(
+								'flex items-center',
+								index < steps.length - 1 && 'flex-1'
+							) }
+							aria-current={ active ? 'step' : undefined }
+						>
+							<div className="flex shrink-0 items-center gap-3">
+								<span
+									className={ cn(
+										'flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold transition-all duration-300',
+										done &&
+											'bg-primary text-primary-foreground',
+										active &&
+											'bg-primary text-primary-foreground ring-4 ring-primary-soft',
+										! done &&
+											! active &&
+											'border-2 border-border bg-white text-muted-foreground'
+									) }
+								>
+									{ done ? (
+										<Check
+											className="h-4 w-4"
+											strokeWidth={ 3 }
+											aria-hidden="true"
+										/>
+									) : (
+										index + 1
+									) }
+								</span>
+								<span className="min-w-0">
+									<span
+										className={ cn(
+											'block text-sm font-semibold leading-tight',
+											active || done
+												? 'text-heading'
+												: 'text-muted-foreground'
+										) }
+									>
+										{ s.label }
+									</span>
+									<span className="block text-xs text-muted-foreground">
+										{ done
+											? __(
+													'Done',
+													'radius-hotel-booking'
+											  )
+											: s.hint }
+									</span>
+								</span>
+							</div>
+							{ index < steps.length - 1 ? (
+								<span
+									className="mx-4 h-0.5 min-w-[1.5rem] flex-1 overflow-hidden rounded-full bg-border"
+									aria-hidden="true"
+								>
+									<span
+										className={ cn(
+											'block h-full bg-primary transition-all duration-500',
+											done ? 'w-full' : 'w-0'
+										) }
+									/>
+								</span>
+							) : null }
+						</li>
+					);
+				} ) }
+			</ol>
+		</nav>
 	);
 }
 
@@ -96,7 +170,9 @@ export default function GuestBookingSteps( props ) {
 		onClearChoice,
 		taken,
 		pending,
-		onPick,
+		onHoldRooms,
+		left,
+		onAddAnother,
 		lines,
 		onRemove,
 		failed,
@@ -141,12 +217,30 @@ export default function GuestBookingSteps( props ) {
 	}, [ step ] );
 
 	const steps = [
-		{ key: 'rates', label: __( 'Rates', 'radius-hotel-booking' ) },
+		{
+			key: 'rates',
+			label: __( 'Rates', 'radius-hotel-booking' ),
+			hint: __( 'Dates and stay', 'radius-hotel-booking' ),
+		},
 		...( picks
-			? [ { key: 'room', label: __( 'Room', 'radius-hotel-booking' ) } ]
+			? [
+					{
+						key: 'room',
+						label: __( 'Room', 'radius-hotel-booking' ),
+						hint: __( 'Pick your rooms', 'radius-hotel-booking' ),
+					},
+			  ]
 			: [] ),
-		{ key: 'details', label: __( 'Your details', 'radius-hotel-booking' ) },
-		{ key: 'review', label: __( 'Review', 'radius-hotel-booking' ) },
+		{
+			key: 'details',
+			label: __( 'Your details', 'radius-hotel-booking' ),
+			hint: __( 'Name and contact', 'radius-hotel-booking' ),
+		},
+		{
+			key: 'review',
+			label: __( 'Review', 'radius-hotel-booking' ),
+			hint: __( 'Confirm booking', 'radius-hotel-booking' ),
+		},
 	];
 
 	const toReview = () => {
@@ -159,92 +253,50 @@ export default function GuestBookingSteps( props ) {
 
 	let body = null;
 	if ( 'rates' === step ) {
-		let results;
-		if ( availability.isPending ) {
-			results = (
-				<div className="grid gap-3" role="status">
-					<Skeleton className="h-32 w-full rounded-lg" />
-					<Skeleton className="h-32 w-full rounded-lg" />
-				</div>
-			);
-		} else if ( availability.error ) {
-			results = (
-				<div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-4">
-					<p className="m-0 flex items-center gap-2 text-sm text-destructive">
-						<AlertTriangle className="h-4 w-4" aria-hidden="true" />
-						{ availability.error.message ||
-							__(
-								'The rooms could not be loaded.',
-								'radius-hotel-booking'
-							) }
-					</p>
-					<Button
-						type="button"
-						variant="outline"
-						onClick={ () => availability.refetch() }
-					>
-						{ __( 'Try again', 'radius-hotel-booking' ) }
-					</Button>
-				</div>
-			);
-		} else if ( ! availability.data?.room_types?.length ) {
-			results = (
-				<p className="m-0 rounded-lg border border-border p-4 text-sm text-muted-foreground">
-					{ __(
-						'No room is free for these dates. Try other dates.',
-						'radius-hotel-booking'
-					) }
-				</p>
-			);
-		} else {
-			results = (
-				<RateList
-					data={ availability.data }
-					choice={ choice }
-					onSelect={ onSelect }
-					onDates={ onSearch }
-				/>
-			);
-		}
 		const onlyType = search.room_type_id
 			? availability.data?.room_types?.find(
 					( t ) => t.id === Number( search.room_type_id )
 			  )
 			: null;
 		body = (
-			<div className="space-y-4">
+			<div className="space-y-6">
 				{ search.room_type_id ? (
-					<p className="m-0 flex flex-wrap items-center gap-2 text-sm">
-						{ onlyType
-							? sprintf(
-									/* translators: %s: room type name. */
-									__(
-										'Showing %s only.',
+					<div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary-softer px-4 py-2.5">
+						<p className="m-0 flex items-center gap-2 text-sm text-heading">
+							<Filter
+								className="h-4 w-4 shrink-0 text-primary"
+								aria-hidden="true"
+							/>
+							{ onlyType
+								? sprintf(
+										/* translators: %s: room type name. */
+										__(
+											'Showing %s only.',
+											'radius-hotel-booking'
+										),
+										onlyType.name
+								  )
+								: __(
+										'Showing one room type only.',
 										'radius-hotel-booking'
-									),
-									onlyType.name
-							  )
-							: __(
-									'Showing one room type only.',
-									'radius-hotel-booking'
-							  ) }
+								  ) }
+						</p>
 						<button
 							type="button"
-							className="min-h-[44px] font-semibold text-primary underline"
+							className="inline-flex min-h-[36px] items-center gap-1.5 rounded-full border border-primary/30 bg-white px-3.5 py-1 text-sm font-semibold normal-case tracking-normal text-primary no-underline shadow-none transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground focus:border-primary focus:bg-primary focus:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 							onClick={ () => onSearch( { room_type_id: 0 } ) }
 						>
+							<X className="h-3.5 w-3.5" aria-hidden="true" />
 							{ __( 'See all rooms', 'radius-hotel-booking' ) }
 						</button>
-					</p>
+					</div>
 				) : null }
-				<div className="rounded-xl border border-border bg-card p-4">
-					<DatesBar
-						search={ search }
-						limits={ limits }
-						onChange={ onSearch }
-						checkin={ checkin }
-					/>
-				</div>
+				<GuestSearchPanel
+					search={ search }
+					limits={ limits }
+					onChange={ onSearch }
+					checkin={ checkin }
+				/>
 				{ pending && ! picks ? (
 					<p
 						className="m-0 text-sm text-muted-foreground"
@@ -256,10 +308,12 @@ export default function GuestBookingSteps( props ) {
 						) }
 					</p>
 				) : null }
-				<h2 className="m-0 text-lg font-bold text-heading">
-					{ __( 'Available rooms', 'radius-hotel-booking' ) }
-				</h2>
-				{ results }
+				<RoomTypeResults
+					availability={ availability }
+					choice={ choice }
+					onSelect={ onSelect }
+					onDates={ onSearch }
+				/>
 			</div>
 		);
 	} else if ( 'room' === step && chosen ) {
@@ -289,12 +343,27 @@ export default function GuestBookingSteps( props ) {
 					) }
 				</h2>
 				{ chosen.rate.available ? (
-					<RoomPicker
+					<RoomSelection
 						type={ chosen.type }
 						rate={ chosen.rate }
 						taken={ taken }
-						pending={ pending }
-						onPick={ onPick }
+						pending={ Boolean( pending ) }
+						left={ left }
+						onHold={ onHoldRooms }
+						skip={
+							count
+								? {
+										label: __(
+											'Continue with my booking',
+											'radius-hotel-booking'
+										),
+										onClick: () => {
+											onClearChoice();
+											setStep( 'details' );
+										},
+								  }
+								: undefined
+						}
 					/>
 				) : (
 					<p className="m-0 text-sm text-muted-foreground">
@@ -334,8 +403,10 @@ export default function GuestBookingSteps( props ) {
 						type="button"
 						variant="outline"
 						className="h-11"
+						disabled={ left < 1 }
 						onClick={ () => {
-							onClearChoice();
+							// Straight back to the rate the last rooms came from.
+							onAddAnother();
 							setStep( 'rates' );
 						} }
 					>
@@ -529,7 +600,7 @@ export default function GuestBookingSteps( props ) {
 				</p>
 			) : null }
 			{ body }
-			{ action || count ? (
+			{ ( action || count ) && 'room' !== step ? (
 				<div className="fixed inset-x-0 bottom-0 z-[100000] border-t border-border bg-card/95 p-3 shadow-[0_-4px_12px_rgba(0,0,0,0.06)] backdrop-blur md:static md:rounded-xl md:border md:shadow-none">
 					<div className="mx-auto flex max-w-3xl items-center justify-between gap-3">
 						<div className="min-w-0 text-sm">

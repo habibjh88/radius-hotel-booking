@@ -5,13 +5,20 @@
 | **Client module** | 15 — Payroll and HR |
 | **Features** | 15.1–15.21, 17.3 |
 | **Depends on** | M12, and **D1 must be answered "in scope"** (blocking) |
-| **Tier** | **Client add-on** |
+| **Tier** | **Pro** (feature `payroll`); the Côte d'Ivoire calculator stays in the client add-on |
 | **Engine** | no |
 | **Critical review** | yes (statutory maths, run lifecycle) |
 
 ## Goal
 
-Côte d'Ivoire payroll: pay runs with a strict lifecycle, statutory contributions (CNPS, IS, CN,
+> **Moved to Pro (2026-10-14).** Payroll is Pro's switchable feature `payroll`
+> (`radius-hotel-booking-pro/includes/Payroll`). Taxes and contributions come from a
+> pluggable calculator (`rtbp_pro_payroll_calculator`): Pro's RuleCalculator (rates and
+> brackets in Settings → Payroll) by default; the Residence TATA add-on supplies
+> `IvorianCalculator` (CNPS, IS, CN, IGR, StatutoryTable) and the work accident rate.
+> Old `tata_*` payroll tables are renamed to `pro_*` on first boot (PayrollMigration).
+
+Côte d'Ivoire payroll (the first client): pay runs with a strict lifecycle, statutory contributions (CNPS, IS, CN,
 IGR) at the correct rates and caps, payslips, statutory payment tracking, monthly and yearly
 reports, and time off with an annual quota.
 

@@ -267,6 +267,13 @@ class LoadAssets {
 	public const SITE_HANDLE = 'radius-hotel-booking-site';
 
 	/**
+	 * The room type page's photo lightbox.
+	 *
+	 * @var string
+	 */
+	public const GALLERY_HANDLE = 'radius-hotel-booking-gallery';
+
+	/**
 	 * Register the public bundle and its localized data on every front-end
 	 * request. Nothing is printed until something enqueues the handle.
 	 *
@@ -278,6 +285,9 @@ class LoadAssets {
 		}
 
 		ThemeHelper::attach_to( self::SITE_HANDLE );
+
+		// The room type page's lightbox: its own small entry (the viewer loads on first click).
+		$this->register_entry( 'gallery', self::GALLERY_HANDLE, array( 'wp-element', 'wp-i18n' ) );
 
 		$this->localize( self::SITE_HANDLE, 'radius_hotel_booking_site_param', $this->site_params() );
 	}
@@ -367,6 +377,10 @@ class LoadAssets {
 				'nonce'         => wp_create_nonce( 'wp_rest' ),
 				'plugin_url'    => RADIUS_HOTEL_BOOKING_URL,
 				'assets_url'    => RADIUS_HOTEL_BOOKING_ASSETS,
+				// Country flags for the phone fields (copied into build/ by webpack).
+				'flags_url'     => RADIUS_HOTEL_BOOKING_BUILD . '/flags/',
+				// Lucide icons (Support\Icons; LucideIcon in React).
+				'icons_url'     => RADIUS_HOTEL_BOOKING_BUILD . '/icons/',
 				'admin_url'     => admin_url(),
 				'version'       => RADIUS_HOTEL_BOOKING_VERSION,
 				'is_addon'      => rtbp_addon_active(),
@@ -386,8 +400,12 @@ class LoadAssets {
 					'display'       => SettingsHelper::get_setting( 'display' ),
 					// The new-booking alert (poll interval, sound).
 					'notifications' => SettingsHelper::get_setting( 'notifications' ),
+					// Every phone field (country list, custom codes).
+					'phone'         => SettingsHelper::get_setting( 'phone' ),
 				),
 				'notify_sound_url' => $this->notification_sound_url(),
+				// Most rooms one front-desk booking may take (Settings → Booking).
+				'max_rooms'        => \RadiusTheme\RadiusHotelBooking\Services\Booking\BookingService::maxRooms( 'staff' ),
 				// *Paid now* at the desk picks one of these (M05); the instructions stay on the server.
 				'payment_methods'  => array_map(
 					static fn( $method ) => array(
@@ -488,11 +506,14 @@ class LoadAssets {
 				'rest_url'    => esc_url_raw( rest_url( 'radius-hotel-booking/v1/' ) ),
 				'nonce'       => wp_create_nonce( 'wp_rest' ),
 				'assets_url'  => RADIUS_HOTEL_BOOKING_ASSETS,
+				'flags_url'   => RADIUS_HOTEL_BOOKING_BUILD . '/flags/',
+				'icons_url'   => RADIUS_HOTEL_BOOKING_BUILD . '/icons/',
 				'is_addon'    => rtbp_addon_active(),
 				'is_loggedin' => is_user_logged_in(),
 				'format'      => $this->format_params(),
 				'settings'    => array(
 					'display' => SettingsHelper::get_setting( 'display' ),
+					'phone'   => SettingsHelper::get_setting( 'phone' ),
 				),
 				// The public booking rules the search bar and date pickers follow (M04); nothing private.
 				'booking'     => \RadiusTheme\RadiusHotelBooking\Frontend\Embeds::rules(),

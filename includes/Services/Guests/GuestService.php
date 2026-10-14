@@ -601,8 +601,8 @@ class GuestService {
 
 	/**
 	 * The internal address of a guest without an e-mail (9.12). `.invalid`
-	 * can never be delivered to; the client add-on may keep the legacy
-	 * `{phone}@residencetata.com` form through the filter.
+	 * can never be delivered to; an add-on may use another form through
+	 * the filter.
 	 *
 	 * @param string|null $e164  E.164 phone.
 	 * @param string      $phone Phone as typed.

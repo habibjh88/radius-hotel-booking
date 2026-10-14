@@ -5,13 +5,14 @@
  * Override from a theme at `radius-hotel-booking/booking/room-type.php`. The
  * data comes from `Frontend\RoomTypePage::current()`:
  * `{ name, short_description, description, images[] (attachment ids),
- *   amenities[], bed_info, size_m2, max_adults, max_children,
+ *   amenities[], amenity_library{ sections[], amenities{ lower-case name: { icon, section } } }, bed_info, size_m2, max_adults, max_children,
  *   rates[ { name, when, from } ], book_url }`.
  *
  * @package RadiusTheme\RadiusHotelBooking
  */
 
 use RadiusTheme\RadiusHotelBooking\Frontend\RoomTypePage;
+use RadiusTheme\RadiusHotelBooking\Support\Icons;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -28,22 +29,92 @@ get_header();
 			<?php endif; ?>
 		</header>
 
-		<?php if ( $rtbp_type['images'] ) : ?>
-			<div class="grid gap-3 sm:grid-cols-3">
-				<?php foreach ( $rtbp_type['images'] as $rtbp_index => $rtbp_image ) : ?>
-					<div class="<?php echo 0 === $rtbp_index ? 'sm:col-span-3' : ''; ?> overflow-hidden rounded-xl bg-muted">
-						<?php
-						echo wp_get_attachment_image(
-							$rtbp_image,
-							0 === $rtbp_index ? 'large' : 'medium_large',
-							false,
-							array(
-								'class'   => 'h-full w-full object-cover ' . ( 0 === $rtbp_index ? 'max-h-[28rem]' : 'aspect-[4/3]' ),
-								'loading' => 0 === $rtbp_index ? 'eager' : 'lazy',
-							)
+		<?php
+		if ( $rtbp_type['images'] ) :
+			// Every photo for the lightbox (opened by assets/gallery: full size, srcset, thumbnail).
+			$rtbp_slides = array();
+			foreach ( $rtbp_type['images'] as $rtbp_image ) {
+				$rtbp_full = wp_get_attachment_image_src( $rtbp_image, 'full' );
+				if ( ! $rtbp_full ) {
+					continue;
+				}
+				$rtbp_thumb   = wp_get_attachment_image_src( $rtbp_image, 'medium' );
+				$rtbp_srcset  = array();
+				foreach ( array( 'medium_large', 'large', '1536x1536', '2048x2048' ) as $rtbp_size ) {
+					$rtbp_src = wp_get_attachment_image_src( $rtbp_image, $rtbp_size );
+					if ( $rtbp_src && $rtbp_src[1] < $rtbp_full[1] ) {
+						$rtbp_srcset[ $rtbp_src[1] ] = array(
+							'src'    => $rtbp_src[0],
+							'width'  => (int) $rtbp_src[1],
+							'height' => (int) $rtbp_src[2],
 						);
-						?>
+					}
+				}
+				$rtbp_slides[] = array(
+					'src'    => $rtbp_full[0],
+					'width'  => (int) $rtbp_full[1],
+					'height' => (int) $rtbp_full[2],
+					'alt'    => (string) get_post_meta( $rtbp_image, '_wp_attachment_image_alt', true ),
+					'thumb'  => $rtbp_thumb ? $rtbp_thumb[0] : $rtbp_full[0],
+					'srcSet' => array_values( $rtbp_srcset ),
+				);
+			}
+			$rtbp_count  = count( $rtbp_slides );
+			$rtbp_shown  = array_slice( $rtbp_type['images'], 0, 4 );
+			$rtbp_last   = count( $rtbp_shown ) - 1;
+			$rtbp_more   = $rtbp_count - count( $rtbp_shown );
+			// The row under the main photo: as many columns as photos in it (literal classes, for Tailwind).
+			$rtbp_small  = array(
+				1 => array( 'grid-cols-1', 'aspect-[32/9]' ),
+				2 => array( 'grid-cols-2', 'aspect-[21/9]' ),
+				3 => array( 'grid-cols-3', 'aspect-[16/9]' ),
+			)[ max( 1, count( $rtbp_shown ) - 1 ) ];
+			$rtbp_label  = sprintf(
+				/* translators: %d: number of photos. */
+				_n( 'View %d photo', 'View all %d photos', $rtbp_count, 'radius-hotel-booking' ),
+				$rtbp_count
+			);
+			?>
+			<div class="rtbp-gallery space-y-2 sm:space-y-3" data-rtbp-gallery="<?php echo esc_attr( (string) wp_json_encode( $rtbp_slides ) ); ?>" data-rtbp-gallery-title="<?php echo esc_attr( $rtbp_type['name'] ); ?>">
+				<?php foreach ( $rtbp_shown as $rtbp_index => $rtbp_image ) : ?>
+					<?php if ( 1 === $rtbp_index ) : ?>
+						<div class="grid <?php echo esc_attr( $rtbp_small[0] ); ?> gap-2 sm:gap-3">
+					<?php endif; ?>
+					<?php $rtbp_full = wp_get_attachment_image_url( $rtbp_image, 'full' ); ?>
+					<div class="group relative overflow-hidden rounded-2xl bg-muted <?php echo esc_attr( 0 === $rtbp_index ? 'aspect-[16/9] sm:aspect-[21/9]' : $rtbp_small[1] ); ?>">
+						<a href="<?php echo esc_url( (string) $rtbp_full ); ?>" class="block h-full w-full" data-rtbp-gallery-index="<?php echo (int) $rtbp_index; ?>" aria-label="<?php echo esc_attr( sprintf( /* translators: 1: photo number, 2: number of photos. */ __( 'Open photo %1$d of %2$d', 'radius-hotel-booking' ), $rtbp_index + 1, $rtbp_count ) ); ?>">
+							<?php
+							echo wp_get_attachment_image(
+								$rtbp_image,
+								0 === $rtbp_index ? 'large' : 'medium_large',
+								false,
+								array(
+									'class'   => 'm-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]',
+									'loading' => 0 === $rtbp_index ? 'eager' : 'lazy',
+									'sizes'   => 0 === $rtbp_index ? '(min-width: 1024px) 1024px, 100vw' : '(min-width: 1024px) 340px, 33vw',
+								)
+							);
+							?>
+						</a>
+						<?php if ( $rtbp_last === $rtbp_index ) : ?>
+							<?php if ( $rtbp_more > 0 ) : ?>
+								<span class="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/45 text-2xl font-bold text-white sm:text-3xl" aria-hidden="true">
+									<?php
+									/* translators: %d: photos not shown. */
+									echo esc_html( sprintf( __( '+%d', 'radius-hotel-booking' ), $rtbp_more ) );
+									?>
+								</span>
+							<?php endif; ?>
+							<button type="button" class="rtbp-gallery-button absolute bottom-2 right-2 inline-flex items-center gap-1.5 rounded-full border-0 bg-white/95 px-3 py-1.5 text-xs font-semibold normal-case tracking-normal text-heading shadow-md backdrop-blur transition hover:bg-white hover:text-heading focus:bg-white focus:text-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:bottom-3 sm:right-3 sm:text-sm" data-rtbp-gallery-index="0">
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="h-4 w-4 shrink-0"><path d="M18 22H4a2 2 0 0 1-2-2V6"/><path d="m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18"/><circle cx="12" cy="8" r="2"/><rect width="16" height="16" x="6" y="2" rx="2"/></svg>
+								<span class="hidden sm:inline"><?php echo esc_html( $rtbp_label ); ?></span>
+								<span class="sm:hidden"><?php echo esc_html( (string) $rtbp_count ); ?></span>
+							</button>
+						<?php endif; ?>
 					</div>
+					<?php if ( $rtbp_index > 0 && $rtbp_last === $rtbp_index ) : ?>
+						</div>
+					<?php endif; ?>
 				<?php endforeach; ?>
 			</div>
 		<?php endif; ?>
@@ -83,17 +154,62 @@ get_header();
 					</div>
 				<?php endif; ?>
 
-				<?php if ( $rtbp_type['amenities'] ) : ?>
-					<section class="space-y-3">
+				<?php
+				if ( $rtbp_type['amenities'] ) :
+					/**
+					 * The icon of amenities that have none of their own (a Lucide icon name).
+					 *
+					 * @param string $icon Icon name.
+					 */
+					$rtbp_default_icon = Icons::clean( apply_filters( 'rtbp_amenity_default_icon', 'circle-check' ) );
+					$rtbp_library      = (array) ( $rtbp_type['amenity_library'] ?? array() );
+					// This room type's amenities by section, in the library's section order; unknown ones last.
+					$rtbp_groups = array();
+					foreach ( (array) ( $rtbp_library['sections'] ?? array() ) as $rtbp_section ) {
+						$rtbp_groups[ (int) $rtbp_section['id'] ] = array(
+							'name'  => (string) $rtbp_section['name'],
+							'items' => array(),
+						);
+					}
+					$rtbp_groups[0] = array(
+						'name'  => __( 'Other', 'radius-hotel-booking' ),
+						'items' => array(),
+					);
+					foreach ( $rtbp_type['amenities'] as $rtbp_amenity ) {
+						$rtbp_meta    = $rtbp_library['amenities'][ mb_strtolower( $rtbp_amenity ) ] ?? array();
+						$rtbp_section = (int) ( $rtbp_meta['section'] ?? 0 );
+						$rtbp_section = isset( $rtbp_groups[ $rtbp_section ] ) ? $rtbp_section : 0;
+						$rtbp_icon    = (string) ( $rtbp_meta['icon'] ?? '' );
+						$rtbp_groups[ $rtbp_section ]['items'][] = array(
+							'name' => $rtbp_amenity,
+							'icon' => '' !== $rtbp_icon && Icons::valid( $rtbp_icon ) ? $rtbp_icon : $rtbp_default_icon,
+						);
+					}
+					// "Other" last.
+					$rtbp_other = $rtbp_groups[0];
+					unset( $rtbp_groups[0] );
+					$rtbp_groups[0] = $rtbp_other;
+					$rtbp_groups    = array_filter( $rtbp_groups, static fn( $group ) => (bool) $group['items'] );
+					?>
+					<section class="space-y-5">
 						<h2 class="text-xl font-bold text-heading"><?php esc_html_e( 'Amenities', 'radius-hotel-booking' ); ?></h2>
-						<ul class="grid gap-2 sm:grid-cols-2">
-							<?php foreach ( $rtbp_type['amenities'] as $rtbp_amenity ) : ?>
-								<li class="flex items-center gap-2 text-sm">
-									<span class="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-hidden="true"></span>
-									<?php echo esc_html( $rtbp_amenity ); ?>
-								</li>
-							<?php endforeach; ?>
-						</ul>
+						<?php foreach ( $rtbp_groups as $rtbp_group ) : ?>
+							<div class="space-y-2.5">
+								<?php if ( count( $rtbp_groups ) > 1 ) : ?>
+									<h3 class="text-xs font-bold uppercase tracking-wider text-muted-foreground"><?php echo esc_html( $rtbp_group['name'] ); ?></h3>
+								<?php endif; ?>
+								<ul class="grid gap-x-4 gap-y-2 sm:grid-cols-2">
+									<?php foreach ( $rtbp_group['items'] as $rtbp_item ) : ?>
+										<li class="flex items-center gap-2.5 text-sm">
+											<span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
+												<?php echo Icons::svg( $rtbp_item['icon'], 'h-4 w-4' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- sanitised SVG (Icons::svg). ?>
+											</span>
+											<?php echo esc_html( $rtbp_item['name'] ); ?>
+										</li>
+									<?php endforeach; ?>
+								</ul>
+							</div>
+						<?php endforeach; ?>
 					</section>
 				<?php endif; ?>
 			</div>

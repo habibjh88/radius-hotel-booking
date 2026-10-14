@@ -12,6 +12,7 @@ use RadiusTheme\RadiusHotelBooking\Core\Api\Middleware\RateLimitMiddleware;
 use RadiusTheme\RadiusHotelBooking\Core\Database\Transaction;
 use RadiusTheme\RadiusHotelBooking\Exceptions\DomainException;
 use RadiusTheme\RadiusHotelBooking\Repositories\HoldRepository;
+use RadiusTheme\RadiusHotelBooking\Services\Booking\BookingService;
 use RadiusTheme\RadiusHotelBooking\Services\Booking\BookingWriter;
 use RadiusTheme\RadiusHotelBooking\Support\Dates;
 
@@ -28,8 +29,10 @@ defined( 'ABSPATH' ) || exit;
  *   key. A token can only be used by the kind of owner that made it.
  * - Expired holds stop counting at once (every query compares the expiry) and
  *   are deleted by the sweep every 5 minutes.
+ * - **Limits:** a token holds at most `BookingService::maxRooms()` rooms (Settings →
+ *   Booking: front desk 50, website 10 by default).
  * - **Web limits (M04 critical review):** one visitor (session) and one network
- *   (`client_key`) hold at most `rtbp_public_hold_limit` rooms (10) at once, and a
+ *   (`client_key`) hold at most `rtbp_public_hold_limit` rooms (the website's most) at once, and a
  *   web token lives at most its first hold + (1 + PUBLIC_EXTENSIONS) hold periods
  *   — extending or adding rooms never moves it past that, so a script cannot keep
  *   rooms held forever.
@@ -40,7 +43,10 @@ defined( 'ABSPATH' ) || exit;
 class HoldService {
 
 	/**
-	 * Most live holds one token may have (one booking's rooms).
+	 * Most live holds one token had before the settings existed; the limit is
+	 * now `BookingService::maxRooms()` (Settings → Booking).
+	 *
+	 * @deprecated Use BookingService::maxRooms().
 	 */
 	public const MAX_PER_TOKEN = 10;
 
@@ -50,7 +56,10 @@ class HoldService {
 	public const PUBLIC_EXTENSIONS = 2;
 
 	/**
-	 * Live holds one web visitor (or network) may have, by default.
+	 * Live holds one web visitor (or network) had by default before the
+	 * settings existed; the default is now the website's most rooms per booking.
+	 *
+	 * @deprecated Use BookingService::maxRooms( 'public' ).
 	 */
 	public const PUBLIC_LIVE_LIMIT = 10;
 
@@ -114,6 +123,33 @@ class HoldService {
 	 * @throws DomainException 409 when the room cannot be held, 403 on a foreign token, 422 on input.
 	 */
 	public function create( array $input, array $actor, ?DateTimeImmutable $now = null ): array {
+		$room_id = (int) ( $input['room_id'] ?? 0 );
+		unset( $input['room_ids'] );
+		$result = $this->createMany( $input, array( $room_id ), $actor, $now );
+		return array(
+			'token'      => $result['token'],
+			'expires_at' => $result['expires_at'],
+			'hold'       => $result['holds'][0],
+		);
+	}
+
+	/**
+	 * Hold several rooms of one rate and window at once — all or none, in one
+	 * locked check (a group picking rooms on the floor plan).
+	 *
+	 * @param array                  $input    As create(), without `room_id`.
+	 * @param int[]                  $room_ids The rooms.
+	 * @param array                  $actor    Actor.
+	 * @param DateTimeImmutable|null $now      Now (checks).
+	 * @return array `{ token, expires_at, holds: [ { id, room_id, room, … } ] }`.
+	 * @throws DomainException 409 (`room_unavailable` names the room; `too_many_holds`), 403, 422.
+	 */
+	public function createMany( array $input, array $room_ids, array $actor, ?DateTimeImmutable $now = null ): array {
+		$room_ids = array_values( array_unique( array_filter( array_map( 'intval', $room_ids ) ) ) );
+		if ( ! $room_ids ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw DomainException::invalid( array( 'room_id' => __( 'Choose a room.', 'radius-hotel-booking' ) ) );
+		}
 		$now   = $now ?? Dates::now();
 		$actor = $this->actor( $actor );
 		$token = isset( $input['token'] ) ? (string) $input['token'] : '';
@@ -124,123 +160,140 @@ class HoldService {
 			$token = self::newToken();
 		}
 
+		$most    = BookingService::maxRooms( $actor['audience'] );
 		$expires = $this->expiry( $rows, $actor, $now );
 		$now_gmt = Dates::to_gmt_db( $now );
 
 		$result = Transaction::run(
-			function () use ( $input, $actor, $token, $expires, $now, $now_gmt ) {
-				$request = array(
-					'room_id'      => (int) ( $input['room_id'] ?? 0 ),
-					'room_type_id' => (int) ( $input['room_type_id'] ?? 0 ),
-					'rate_plan_id' => (int) ( $input['rate_plan_id'] ?? 0 ),
-					'arrival'      => (string) ( $input['arrival'] ?? '' ),
-					'units'        => (int) ( $input['units'] ?? 1 ),
-					'checkin_time' => (string) ( $input['checkin_time'] ?? '' ),
-				);
-				// The party, when given, is checked against the room type's limits (M04: the website always sends it).
-				foreach ( array( 'adults', 'children', 'child_ages' ) as $key ) {
-					if ( isset( $input[ $key ] ) ) {
-						$request[ $key ] = $input[ $key ];
+			function () use ( $input, $room_ids, $actor, $token, $expires, $now, $now_gmt, $most ) {
+				$requests = array();
+				foreach ( $room_ids as $room_id ) {
+					$request = array(
+						'room_id'      => $room_id,
+						'room_type_id' => (int) ( $input['room_type_id'] ?? 0 ),
+						'rate_plan_id' => (int) ( $input['rate_plan_id'] ?? 0 ),
+						'arrival'      => (string) ( $input['arrival'] ?? '' ),
+						'units'        => (int) ( $input['units'] ?? 1 ),
+						'checkin_time' => (string) ( $input['checkin_time'] ?? '' ),
+					);
+					// The party, when given, is checked against the room type's limits (M04: the website always sends it).
+					foreach ( array( 'adults', 'children', 'child_ages' ) as $key ) {
+						if ( isset( $input[ $key ] ) ) {
+							$request[ $key ] = $input[ $key ];
+						}
 					}
+					$requests[] = $request;
 				}
 				$checked = $this->writer->lockAndCheck(
-					array( $request ),
+					$requests,
 					$token,
 					array(
 						'audience' => $actor['audience'],
 						'now'      => $now,
 					)
 				);
-				$item  = $checked[0];
-				$start = Dates::to_gmt_db( $item['window']->startGmt() );
-				$end   = Dates::to_gmt_db( $item['window']->endGmt() );
 
 				// The same room and window again under this token: just refresh it.
-				$live    = array_filter( $this->holds->forToken( $token ), static fn( $row ) => $row['expires_at_gmt'] > $now_gmt );
-				$hold_id = 0;
-				foreach ( $live as $row ) {
-					if ( (int) $row['room_id'] === (int) $item['room']['id'] && $row['start_at_gmt'] === $start && $row['end_at_gmt'] === $end ) {
-						$hold_id = (int) $row['id'];
+				$live  = array_filter( $this->holds->forToken( $token ), static fn( $row ) => $row['expires_at_gmt'] > $now_gmt );
+				$plan  = array();
+				$added = 0;
+				foreach ( $checked as $item ) {
+					$start   = Dates::to_gmt_db( $item['window']->startGmt() );
+					$end     = Dates::to_gmt_db( $item['window']->endGmt() );
+					$hold_id = 0;
+					foreach ( $live as $row ) {
+						if ( (int) $row['room_id'] === (int) $item['room']['id'] && $row['start_at_gmt'] === $start && $row['end_at_gmt'] === $end ) {
+							$hold_id = (int) $row['id'];
+						}
 					}
+					$added += $hold_id ? 0 : 1;
+					$plan[] = array( $item, $start, $end, $hold_id );
 				}
-				if ( ! $hold_id ) {
-					if ( count( $live ) >= self::MAX_PER_TOKEN ) {
-						// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
-						throw DomainException::conflict( 'too_many_holds', __( 'Too many rooms are held for this booking.', 'radius-hotel-booking' ) );
+				if ( $added && count( $live ) + $added > $most ) {
+					// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+					throw DomainException::conflict( 'too_many_holds', sprintf( /* translators: %d: most rooms per booking. */ __( 'A booking can take at most %d rooms.', 'radius-hotel-booking' ), $most ), array( 'max' => $most ) );
+				}
+				if ( $added && AvailabilityService::PUBLIC === $actor['audience'] ) {
+					$this->assertWebLimit( $actor, $now_gmt, $added );
+				}
+
+				$holds = array();
+				foreach ( $plan as list( $item, $start, $end, $hold_id ) ) {
+					if ( ! $hold_id ) {
+						$hold_id = $this->holds->insert(
+							array(
+								'room_id'        => (int) $item['room']['id'],
+								'room_type_id'   => $item['room_type_id'],
+								'rate_plan_id'   => $item['rate_plan_id'],
+								'start_at_gmt'   => $start,
+								'end_at_gmt'     => $end,
+								'token'          => $token,
+								'user_id'        => $actor['user_id'] ? $actor['user_id'] : null,
+								'session_key'    => $actor['session_key'],
+								'client_key'     => $actor['client_key'],
+								'expires_at_gmt' => $expires,
+							)
+						);
 					}
-					if ( AvailabilityService::PUBLIC === $actor['audience'] ) {
-						$this->assertWebLimit( $actor, $now_gmt );
-					}
-					$hold_id = $this->holds->insert(
-						array(
-							'room_id'        => (int) $item['room']['id'],
-							'room_type_id'   => $item['room_type_id'],
-							'rate_plan_id'   => $item['rate_plan_id'],
-							'start_at_gmt'   => $start,
-							'end_at_gmt'     => $end,
-							'token'          => $token,
-							'user_id'        => $actor['user_id'] ? $actor['user_id'] : null,
-							'session_key'    => $actor['session_key'],
-							'client_key'     => $actor['client_key'],
-							'expires_at_gmt' => $expires,
-						)
+					$holds[] = array(
+						'id'           => $hold_id,
+						'room_id'      => (int) $item['room']['id'],
+						'room'         => (string) $item['room']['number'],
+						'room_type_id' => $item['room_type_id'],
+						'rate_plan_id' => $item['rate_plan_id'],
+						'window'       => $item['window']->toArray(),
+						'total'        => $item['quote']['total'],
 					);
 				}
 				// Every hold of the booking expires together.
 				$this->holds->extend( $token, $expires, $now_gmt );
 
-				$hold = array(
-					'id'           => $hold_id,
-					'room_id'      => (int) $item['room']['id'],
-					'room'         => (string) $item['room']['number'],
-					'room_type_id' => $item['room_type_id'],
-					'rate_plan_id' => $item['rate_plan_id'],
-					'window'       => $item['window']->toArray(),
-					'total'        => $item['quote']['total'],
-				);
-
 				if ( AvailabilityService::STAFF === $actor['audience'] ) {
+					$first = $checked[0];
+					$rooms = implode( ', ', array_column( $holds, 'room' ) );
 					rtbp_activity(
 						'holds.create',
 						null,
 						array(
 							'after'       => array(
-								'room'         => $hold['room'],
-								'rate_plan_id' => $hold['rate_plan_id'],
-								'start'        => $hold['window']['start'],
-								'end'          => $hold['window']['end'],
+								'room'         => $rooms,
+								'rate_plan_id' => $first['rate_plan_id'],
+								'start'        => $holds[0]['window']['start'],
+								'end'          => $holds[0]['window']['end'],
 							),
 							'description' => sprintf(
-								/* translators: 1: room number, 2: rate plan name, 3: start date and time. */
-								__( 'Held room %1$s for %2$s from %3$s', 'radius-hotel-booking' ),
-								$hold['room'],
-								(string) $item['plan']->name,
-								Dates::format( $item['window']->start(), 'datetime' )
+								/* translators: 1: room number(s), 2: rate plan name, 3: start date and time. */
+								_n( 'Held room %1$s for %2$s from %3$s', 'Held rooms %1$s for %2$s from %3$s', count( $holds ), 'radius-hotel-booking' ),
+								$rooms,
+								(string) $first['plan']->name,
+								Dates::format( $first['window']->start(), 'datetime' )
 							),
 						)
 					);
 				}
-				return $hold;
+				return $holds;
 			}
 		);
 
 		if ( AvailabilityService::PUBLIC === $actor['audience'] ) {
-			$this->countWebHold( $now );
+			$this->countWebHold( $now, count( $result ) );
 		}
 
-		/**
-		 * A room was held.
-		 *
-		 * @param array  $hold     The hold.
-		 * @param string $token    Its token.
-		 * @param string $audience staff|public.
-		 */
-		do_action( 'rtbp_hold_created', $result, $token, $actor['audience'] );
+		foreach ( $result as $hold ) {
+			/**
+			 * A room was held.
+			 *
+			 * @param array  $hold     The hold.
+			 * @param string $token    Its token.
+			 * @param string $audience staff|public.
+			 */
+			do_action( 'rtbp_hold_created', $hold, $token, $actor['audience'] );
+		}
 
 		return array(
 			'token'      => $token,
 			'expires_at' => Dates::to_iso( Dates::from_gmt( $expires ) ),
-			'hold'       => $result,
+			'holds'      => $result,
 		);
 	}
 
@@ -409,18 +462,19 @@ class HoldService {
 	 *
 	 * @param array  $actor   Actor.
 	 * @param string $now_gmt Now (GMT).
+	 * @param int    $adding  Rooms this request adds.
 	 * @return void
 	 * @throws DomainException 409 `too_many_holds`.
 	 */
-	private function assertWebLimit( array $actor, string $now_gmt ): void {
+	private function assertWebLimit( array $actor, string $now_gmt, int $adding = 1 ): void {
 		/**
 		 * Filters how many rooms one web visitor, or one network, may hold at once.
 		 *
-		 * @param int $limit Live holds (default 10).
+		 * @param int $limit Live holds (default: Settings → Booking, most rooms per website booking).
 		 */
-		$limit = max( 1, (int) apply_filters( 'rtbp_public_hold_limit', self::PUBLIC_LIVE_LIMIT ) );
-		if ( $this->holds->countLive( 'session_key', $actor['session_key'], $now_gmt ) >= $limit
-			|| $this->holds->countLive( 'client_key', $actor['client_key'], $now_gmt ) >= $limit ) {
+		$limit = max( 1, (int) apply_filters( 'rtbp_public_hold_limit', BookingService::maxRooms( AvailabilityService::PUBLIC ) ) );
+		if ( $this->holds->countLive( 'session_key', $actor['session_key'], $now_gmt ) + $adding > $limit
+			|| $this->holds->countLive( 'client_key', $actor['client_key'], $now_gmt ) + $adding > $limit ) {
 			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 			throw DomainException::conflict( 'too_many_holds', __( 'Too many rooms are held from your connection. Finish or cancel a booking first, or contact the hotel.', 'radius-hotel-booking' ) );
 		}
@@ -497,16 +551,17 @@ class HoldService {
 	}
 
 	/**
-	 * Count a web hold for today (kept 31 days).
+	 * Count web holds for today (kept 31 days).
 	 *
-	 * @param DateTimeImmutable $now Now.
+	 * @param DateTimeImmutable $now   Now.
+	 * @param int               $count Rooms held by this request.
 	 * @return void
 	 */
-	private function countWebHold( DateTimeImmutable $now ): void {
+	private function countWebHold( DateTimeImmutable $now, int $count = 1 ): void {
 		$day    = $now->setTimezone( Dates::timezone() )->format( 'Y-m-d' );
 		$counts = get_option( 'rtbp_web_hold_counts', array() );
 		$counts = is_array( $counts ) ? $counts : array();
-		$counts[ $day ] = (int) ( $counts[ $day ] ?? 0 ) + 1;
+		$counts[ $day ] = (int) ( $counts[ $day ] ?? 0 ) + max( 1, $count );
 		krsort( $counts );
 		update_option( 'rtbp_web_hold_counts', array_slice( $counts, 0, self::COUNT_DAYS, true ), false );
 	}

@@ -78,10 +78,10 @@ class PublicBookingService {
 	 * Hold a room for the visitor.
 	 *
 	 * @param array                  $input   `room_type_id`, `rate_plan_id`, `arrival`, `departure`, `units`, `checkin_time`,
-	 *                                        `adults`, `children`, `child_ages`, `room_id?`, `token?`.
+	 *                                        `adults`, `children`, `child_ages`, `room_id?`, `room_ids?`, `token?`.
 	 * @param string                 $session The visitor's session key.
 	 * @param DateTimeImmutable|null $now     Now.
-	 * @return array `{ token, expires_at, hold }`.
+	 * @return array `{ token, expires_at, hold }`, or `{ token, expires_at, holds }` for `room_ids`.
 	 * @throws DomainException 422 input, 409 `room_unavailable` / engine rules.
 	 */
 	public function hold( array $input, string $session, ?DateTimeImmutable $now = null ): array {
@@ -98,6 +98,9 @@ class PublicBookingService {
 		$holds = Container::resolve( HoldService::class );
 
 		$picks = (bool) rtbp_setting( 'website', 'guestPicksRoom', true );
+		if ( $picks && ! empty( $input['room_ids'] ) && is_array( $input['room_ids'] ) ) {
+			return $holds->createMany( $base, $input['room_ids'], $actor, $now );
+		}
 		if ( $picks && ! empty( $input['room_id'] ) ) {
 			return $holds->create( $base + array( 'room_id' => (int) $input['room_id'] ), $actor, $now );
 		}

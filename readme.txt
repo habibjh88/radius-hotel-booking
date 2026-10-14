@@ -141,7 +141,7 @@ Fixed add-on screens sometimes missing when the admin page loaded slowly.
 Settings are now checked before saving; invalid values are refused with a message per field.
 Redesigned Settings screen: side tabs, an unsaved-changes bar, and reset each tab to defaults.
 New Booking rules settings: booking window, same-day cut-off, manual approval, holds and cleaning time.
-General settings now include address, phone, logo, tax and CNPS numbers, with live previews.
+General settings now include address, phone, logo, tax and social security numbers, with live previews.
 Fixed the hotel logo never appearing in e-mails.
 New Notifications settings: new-booking alert, check interval, and a built-in chime or your own sound.
 New E-mail settings: master switch, sender, reply-to, and an on/off switch for each e-mail.
@@ -241,6 +241,29 @@ New status colours for requests awaiting approval, approved, declined or cancell
 New shared amenity list: tick amenities on each room type instead of typing them again.
 Renaming or deleting an amenity updates every room type; duplicates can be merged into one.
 New "Add common amenities" button adds a ready-made list of standard hotel amenities in one click.
+Date and time fields now use modern calendar and time pickers instead of browser inputs.
+Tick several rooms on the floor plan and hold them together; "Pick any" selects free rooms.
+New settings: most rooms per booking at the front desk (50) and on the website (10).
+New booking: choosing a rate opens the rooms in a side panel instead of below the page.
+Fixed: choosing "Now" as check-in time on the booking page hid the time field.
+Redesigned booking page: new search bar, and room types as cards with photo and rates.
+Booking page steps redesigned, with a progress bar on phones; fixed "See all rooms" hover.
+Phone fields now have a country picker with flags and check that the number is valid.
+New Settings → Phone numbers: default country, allowed countries and custom calling codes.
+Booking page rates show the regular price struck through beside the discounted price.
+Guest forms now check the e-mail and other fields as soon as you leave them.
+Removed region-specific defaults: phone country follows the site language; payment defaults are cash, card, transfer.
+"CNPS number" is now "Social security number" on settings and invoices.
+New currency presets: pound sterling and Indian rupee; US dollar listed first.
+Room pages show four photos with a full-screen gallery: next/previous, zoom and thumbnails.
+New icon library with every Lucide icon: search, categories and recently used, Elementor-style.
+Amenities can each have an icon; common amenities come with matching icons.
+Room pages show each amenity's icon, or a check-mark icon when it has none.
+Amenities are now in sections; drag sections and amenities into order, or move them.
+Existing amenities are sorted into the common sections automatically, the rest into Other.
+Room pages and the room type form list amenities by section.
+Leaving a room type, its prices or Settings with unsaved changes now asks first.
+After a plugin update, browsers load the new dashboard code instead of cached files.
 
 = 1.0.0 =
 Initial release.

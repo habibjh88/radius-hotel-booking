@@ -13,6 +13,7 @@ import { Field } from '@/components/common/Form';
 import StatusBadge from '@/components/common/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import PhoneField from '@/components/common/Phone';
 import {
 	Select,
 	SelectContent,
@@ -21,6 +22,7 @@ import {
 	SelectValue,
 } from '@/components/ui/select';
 import { useAccess } from '@/lib/access';
+import { invalidEmailMessage, isEmailValid } from '@/lib/email';
 import { useGuestLookup } from './api';
 
 export const EMPTY_GUEST = {
@@ -157,6 +159,7 @@ function ChosenGuest( { guest, onChange } ) {
  */
 export default function GuestStep( { value, onChange, errors = {} } ) {
 	const [ q, setQ ] = useState( '' );
+	const [ emailLeft, setEmailLeft ] = useState( false );
 	const canCreate = 'locked' !== useAccess( 'guests.create' );
 	const term = useDebounced( q, 300 );
 	const lookup = useGuestLookup( term );
@@ -206,17 +209,29 @@ export default function GuestStep( { value, onChange, errors = {} } ) {
 						error={ errors.phone }
 						required
 					>
-						{ input( 'phone', { type: 'tel', inputMode: 'tel' } ) }
+						<PhoneField
+							value={ value.fields.phone }
+							onChange={ ( phone ) => set( 'phone', phone ) }
+						/>
 					</Field>
 					<Field
 						label={ __( 'E-mail', 'radius-hotel-booking' ) }
-						error={ errors.email }
+						error={
+							errors.email ||
+							( emailLeft && ! isEmailValid( value.fields.email )
+								? invalidEmailMessage()
+								: '' )
+						}
 						description={ __(
 							'For the confirmation. Optional.',
 							'radius-hotel-booking'
 						) }
 					>
-						{ input( 'email', { type: 'email' } ) }
+						{ input( 'email', {
+							type: 'email',
+							// Checked once left, then live while it is fixed.
+							onBlur: () => setEmailLeft( true ),
+						} ) }
 					</Field>
 					<Field
 						label={ __(

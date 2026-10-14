@@ -149,9 +149,10 @@ class BookingLineService {
 				$item = $checked[0];
 
 				// Read after the room lock (booking-engine §7.1: no plain read before it).
-				if ( self::liveCount( $this->lines->forBooking( $booking_id ) ) >= BookingService::MAX_LINES ) {
+				$most = BookingService::maxRooms( AvailabilityService::STAFF );
+				if ( self::liveCount( $this->lines->forBooking( $booking_id ) ) >= $most ) {
 					// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
-					throw DomainException::invalid( array( 'room_id' => sprintf( /* translators: %d: most rooms per booking. */ __( 'A booking can take at most %d rooms.', 'radius-hotel-booking' ), BookingService::MAX_LINES ) ) );
+					throw DomainException::invalid( array( 'room_id' => sprintf( /* translators: %d: most rooms per booking. */ __( 'A booking can take at most %d rooms.', 'radius-hotel-booking' ), $most ) ) );
 				}
 
 				// A room added to a booking still waiting for approval waits with it.

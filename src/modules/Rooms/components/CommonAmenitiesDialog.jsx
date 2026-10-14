@@ -1,7 +1,8 @@
 /**
  * "Add common amenities": the amenities most hotels offer, grouped, all
  * ticked. Untick what the hotel does not offer and add the rest to the
- * amenity list in one go. Amenities already in the list are shown as added.
+ * amenity list in one go, each with its icon, into the section named after
+ * its group. Amenities already in the list are shown as added.
  */
 import { useEffect, useMemo, useState } from 'react';
 import { __, _n, sprintf } from '@wordpress/i18n';
@@ -19,6 +20,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast, toastError } from '@/lib/toast';
 import { cn } from '@/lib/utils';
+import LucideIcon from '@/components/icons/LucideIcon';
 import { useCommonAmenities, useImportAmenities } from '../api';
 
 /**
@@ -62,14 +64,31 @@ export default function CommonAmenitiesDialog( { open, onOpenChange } ) {
 				: prev.filter( ( item ) => item !== name )
 		);
 
+	// Each with its suggested icon and its group, which becomes its section.
+	const metaOf = useMemo( () => {
+		const out = {};
+		( groups ?? [] ).forEach( ( group ) =>
+			group.amenities.forEach( ( amenity ) => {
+				out[ amenity.name ] = {
+					icon: amenity.icon || '',
+					section: group.label,
+				};
+			} )
+		);
+		return out;
+	}, [ groups ] );
+
 	const submit = () =>
-		importAmenities.mutate( chosen, {
-			onSuccess: ( data ) => {
-				toast.success( data.message );
-				onOpenChange( false );
-			},
-			onError: ( e ) => toastError( e ),
-		} );
+		importAmenities.mutate(
+			chosen.map( ( name ) => ( { name, ...( metaOf[ name ] || {} ) } ) ),
+			{
+				onSuccess: ( data ) => {
+					toast.success( data.message );
+					onOpenChange( false );
+				},
+				onError: ( e ) => toastError( e ),
+			}
+		);
 
 	let body;
 	if ( isPending ) {
@@ -176,6 +195,12 @@ export default function CommonAmenitiesDialog( { open, onOpenChange } ) {
 													)
 												}
 											/>
+											<span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted text-heading">
+												<LucideIcon
+													name={ amenity.icon }
+													className="h-4 w-4"
+												/>
+											</span>
 											<span className="min-w-0 flex-1 break-words">
 												{ amenity.name }
 											</span>

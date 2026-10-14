@@ -80,6 +80,10 @@ $this->router->put( 'settings/(?P<section>[a-zA-Z0-9_-]+)', array( SettingsContr
 $this->router->put( 'floors/order', array( FloorController::class, 'order' ) );
 $this->router->resource( 'floors', FloorController::class );
 $this->router->put( 'amenities/order', array( AmenityController::class, 'order' ) );
+$this->router->put( 'amenities/layout', array( AmenityController::class, 'layout' ) );
+$this->router->post( 'amenities/sections', array( AmenityController::class, 'sectionStore' ) );
+$this->router->put( 'amenities/sections/(?P<section>\d+)', array( AmenityController::class, 'sectionUpdate' ) );
+$this->router->delete( 'amenities/sections/(?P<section>\d+)', array( AmenityController::class, 'sectionDestroy' ) );
 $this->router->get( 'amenities/common', array( AmenityController::class, 'common' ) );
 $this->router->post( 'amenities/import', array( AmenityController::class, 'import' ) );
 $this->router->resource( 'amenities', AmenityController::class );

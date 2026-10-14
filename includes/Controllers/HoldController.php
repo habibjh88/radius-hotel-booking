@@ -64,6 +64,12 @@ class HoldController extends BaseController {
 							$input[ $key ] = sanitize_text_field( (string) $value );
 						}
 					}
+					// Several rooms at once (`room_ids`), all or none.
+					$room_ids = $request->get_param( 'room_ids' );
+					if ( is_array( $room_ids ) && $room_ids ) {
+						$holds = Container::resolve( HoldService::class )->createMany( $input, array_map( 'absint', $room_ids ), self::actor() );
+						return ApiResponse::created( $holds, __( 'Rooms held.', 'radius-hotel-booking' ) )->send();
+					}
 					$hold = Container::resolve( HoldService::class )->create( $input, self::actor() );
 					return ApiResponse::created( $hold, __( 'Room held.', 'radius-hotel-booking' ) )->send();
 				} catch ( \Throwable $e ) {

@@ -9,6 +9,8 @@ namespace RadiusTheme\RadiusHotelBooking\Resources;
 
 defined( 'ABSPATH' ) || exit;
 
+use RadiusTheme\RadiusHotelBooking\Frontend\RoomTypePage;
+
 /**
  * Shapes `AvailabilityService::search()` for its audience.
  *
@@ -76,7 +78,18 @@ final class AvailabilityResource {
 			unset( $type );
 		}
 
+		// The type's photo as a URL (the id means nothing to a visitor).
+		$image_ids = array_filter( array_map( static fn( $type ) => (int) ( $type['details']['featured_image_id'] ?? 0 ), $result['room_types'] ) );
+		if ( $image_ids ) {
+			_prime_post_caches( $image_ids, false, true );
+		}
 		foreach ( $result['room_types'] as &$type ) {
+			if ( isset( $type['details'] ) ) {
+				$image_id                  = (int) ( $type['details']['featured_image_id'] ?? 0 );
+				$type['details']['image']  = $image_id ? (string) wp_get_attachment_image_url( $image_id, 'medium_large' ) : '';
+				$type['details']['url']    = '' !== $type['details']['slug'] && class_exists( RoomTypePage::class ) ? RoomTypePage::url( $type['details']['slug'] ) : '';
+				unset( $type['details']['featured_image_id'] );
+			}
 			foreach ( $type['floors'] as &$floor ) {
 				foreach ( $floor['rooms'] as &$room ) {
 					unset( $room['state_note'] );

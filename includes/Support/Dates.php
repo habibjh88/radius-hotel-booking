@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * - Always `DateTimeImmutable` with an explicit zone — never `date()`,
  *   `strtotime()` or the server's default zone.
  * - "Local" means the site time zone (Settings → General → Timezone in
- *   WordPress; Africa/Abidjan for the client). Stored `*_at` columns are
+ *   WordPress). Stored `*_at` columns are
  *   local, `*_at_gmt` twins are UTC, and comparisons use the GMT twins.
  * - Adding days is calendar arithmetic in the local zone (`+1 day` keeps the
  *   wall-clock time across a DST change); never add 86 400 seconds.

@@ -11,6 +11,7 @@ import Money from '@/components/common/Money';
 import Panel from '@/components/common/Panel';
 import PriceBreakdown from '@/components/common/PriceBreakdown';
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/common/DatePicker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -163,14 +164,10 @@ export default function PriceSimulator( { type, rates, dirty } ) {
 					{ field(
 						'rtbp-sim-arrival',
 						__( 'Arrival', 'radius-hotel-booking' ),
-						<Input
+						<DatePicker
 							id="rtbp-sim-arrival"
-							type="date"
 							value={ values.arrival }
-							onChange={ ( event ) =>
-								set( 'arrival' )( event.target.value )
-							}
-							required
+							onChange={ set( 'arrival' ) }
 						/>
 					) }
 					{ plan?.multi_unit
@@ -219,13 +216,11 @@ export default function PriceSimulator( { type, rates, dirty } ) {
 					{ field(
 						'rtbp-sim-booked',
 						__( 'Booked on', 'radius-hotel-booking' ),
-						<Input
+						<DatePicker
 							id="rtbp-sim-booked"
-							type="date"
 							value={ values.booked_at }
-							onChange={ ( event ) =>
-								set( 'booked_at' )( event.target.value )
-							}
+							onChange={ set( 'booked_at' ) }
+							clearable
 						/>
 					) }
 				</div>

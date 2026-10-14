@@ -45,7 +45,10 @@ defined( 'ABSPATH' ) || exit;
 class BookingService {
 
 	/**
-	 * Most lines one booking can take.
+	 * Most lines one booking can take before the settings existed; the limit
+	 * now comes from `maxRooms()` (Settings → Booking).
+	 *
+	 * @deprecated Use BookingService::maxRooms().
 	 */
 	public const MAX_LINES = 10;
 
@@ -129,7 +132,7 @@ class BookingService {
 		$now      = $now ?? Dates::now();
 		$source   = in_array( $source, Booking::SOURCES, true ) ? $source : 'desk';
 		$audience = AvailabilityService::PUBLIC === ( $actor['audience'] ?? '' ) ? AvailabilityService::PUBLIC : AvailabilityService::STAFF;
-		$data     = $this->validate( $input );
+		$data     = $this->validate( $input, $audience );
 		$token    = $data['hold_token'];
 		// An existing booking brought over from the old system (M18): the same lock and
 		// overlap check, but its own status and price, no payment deadline, no e-mails.
@@ -570,20 +573,35 @@ class BookingService {
 	}
 
 	/**
+	 * Most rooms one booking may take (Settings → Booking): at the front desk,
+	 * or on the website (which is also the rooms one visitor may hold at once).
+	 *
+	 * @param string $audience staff|public.
+	 * @return int
+	 */
+	public static function maxRooms( string $audience ): int {
+		return AvailabilityService::PUBLIC === $audience
+			? max( 1, (int) rtbp_setting( 'booking', 'maxRoomsWeb', 10 ) )
+			: max( 1, (int) rtbp_setting( 'booking', 'maxRoomsDesk', 50 ) );
+	}
+
+	/**
 	 * Validate the input (the engine checks the rooms, windows and prices).
 	 *
-	 * @param array $input Input.
+	 * @param array  $input    Input.
+	 * @param string $audience staff|public (the most rooms differ).
 	 * @return array `{ requests, guest_id, guest, payment_state, note, hold_token, accept_new_price }`.
 	 * @throws DomainException 422.
 	 */
-	private function validate( array $input ): array {
+	private function validate( array $input, string $audience ): array {
 		$errors = array();
 		$lines  = isset( $input['lines'] ) && is_array( $input['lines'] ) ? array_values( $input['lines'] ) : array();
+		$most   = self::maxRooms( $audience );
 		if ( ! $lines ) {
 			$errors['lines'] = __( 'Add at least one room.', 'radius-hotel-booking' );
-		} elseif ( count( $lines ) > self::MAX_LINES ) {
+		} elseif ( count( $lines ) > $most ) {
 			/* translators: %d: most rooms per booking. */
-			$errors['lines'] = sprintf( __( 'A booking can take at most %d rooms.', 'radius-hotel-booking' ), self::MAX_LINES );
+			$errors['lines'] = sprintf( __( 'A booking can take at most %d rooms.', 'radius-hotel-booking' ), $most );
 		}
 
 		$requests = array();

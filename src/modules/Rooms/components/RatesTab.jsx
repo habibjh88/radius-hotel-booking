@@ -11,6 +11,7 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 import { ArrowDown, ArrowUp, Clock, GripVertical } from 'lucide-react';
 
 import EmptyState from '@/components/common/EmptyState';
+import LeaveGuard from '@/components/common/LeaveGuard';
 import Panel from '@/components/common/Panel';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -334,6 +335,7 @@ export default function RatesTab( { type } ) {
 
 	return (
 		<div className="space-y-4">
+			<LeaveGuard when={ ! readOnly && dirty } />
 			<Panel
 				title={ __( 'Price & Rates', 'radius-hotel-booking' ) }
 				description={ __(

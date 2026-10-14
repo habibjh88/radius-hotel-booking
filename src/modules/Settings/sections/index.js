@@ -19,6 +19,7 @@ import {
 	FileText,
 	Mail,
 	Palette,
+	Phone,
 	ShieldCheck,
 	Wallet,
 	Globe,
@@ -27,6 +28,7 @@ import {
 
 import { refreshAccess } from '@/lib/access';
 import { setFormatConfig } from '@/lib/format';
+import { setPhoneConfig } from '@/lib/phone';
 
 /**
  * @return {Array<Object>} Tabs.
@@ -78,6 +80,18 @@ export default function coreSections() {
 			),
 			icon: Globe,
 			Component: lazy( () => import( './Website' ) ),
+		},
+		{
+			key: 'phone',
+			label: __( 'Phone numbers', 'radius-hotel-booking' ),
+			description: __(
+				'Default country, allowed countries and custom calling codes',
+				'radius-hotel-booking'
+			),
+			icon: Phone,
+			Component: lazy( () => import( './Phone' ) ),
+			// Phone fields on other screens use the new settings without a reload.
+			onSaved: ( phone ) => setPhoneConfig( phone ),
 		},
 		{
 			key: 'payments',

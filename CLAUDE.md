@@ -42,8 +42,13 @@ bin/i18n-build.sh --all  # Compile .po -> .mo / .l10n.php / .json
 
 ## What this repository is
 
-A hotel management plugin for **Residence TATA** (Abidjan), replacing their
-WooCommerce-based hotel stack. It is built on a framework layer extracted from a
+A hotel management plugin for hotels anywhere: the free plugin ships to
+wordpress.org and Pro is sold worldwide. **Residence TATA** (Abidjan) is the
+first client; its WooCommerce-based hotel stack is what the plugin replaces
+there. Nothing region-specific (time zone, currency, phone country or
+numbering, payment methods, labels such as CNPS) goes in Free or Pro — the
+client add-on supplies it through filters (`rtbp_settings_schema`,
+`rtbp_phone_to_e164`, `rtbp_site_checks`). It is built on a framework layer extracted from a
 production RadiusTheme plugin (Radius Booking, which is also the design
 reference for the admin: `/Users/habib/GithubProjects/radius-booking/radius-booking`,
 read-only).
@@ -269,6 +274,11 @@ Multisite is supported: network activation installs per-site, and
 - Hook names are prefixed `rtbp_`; so are capabilities, option keys and global
   functions.
 - Text domain: `radius-hotel-booking`.
+- Icons: Lucide everywhere. Store the icon's kebab name (`wifi`); pick it with
+  `IconField` (opens the `IconPicker` library, lazy), show it with
+  `LucideIcon` (React, CSS mask from `build/icons/`) or `Support\Icons::svg()`
+  (PHP). Add-ons get them as `rtbp.ui.IconField` / `LucideIcon` / `IconPicker`.
+  After upgrading lucide-react, run `bin/build-icon-meta.mjs` (categories, tags).
 - PHP 8.0+ / WordPress 6.2+ (the framework uses PHP 8.0 syntax, no 8.1+ features, and `%i` identifier placeholders in `$wpdb->prepare()`, which need WordPress 6.2).
 - WordPress coding standards enforced via PHPCS (`phpcs.xml`); database queries
   must use `$wpdb->prepare()` and output must be escaped.

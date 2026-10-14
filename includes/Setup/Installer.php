@@ -124,6 +124,11 @@ class Installer {
 	public static function finish(): void {
 		PageInstaller::create_missing_pages();
 
+		// Once each: common amenities get their icon, then every amenity a section
+		// (on `init`: the common names are translated).
+		\RadiusTheme\RadiusHotelBooking\Services\Inventory\AmenityService::suggestIconsOnce();
+		\RadiusTheme\RadiusHotelBooking\Services\Inventory\AmenityService::seedSectionsOnce();
+
 		// Once: files named after their download token get a secret name (M11).
 		if ( ! get_option( 'rtbp_files_renamed' ) ) {
 			\RadiusTheme\RadiusHotelBooking\Storage\ProtectedFiles::rename_token_named();

@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
 import { Field } from '@/components/common/Form';
 import SegmentedControl from '@/components/common/SegmentedControl';
 import SettingsSection from '@/components/common/SettingsSection';
-import { Input } from '@/components/ui/input';
+import { TimePicker } from '@/components/common/DatePicker';
 import { NumberInput, ToggleRow } from './fields';
 
 /**
@@ -65,15 +65,10 @@ export default function Booking( { value, setField, errors, schema } ) {
 						) }
 						error={ errors.sameDayCutoff }
 					>
-						<Input
-							type="time"
-							className="w-36"
+						<TimePicker
+							className="w-40"
 							value={ value.sameDayCutoff ?? '' }
-							onChange={ ( event ) =>
-								setField( 'sameDayCutoff' )(
-									event.target.value
-								)
-							}
+							onChange={ setField( 'sameDayCutoff' ) }
 						/>
 					</Field>
 				</ToggleRow>
@@ -198,6 +193,46 @@ export default function Booking( { value, setField, errors, schema } ) {
 			</SettingsSection>
 
 			<SettingsSection
+				title={ __( 'Rooms per booking', 'radius-hotel-booking' ) }
+				description={ __(
+					'The most rooms one booking can take, for groups. Rooms can be ticked and held together.',
+					'radius-hotel-booking'
+				) }
+			>
+				<div className="grid gap-4 sm:grid-cols-2">
+					<Field
+						label={ __(
+							'At the front desk',
+							'radius-hotel-booking'
+						) }
+						error={ errors.maxRoomsDesk }
+					>
+						<NumberInput
+							value={ value.maxRoomsDesk }
+							onChange={ setField( 'maxRoomsDesk' ) }
+							unit={ __( 'rooms', 'radius-hotel-booking' ) }
+							limits={ schema.maxRoomsDesk }
+						/>
+					</Field>
+					<Field
+						label={ __( 'On the website', 'radius-hotel-booking' ) }
+						description={ __(
+							'Also the most rooms one visitor can hold at once.',
+							'radius-hotel-booking'
+						) }
+						error={ errors.maxRoomsWeb }
+					>
+						<NumberInput
+							value={ value.maxRoomsWeb }
+							onChange={ setField( 'maxRoomsWeb' ) }
+							unit={ __( 'rooms', 'radius-hotel-booking' ) }
+							limits={ schema.maxRoomsWeb }
+						/>
+					</Field>
+				</div>
+			</SettingsSection>
+
+			<SettingsSection
 				title={ __( 'Nightly stays', 'radius-hotel-booking' ) }
 				description={ __(
 					'Default times for rate plans sold by the night. A rate plan with its own times uses those instead.',
@@ -209,26 +244,20 @@ export default function Booking( { value, setField, errors, schema } ) {
 						label={ __( 'Check-in from', 'radius-hotel-booking' ) }
 						error={ errors.checkInTime }
 					>
-						<Input
-							type="time"
-							className="w-36"
+						<TimePicker
+							className="w-40"
 							value={ value.checkInTime ?? '' }
-							onChange={ ( event ) =>
-								setField( 'checkInTime' )( event.target.value )
-							}
+							onChange={ setField( 'checkInTime' ) }
 						/>
 					</Field>
 					<Field
 						label={ __( 'Check-out by', 'radius-hotel-booking' ) }
 						error={ errors.checkOutTime }
 					>
-						<Input
-							type="time"
-							className="w-36"
+						<TimePicker
+							className="w-40"
 							value={ value.checkOutTime ?? '' }
-							onChange={ ( event ) =>
-								setField( 'checkOutTime' )( event.target.value )
-							}
+							onChange={ setField( 'checkOutTime' ) }
 						/>
 					</Field>
 				</div>

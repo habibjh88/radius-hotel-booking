@@ -302,6 +302,7 @@ final class AccessRegistry {
 			'display'       => __( 'Change display settings', 'radius-hotel-booking' ),
 			'website'       => __( 'Change public booking settings', 'radius-hotel-booking' ),
 			'exports'       => __( 'Change export settings', 'radius-hotel-booking' ),
+			'phone'         => __( 'Change phone number settings', 'radius-hotel-booking' ),
 		);
 		foreach ( array_keys( SettingsHelper::all() ) as $section ) {
 			// Sections guarded by another key (the permission map) get none.

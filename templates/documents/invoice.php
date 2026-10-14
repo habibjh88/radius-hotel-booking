@@ -71,8 +71,8 @@ $rtbp_rate  = static fn( $rate ) => rtrim( rtrim( number_format( (float) $rate, 
 				<?php if ( ! empty( $rtbp_hotel['cnps_number'] ) ) : ?>
 					<div class="muted">
 					<?php
-					/* translators: %s: CNPS number. */
-					echo esc_html( sprintf( __( 'CNPS no. %s', 'radius-hotel-booking' ), $rtbp_hotel['cnps_number'] ) );
+					/* translators: %s: the employer's social security number. */
+					echo esc_html( sprintf( __( 'Social security no. %s', 'radius-hotel-booking' ), $rtbp_hotel['cnps_number'] ) );
 					?>
 					</div>
 				<?php endif; ?>

@@ -2,7 +2,8 @@
  * Amenities of a room type, picked from the hotel's shared amenity library
  * (`#/rooms/amenities`): one checkbox per amenity, select all / clear, a
  * filter for long lists, and "add new", which adds to the library and ticks
- * it. The value is a list of names, kept in library order.
+ * it. Amenities are shown by section, with their icons, each section with
+ * its own "select all". The value is a list of names, kept in library order.
  */
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -14,7 +15,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { useAddAmenity, useAmenities } from '../api';
+import LucideIcon from '@/components/icons/LucideIcon';
+import { useAddAmenity, useAmenities, useAmenitySections } from '../api';
 
 /** Show the filter box from this many amenities. */
 const FILTER_FROM = 12;
@@ -38,6 +40,7 @@ export default function AmenityPicker( {
 	max = 40,
 } ) {
 	const { data: library, isPending, error, refetch } = useAmenities();
+	const { data: sections } = useAmenitySections();
 	const [ filter, setFilter ] = useState( '' );
 
 	// Library names, plus any chosen name the library does not hold (yet).
@@ -107,6 +110,32 @@ export default function AmenityPicker( {
 		: names;
 	const full = value.length >= max;
 
+	// The names by section (library order); names the library does not hold go last.
+	const iconOf = {};
+	( library ?? [] ).forEach( ( amenity ) => {
+		iconOf[ amenity.name.toLowerCase() ] = amenity.icon || '';
+	} );
+	const groups = ( sections ?? [] )
+		.map( ( section ) => ( {
+			key: `s${ section.id }`,
+			label: section.name,
+			names: ( library ?? [] )
+				.filter( ( amenity ) => amenity.section_id === section.id )
+				.map( ( amenity ) => amenity.name ),
+		} ) )
+		.filter( ( group ) => group.names.length );
+	const grouped = groups.flatMap( ( group ) => group.names );
+	const loose = names.filter(
+		( name ) => ! grouped.some( ( item ) => same( item, name ) )
+	);
+	if ( loose.length ) {
+		groups.push( {
+			key: 'other',
+			label: __( 'Other', 'radius-hotel-booking' ),
+			names: loose,
+		} );
+	}
+
 	return (
 		<div className="space-y-3 rounded-lg border border-border p-3">
 			<div className="flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -175,48 +204,126 @@ export default function AmenityPicker( {
 			) : null }
 
 			{ names.length ? (
-				<ul className="m-0 grid list-none gap-1 p-0 sm:grid-cols-2 lg:grid-cols-3">
-					{ shown.map( ( name, index ) => {
-						const id = `rtbp-amenity-${ index }-${ name.length }`;
-						const on = isChosen( name );
+				<div className="space-y-4">
+					{ groups.map( ( group ) => {
+						const items = group.names.filter( ( name ) =>
+							shown.includes( name )
+						);
+						if ( ! items.length ) {
+							return null;
+						}
+						const allOn = group.names.every( isChosen );
 						return (
-							<li key={ name } className="m-0">
-								<label
-									htmlFor={ id }
-									className={ cn(
-										'flex min-h-9 cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted',
-										on &&
-											'bg-primary-soft hover:bg-primary-soft',
-										( disabled || ( full && ! on ) ) &&
-											'cursor-not-allowed opacity-60'
-									) }
-								>
-									<Checkbox
-										id={ id }
-										checked={ on }
-										disabled={
-											disabled || ( full && ! on )
-										}
-										onCheckedChange={ ( checked ) =>
-											toggle( name, checked === true )
-										}
-									/>
-									<span className="min-w-0 break-words">
-										{ name }
-									</span>
-								</label>
-							</li>
+							<fieldset
+								key={ group.key }
+								className="m-0 border-0 p-0"
+							>
+								<div className="mb-1.5 flex items-center justify-between gap-2">
+									<legend className="p-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+										{ group.label }
+									</legend>
+									{ ! disabled && ! term ? (
+										<button
+											type="button"
+											onClick={ () =>
+												allOn
+													? onChange(
+															value.filter(
+																( item ) =>
+																	! group.names.some(
+																		( n ) =>
+																			same(
+																				n,
+																				item
+																			)
+																	)
+															)
+													  )
+													: choose(
+															[
+																...value,
+																...group.names,
+															].slice( 0, max )
+													  )
+											}
+											className="border-0 bg-transparent p-0 text-xs font-semibold normal-case text-primary shadow-none hover:bg-transparent hover:text-primary hover:underline focus:bg-transparent focus:text-primary"
+										>
+											{ allOn
+												? __(
+														'Clear section',
+														'radius-hotel-booking'
+												  )
+												: __(
+														'Select section',
+														'radius-hotel-booking'
+												  ) }
+										</button>
+									) : null }
+								</div>
+								<ul className="m-0 grid list-none gap-1 p-0 sm:grid-cols-2 lg:grid-cols-3">
+									{ items.map( ( name ) => {
+										const id = `rtbp-amenity-${
+											group.key
+										}-${ names.indexOf( name ) }`;
+										const on = isChosen( name );
+										return (
+											<li key={ name } className="m-0">
+												<label
+													htmlFor={ id }
+													className={ cn(
+														'flex min-h-9 cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted',
+														on &&
+															'bg-primary-soft hover:bg-primary-soft',
+														( disabled ||
+															( full &&
+																! on ) ) &&
+															'cursor-not-allowed opacity-60'
+													) }
+												>
+													<Checkbox
+														id={ id }
+														checked={ on }
+														disabled={
+															disabled ||
+															( full && ! on )
+														}
+														onCheckedChange={ (
+															checked
+														) =>
+															toggle(
+																name,
+																checked === true
+															)
+														}
+													/>
+													<LucideIcon
+														name={
+															iconOf[
+																name.toLowerCase()
+															] || 'circle-check'
+														}
+														className="h-4 w-4 text-primary"
+													/>
+													<span className="min-w-0 break-words">
+														{ name }
+													</span>
+												</label>
+											</li>
+										);
+									} ) }
+								</ul>
+							</fieldset>
 						);
 					} ) }
 					{ ! shown.length ? (
-						<li className="m-0 px-2 py-1.5 text-sm text-muted-foreground">
+						<p className="m-0 px-2 py-1.5 text-sm text-muted-foreground">
 							{ __(
 								'No amenity matches.',
 								'radius-hotel-booking'
 							) }
-						</li>
+						</p>
 					) : null }
-				</ul>
+				</div>
 			) : (
 				<p className="m-0 text-sm text-muted-foreground">
 					{ __(

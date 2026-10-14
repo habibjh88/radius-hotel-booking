@@ -39,29 +39,34 @@ bash ./bin/check-bundle-size.sh
 find build -name "*.map" -type f -delete
 
 status "Creating archive…"
-rm -rf "$SLUG" "$SLUG.zip"
-mkdir "$SLUG"
+# Stage and zip inside dist/ (git-ignored) so the plugin root stays clean.
+DIST="dist"
+mkdir -p "$DIST"
+rm -rf "$DIST/$SLUG" "$DIST/$SLUG.zip"
+STAGE="$DIST/$SLUG"
+mkdir "$STAGE"
 
-cp "$SLUG.php" uninstall.php readme.txt README.md composer.json "$SLUG/"
-cp -r includes languages views build templates vendor "$SLUG/"
-[ -d assets ] && cp -r assets "$SLUG/"
+cp "$SLUG.php" uninstall.php readme.txt README.md composer.json "$STAGE/"
+cp -r includes languages views build templates vendor "$STAGE/"
+[ -d assets ] && cp -r assets "$STAGE/"
 
 # The WP-CLI "artisan" generators are development tools: they write PHP into
 # the plugin folder and need resources/stubs, which is not shipped. The command
 # registry skips classes that are missing, and composer.json keeps them out of
 # the optimized classmap.
-rm -rf "$SLUG/includes/Commands"
+rm -rf "$STAGE/includes/Commands"
 
 # No hidden files (.DS_Store, .gitkeep …): Plugin Check rejects them.
-find "$SLUG" -name '.*' -not -name '.' -exec rm -rf {} + 2>/dev/null || true
+find "$STAGE" -name '.*' -not -name '.' -exec rm -rf {} + 2>/dev/null || true
 
 # Languages: ship only the template (.pot), which Loco Translate starts from.
 # No bundled locale files: translations come from a translation plugin or
 # translate.wordpress.org (ADR-019), and the M00 fr_FR scaffold covers only a
 # fraction of the strings, so it would show a half-French screen.
-find "$SLUG/languages" -type f ! -name '*.pot' ! -name 'index.php' -delete 2>/dev/null || true
+find "$STAGE/languages" -type f ! -name '*.pot' ! -name 'index.php' -delete 2>/dev/null || true
 
-zip -r "$SLUG.zip" "$SLUG/"
-rm -rf "$SLUG"
+# Zip from inside dist/ so the archive root is "$SLUG/", as WordPress expects.
+( cd "$DIST" && zip -rq "$SLUG.zip" "$SLUG/" )
+rm -rf "$STAGE"
 
-success "Built $SLUG.zip"
+success "Built $DIST/$SLUG.zip"

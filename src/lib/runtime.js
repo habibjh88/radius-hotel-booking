@@ -63,6 +63,9 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import * as phone from '@/lib/phone';
+import IconField from '@/components/icons/IconField';
+import LucideIcon from '@/components/icons/LucideIcon';
 
 // Heavier components are published lazily so they stay out of the initial
 // bundle; they render inside the app's Suspense boundaries like any screen.
@@ -103,6 +106,25 @@ function lazyParts( load, names ) {
 const PriceBreakdownParts = lazyParts(
 	() => import( '@/components/common/PriceBreakdown' ),
 	[ 'PriceBreakdown', 'PriceBreakdownPopover' ]
+);
+
+// Date / time pickers (Radix popover + calendar): lazy, wrap in Suspense.
+const PickerParts = lazyParts(
+	() => import( '@/components/common/DatePicker' ),
+	[ 'DatePicker', 'TimePicker', 'DateTimePicker' ]
+);
+
+// Phone field with country picker and validation (libphonenumber-js): lazy, wrap in Suspense.
+const PhoneParts = lazyParts(
+	() => import( '@/components/common/PhoneInput' ),
+	[ 'PhoneInput', 'CountryPicker', 'CountryMultiPicker' ]
+);
+
+// The icon library (all Lucide icons): lazy, wrap in Suspense. LucideIcon and
+// IconField are light (IconField loads the library on first use).
+const IconParts = lazyParts(
+	() => import( '@/components/icons/IconPicker' ),
+	[ 'default' ]
 );
 
 const DialogParts = lazyParts(
@@ -216,6 +238,14 @@ export function publishRuntime() {
 			ConfirmDialog,
 			DataTable,
 			DateRangePicker,
+			// Shadcn date, time and date + time pickers (`Y-m-d`, `HH:MM`, `Y-m-dTHH:MM`).
+			...PickerParts,
+			// Phone number field (E.164 value; Settings → Phone numbers).
+			...PhoneParts,
+			// Lucide icons by name (`wifi`), the icon setting and the icon library.
+			LucideIcon,
+			IconField,
+			IconPicker: IconParts.default,
 			// M10: the reports' bar chart (lazy: wrap in Suspense).
 			ReportChart,
 			Field,
@@ -257,6 +287,8 @@ export function publishRuntime() {
 			api,
 			cn,
 			format,
+			// Phone settings and checks: phone.isPhoneValid( value ), phone.phoneConfig().
+			phone,
 			// The new-booking sound: sound.playNotificationSound( url ).
 			sound,
 			status,

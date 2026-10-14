@@ -41,6 +41,7 @@ import { canAccess, useAccessMap } from '@/lib/access';
 import { applyPrimaryColor, isHexColor } from '@/lib/theme';
 import { cn } from '@/lib/utils';
 import coreSections from './sections';
+import LeaveGuard from '@/components/common/LeaveGuard';
 import UpgradeNotice from './UpgradeNotice';
 import useSettingsDrafts from './useSettingsDrafts';
 
@@ -237,19 +238,8 @@ export default function Settings() {
 
 	const select = ( key ) => setParams( { section: key } );
 
-	// Warn before leaving the page with unsaved changes.
+	// Warned before leaving with unsaved changes (LeaveGuard, below).
 	const anyDirty = state.dirtySections.length > 0;
-	useEffect( () => {
-		if ( ! anyDirty ) {
-			return undefined;
-		}
-		const warn = ( event ) => {
-			event.preventDefault();
-			event.returnValue = '';
-		};
-		window.addEventListener( 'beforeunload', warn );
-		return () => window.removeEventListener( 'beforeunload', warn );
-	}, [ anyDirty ] );
 
 	// The brand colour previews live while edited; leaving the screen puts
 	// the saved one back.
@@ -310,6 +300,8 @@ export default function Settings() {
 
 	return (
 		<>
+			{ /* Other screens: ask before unsaved settings are lost (tabs keep their drafts). */ }
+			<LeaveGuard when={ anyDirty } />
 			<UpgradeNotice />
 			<div className="grid gap-6 md:grid-cols-[13rem_minmax(0,1fr)]">
 				<SectionNav

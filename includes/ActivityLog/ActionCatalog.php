@@ -88,6 +88,7 @@ final class ActionCatalog {
 			'amenities.merge'            => array( self::DATA, __( 'Merged two amenities', 'radius-hotel-booking' ) ),
 			'amenities.delete'           => array( self::DATA, __( 'Deleted an amenity', 'radius-hotel-booking' ) ),
 			'amenities.reorder'          => array( self::DATA, __( 'Reordered the amenities', 'radius-hotel-booking' ) ),
+			'amenities.section'          => array( self::DATA, __( 'Changed an amenity section', 'radius-hotel-booking' ) ),
 			'rooms.create'               => array( self::DATA, __( 'Added a room', 'radius-hotel-booking' ) ),
 			'rooms.update'               => array( self::DATA, __( 'Changed a room', 'radius-hotel-booking' ) ),
 			'rooms.delete'               => array( self::DATA, __( 'Removed a room', 'radius-hotel-booking' ) ),

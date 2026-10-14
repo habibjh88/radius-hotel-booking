@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * The payment methods the hotel accepts, with the instructions guests see
  * (17.12, 5.3), and how invoices are numbered and printed (17.13). Hotel
- * name, address, tax and CNPS numbers and the logo come from General, so
+ * name, address, tax and social security numbers and the logo come from General, so
  * they are typed once. Registered by `CoreSettings::register()`.
  */
 class PaymentSettings {
@@ -102,18 +102,10 @@ class PaymentSettings {
 				'enabled'      => true,
 			),
 			array(
-				'key'          => 'wave',
-				'label'        => 'Wave',
+				'key'          => 'card',
+				'label'        => __( 'Card at the desk', 'radius-hotel-booking' ),
 				/* translators: Keep the {…} merge tags as they are. */
-				'instructions' => __( 'Send {amount} by Wave before {deadline}, with {reference} as the message.', 'radius-hotel-booking' ),
-				'account'      => '',
-				'enabled'      => true,
-			),
-			array(
-				'key'          => 'orange_money',
-				'label'        => 'Orange Money',
-				/* translators: Keep the {…} merge tags as they are. */
-				'instructions' => __( 'Send {amount} by Orange Money before {deadline}, with {reference} as the message.', 'radius-hotel-booking' ),
+				'instructions' => __( 'Pay {amount} by card at reception, quoting booking {reference}.', 'radius-hotel-booking' ),
 				'account'      => '',
 				'enabled'      => true,
 			),

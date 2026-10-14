@@ -4,8 +4,8 @@
  * tokens in order, so every report and add-on report looks the same.
  *
  *   <ReportChart
- *       points={ [ { key: '2026-10-01', values: { cash: 12000, wave: 5000 } } ] }
- *       series={ [ { key: 'cash', label: 'Cash' }, { key: 'wave', label: 'Wave' } ] }
+ *       points={ [ { key: '2026-10-01', values: { cash: 12000, card: 5000 } } ] }
+ *       series={ [ { key: 'cash', label: 'Cash' }, { key: 'card', label: 'Card' } ] }
  *       formatKey={ ( key ) => formatDateAs( key, 'j M' ) }
  *       formatValue={ formatMoney }
  *   />

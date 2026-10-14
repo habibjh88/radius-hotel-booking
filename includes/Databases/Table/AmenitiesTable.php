@@ -36,10 +36,15 @@ class AmenitiesTable extends Migration {
 			function ( Blueprint $table ) {
 				$table->id();
 				$table->string( 'name', 60 );
+				// Lucide icon name (Support\Icons), '' = none.
+				$table->string( 'icon', 60 )->default( '' );
+				// Its section (`amenity_sections.id`); 0 only until sections are seeded.
+				$table->unsignedBigInteger( 'section_id' )->default( 0 );
 				$table->unsignedInteger( 'sort_order' )->default( 0 );
 				$table->timestamps();
 
 				$table->index( 'sort_order', 'sort_order' );
+				$table->index( 'section_id', 'section_id' );
 			}
 		);
 

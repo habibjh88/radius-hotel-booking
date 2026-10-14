@@ -1,0 +1,64 @@
+/* The room type lightbox: a dark, quiet frame around the photos. */
+.rtbp-lightbox {
+	--yarl__color_backdrop: rgba(10, 12, 16, 0.96);
+	--yarl__container_background_color: rgba(10, 12, 16, 0.96);
+	/* Above the WordPress admin bar (99999) and sticky theme headers. */
+	--yarl__portal_zindex: 100050;
+	--yarl__thumbnails_container_background_color: rgba(10, 12, 16, 0.96);
+	--yarl__thumbnails_thumbnail_active_border_color: #fff;
+	--yarl__thumbnails_container_padding: 14px;
+	--yarl__counter_filter: none;
+	--yarl__counter_padding: 18px 20px;
+	--yarl__counter_font_size: 14px;
+	--yarl__slide_title_color: #fff;
+	--yarl__button_filter: none;
+	--yarl__button_padding: 10px;
+	--yarl__icon_size: 26px;
+	font-family: inherit;
+}
+
+.rtbp-lightbox .yarl__thumbnails_thumbnail {
+	opacity: 0.55;
+	transition:
+		opacity 0.2s ease,
+		transform 0.2s ease;
+	outline: 2px solid transparent;
+	outline-offset: 2px;
+}
+
+.rtbp-lightbox .yarl__thumbnails_thumbnail:hover {
+	opacity: 0.85;
+}
+
+.rtbp-lightbox .yarl__thumbnails_thumbnail_active {
+	opacity: 1;
+	outline-color: #fff;
+}
+
+.rtbp-lightbox .yarl__thumbnails_thumbnail_image {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	border-radius: inherit;
+}
+
+/* Theme button styles must not leak onto the lightbox controls. */
+.rtbp-lightbox .yarl__button {
+	background: transparent;
+	border: 0;
+	box-shadow: none;
+	border-radius: 999px;
+	transition: background-color 0.2s ease;
+}
+
+.rtbp-lightbox .yarl__button:hover,
+.rtbp-lightbox .yarl__button:focus-visible {
+	background: rgba(255, 255, 255, 0.12);
+	color: #fff;
+}
+
+.rtbp-lightbox .yarl__navigation_prev,
+.rtbp-lightbox .yarl__navigation_next {
+	margin: 0 12px;
+	background: rgba(255, 255, 255, 0.1);
+}

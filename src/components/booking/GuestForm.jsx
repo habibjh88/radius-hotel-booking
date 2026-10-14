@@ -7,11 +7,15 @@
  * The hidden `company_website` field is a honeypot: people never see it,
  * bots fill it, and the server then refuses the booking.
  */
+import { useState } from 'react';
 import { __ } from '@wordpress/i18n';
 
 import { Field } from '@/components/common/Form';
+import PhoneField from '@/components/common/Phone';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { isEmailValid } from '@/lib/email';
+import { invalidPhoneMessage, isPhoneValid } from '@/lib/phone';
 
 export const EMPTY_GUEST_FORM = {
 	first_name: '',
@@ -49,8 +53,10 @@ export function guestFormErrors( value ) {
 			'Enter a phone number we can reach you on.',
 			'radius-hotel-booking'
 		);
+	} else if ( ! isPhoneValid( value.phone ) ) {
+		errors.phone = invalidPhoneMessage();
 	}
-	if ( value.email && ! /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test( value.email ) ) {
+	if ( ! isEmailValid( value.email ) ) {
 		errors.email = __(
 			'Enter a valid e-mail address, or leave it empty.',
 			'radius-hotel-booking'
@@ -88,44 +94,54 @@ export default function GuestForm( {
 	const text = ( key ) => ( event ) =>
 		onChange( { [ key ]: event.target.value } );
 
+	// A field is checked as soon as the guest leaves it, then live while
+	// they fix it — not only on Continue.
+	const [ touched, setTouched ] = useState( {} );
+	const local = guestFormErrors( value );
+	const blur = ( key ) => () =>
+		setTouched( ( prev ) =>
+			prev[ key ] ? prev : { ...prev, [ key ]: true }
+		);
+	const errorOf = ( key ) =>
+		errors[ key ] || ( touched[ key ] ? local[ key ] : '' ) || '';
+
 	return (
 		<div className="grid gap-4 sm:grid-cols-2">
 			<Field
 				label={ __( 'First name', 'radius-hotel-booking' ) }
-				error={ errors.first_name }
+				error={ errorOf( 'first_name' ) }
 				required
 			>
 				<Input
 					value={ value.first_name }
 					onChange={ text( 'first_name' ) }
+					onBlur={ blur( 'first_name' ) }
 					autoComplete="given-name"
 					className="h-11"
 				/>
 			</Field>
 			<Field
 				label={ __( 'Last name', 'radius-hotel-booking' ) }
-				error={ errors.last_name }
+				error={ errorOf( 'last_name' ) }
 				required
 			>
 				<Input
 					value={ value.last_name }
 					onChange={ text( 'last_name' ) }
+					onBlur={ blur( 'last_name' ) }
 					autoComplete="family-name"
 					className="h-11"
 				/>
 			</Field>
 			<Field
 				label={ __( 'Phone', 'radius-hotel-booking' ) }
-				error={ errors.phone }
+				error={ errorOf( 'phone' ) }
 				required
 			>
-				<Input
-					type="tel"
+				<PhoneField
 					value={ value.phone }
-					onChange={ text( 'phone' ) }
-					autoComplete="tel"
-					inputMode="tel"
-					className="h-11"
+					onChange={ ( phone ) => onChange( { phone } ) }
+					onBlur={ blur( 'phone' ) }
 				/>
 			</Field>
 			<Field
@@ -134,12 +150,13 @@ export default function GuestForm( {
 					'For your confirmation and invoice.',
 					'radius-hotel-booking'
 				) }
-				error={ errors.email }
+				error={ errorOf( 'email' ) }
 			>
 				<Input
 					type="email"
 					value={ value.email }
 					onChange={ text( 'email' ) }
+					onBlur={ blur( 'email' ) }
 					autoComplete="email"
 					inputMode="email"
 					className="h-11"
@@ -147,12 +164,13 @@ export default function GuestForm( {
 			</Field>
 			<Field
 				label={ __( 'Identity document', 'radius-hotel-booking' ) }
-				error={ errors.id_type }
+				error={ errorOf( 'id_type' ) }
 				required
 			>
 				<select
 					value={ value.id_type }
 					onChange={ text( 'id_type' ) }
+					onBlur={ blur( 'id_type' ) }
 					className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
 				>
 					<option value="">
@@ -167,12 +185,13 @@ export default function GuestForm( {
 			</Field>
 			<Field
 				label={ __( 'Document number', 'radius-hotel-booking' ) }
-				error={ errors.id_number }
+				error={ errorOf( 'id_number' ) }
 				required
 			>
 				<Input
 					value={ value.id_number }
 					onChange={ text( 'id_number' ) }
+					onBlur={ blur( 'id_number' ) }
 					autoComplete="off"
 					className="h-11"
 				/>

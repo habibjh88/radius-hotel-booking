@@ -247,7 +247,7 @@ export default function PaymentsPanel( { booking } ) {
 				{ methods.length ? (
 					<p className="m-0 text-sm text-muted-foreground">
 						{ sprintf(
-							/* translators: %s: payment method names, e.g. "Wave, Cash at the desk". */
+							/* translators: %s: payment method names, e.g. "Card at the desk, Cash at the desk". */
 							__( 'Paid by %s', 'radius-hotel-booking' ),
 							methods.join( ', ' )
 						) }

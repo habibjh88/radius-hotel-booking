@@ -195,6 +195,18 @@ class RoomTypePage {
 		status_header( 200 );
 		// The plugin's scoped styles (the page has no app to mount).
 		wp_enqueue_style( LoadAssets::SITE_HANDLE );
+		// The photo lightbox, once the scripts are registered.
+		if ( ! empty( self::$current['images'] ) ) {
+			add_action(
+				'wp_enqueue_scripts',
+				static function () {
+					if ( wp_script_is( LoadAssets::GALLERY_HANDLE, 'registered' ) ) {
+						wp_enqueue_script( LoadAssets::GALLERY_HANDLE );
+					}
+				},
+				100
+			);
+		}
 	}
 
 	/**
@@ -284,6 +296,8 @@ class RoomTypePage {
 			'description'       => (string) $type['description'],
 			'images'            => $images,
 			'amenities'         => array_values( array_filter( array_map( 'strval', self::listOf( $type['amenities'] ) ) ) ),
+			// The amenity library's sections and, per amenity (lower-case name), its icon and section.
+			'amenity_library'   => ( new \RadiusTheme\RadiusHotelBooking\Services\Inventory\AmenityService() )->display(),
 			'bed_info'          => (string) $type['bed_info'],
 			'size_m2'           => null !== $type['size_m2'] ? (float) $type['size_m2'] : null,
 			'max_adults'        => (int) $type['max_adults'],

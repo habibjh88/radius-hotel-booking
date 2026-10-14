@@ -45,7 +45,7 @@ function releaseOnUnload( token, base ) {
 
 /**
  * @param {string} base `holds` (staff) or `public/holds` (the website, M04; held for the visitor's cookie).
- * @return {Object} `{ token, expiresAt, extensions, expired, place, release, releaseAll, touch }`.
+ * @return {Object} `{ token, expiresAt, extensions, expired, place, placeMany, release, releaseAll, touch }`.
  */
 export function useHolds( base = 'holds' ) {
 	const [ token, setToken ] = useState( '' );
@@ -72,6 +72,26 @@ export function useHolds( base = 'holds' ) {
 		setExpired( false );
 		lastActivity.current = Date.now();
 		return data.hold;
+	}, [] );
+
+	/**
+	 * Hold several rooms of one rate at once (all or none).
+	 *
+	 * @param {Object}   request `{ room_type_id, rate_plan_id, arrival, units, checkin_time? }`.
+	 * @param {number[]} roomIds The rooms.
+	 * @return {Promise<Object[]>} The holds.
+	 */
+	const placeMany = useCallback( async ( request, roomIds ) => {
+		const { data } = await post( base, {
+			...request,
+			room_ids: roomIds,
+			...( tokenRef.current ? { token: tokenRef.current } : {} ),
+		} );
+		setToken( data.token );
+		setExpiresAt( data.expires_at );
+		setExpired( false );
+		lastActivity.current = Date.now();
+		return data.holds || [];
 	}, [] );
 
 	/**
@@ -170,6 +190,7 @@ export function useHolds( base = 'holds' ) {
 		extensions,
 		expired,
 		place,
+		placeMany,
 		release,
 		releaseAll,
 		touch,

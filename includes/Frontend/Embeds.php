@@ -155,6 +155,8 @@ class Embeds {
 			'privacyConsent'    => (bool) rtbp_setting( 'website', 'privacyConsent', true ),
 			'privacyUrl'        => (string) get_privacy_policy_url(),
 			'idTypes'           => \RadiusTheme\RadiusHotelBooking\Services\Guests\GuestService::idTypes(),
+			// Most rooms one website booking may take (Settings → Booking).
+			'maxRooms'          => \RadiusTheme\RadiusHotelBooking\Services\Booking\BookingService::maxRooms( 'public' ),
 		);
 	}
 }

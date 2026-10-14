@@ -2,11 +2,13 @@
  * The room type's Details form: create (no `type`) or edit. Server field
  * errors land on their fields; only changed values are sent on edit.
  */
+import { useRef } from 'react';
 import { Controller } from 'react-hook-form';
 import { __ } from '@wordpress/i18n';
 
 import { Field, FormSection } from '@/components/common/Form';
 import GalleryField from '@/components/common/GalleryField';
+import LeaveGuard from '@/components/common/LeaveGuard';
 import Panel from '@/components/common/Panel';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -155,6 +157,8 @@ export default function RoomTypeForm( { type, readOnly = false, onSaved } ) {
 	const save = useSaveRoomType();
 	const { register, control, handleSubmit, reset, formState } = form;
 	const { isDirty, dirtyFields } = formState;
+	// Set by a save that worked (for "Save and leave").
+	const savedRef = useRef( false );
 
 	const submit = handleSubmit( async ( values ) => {
 		let body = toBody( values );
@@ -176,6 +180,7 @@ export default function RoomTypeForm( { type, readOnly = false, onSaved } ) {
 				values: body,
 			} );
 			reset( toValues( saved ) );
+			savedRef.current = true;
 			toast.success(
 				type
 					? __( 'Room type saved.', 'radius-hotel-booking' )
@@ -191,6 +196,16 @@ export default function RoomTypeForm( { type, readOnly = false, onSaved } ) {
 
 	return (
 		<form onSubmit={ submit } noValidate>
+			{ ! readOnly ? (
+				<LeaveGuard
+					when={ isDirty }
+					onSave={ async () => {
+						savedRef.current = false;
+						await submit();
+						return savedRef.current;
+					} }
+				/>
+			) : null }
 			<fieldset
 				disabled={ readOnly }
 				className="m-0 min-w-0 border-0 p-0"

@@ -128,7 +128,7 @@ class DashboardController {
 			),
 			'payments'      => array(
 				'label'       => __( 'Write your payment instructions', 'radius-hotel-booking' ),
-				'description' => __( 'How guests pay you: Wave, Orange Money, cash or bank transfer.', 'radius-hotel-booking' ),
+				'description' => __( 'How guests pay you: cash, card, bank transfer or mobile money.', 'radius-hotel-booking' ),
 				'path'        => '/payments',
 				'done'        => false,
 			),

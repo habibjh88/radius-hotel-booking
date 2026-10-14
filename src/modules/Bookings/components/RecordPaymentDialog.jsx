@@ -1,7 +1,7 @@
 /**
  * Record a payment or a refund (5.9, 5.11): the amount starts at what is
  * due (or, for a refund, what is owed back), the method comes from Settings
- * → Payments, the reference is the Wave / Orange Money transaction number
+ * → Payments, the reference is the card, transfer or mobile money transaction number
  * or anything the desk wants to find it by, and the time the money came in
  * defaults to now. The server checks everything again; its field errors are
  * shown on the fields.
@@ -20,6 +20,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog';
+import { DateTimePicker } from '@/components/common/DatePicker';
 import { Input } from '@/components/ui/input';
 import {
 	Select,
@@ -261,12 +262,9 @@ export default function RecordPaymentDialog( {
 							label={ __( 'Received', 'radius-hotel-booking' ) }
 							error={ errors.received_at }
 						>
-							<Input
-								type="datetime-local"
+							<DateTimePicker
 								value={ values.received_at ?? '' }
-								onChange={ ( e ) =>
-									set( 'received_at' )( e.target.value )
-								}
+								onChange={ set( 'received_at' ) }
 							/>
 						</Field>
 					</div>

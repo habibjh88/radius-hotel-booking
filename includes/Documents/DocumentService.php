@@ -200,7 +200,7 @@ class DocumentService {
 
 	/**
 	 * The business block every document prints (Settings → General, 15.21):
-	 * `hotel` (legal or company name, address, phone, e-mail, tax and CNPS
+	 * `hotel` (legal or company name, address, phone, e-mail, tax and social security
 	 * numbers) and `logo_url`. Add-ons build their own documents on it (the
 	 * client's payslips, M15).
 	 *

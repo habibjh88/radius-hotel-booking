@@ -6,6 +6,7 @@
 import { __, sprintf } from '@wordpress/i18n';
 import { Minus, Plus } from 'lucide-react';
 
+import { DatePicker, TimePicker } from '@/components/common/DatePicker';
 import { Field } from '@/components/common/Form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -93,13 +94,11 @@ export default function DatesBar( { search, onChange, checkin, limits } ) {
 	return (
 		<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 			<Field label={ __( 'Arrival', 'radius-hotel-booking' ) } required>
-				<Input
-					type="date"
+				<DatePicker
 					min={ first }
 					max={ last }
 					value={ search.arrival }
-					onChange={ ( e ) => {
-						const arrival = e.target.value;
+					onChange={ ( arrival ) => {
 						if ( ! arrival ) {
 							onChange( { arrival } );
 							return;
@@ -139,13 +138,10 @@ export default function DatesBar( { search, onChange, checkin, limits } ) {
 				}
 				required
 			>
-				<Input
-					type="date"
+				<DatePicker
 					min={ search.arrival || first }
 					value={ search.departure }
-					onChange={ ( e ) =>
-						onChange( { departure: e.target.value } )
-					}
+					onChange={ ( departure ) => onChange( { departure } ) }
 				/>
 			</Field>
 			<Stepper
@@ -172,14 +168,13 @@ export default function DatesBar( { search, onChange, checkin, limits } ) {
 						checkin.until
 					) }
 				>
-					<Input
-						type="time"
-						step={ 1800 }
+					<TimePicker
+						minuteStep={ 30 }
 						min={ checkin.from }
 						max={ checkin.until }
 						value={ search.checkin_time }
-						onChange={ ( e ) =>
-							onChange( { checkin_time: e.target.value } )
+						onChange={ ( checkin_time ) =>
+							onChange( { checkin_time } )
 						}
 					/>
 				</Field>

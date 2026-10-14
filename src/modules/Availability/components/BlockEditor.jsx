@@ -17,6 +17,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog';
+import { DatePicker, TimePicker } from '@/components/common/DatePicker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -404,12 +405,10 @@ export default function BlockEditor( { block, preset, onClose } ) {
 									: __( 'Starts', 'radius-hotel-booking' ) }
 							</Label>
 							<div className="flex gap-2">
-								<Input
+								<DatePicker
 									id="rtbp-block-from"
-									type="date"
 									value={ values.fromDate }
-									onChange={ ( e ) => {
-										const fromDate = e.target.value;
+									onChange={ ( fromDate ) => {
 										set( {
 											fromDate,
 											toDate:
@@ -423,17 +422,16 @@ export default function BlockEditor( { block, preset, onClose } ) {
 									}
 								/>
 								{ ! values.wholeDays ? (
-									<Input
-										type="time"
+									<TimePicker
 										aria-label={ __(
 											'Start time',
 											'radius-hotel-booking'
 										) }
 										value={ values.fromTime }
-										onChange={ ( e ) =>
-											set( { fromTime: e.target.value } )
+										onChange={ ( fromTime ) =>
+											set( { fromTime } )
 										}
-										className="w-28 shrink-0"
+										className="w-32 shrink-0"
 									/>
 								) : null }
 							</div>
@@ -449,30 +447,26 @@ export default function BlockEditor( { block, preset, onClose } ) {
 									: __( 'Ends', 'radius-hotel-booking' ) }
 							</Label>
 							<div className="flex gap-2">
-								<Input
+								<DatePicker
 									id="rtbp-block-to"
-									type="date"
 									min={ values.fromDate || today }
 									value={ values.toDate }
-									onChange={ ( e ) =>
-										set( { toDate: e.target.value } )
-									}
+									onChange={ ( toDate ) => set( { toDate } ) }
 									aria-invalid={
 										errors.end_at ? true : undefined
 									}
 								/>
 								{ ! values.wholeDays ? (
-									<Input
-										type="time"
+									<TimePicker
 										aria-label={ __(
 											'End time',
 											'radius-hotel-booking'
 										) }
 										value={ values.toTime }
-										onChange={ ( e ) =>
-											set( { toTime: e.target.value } )
+										onChange={ ( toTime ) =>
+											set( { toTime } )
 										}
-										className="w-28 shrink-0"
+										className="w-32 shrink-0"
 									/>
 								) : null }
 							</div>

@@ -87,7 +87,8 @@ class PublicBookingController extends BaseController {
 	}
 
 	/**
-	 * POST public/holds `{ room_type_id, rate_plan_id, arrival, departure, units?, checkin_time?, adults, children?, child_ages?, room_id?, token? }`.
+	 * POST public/holds `{ room_type_id, rate_plan_id, arrival, departure, units?, checkin_time?, adults, children?, child_ages?, room_id?, room_ids?, token? }`.
+	 * `room_ids` holds several rooms at once (all or none) and counts as one request.
 	 *
 	 * @param WP_REST_Request $request Request.
 	 * @return mixed
@@ -102,6 +103,10 @@ class PublicBookingController extends BaseController {
 				$ages  = self::ages( $request->get_param( 'child_ages' ) );
 				if ( $ages ) {
 					$input['child_ages'] = $ages;
+				}
+				$room_ids = $request->get_param( 'room_ids' );
+				if ( is_array( $room_ids ) && $room_ids ) {
+					$input['room_ids'] = array_slice( array_map( 'absint', $room_ids ), 0, 100 );
 				}
 				$hold = ( new PublicBookingService() )->hold( $input, PublicSession::key( true ) );
 				return ApiResponse::created( $hold, __( 'Room held for you.', 'radius-hotel-booking' ) );

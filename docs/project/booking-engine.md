@@ -239,9 +239,15 @@ write path and inserts a `holds` row with a TTL (setting, default 15 min). The t
 the form. Creating the booking consumes the holds. Expired holds are ignored by queries at once
 and deleted by a cron sweep every 5 min.
 
+**Several rooms at once.** `POST holds` / `POST public/holds` take `room_ids: [...]` (one rate and
+window) and hold them through **one** `lockAndCheck()` call: all or none; a taken room fails the
+whole request with `room_unavailable` naming that room (`data.room_id`). A token holds at most
+`BookingService::maxRooms()` rooms — Settings → Booking `maxRoomsDesk` (50) / `maxRoomsWeb` (10);
+the same limits cap a booking's lines. `HoldService::create()` is `createMany()` with one room.
+
 **Web holds** (M04 critical review). A visitor's holds belong to their session cookie, and each
 row also records their network (`client_key`, a hash of the IPv4 address or IPv6 /64). One
-session and one network hold at most `rtbp_public_hold_limit` rooms at once (10). A web token
+session and one network hold at most `rtbp_public_hold_limit` rooms at once (default: `maxRoomsWeb`). A web token
 lives at most its first hold + 3 hold periods: extending it, or adding rooms, never moves the
 expiry past that. A web booking is made from exactly the token's live holds (same room and
 window per line, `hold_mismatch` otherwise; no live hold → 410 `hold_expired`).

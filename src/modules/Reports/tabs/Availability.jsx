@@ -25,7 +25,7 @@ import Panel from '@/components/common/Panel';
 import StatCard from '@/components/common/StatCard';
 import StatusBadge from '@/components/common/StatusBadge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { TimePicker } from '@/components/common/DatePicker';
 import {
 	Popover,
 	PopoverContent,
@@ -108,26 +108,20 @@ export default function Availability( { range } ) {
 					<span className="block font-medium text-heading">
 						{ __( 'From time', 'radius-hotel-booking' ) }
 					</span>
-					<Input
-						type="time"
+					<TimePicker
 						value={ fromTime }
-						onChange={ ( e ) =>
-							setTimes( { from_time: e.target.value } )
-						}
-						className="h-10 w-36"
+						onChange={ ( from_time ) => setTimes( { from_time } ) }
+						className="w-40"
 					/>
 				</label>
 				<label className="space-y-1 text-sm">
 					<span className="block font-medium text-heading">
 						{ __( 'To time', 'radius-hotel-booking' ) }
 					</span>
-					<Input
-						type="time"
+					<TimePicker
 						value={ toTime }
-						onChange={ ( e ) =>
-							setTimes( { to_time: e.target.value } )
-						}
-						className="h-10 w-36"
+						onChange={ ( to_time ) => setTimes( { to_time } ) }
+						className="w-40"
 					/>
 				</label>
 				<Button type="button" variant="outline" onClick={ rightNow }>

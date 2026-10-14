@@ -16,6 +16,8 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import PhoneField from '@/components/common/Phone';
+import { invalidEmailMessage, isEmailValid } from '@/lib/email';
 import { Label } from '@/components/ui/label';
 import {
 	Select,
@@ -94,6 +96,16 @@ export default function AddGuestDialog( {
 		}
 	};
 
+	// The e-mail is checked as soon as it is left, not only on save.
+	const checkEmail = () => {
+		if ( ! isEmailValid( values.email ) ) {
+			setErrors( ( prev ) => ( {
+				...prev,
+				email: invalidEmailMessage(),
+			} ) );
+		}
+	};
+
 	const field = ( name, label, props = {} ) => (
 		<div className="space-y-1.5">
 			<Label
@@ -102,13 +114,22 @@ export default function AddGuestDialog( {
 			>
 				{ label }
 			</Label>
-			<Input
-				id={ `rtbp-guest-${ name }` }
-				value={ values[ name ] }
-				onChange={ ( e ) => set( name, e.target.value ) }
-				aria-invalid={ errors[ name ] ? true : undefined }
-				{ ...props }
-			/>
+			{ 'phone' === name ? (
+				<PhoneField
+					id={ `rtbp-guest-${ name }` }
+					value={ values[ name ] }
+					onChange={ ( phone ) => set( name, phone ) }
+					aria-invalid={ errors[ name ] ? true : undefined }
+				/>
+			) : (
+				<Input
+					id={ `rtbp-guest-${ name }` }
+					value={ values[ name ] }
+					onChange={ ( e ) => set( name, e.target.value ) }
+					aria-invalid={ errors[ name ] ? true : undefined }
+					{ ...props }
+				/>
+			) }
 			{ errors[ name ] ? (
 				<p role="alert" className="m-0 text-sm text-destructive">
 					{ errors[ name ] }
@@ -147,17 +168,16 @@ export default function AddGuestDialog( {
 						{ field(
 							'phone',
 							__( 'Phone', 'radius-hotel-booking' ),
-							{
-								type: 'tel',
-								inputMode: 'tel',
-								placeholder: '07 07 12 34 56',
-								autoComplete: 'off',
-							}
+							{}
 						) }
 						{ field(
 							'email',
 							__( 'E-mail (optional)', 'radius-hotel-booking' ),
-							{ type: 'email', autoComplete: 'off' }
+							{
+								onBlur: () => checkEmail(),
+								type: 'email',
+								autoComplete: 'off',
+							}
 						) }
 						<div className="space-y-1.5">
 							<Label

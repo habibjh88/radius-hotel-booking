@@ -440,7 +440,7 @@ export default function DevUi() {
 								name="phone"
 								form={ form }
 								required
-								description="With country code, e.g. +225 07 07 12 34 56."
+								description="With country code, e.g. +44 7700 900123."
 							>
 								<Input
 									{ ...form.register( 'phone' ) }

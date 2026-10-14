@@ -46,6 +46,8 @@ final class CoreSettings {
 				),
 			)
 		);
+		// Every phone field: its first country, the countries offered, custom codes.
+		SettingsSchema::register( 'phone', PhoneSettings::schema() );
 		SettingsSchema::register( 'access', self::access() );
 	}
 
@@ -115,7 +117,7 @@ final class CoreSettings {
 				'default'   => '',
 				'maxLength' => 60,
 			),
-			// Employer social-security number (CNPS in Côte d'Ivoire), printed on payslips.
+			// Employer social-security registration number, printed on invoices and payslips.
 			'cnpsNumber'            => array(
 				'type'      => 'string',
 				'default'   => '',
@@ -222,6 +224,20 @@ final class CoreSettings {
 				'default' => 15,
 				'min'     => 5,
 				'max'     => 120,
+			),
+			// Most rooms one booking may take at the front desk (held and booked).
+			'maxRoomsDesk'      => array(
+				'type'    => 'int',
+				'default' => 50,
+				'min'     => 1,
+				'max'     => 500,
+			),
+			// Most rooms one website booking may take (also the rooms one visitor may hold at once).
+			'maxRoomsWeb'       => array(
+				'type'    => 'int',
+				'default' => 10,
+				'min'     => 1,
+				'max'     => 100,
 			),
 			// Cleaning time (minutes) after a stay before the room can be sold again (D4).
 			'bufferMinutes'     => array(

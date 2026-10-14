@@ -52,6 +52,11 @@ class AmenityController extends BaseController {
 				'order'   => 'room_types.manage',
 				'common'  => 'page.rooms',
 				'import'  => 'room_types.manage',
+				// Sections and the drag-and-drop arrangement.
+				'layout'         => 'room_types.manage',
+				'sectionStore'   => 'room_types.manage',
+				'sectionUpdate'  => 'room_types.manage',
+				'sectionDestroy' => 'room_types.manage',
 			)
 		);
 	}
@@ -63,7 +68,15 @@ class AmenityController extends BaseController {
 	 * @return mixed
 	 */
 	public function index( WP_REST_Request $request ) {
-		return $this->respond( $request, fn() => ApiResponse::success( array( 'amenities' => $this->service->all() ) ) );
+		return $this->respond(
+			$request,
+			fn() => ApiResponse::success(
+				array(
+					'amenities' => $this->service->all(),
+					'sections'  => $this->service->sections(),
+				)
+			)
+		);
 	}
 
 	/**
@@ -88,12 +101,15 @@ class AmenityController extends BaseController {
 		return $this->respond(
 			$request,
 			function ( $request ) {
-				$names = $request->get_json_params()['names'] ?? array();
+				// `{ names: [ … ] }`, or `{ items: [ { name, icon } ] }` with icons.
+				$params = (array) $request->get_json_params();
+				$names  = $params['items'] ?? ( $params['names'] ?? array() );
 				$added = $this->service->createMany( is_array( $names ) ? $names : array() );
 				return ApiResponse::success(
 					array(
 						'added'     => $added,
 						'amenities' => $this->service->all(),
+						'sections'  => $this->service->sections(),
 					),
 					sprintf(
 						/* translators: %d: number of amenities. */
@@ -119,7 +135,7 @@ class AmenityController extends BaseController {
 	}
 
 	/**
-	 * POST /amenities: `{ name }`, added last.
+	 * POST /amenities: `{ name, icon? }`, added last.
 	 *
 	 * @param WP_REST_Request $request Request.
 	 * @return mixed
@@ -133,6 +149,7 @@ class AmenityController extends BaseController {
 					array(
 						'amenity'   => $this->transformItem( $amenity ),
 						'amenities' => $this->service->all(),
+						'sections'  => $this->service->sections(),
 					),
 					__( 'Amenity added.', 'radius-hotel-booking' )
 				);
@@ -141,7 +158,7 @@ class AmenityController extends BaseController {
 	}
 
 	/**
-	 * PUT /amenities/{id}: `{ name, merge? }`; `merge` folds it into the
+	 * PUT /amenities/{id}: `{ name, icon?, merge? }`; `merge` folds it into the
 	 * amenity that already has that name.
 	 *
 	 * @param WP_REST_Request $request Request.
@@ -157,6 +174,7 @@ class AmenityController extends BaseController {
 					array(
 						'amenity'   => $this->transformItem( $amenity ),
 						'amenities' => $this->service->all(),
+						'sections'  => $this->service->sections(),
 					),
 					// Another id back: it was merged into that one.
 					(int) $amenity->id === $id ? __( 'Amenity renamed.', 'radius-hotel-booking' ) : __( 'Amenities merged.', 'radius-hotel-booking' )
@@ -175,9 +193,89 @@ class AmenityController extends BaseController {
 		return $this->respond(
 			$request,
 			fn( $request ) => ApiResponse::success(
-				array( 'amenities' => $this->service->reorder( (array) ( $request->get_json_params()['ids'] ?? array() ) ) ),
+				array(
+					'amenities' => $this->service->reorder( (array) ( $request->get_json_params()['ids'] ?? array() ) ),
+					'sections'  => $this->service->sections(),
+				),
 				__( 'Amenity order saved.', 'radius-hotel-booking' )
 			)
+		);
+	}
+
+	/**
+	 * PUT /amenities/layout: `{ sections: [ { id, amenities: [ ids ] } ] }` —
+	 * the sections in order, each with its amenities in order (drag and drop).
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function layout( WP_REST_Request $request ) {
+		return $this->respond(
+			$request,
+			function ( $request ) {
+				$this->service->layout( (array) ( $request->get_json_params()['sections'] ?? array() ) );
+				return ApiResponse::success( $this->lists(), __( 'Amenity order saved.', 'radius-hotel-booking' ) );
+			}
+		);
+	}
+
+	/**
+	 * POST /amenities/sections: `{ name }`, added last.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function sectionStore( WP_REST_Request $request ) {
+		return $this->respond(
+			$request,
+			function ( $request ) {
+				$section = $this->service->createSection( (array) $request->get_json_params() );
+				return ApiResponse::created( $this->lists() + array( 'section_id' => (int) $section->id ), __( 'Section added.', 'radius-hotel-booking' ) );
+			}
+		);
+	}
+
+	/**
+	 * PUT /amenities/sections/{section}: `{ name }`.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function sectionUpdate( WP_REST_Request $request ) {
+		return $this->respond(
+			$request,
+			function ( $request ) {
+				$this->service->renameSection( (int) $request->get_param( 'section' ), (array) $request->get_json_params() );
+				return ApiResponse::success( $this->lists(), __( 'Section renamed.', 'radius-hotel-booking' ) );
+			}
+		);
+	}
+
+	/**
+	 * DELETE /amenities/sections/{section}?move_to=: its amenities go to `move_to`.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function sectionDestroy( WP_REST_Request $request ) {
+		return $this->respond(
+			$request,
+			function ( $request ) {
+				$this->service->deleteSection( (int) $request->get_param( 'section' ), (int) $request->get_param( 'move_to' ) );
+				return ApiResponse::success( $this->lists(), __( 'Section deleted.', 'radius-hotel-booking' ) );
+			}
+		);
+	}
+
+	/**
+	 * The amenities and the sections, as every write answers.
+	 *
+	 * @return array
+	 */
+	private function lists(): array {
+		return array(
+			'amenities' => $this->service->all(),
+			'sections'  => $this->service->sections(),
 		);
 	}
 
@@ -192,7 +290,13 @@ class AmenityController extends BaseController {
 			$request,
 			function ( $request ) {
 				$this->service->delete( (int) $request->get_param( 'id' ) );
-				return ApiResponse::success( array( 'amenities' => $this->service->all() ), __( 'Amenity deleted.', 'radius-hotel-booking' ) );
+				return ApiResponse::success(
+					array(
+						'amenities' => $this->service->all(),
+						'sections'  => $this->service->sections(),
+					),
+					__( 'Amenity deleted.', 'radius-hotel-booking' )
+				);
 			}
 		);
 	}
@@ -207,6 +311,8 @@ class AmenityController extends BaseController {
 		return array(
 			'id'         => (int) $item->id,
 			'name'       => (string) $item->name,
+			'icon'       => (string) ( $item->icon ?? '' ),
+			'section_id' => (int) ( $item->section_id ?? 0 ),
 			'sort_order' => (int) $item->sort_order,
 		);
 	}

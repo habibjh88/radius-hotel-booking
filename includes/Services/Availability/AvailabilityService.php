@@ -228,6 +228,7 @@ class AvailabilityService {
 				'max_children'   => $type['max_children'],
 				'rooms_total'    => count( $rooms ),
 				'rooms_sellable' => count( $sellable ),
+				'details'        => $type['details'],
 				'rates'          => $rates_out,
 				'floors'         => $this->floors( $rooms, $room_status ),
 			);
@@ -392,6 +393,24 @@ class AvailabilityService {
 	}
 
 	/**
+	 * A stored list (amenities) — PHP-serialised (the ORM's json cast) or JSON —
+	 * as strings.
+	 *
+	 * @param mixed $value Stored value.
+	 * @return string[]
+	 */
+	private static function listOf( $value ): array {
+		if ( ! is_array( $value ) ) {
+			$raw   = (string) $value;
+			$value = maybe_unserialize( $raw );
+			if ( ! is_array( $value ) ) {
+				$value = json_decode( $raw, true );
+			}
+		}
+		return is_array( $value ) ? array_values( array_filter( array_map( 'strval', $value ) ) ) : array();
+	}
+
+	/**
 	 * Group the catalogue rows by room type (the search, the calendar).
 	 * Switched-off rates and inactive plans are left out unless that plan was
 	 * asked for, in which case they are kept to report `rate_disabled`.
@@ -410,6 +429,15 @@ class AvailabilityService {
 					'max_adults'     => (int) $row['max_adults'],
 					'max_children'   => (int) $row['max_children'],
 					'buffer_minutes' => null === $row['buffer_minutes'] ? null : (int) $row['buffer_minutes'],
+					// What the website shows about the type (not used by the engine).
+					'details'        => array(
+						'slug'              => (string) ( $row['type_slug'] ?? '' ),
+						'short_description' => (string) ( $row['short_description'] ?? '' ),
+						'featured_image_id' => (int) ( $row['featured_image_id'] ?? 0 ),
+						'bed_info'          => (string) ( $row['bed_info'] ?? '' ),
+						'size_m2'           => isset( $row['size_m2'] ) && '' !== (string) $row['size_m2'] ? (float) $row['size_m2'] : null,
+						'amenities'         => self::listOf( $row['amenities'] ?? null ),
+					),
 					'rates'          => array(),
 				);
 			}

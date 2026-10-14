@@ -16,6 +16,8 @@ defined( 'ABSPATH' ) || exit;
  *
  * @property int    $id
  * @property string $name
+ * @property string $icon
+ * @property int    $section_id
  * @property int    $sort_order
  */
 class Amenity extends BaseModel {
@@ -32,7 +34,7 @@ class Amenity extends BaseModel {
 	 *
 	 * @var string[]
 	 */
-	protected array $fillable = array( 'name', 'sort_order' );
+	protected array $fillable = array( 'name', 'icon', 'section_id', 'sort_order' );
 
 	/**
 	 * Casts.
@@ -42,5 +44,6 @@ class Amenity extends BaseModel {
 	protected array $casts = array(
 		'id'         => 'int',
 		'sort_order' => 'int',
+		'section_id' => 'int',
 	);
 }

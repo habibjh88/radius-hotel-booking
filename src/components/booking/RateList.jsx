@@ -21,7 +21,6 @@ import { localDate, windowLabel } from './rates';
  * @return {JSX.Element} List.
  */
 export default function RateList( { data, choice, onSelect, onDates } ) {
-	const [ showOther, setShowOther ] = useState( false );
 	const types = data?.room_types || [];
 	const other = data?.other_options || [];
 
@@ -92,80 +91,91 @@ export default function RateList( { data, choice, onSelect, onDates } ) {
 				);
 			} ) }
 
-			{ other.length ? (
-				<section className="space-y-3 border-t border-border pt-4">
-					<Button
-						type="button"
-						variant="ghost"
-						size="sm"
-						onClick={ () => setShowOther( ( open ) => ! open ) }
-						aria-expanded={ showOther }
-					>
-						{ showOther ? (
-							<ChevronUp className="h-4 w-4" aria-hidden="true" />
-						) : (
-							<ChevronDown
-								className="h-4 w-4"
-								aria-hidden="true"
-							/>
-						) }
-						{ sprintf(
-							/* translators: %d: number of other stay options. */
-							__(
-								'Other stay options (%d)',
-								'radius-hotel-booking'
-							),
-							other.length
-						) }
-					</Button>
-					{ showOther ? (
-						<ul className="m-0 list-none space-y-2 p-0">
-							{ other.map( ( rate ) => (
-								<li
-									key={ `${ rate.room_type_id }-${ rate.rate_plan_id }` }
-									className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border p-3"
-								>
-									<div className="min-w-0">
-										<p className="m-0 text-sm font-semibold text-heading">
-											{ sprintf(
-												/* translators: 1: rate name, 2: room type name. */
-												__(
-													'%1$s · %2$s',
-													'radius-hotel-booking'
-												),
-												rate.name,
-												rate.room_type_name
-											) }
-										</p>
-										<p className="m-0 text-xs text-muted-foreground">
-											{ windowLabel( rate.window ) }
-										</p>
-									</div>
-									{ rate.window ? (
-										<Button
-											type="button"
-											size="sm"
-											variant="outline"
-											onClick={ () =>
-												onDates( {
-													departure: localDate(
-														rate.window.end
-													),
-												} )
-											}
-										>
-											{ __(
-												'Use these dates',
-												'radius-hotel-booking'
-											) }
-										</Button>
-									) : null }
-								</li>
-							) ) }
-						</ul>
-					) : null }
-				</section>
-			) : null }
+			<OtherOptions other={ other } onDates={ onDates } />
 		</div>
+	);
+}
+
+/**
+ * "Other stay options": rates that would fit different dates, each with a
+ * switch to those dates (behind a toggle).
+ *
+ * @param {Object}   props         Props.
+ * @param {Object[]} props.other   The search's `other_options`.
+ * @param {Function} props.onDates Called with `{ departure }` to switch dates.
+ * @return {JSX.Element|null} Section.
+ */
+export function OtherOptions( { other, onDates } ) {
+	const [ showOther, setShowOther ] = useState( false );
+	if ( ! other?.length ) {
+		return null;
+	}
+	return (
+		<section className="space-y-3 border-t border-border pt-4">
+			<Button
+				type="button"
+				variant="ghost"
+				size="sm"
+				onClick={ () => setShowOther( ( open ) => ! open ) }
+				aria-expanded={ showOther }
+			>
+				{ showOther ? (
+					<ChevronUp className="h-4 w-4" aria-hidden="true" />
+				) : (
+					<ChevronDown className="h-4 w-4" aria-hidden="true" />
+				) }
+				{ sprintf(
+					/* translators: %d: number of other stay options. */
+					__( 'Other stay options (%d)', 'radius-hotel-booking' ),
+					other.length
+				) }
+			</Button>
+			{ showOther ? (
+				<ul className="m-0 list-none space-y-2 p-0">
+					{ other.map( ( rate ) => (
+						<li
+							key={ `${ rate.room_type_id }-${ rate.rate_plan_id }` }
+							className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border p-3"
+						>
+							<div className="min-w-0">
+								<p className="m-0 text-sm font-semibold text-heading">
+									{ sprintf(
+										/* translators: 1: rate name, 2: room type name. */
+										__(
+											'%1$s · %2$s',
+											'radius-hotel-booking'
+										),
+										rate.name,
+										rate.room_type_name
+									) }
+								</p>
+								<p className="m-0 text-xs text-muted-foreground">
+									{ windowLabel( rate.window ) }
+								</p>
+							</div>
+							{ rate.window ? (
+								<Button
+									type="button"
+									size="sm"
+									variant="outline"
+									onClick={ () =>
+										onDates( {
+											departure: localDate(
+												rate.window.end
+											),
+										} )
+									}
+								>
+									{ __(
+										'Use these dates',
+										'radius-hotel-booking'
+									) }
+								</Button>
+							) : null }
+						</li>
+					) ) }
+				</ul>
+			) : null }
+		</section>
 	);
 }
