@@ -146,6 +146,7 @@ final class ActionCatalog {
 			'payments.record'            => array( self::PAYMENT, __( 'Recorded a payment', 'radius-hotel-booking' ) ),
 			'payments.change_status'     => array( self::PAYMENT, __( 'Changed a payment status', 'radius-hotel-booking' ) ),
 			'payments.void'              => array( self::PAYMENT, __( 'Voided a payment', 'radius-hotel-booking' ) ),
+			'payments.discount'          => array( self::PAYMENT, __( 'Changed a discount', 'radius-hotel-booking' ) ),
 			'invoices.send'              => array( self::PAYMENT, __( 'Sent an invoice', 'radius-hotel-booking' ) ),
 			'invoices.regenerate'        => array( self::PAYMENT, __( 'Regenerated an invoice', 'radius-hotel-booking' ) ),
 			'payments.on_hold'           => array( self::PAYMENT, __( 'Put a payment on hold', 'radius-hotel-booking' ) ),

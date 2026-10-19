@@ -157,6 +157,12 @@ final class BookingResource {
 				'money'          => array(
 					'subtotal'       => (float) $booking->subtotal,
 					'discount_total' => (float) $booking->discount_total,
+					// The staff discount as given: `amount` | `percent` ('' = none), its value and reason.
+					'discount'       => array(
+						'type'   => (string) $booking->discount_type,
+						'value'  => (float) $booking->discount_value,
+						'reason' => (string) $booking->discount_reason,
+					),
 					'tax_total'      => (float) $booking->tax_total,
 					'total'          => (float) $booking->total,
 					'paid_total'     => (float) $booking->paid_total,

@@ -203,11 +203,12 @@ export function usePayments( id ) {
 }
 
 /**
- * Record a payment or refund, void a row, or set *on hold* (5.9–5.11). The
+ * Record a payment or refund, void a row, set *on hold* (5.9–5.11), or give
+ * a discount. The
  * server answers with the ledger and the booking; both are used at once.
  *
  * @param {number} id Booking id.
- * @return {Object} Mutation; `mutateAsync( { kind: 'record'|'void'|'hold', paymentId?, body } )` resolves with `{ message }`.
+ * @return {Object} Mutation; `mutateAsync( { kind: 'record'|'void'|'hold'|'discount', paymentId?, body } )` resolves with `{ message }`.
  */
 export function usePaymentAction( id ) {
 	const client = useQueryClient();
@@ -219,7 +220,11 @@ export function usePaymentAction( id ) {
 			} else if ( 'hold' === kind ) {
 				path = `bookings/${ id }/payment-status`;
 			}
-			return post( path, body ).then( ( { data, message } ) => ( {
+			const send =
+				'discount' === kind
+					? put( `bookings/${ id }/discount`, body )
+					: post( path, body );
+			return send.then( ( { data, message } ) => ( {
 				data,
 				message,
 			} ) );

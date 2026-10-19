@@ -38,16 +38,19 @@ export default function RateList( { data, choice, onSelect, onDates } ) {
 	}
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-4">
 			{ types.map( ( type ) => {
 				const rates = type.rates || [];
 				return (
-					<section key={ type.id } className="space-y-3">
-						<div className="flex flex-wrap items-baseline justify-between gap-2">
-							<h3 className="m-0 text-base font-semibold text-heading">
+					<section
+						key={ type.id }
+						className="overflow-hidden rounded-xl border border-border bg-card"
+					>
+						<div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-border bg-muted/60 px-4 py-2.5">
+							<h3 className="m-0 text-sm font-bold text-heading">
 								{ type.name }
 							</h3>
-							<p className="m-0 text-sm text-muted-foreground">
+							<p className="m-0 text-xs text-muted-foreground">
 								{ sprintf(
 									/* translators: 1: number of rooms, 2: most adults. */
 									_n(
@@ -62,8 +65,7 @@ export default function RateList( { data, choice, onSelect, onDates } ) {
 							</p>
 						</div>
 						{ rates.length ? (
-							// A row that scrolls sideways on a phone, a grid from md up.
-							<div className="-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-1 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0">
+							<ul className="m-0 list-none divide-y divide-border p-0">
 								{ rates.map( ( rate ) => (
 									<RateCard
 										key={ rate.rate_plan_id }
@@ -78,9 +80,9 @@ export default function RateList( { data, choice, onSelect, onDates } ) {
 										}
 									/>
 								) ) }
-							</div>
+							</ul>
 						) : (
-							<p className="m-0 text-sm text-muted-foreground">
+							<p className="m-0 px-4 py-3 text-sm text-muted-foreground">
 								{ __(
 									'No rate matches these dates.',
 									'radius-hotel-booking'

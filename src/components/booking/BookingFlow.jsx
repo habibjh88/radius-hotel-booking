@@ -15,7 +15,7 @@ import { AlertTriangle } from 'lucide-react';
 import Panel from '@/components/common/Panel';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { formatDate, siteToday } from '@/lib/format';
+import { addDaysYmd, formatDate, siteToday } from '@/lib/format';
 import { toast, toastError } from '@/lib/toast';
 import { post } from '@/api/client';
 import BookingDone from './BookingDone';
@@ -34,6 +34,7 @@ import {
 	siteBookingRules,
 } from './guestLimits';
 import { useHolds } from './holds';
+import { allowLeave } from './leaveGuard';
 import { checkinRange, defaultCheckin } from './rates';
 
 // Desk only, and heavy (Radix dialog): kept out of the website's bundle.
@@ -136,10 +137,21 @@ export default function BookingFlow( { mode = 'desk' } ) {
 	const [ done, setDone ] = useState( null );
 	const queryClient = useQueryClient();
 	const holds = useHolds( guestMode ? 'public/holds' : 'holds' );
+	// No dates picked yet on the website: show every room type for a day a
+	// guest may book, so there is something to browse. Tomorrow at the
+	// earliest: later today, the plans that already started would be missing.
+	// Choosing a rate then asks for the dates (GuestBookingSteps).
+	const previewDay = guestMode
+		? [ limits.min, addDaysYmd( siteToday(), 1 ) ].sort()[ 1 ]
+		: '';
+	const browsed =
+		guestMode && ! searchIsValid( search )
+			? { ...search, arrival: previewDay, departure: previewDay }
+			: search;
 	// With the token, the booking's own holds do not count as busy.
 	const availability = useAvailability(
 		{
-			...search,
+			...browsed,
 			hold_token: holds.token,
 		},
 		guestMode ? 'public/availability' : 'availability'
@@ -455,6 +467,7 @@ export default function BookingFlow( { mode = 'desk' } ) {
 			} );
 			// The booking consumed the holds; the guest's page has the instructions and invoice.
 			holds.releaseAll( false );
+			allowLeave();
 			window.location.assign( data.page_url );
 		} catch ( err ) {
 			const index = Number.isInteger( err?.data?.index )

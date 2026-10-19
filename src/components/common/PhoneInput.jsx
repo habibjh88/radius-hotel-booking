@@ -18,9 +18,12 @@ import {
 	AsYouType,
 	getCountries,
 	getCountryCallingCode,
+	getExampleNumber,
 	isValidPhoneNumber,
 	parsePhoneNumberFromString,
 } from 'libphonenumber-js/min';
+// One sample mobile number per country (~1.4 KB gzip): the placeholder.
+import examples from 'libphonenumber-js/mobile/examples';
 
 import {
 	Command,
@@ -357,7 +360,7 @@ function write( option, national ) {
  * @param {string}   props.value       E.164 ('' when empty).
  * @param {Function} props.onChange    Called with the new E.164 value.
  * @param {string}   props.id          Input id (for the label).
- * @param {string}   props.placeholder Placeholder.
+ * @param {string}   props.placeholder Placeholder (default: an example number of the chosen country).
  * @param {boolean}  props.disabled    Disabled.
  * @param {string}   props.className   Extra wrapper classes.
  * @param {Object}   props.config      Settings to use instead of the saved ones.
@@ -404,6 +407,20 @@ export function PhoneInput( {
 	}, [ value ] );
 
 	const option = options.find( ( o ) => o.key === state.key ) || options[ 0 ];
+	// A real-looking number for the chosen country, e.g. `07 01 23 45 67`
+	// for Côte d'Ivoire; a custom code has none.
+	const example = useMemo( () => {
+		if ( ! option || option.custom ) {
+			return '';
+		}
+		try {
+			return (
+				getExampleNumber( option.key, examples )?.formatNational() || ''
+			);
+		} catch ( e ) {
+			return '';
+		}
+	}, [ option ] );
 
 	const emit = ( key, national ) => {
 		const next = write(
@@ -488,7 +505,7 @@ export function PhoneInput( {
 					autoComplete="tel-national"
 					disabled={ disabled }
 					value={ state.national }
-					placeholder={ placeholder }
+					placeholder={ placeholder || example }
 					aria-invalid={ invalid || undefined }
 					onChange={ ( event ) => type( event.target.value ) }
 					onBlur={ ( event ) => {

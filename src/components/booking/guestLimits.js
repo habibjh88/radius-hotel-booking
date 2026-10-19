@@ -43,6 +43,7 @@ export function siteBookingRules() {
 /**
  * The search a guest arrived with (the search bar's query string), kept only
  * where it fits the website's rules; the rest falls back to the defaults.
+ * The dates have no default: a guest must pick them before any room is shown.
  *
  * @param {Object} rules  Public booking rules.
  * @param {Object} limits `{ min, max }` arrivals (`guestDateLimits()`).
@@ -54,11 +55,11 @@ export function searchFromUrl( rules, limits ) {
 		/^\d{4}-\d{2}-\d{2}$/.test( ymd || '' ) &&
 		ymd >= limits.min &&
 		( ! limits.max || ymd <= limits.max );
-	const arrival = valid( url.get( 'arrival' ) )
-		? url.get( 'arrival' )
-		: limits.min;
+	const arrival = valid( url.get( 'arrival' ) ) ? url.get( 'arrival' ) : '';
 	const departure =
-		valid( url.get( 'departure' ) ) && url.get( 'departure' ) >= arrival
+		arrival &&
+		valid( url.get( 'departure' ) ) &&
+		url.get( 'departure' ) >= arrival
 			? url.get( 'departure' )
 			: arrival;
 	const between = ( value, min, max, fallback ) => {

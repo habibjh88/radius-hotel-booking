@@ -28,6 +28,7 @@ defined( 'ABSPATH' ) || exit;
  * - `POST bookings/{id}/payments` (`payments.record`): `{ type (payment|refund), amount, method,
  *   reference?, note?, received_at? }`.
  * - `POST payments/{id}/void` (`payments.void`): `{ reason }`.
+ * - `PUT bookings/{id}/discount` (`payments.discount`): `{ type (amount|percent|none), value, reason }`.
  * - `POST bookings/{id}/payment-status` (`payments.change_status`): `{ on_hold }` — the only
  *   status staff set by hand; paid / partially paid come from the ledger.
  *
@@ -48,6 +49,7 @@ class PaymentController extends BaseController {
 				'ledger'    => 'page.bookings',
 				'record'    => 'payments.record',
 				'voidRow'   => 'payments.void',
+				'discount'  => 'payments.discount',
 				'setOnHold' => 'payments.change_status',
 			)
 		);
@@ -92,6 +94,21 @@ class PaymentController extends BaseController {
 			$request,
 			static fn( PaymentService $service, array $body, int $id ) => (int) $service->void( $id, (string) ( $body['reason'] ?? '' ) )->booking_id,
 			__( 'Payment voided.', 'radius-hotel-booking' )
+		);
+	}
+
+	/**
+	 * PUT bookings/{id}/discount.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function discount( WP_REST_Request $request ) {
+		$none = 'none' === ( ( (array) $request->get_json_params() )['type'] ?? '' );
+		return $this->answer(
+			$request,
+			static fn( PaymentService $service, array $body, int $id ) => (int) $service->setDiscount( $id, $body )->id,
+			$none ? __( 'Discount removed.', 'radius-hotel-booking' ) : __( 'Discount saved.', 'radius-hotel-booking' )
 		);
 	}
 

@@ -294,20 +294,20 @@ class BookingLineList {
 	private static function order( string $tab, string $mode, bool $has_range ): string {
 		switch ( $tab ) {
 			case 'arriving':
-				return 'r.start_at_gmt ASC, r.id ASC';
+				return 'r.start_at_gmt ASC, b.id ASC, r.id ASC';
 			case 'leaving':
 			case 'in_house':
-				return 'r.end_at_gmt ASC, r.id ASC';
+				return 'r.end_at_gmt ASC, b.id ASC, r.id ASC';
 			case 'awaiting':
-				return 'b.created_at_gmt ASC, r.id ASC';
+				return 'b.created_at_gmt ASC, b.id ASC, r.id ASC';
 			case 'overdue':
-				return 'b.payment_due_at_gmt ASC, r.id ASC';
+				return 'b.payment_due_at_gmt ASC, b.id ASC, r.id ASC';
 		}
 		// All: a range reads in its own order; otherwise the newest bookings first.
 		if ( $has_range ) {
-			return 'created' === $mode ? 'b.created_at_gmt ASC, r.id ASC' : 'r.start_at_gmt ASC, r.id ASC';
+			return 'created' === $mode ? 'b.created_at_gmt ASC, b.id ASC, r.id ASC' : 'r.start_at_gmt ASC, b.id ASC, r.id ASC';
 		}
-		return 'b.created_at_gmt DESC, r.id DESC';
+		return 'b.created_at_gmt DESC, b.id DESC, r.id ASC';
 	}
 
 	/**

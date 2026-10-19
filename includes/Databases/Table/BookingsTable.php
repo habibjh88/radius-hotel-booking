@@ -42,6 +42,11 @@ class BookingsTable extends Migration {
 				$table->boolean( 'on_hold' )->default( 0 );
 				$table->decimal( 'subtotal', 12, 2 )->default( 0 );
 				$table->decimal( 'discount_total', 12, 2 )->default( 0 );
+				// The staff discount (whole booking): `amount` or `percent` of the rooms, with its reason.
+				// `discount_total` is what it comes to; a percent follows the rooms (BookingTotals).
+				$table->string( 'discount_type', 10 )->default( '' );
+				$table->decimal( 'discount_value', 12, 2 )->default( 0 );
+				$table->string( 'discount_reason', 191 )->default( '' );
 				$table->decimal( 'tax_total', 12, 2 )->default( 0 );
 				$table->decimal( 'total', 12, 2 )->default( 0 );
 				$table->decimal( 'paid_total', 12, 2 )->default( 0 );

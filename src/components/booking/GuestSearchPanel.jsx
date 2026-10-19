@@ -208,6 +208,7 @@ export function GuestsField( { adults, children, onChange } ) {
  * @param {Function}    props.onChange Called with the changed fields.
  * @param {Object|null} props.checkin  The flexible rates' `{ from, until }` (null: no time field).
  * @param {Object}      props.limits   Optional `{ min, max }` arrivals (`Y-m-d`).
+ * @param {boolean}     props.askDates The guest chose a room before the dates: flag the empty ones.
  * @return {JSX.Element} Panel.
  */
 export default function GuestSearchPanel( {
@@ -215,6 +216,7 @@ export default function GuestSearchPanel( {
 	onChange,
 	checkin,
 	limits,
+	askDates = false,
 } ) {
 	const today = siteToday();
 	const first = limits?.min && limits.min > today ? limits.min : today;
@@ -248,8 +250,23 @@ export default function GuestSearchPanel( {
 	return (
 		<div className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
 			<div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 md:grid-cols-[repeat(auto-fit,minmax(10.5rem,1fr))]">
-				<Cell label={ __( 'Arrival', 'radius-hotel-booking' ) }>
+				<Cell
+					label={ __( 'Arrival', 'radius-hotel-booking' ) }
+					error={
+						askDates && ! search.arrival
+							? __(
+									'Choose your arrival date.',
+									'radius-hotel-booking'
+							  )
+							: ''
+					}
+				>
 					<DatePicker
+						className={ cn(
+							askDates &&
+								! search.arrival &&
+								'rounded-md ring-2 ring-destructive'
+						) }
 						min={ first }
 						max={ last }
 						value={ search.arrival }

@@ -134,6 +134,7 @@ $this->router->delete( 'booking-lines/(?P<id>\d+)', array( BookingController::cl
 $this->router->get( 'bookings/(?P<id>\d+)/payments', array( PaymentController::class, 'ledger' ) );
 $this->router->post( 'bookings/(?P<id>\d+)/payments', array( PaymentController::class, 'record' ) );
 $this->router->post( 'payments/(?P<id>\d+)/void', array( PaymentController::class, 'voidRow' ) );
+$this->router->put( 'bookings/(?P<id>\d+)/discount', array( PaymentController::class, 'discount' ) );
 $this->router->post( 'bookings/(?P<id>\d+)/payment-status', array( PaymentController::class, 'setOnHold' ) );
 // The guest's own booking, by its public token (public, rate-limited).
 // Booking on the website (M04): public, rate-limited per route (PublicBookingController).

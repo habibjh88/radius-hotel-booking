@@ -130,3 +130,26 @@ export function checkinRange( data, chosen ) {
 	}
 	return null;
 }
+
+/**
+ * The regular price of a quote (the rate's base price for each night or
+ * day, before sale and price rules), when it is higher than what the guest
+ * pays; null otherwise.
+ *
+ * @param {Object} quote The rate's price (`total`, `steps` per unit).
+ * @return {number|null} Regular total.
+ */
+export function regularPrice( quote ) {
+	if ( ! quote?.steps?.length ) {
+		return null;
+	}
+	let regular = 0;
+	for ( const unit of quote.steps ) {
+		const base = ( unit.steps || [] ).find( ( s ) => 'base' === s.step );
+		if ( ! base ) {
+			return null;
+		}
+		regular += Number( base.after ) || 0;
+	}
+	return regular - Number( quote.total ) >= 0.5 ? regular : null;
+}

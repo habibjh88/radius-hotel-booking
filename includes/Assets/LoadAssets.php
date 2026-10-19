@@ -419,6 +419,8 @@ class LoadAssets {
 				'privacy_url'      => (string) get_privacy_policy_url(),
 				// Reports → Export offers these (M10; Pro adds XLSX through `rtbp_export_formats`).
 				'export_formats'   => \RadiusTheme\RadiusHotelBooking\Services\Export\ExportWriter::choices(),
+				// System → Shortcodes lists these, each with a copy button.
+				'shortcodes'       => \RadiusTheme\RadiusHotelBooking\Shortcodes\Shortcodes::catalog(),
 				// Settings → E-mail lists these with an on/off switch each.
 				'email_templates'  => $this->email_templates(),
 				// The one dismissible upsell, on Settings only (ADR-016).

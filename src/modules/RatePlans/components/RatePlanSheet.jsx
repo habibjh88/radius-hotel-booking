@@ -327,7 +327,7 @@ export default function RatePlanSheet( { plan, readOnly = false, onClose } ) {
 								) }
 						</p>
 
-						<label className="flex items-start justify-between gap-4">
+						<label className="flex cursor-pointer items-start justify-between gap-4 rounded-lg border border-primary/25 bg-primary-softer px-4 py-3 transition-colors hover:border-primary/40">
 							<span className="min-w-0">
 								<span className="block text-sm font-semibold text-heading">
 									{ __(

@@ -264,6 +264,26 @@ Existing amenities are sorted into the common sections automatically, the rest i
 Room pages and the room type form list amenities by section.
 Leaving a room type, its prices or Settings with unsaved changes now asks first.
 After a plugin update, browsers load the new dashboard code instead of cached files.
+Room choice now shows a clear status line: rooms free and how many you can book.
+Rooms are now shown in floor cards with free counts, a legend and clearer room tiles.
+Rooms & floors menu now has Add room type, Floors and Amenities sub-links.
+New Shortcodes page under System lists every shortcode with a description and copy button.
+New [rtbp_rooms] shortcode, block and Elementor widget show room types as cards.
+Shortcodes page builds shortcodes with options from dropdowns and fields, then copies them.
+Booking page no longer preselects today; choosing a room first asks the guest for dates.
+Booking steps have a clearer back button; leaving mid-booking with browser Back asks first.
+Phone fields show an example number for the chosen country as the placeholder.
+Refused website bookings now say which details to fix instead of a generic message.
+Room step shows the stay being booked: check-in, check-out, rate and guests.
+Website lists one-day and one-night packages greyed out with an info note, not under Other options.
+Same-day cut-off setting now explains clearly what it does and when today closes.
+Rate plan form highlights the "Sold for several days or nights" switch in a framed box.
+Bookings list groups a booking's rooms under one booking cell with a room count.
+Add a room starts from the booking's own stay, package and guests; Change stay opens all.
+Staff can add several rooms to a booking at once; all are added or none.
+New booking discount: an amount or percentage with a reason, shown on totals and invoice.
+New Give a discount permission, locked by default; open it per role under Permissions.
+Desk rate lists are compact rows with sale prices, without the Why this price link.
 
 = 1.0.0 =
 Initial release.

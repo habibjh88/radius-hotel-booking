@@ -28,6 +28,11 @@
  * phones, spans the card's full width; cells are single-line otherwise), and
  * `mobile`: 'title' (card heading), 'subtitle' (under it), 'hidden', or
  * default (label: value row).
+ *
+ * Grouping: `groupBy( row )` returns a key; consecutive rows with the same
+ * key form a group (a booking's rooms). A column with `grouped: true` is
+ * shown once for the group (one cell spanning its rows; on phones, only on
+ * the first card). `cell( row, { size } )` gets the group's row count.
  */
 import { useEffect, useRef, useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
@@ -232,6 +237,7 @@ function HeaderCell( { column, sort, onSort } ) {
  * @param {Array}    props.columns      Column definitions (see file header).
  * @param {Array}    props.rows         Rows of the current page.
  * @param {Function} props.rowKey       Row → unique key (default: row.id).
+ * @param {Function} props.groupBy      Row → group key (optional, see file header).
  * @param {number}   props.total        Total rows on the server.
  * @param {number}   props.page         Current page (1-based).
  * @param {number}   props.perPage      Rows per page.
@@ -253,6 +259,7 @@ export default function DataTable( {
 	columns,
 	rows = [],
 	rowKey = ( row ) => row.id,
+	groupBy,
 	total = 0,
 	page = 1,
 	perPage = 20,
@@ -269,6 +276,19 @@ export default function DataTable( {
 	empty,
 	caption,
 } ) {
+	// Per row: does it start a group, and how many rows the group has.
+	const groups = rows.map( () => ( { first: true, size: 1 } ) );
+	if ( groupBy ) {
+		let start = 0;
+		rows.forEach( ( row, index ) => {
+			if ( index > 0 && groupBy( row ) === groupBy( rows[ start ] ) ) {
+				groups[ index ].first = false;
+				groups[ start ].size += 1;
+			} else {
+				start = index;
+			}
+		} );
+	}
 	const pages = Math.max( 1, Math.ceil( total / perPage ) );
 	const firstRow = total ? ( page - 1 ) * perPage + 1 : 0;
 	const lastRow = Math.min( total, page * perPage );
@@ -410,37 +430,60 @@ export default function DataTable( {
 									</tr>
 								</thead>
 								<tbody>
-									{ rows.map( ( row ) => {
+									{ rows.map( ( row, index ) => {
 										const extra = rowProps( row );
+										const group = groups[ index ];
 										return (
 											<tr
 												key={ rowKey( row ) }
 												{ ...extra }
 												className={ cn(
-													'group border-t border-border hover:bg-primary-softer',
+													'group border-t hover:bg-primary-softer',
+													group.first
+														? 'border-border'
+														: 'border-dashed border-border/70',
 													extra.className
 												) }
 											>
-												{ columns.map( ( column ) => (
-													<td
-														key={ column.id }
-														className={ cn(
-															'px-4 py-3 align-middle text-foreground',
-															// One line by default (references, amounts); the table
-															// scrolls inside its card. `wrap: true` for long text.
-															column.wrap
-																? 'min-w-[12rem]'
-																: 'whitespace-nowrap',
-															ALIGN[
-																column.align ||
-																	'left'
-															],
-															column.className
-														) }
-													>
-														{ column.cell( row ) }
-													</td>
-												) ) }
+												{ columns.map( ( column ) =>
+													column.grouped &&
+													! group.first ? null : (
+														<td
+															key={ column.id }
+															rowSpan={
+																column.grouped &&
+																group.size > 1
+																	? group.size
+																	: undefined
+															}
+															className={ cn(
+																'px-4 py-3 text-foreground',
+																column.grouped &&
+																	group.size >
+																		1
+																	? 'border-r border-border bg-card align-top'
+																	: 'align-middle',
+																// One line by default (references, amounts); the table
+																// scrolls inside its card. `wrap: true` for long text.
+																column.wrap
+																	? 'min-w-[12rem]'
+																	: 'whitespace-nowrap',
+																ALIGN[
+																	column.align ||
+																		'left'
+																],
+																column.className
+															) }
+														>
+															{ column.cell(
+																row,
+																{
+																	size: group.size,
+																}
+															) }
+														</td>
+													)
+												) }
 												{ rowActions ? (
 													<td className="sticky right-0 whitespace-nowrap bg-card px-4 py-2 text-right shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.12)] group-hover:bg-primary-softer">
 														<RowActions
@@ -459,10 +502,20 @@ export default function DataTable( {
 
 						{ /* Phones: one card per row. */ }
 						<ul className="m-0 list-none divide-y divide-border p-0 md:hidden">
-							{ rows.map( ( row ) => {
+							{ rows.map( ( row, index ) => {
 								const extra = rowProps( row );
+								const group = groups[ index ];
+								const showTitle =
+									group.first || ! titleColumn.grouped;
 								return (
-									<li key={ rowKey( row ) } className="m-0">
+									<li
+										key={ rowKey( row ) }
+										className={ cn(
+											'm-0',
+											! group.first &&
+												'ml-4 border-l-2 border-primary/30'
+										) }
+									>
 										<div
 											{ ...extra }
 											className={ cn(
@@ -470,9 +523,16 @@ export default function DataTable( {
 												extra.className
 											) }
 										>
-											<div className="min-w-0">
+											<div
+												className={ cn(
+													'min-w-0',
+													! showTitle && 'hidden'
+												) }
+											>
 												<p className="m-0 truncate text-sm font-semibold text-heading">
-													{ titleColumn.cell( row ) }
+													{ titleColumn.cell( row, {
+														size: group.size,
+													} ) }
 												</p>
 												{ subtitleColumn ? (
 													<p className="m-0 mt-0.5 truncate text-[13px] text-muted-foreground">

@@ -45,7 +45,7 @@ final class RadiusHotelBooking {
 	 *
 	 * @var string
 	 */
-	const DBVERSION = '1.0.16';
+	const DBVERSION = '1.0.17';
 
 	/**
 	 * Plugin slug — the admin page slug and the asset handle prefix.

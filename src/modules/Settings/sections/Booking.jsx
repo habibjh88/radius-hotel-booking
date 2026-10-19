@@ -60,7 +60,7 @@ export default function Booking( { value, setField, errors, schema } ) {
 					<Field
 						label={ __( 'Cut-off time', 'radius-hotel-booking' ) }
 						description={ __(
-							'After this time, guests can only book from tomorrow.',
+							'The last time of day guests can book a stay that starts today on the website. After it, the calendar starts from tomorrow. Rates that have already started are never offered, so a late cut-off (such as your last check-in time) is safe. Staff can always book today at the desk.',
 							'radius-hotel-booking'
 						) }
 						error={ errors.sameDayCutoff }

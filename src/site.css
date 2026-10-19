@@ -51,6 +51,15 @@
 	text-decoration: inherit;
 }
 
+/*
+ * The room type cards sit in post content, where themes underline links with
+ * a stronger selector than a utility (Astra: `.ast-single-post .entry-content a`,
+ * 0-2-1). The cards' links and buttons are never underlined.
+ */
+.rtbp-root.rtbp-rooms article a {
+	text-decoration: none;
+}
+
 .rtbp-root :where( button, input, optgroup, select, textarea ) {
 	margin: 0;
 	padding: 0;

@@ -1,7 +1,7 @@
 /**
- * Choose several rooms of one rate at once (a group): tick rooms on the floor
- * plan, or let "Pick any" tick the first free ones, then hold them all with
- * one click. The same component serves the desk and the website.
+ * Choose several rooms of one rate at once (a group): a status line says how
+ * many rooms are free and how many the booking can take, the guest ticks rooms
+ * on the floor plan, then holds them all with one click. The same component serves the desk and the website.
  *
  * The parent holds the rooms (`onHold( rooms )`, all or none) and passes the
  * room ids still ticked after a refusal back through `onHeld`'s return value:
@@ -10,7 +10,7 @@
  */
 import { useEffect, useState } from 'react';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import { Loader2, Minus, Plus, X } from 'lucide-react';
+import { BedDouble, Loader2, X } from 'lucide-react';
 
 import Money from '@/components/common/Money';
 import { Button } from '@/components/ui/button';
@@ -40,9 +40,6 @@ export default function RoomSelection( {
 	const [ picked, setPicked ] = useState( [] );
 	const free = freeRooms( type, rate, taken );
 	const limit = Math.max( 0, Math.min( left, free.length ) );
-	const [ wanted, setQuick ] = useState( 2 );
-	// Kept inside what can be picked as the free rooms change.
-	const quick = Math.max( 1, Math.min( wanted, limit ) );
 
 	// A room that stopped being free (taken, held elsewhere) loses its tick.
 	const freeKey = free.map( ( r ) => r.id ).join( ',' );
@@ -61,9 +58,6 @@ export default function RoomSelection( {
 			return prev.length >= left ? prev : [ ...prev, room.id ];
 		} );
 
-	const pickAny = () =>
-		setPicked( free.slice( 0, quick ).map( ( r ) => r.id ) );
-
 	const hold = async () => {
 		const rooms = free.filter( ( r ) => picked.includes( r.id ) );
 		const keep = await onHold( rooms );
@@ -73,84 +67,56 @@ export default function RoomSelection( {
 	const count = picked.length;
 	const each = rate.price?.total;
 	const full = count >= left;
-	const step = ( delta ) =>
-		setQuick( Math.max( 1, Math.min( limit, quick + delta ) ) );
 
 	return (
 		<div className="space-y-4">
-			{ limit > 1 ? (
-				<div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-muted/40 p-2">
-					<span className="px-1 text-sm font-medium text-heading">
-						{ __( 'Pick any', 'radius-hotel-booking' ) }
-					</span>
-					<div className="flex items-center gap-1">
-						<Button
-							type="button"
-							variant="outline"
-							size="icon"
-							className="h-9 w-9"
-							disabled={ quick <= 1 }
-							onClick={ () => step( -1 ) }
-							aria-label={ __(
-								'Fewer rooms',
-								'radius-hotel-booking'
-							) }
-						>
-							<Minus aria-hidden="true" />
-						</Button>
-						<span
-							className="w-8 text-center text-sm font-semibold tabular-nums text-heading"
-							aria-live="polite"
-						>
-							{ quick }
-						</span>
-						<Button
-							type="button"
-							variant="outline"
-							size="icon"
-							className="h-9 w-9"
-							disabled={ quick >= limit }
-							onClick={ () => step( 1 ) }
-							aria-label={ __(
-								'More rooms',
-								'radius-hotel-booking'
-							) }
-						>
-							<Plus aria-hidden="true" />
-						</Button>
-					</div>
-					<Button
-						type="button"
-						variant="outline"
-						size="sm"
-						className="h-9"
-						onClick={ pickAny }
-						disabled={ pending }
-					>
-						{ sprintf(
-							/* translators: %d: number of rooms. */
-							_n(
-								'Select %d free room',
-								'Select %d free rooms',
-								quick,
-								'radius-hotel-booking'
-							),
-							quick
-						) }
-					</Button>
-					<span className="px-1 text-xs text-muted-foreground">
-						{ sprintf(
-							/* translators: 1: free rooms, 2: rooms the booking may still take. */
-							__(
-								'%1$d free · up to %2$d in this booking',
-								'radius-hotel-booking'
-							),
+			<div
+				className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-border bg-muted/40 px-3 py-2.5 text-sm"
+				role="status"
+			>
+				<span className="inline-flex items-center gap-2 font-semibold text-heading">
+					<span
+						className={ `h-2.5 w-2.5 shrink-0 rounded-full ${
+							free.length ? 'bg-success' : 'bg-muted-foreground'
+						}` }
+						aria-hidden="true"
+					/>
+					{ sprintf(
+						/* translators: %d: number of free rooms. */
+						_n(
+							'%d room free',
+							'%d rooms free',
 							free.length,
-							left
-						) }
-					</span>
-				</div>
-			) : null }
+							'radius-hotel-booking'
+						),
+						free.length
+					) }
+				</span>
+				{ limit ? (
+					<>
+						<span
+							className="hidden h-4 w-px bg-border sm:block"
+							aria-hidden="true"
+						/>
+						<span className="inline-flex items-center gap-2 text-muted-foreground">
+							<BedDouble
+								className="h-4 w-4 shrink-0"
+								aria-hidden="true"
+							/>
+							{ sprintf(
+								/* translators: %d: rooms the booking may still take. */
+								_n(
+									'You can book up to %d room',
+									'You can book up to %d rooms',
+									limit,
+									'radius-hotel-booking'
+								),
+								limit
+							) }
+						</span>
+					</>
+				) : null }
+			</div>
 
 			<RoomPicker
 				type={ type }

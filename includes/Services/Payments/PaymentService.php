@@ -14,7 +14,9 @@ use RadiusTheme\RadiusHotelBooking\Exceptions\DomainException;
 use RadiusTheme\RadiusHotelBooking\Models\Booking;
 use RadiusTheme\RadiusHotelBooking\Models\Payment;
 use RadiusTheme\RadiusHotelBooking\Repositories\BookingRepository;
+use RadiusTheme\RadiusHotelBooking\Repositories\BookingRoomRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\PaymentRepository;
+use RadiusTheme\RadiusHotelBooking\Services\Booking\BookingTotals;
 use RadiusTheme\RadiusHotelBooking\Settings\PaymentSettings;
 use RadiusTheme\RadiusHotelBooking\Support\Dates;
 use RadiusTheme\RadiusHotelBooking\Support\Money;
@@ -127,6 +129,134 @@ class PaymentService {
 
 		$this->announce( $booking_id, $payment );
 		return $payment;
+	}
+
+	/**
+	 * Give, change or remove the booking's discount (whole booking): an
+	 * amount, or a percent of the rooms that follows them when rooms change.
+	 * A reason is required. The total, balance and payment status follow in
+	 * the same transaction, under the booking's lock; the invoice is revised
+	 * after the commit (`rtbp_booking_changed`). Never a ledger row: a
+	 * discount lowers what is owed, it is not money received.
+	 *
+	 * @param int   $booking_id Booking id.
+	 * @param array $input      `{ type: amount|percent|none, value, reason }`.
+	 * @return Booking The booking as it is now.
+	 * @throws DomainException 403 `access_locked`, 404, 409 `booking_closed` / `below_paid`, 422.
+	 */
+	public function setDiscount( int $booking_id, array $input ): Booking {
+		self::requireKey( 'payments.discount' );
+		$type   = sanitize_key( (string) ( $input['type'] ?? '' ) );
+		$value  = Money::round( (float) ( $input['value'] ?? 0 ) );
+		$reason = trim( sanitize_text_field( (string) ( $input['reason'] ?? '' ) ) );
+		$errors = array();
+		if ( ! in_array( $type, array( 'amount', 'percent', 'none' ), true ) ) {
+			$errors['type'] = __( 'Choose an amount or a percentage.', 'radius-hotel-booking' );
+		} elseif ( 'none' !== $type ) {
+			if ( $value <= 0 ) {
+				$errors['value'] = __( 'Enter a discount above zero.', 'radius-hotel-booking' );
+			} elseif ( 'percent' === $type && $value > 100 ) {
+				$errors['value'] = __( 'A percentage cannot be above 100.', 'radius-hotel-booking' );
+			}
+			if ( '' === $reason ) {
+				$errors['reason'] = __( 'Say why the discount is given.', 'radius-hotel-booking' );
+			}
+		}
+		if ( $errors ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw DomainException::invalid( $errors );
+		}
+		$this->booking( $booking_id );
+
+		$result = Transaction::run(
+			function () use ( $booking_id, $type, $value, $reason ) {
+				$booking = $this->lockedBooking( $booking_id );
+				if ( in_array( (string) $booking->status, array( 'cancelled', 'declined' ), true ) ) {
+					// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+					throw DomainException::conflict( 'booking_closed', __( 'This booking is closed: its price cannot change.', 'radius-hotel-booking' ) );
+				}
+				$before = array(
+					'discount' => Money::round( (float) $booking->discount_total ),
+					'total'    => Money::round( (float) $booking->total ),
+				);
+				if ( 'amount' === $type && $value > (float) $booking->subtotal ) {
+					// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+					throw DomainException::invalid( array( 'value' => __( 'The discount cannot be more than the rooms cost.', 'radius-hotel-booking' ) ) );
+				}
+
+				$booking->discount_type   = 'none' === $type ? '' : $type;
+				$booking->discount_value  = 'none' === $type ? 0 : $value;
+				$booking->discount_reason = 'none' === $type ? '' : $reason;
+				// "None" also clears a stored discount without a type (an import's).
+				if ( 'none' === $type ) {
+					$booking->discount_total = 0;
+				}
+				$money = BookingTotals::changes( $booking, ( new BookingRoomRepository() )->forBooking( $booking_id ) );
+				$total = (float) ( $money['total'] ?? $booking->total );
+				if ( $total < (float) $booking->paid_total && ! Money::equals( $total, (float) $booking->paid_total ) ) {
+					// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+					throw new DomainException(
+						'below_paid',
+						sprintf(
+							/* translators: %s: amount already paid. */
+							__( 'With this discount the total would be less than what was already paid (%s). Record a refund first, or give a smaller discount.', 'radius-hotel-booking' ),
+							Money::format( (float) $booking->paid_total )
+						),
+						409,
+						array( 'value' => __( 'This is more than the balance due.', 'radius-hotel-booking' ) )
+					);
+					// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
+				}
+				$this->bookings->update(
+					$booking_id,
+					array_merge(
+						array(
+							'discount_type'   => $booking->discount_type,
+							'discount_value'  => $booking->discount_value,
+							'discount_reason' => $booking->discount_reason,
+						),
+						$money
+					)
+				);
+				$after = array(
+					'discount' => Money::round( (float) ( $money['discount_total'] ?? $booking->discount_total ) ),
+					'total'    => Money::round( $total ),
+				);
+				rtbp_activity(
+					'payments.discount',
+					self::subject( $booking ),
+					array(
+						'before'      => $before,
+						'after'       => array_merge( $after, '' === $booking->discount_reason ? array() : array( 'reason' => $booking->discount_reason ) ),
+						'description' => 'none' === $type
+							? sprintf(
+								/* translators: %s: booking reference. */
+								__( 'Removed the discount on %s', 'radius-hotel-booking' ),
+								$booking->reference
+							)
+							: sprintf(
+								/* translators: 1: discount, 2: reason, 3: booking reference. */
+								__( 'Gave a %1$s discount (%2$s) on %3$s', 'radius-hotel-booking' ),
+								'percent' === $type ? $value . ' %' : Money::format( $value ),
+								$reason,
+								$booking->reference
+							),
+					)
+				);
+				return array( $before, $after );
+			}
+		);
+
+		Transaction::afterCommit(
+			function () use ( $booking_id, $result ) {
+				$booking = $this->bookings->find( $booking_id );
+				if ( $booking instanceof Booking ) {
+					/** This action is documented in includes/Services/Booking/BookingLineService.php */
+					do_action( 'rtbp_booking_changed', $booking, 'discount', 0, $result[0], $result[1] );
+				}
+			}
+		);
+		return $this->booking( $booking_id );
 	}
 
 	/**

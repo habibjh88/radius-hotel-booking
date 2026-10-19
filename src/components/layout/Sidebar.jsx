@@ -4,11 +4,12 @@
  * Built from src/admin/routes.js, so a route added there (or by an add-on
  * through `rtbp.admin.routes`) appears here with no other change.
  */
-import { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { applyFilters } from '@wordpress/hooks';
 import { __ } from '@wordpress/i18n';
 import {
+	ChevronDown,
 	ChevronLeft,
 	ChevronRight,
 	ChevronsUpDown,
@@ -60,7 +61,9 @@ function Brand( { collapsed } ) {
 }
 
 /**
- * One navigation link.
+ * One navigation link, with its sub-links (`route.subnav`) below it. They show
+ * only while one of the item's pages is open; clicking the item there folds
+ * them away again.
  *
  * @param {Object}   props           Props.
  * @param {Object}   props.route     Route.
@@ -70,51 +73,111 @@ function Brand( { collapsed } ) {
  */
 function NavItem( { route, collapsed, onNavigate } ) {
 	const Icon = route.icon;
+	const { pathname } = useLocation();
+	const subnav =
+		! collapsed && Array.isArray( route.subnav ) ? route.subnav : [];
+	const inside =
+		pathname === route.path || pathname.startsWith( `${ route.path }/` );
+	const [ open, setOpen ] = useState( inside );
+
+	// Opening one of the item's pages shows its sub-links; leaving hides them.
+	useEffect( () => {
+		setOpen( inside );
+	}, [ inside, pathname ] );
+
+	const onClick = () => {
+		if ( subnav.length ) {
+			setOpen( ( was ) => ( inside ? ! was : true ) );
+		}
+		onNavigate?.();
+	};
+	const shown = subnav.length > 0 && open;
 
 	return (
-		<NavLink
-			to={ route.path }
-			// `/bookings` must not light up on `/bookings/new` (as the tab bar does).
-			end={ route.path === '/' || route.path === '/bookings' }
-			onClick={ onNavigate }
-			title={ collapsed ? route.label : undefined }
-			aria-label={ collapsed ? route.label : undefined }
-			className={ ( { isActive } ) =>
-				cn(
-					'group relative flex h-10 items-center gap-3 rounded-lg text-sm no-underline outline-none transition-colors duration-150',
-					'focus-visible:ring-2 focus-visible:ring-ring',
-					collapsed ? 'justify-center px-0' : 'px-3',
-					isActive
-						? 'bg-primary-soft font-semibold text-primary'
-						: 'font-medium text-sidebar-foreground hover:bg-primary-softer hover:text-heading'
-				)
-			}
-		>
-			{ ( { isActive } ) => (
-				<>
-					{ isActive ? (
-						<span
-							aria-hidden="true"
-							className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full bg-primary"
-						/>
-					) : null }
-					{ Icon ? (
-						<Icon
-							className={ cn(
-								'h-[18px] w-[18px] shrink-0',
-								isActive
-									? 'text-primary'
-									: 'text-muted-foreground group-hover:text-heading'
-							) }
-							aria-hidden="true"
-						/>
-					) : null }
-					{ ! collapsed ? (
-						<span className="truncate">{ route.label }</span>
-					) : null }
-				</>
-			) }
-		</NavLink>
+		<>
+			<NavLink
+				to={ route.path }
+				// `/bookings` must not light up on `/bookings/new` (as the tab bar does).
+				end={ route.path === '/' || route.path === '/bookings' }
+				onClick={ onClick }
+				title={ collapsed ? route.label : undefined }
+				aria-label={ collapsed ? route.label : undefined }
+				aria-expanded={ subnav.length ? shown : undefined }
+				className={ ( { isActive } ) =>
+					cn(
+						'group relative flex h-10 items-center gap-3 rounded-lg text-sm no-underline outline-none transition-colors duration-150',
+						'focus-visible:ring-2 focus-visible:ring-ring',
+						collapsed ? 'justify-center px-0' : 'px-3',
+						isActive
+							? 'bg-primary-soft font-semibold text-primary'
+							: 'font-medium text-sidebar-foreground hover:bg-primary-softer hover:text-heading'
+					)
+				}
+			>
+				{ ( { isActive } ) => (
+					<>
+						{ isActive ? (
+							<span
+								aria-hidden="true"
+								className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full bg-primary"
+							/>
+						) : null }
+						{ Icon ? (
+							<Icon
+								className={ cn(
+									'h-[18px] w-[18px] shrink-0',
+									isActive
+										? 'text-primary'
+										: 'text-muted-foreground group-hover:text-heading'
+								) }
+								aria-hidden="true"
+							/>
+						) : null }
+						{ ! collapsed ? (
+							<span className="min-w-0 flex-1 truncate">
+								{ route.label }
+							</span>
+						) : null }
+						{ subnav.length ? (
+							<ChevronDown
+								className={ cn(
+									'h-4 w-4 shrink-0 transition-transform duration-200',
+									isActive
+										? 'text-primary'
+										: 'text-muted-foreground',
+									shown && 'rotate-180'
+								) }
+								aria-hidden="true"
+							/>
+						) : null }
+					</>
+				) }
+			</NavLink>
+			{ shown ? (
+				<ul className="m-0 mb-1 ml-[21px] mt-0.5 list-none space-y-0.5 border-l border-border p-0 pl-3">
+					{ subnav.map( ( item ) => (
+						<li key={ item.path } className="m-0">
+							<NavLink
+								to={ item.path }
+								end
+								onClick={ onNavigate }
+								className={ ( { isActive } ) =>
+									cn(
+										'flex h-8 items-center rounded-md px-3 text-[13px] no-underline outline-none transition-colors duration-150',
+										'focus-visible:ring-2 focus-visible:ring-ring',
+										isActive
+											? 'bg-primary-softer font-semibold text-primary'
+											: 'font-medium text-muted-foreground hover:bg-primary-softer hover:text-heading'
+									)
+								}
+							>
+								<span className="truncate">{ item.label }</span>
+							</NavLink>
+						</li>
+					) ) }
+				</ul>
+			) : null }
+		</>
 	);
 }
 

@@ -294,20 +294,21 @@ class BookingController extends BaseController {
 	}
 
 	/**
-	 * POST bookings/{id}/lines `{ room_id, rate_plan_id, arrival, units?, checkin_time?, adults, children?,
+	 * POST bookings/{id}/lines `{ room_id | room_ids[], rate_plan_id, arrival, units?, checkin_time?, adults, children?,
 	 * room_type_id?, expected_total?, hold_token?, accept_new_price? }` (3.11).
 	 *
 	 * @param WP_REST_Request $request Request.
 	 * @return mixed
 	 */
 	public function addLine( WP_REST_Request $request ) {
+		$rooms = (array) ( $request->get_json_params()['room_ids'] ?? array() );
 		return $this->lineChange(
 			$request,
 			static function ( BookingLineService $service, array $body, int $id ) {
 				$service->add( $id, $body, self::staffActor() );
 				return $id;
 			},
-			__( 'Room added.', 'radius-hotel-booking' )
+			count( $rooms ) > 1 ? __( 'Rooms added.', 'radius-hotel-booking' ) : __( 'Room added.', 'radius-hotel-booking' )
 		);
 	}
 

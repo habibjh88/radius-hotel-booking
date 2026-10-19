@@ -314,43 +314,61 @@ class PublicBookingService {
 
 		$banned = $repo->bannedByDocument( $fields['id_type'], self::documentKey( $fields['id_number'] ) );
 		if ( $banned ) {
-			self::refuse( $banned, $fields, true );
+			self::refuse( $banned, $fields, 'banned' );
 		}
 
 		$email = is_email( (string) $fields['email'] ) ? strtolower( (string) $fields['email'] ) : null;
-		$ids   = array_values( array_unique( array_map( static fn( $row ) => (int) $row['id'], $repo->duplicates( $e164, Phone::tail( (string) $fields['phone'] ), $email ) ) ) );
+		$rows  = $repo->duplicates( $e164, Phone::tail( (string) $fields['phone'] ), $email );
+		$ids   = array_values( array_unique( array_map( static fn( $row ) => (int) $row['id'], $rows ) ) );
 		if ( ! $ids ) {
 			return 0;
 		}
 		$guest = 1 === count( $ids ) ? $repo->find( $ids[0] ) : null;
 		if ( ! $guest instanceof Guest ) {
 			// The phone and the e-mail belong to two different guests.
-			self::refuse( $ids[0], $fields, false );
+			self::refuse( $ids[0], $fields, 'two_guests' );
 		}
 		if ( Guest::BANNED === (string) $guest->standing ) {
-			self::refuse( (int) $guest->id, $fields, true );
+			self::refuse( (int) $guest->id, $fields, 'banned' );
+		}
+
+		// Which of the typed details led to this guest (both can).
+		$matched = array();
+		if ( in_array( 'phone', array_column( $rows, 'match' ), true ) ) {
+			$matched[] = 'phone';
+		}
+		if ( null !== $email && strtolower( (string) $guest->email ) === $email ) {
+			$matched[] = 'email';
 		}
 
 		$same_name = self::nameKey( $fields['first_name'] . $fields['last_name'] ) === self::nameKey( (string) $guest->first_name . (string) $guest->last_name );
-		$same_id   = '' !== self::documentKey( (string) $guest->id_number )
+		if ( ! $same_name ) {
+			self::refuse( (int) $guest->id, $fields, 'name', $matched );
+		}
+		$same_id = '' !== self::documentKey( (string) $guest->id_number )
 			? (string) $guest->id_type === $fields['id_type'] && self::documentKey( (string) $guest->id_number ) === self::documentKey( $fields['id_number'] )
 			: null !== $e164 && (string) $guest->phone_e164 === $e164;
-		if ( ! $same_name || ! $same_id ) {
-			self::refuse( (int) $guest->id, $fields, false );
+		if ( ! $same_id ) {
+			self::refuse( (int) $guest->id, $fields, '' !== self::documentKey( (string) $guest->id_number ) ? 'document' : 'name', $matched );
 		}
 		return (int) $guest->id;
 	}
 
 	/**
-	 * Refuse a web booking with the generic message, and log it for staff.
+	 * Refuse a web booking, say why, and log it for staff.
 	 *
-	 * @param int   $guest_id The guest on file concerned.
-	 * @param array $fields   What the visitor typed.
-	 * @param bool  $banned   A banned guest (else: details that do not agree).
+	 * The visitor learns what to change (which fields), never the details on
+	 * file: no name, no document, nothing of the other guest. A banned guest
+	 * gets the generic message only.
+	 *
+	 * @param int      $guest_id The guest on file concerned.
+	 * @param array    $fields   What the visitor typed.
+	 * @param string   $reason   banned|two_guests|name|document.
+	 * @param string[] $matched  The typed fields that matched the guest (`phone`, `email`).
 	 * @return never
-	 * @throws DomainException 409 `booking_refused`.
+	 * @throws DomainException 409 `booking_refused` (banned) or `guest_details_mismatch`, with field errors.
 	 */
-	private static function refuse( int $guest_id, array $fields, bool $banned ) {
+	private static function refuse( int $guest_id, array $fields, string $reason, array $matched = array() ) {
 		rtbp_activity(
 			'security.booking_refused',
 			array(
@@ -359,13 +377,57 @@ class PublicBookingService {
 				'label' => trim( $fields['first_name'] . ' ' . $fields['last_name'] ),
 			),
 			array(
-				'description' => $banned
+				'description' => 'banned' === $reason
 					? __( 'A banned guest tried to book on the website; the booking was refused.', 'radius-hotel-booking' )
-					: __( 'A website booking used this guest\'s phone or e-mail with other details; it was refused. The visitor was asked to contact the hotel.', 'radius-hotel-booking' ),
+					: __( 'A website booking used this guest\'s phone or e-mail with other details; it was refused and the visitor was told which details to check.', 'radius-hotel-booking' ),
 			)
 		);
+
+		if ( 'banned' === $reason ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw DomainException::conflict( 'booking_refused', __( 'We could not take this booking online. Please contact the hotel.', 'radius-hotel-booking' ) );
+		}
+
+		throw self::mismatch( $reason, $matched );
+	}
+
+	/**
+	 * The "details do not agree" answer: a message saying what to change, and
+	 * the fields to fix. Shared with BookingService (a match found on create).
+	 *
+	 * @param string   $reason  two_guests|name|document.
+	 * @param string[] $matched The typed fields that matched (`phone`, `email`); empty = not known.
+	 * @return DomainException 409 `guest_details_mismatch`.
+	 */
+	public static function mismatch( string $reason, array $matched = array() ): DomainException {
+		$matched = $matched ? $matched : array( 'phone', 'email' );
+		$contact = array(
+			'phone' => __( 'This phone number is already on file with us under another name.', 'radius-hotel-booking' ),
+			'email' => __( 'This e-mail is already on file with us under another name.', 'radius-hotel-booking' ),
+		);
+
+		if ( 'two_guests' === $reason ) {
+			$message = __( 'Your phone number and e-mail belong to two different guests on file. Use the phone and e-mail of one person, or contact the hotel.', 'radius-hotel-booking' );
+			$errors  = array(
+				'phone' => __( 'This phone number belongs to another guest on file.', 'radius-hotel-booking' ),
+				'email' => __( 'This e-mail belongs to another guest on file.', 'radius-hotel-booking' ),
+			);
+		} elseif ( 'document' === $reason ) {
+			$message = __( 'Your name and contact details match an earlier booking, but the identity document does not. Enter the same document as last time, or contact the hotel.', 'radius-hotel-booking' );
+			$errors  = array(
+				'id_number' => __( 'This is not the document we have on file for you.', 'radius-hotel-booking' ),
+			);
+		} else {
+			$message = in_array( 'phone', $matched, true ) && in_array( 'email', $matched, true )
+				? __( 'Your phone number and e-mail are already on file with us under another name. Enter the name from your earlier booking, use your own phone and e-mail, or contact the hotel.', 'radius-hotel-booking' )
+				: ( in_array( 'phone', $matched, true )
+					? __( 'This phone number is already on file with us under another name. Enter the name from your earlier booking, use your own phone number, or contact the hotel.', 'radius-hotel-booking' )
+					: __( 'This e-mail is already on file with us under another name. Enter the name from your earlier booking, use your own e-mail, or contact the hotel.', 'radius-hotel-booking' ) );
+			$errors  = array_intersect_key( $contact, array_flip( $matched ) );
+		}
+
 		// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
-		throw DomainException::conflict( 'booking_refused', __( 'We could not take this booking online. Please contact the hotel.', 'radius-hotel-booking' ) );
+		return new DomainException( 'guest_details_mismatch', $message, 409, $errors );
 	}
 
 	/**

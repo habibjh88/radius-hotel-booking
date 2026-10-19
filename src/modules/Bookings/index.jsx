@@ -1,7 +1,8 @@
 /**
  * Bookings: the front desk list (M01, 1.5–1.9), one row per booked room —
  * reference, guest, room type and rate, floor and room, arrival and
- * departure, payment and stay status.
+ * departure, payment and stay status. A booking's rooms sit together under
+ * one booking cell (the server orders them by booking within each sort).
  *
  * Tabs with their counts (All, Awaiting approval, Arriving today, Leaving
  * today, In house, Payment overdue), a date range that means the arrival or
@@ -12,7 +13,7 @@
  */
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import {
 	Ban,
 	CalendarSearch,
@@ -177,7 +178,9 @@ export default function Bookings() {
 			id: 'reference',
 			header: __( 'Booking', 'radius-hotel-booking' ),
 			mobile: 'title',
-			cell: ( line ) => (
+			// Once per booking, across its rooms.
+			grouped: true,
+			cell: ( line, { size = 1 } = {} ) => (
 				<span className="block min-w-0">
 					<Link
 						to={ `/bookings/${ line.booking_id }` }
@@ -192,6 +195,20 @@ export default function Bookings() {
 					{ line.guest.phone ? (
 						<span className="block text-xs text-muted-foreground">
 							{ line.guest.phone }
+						</span>
+					) : null }
+					{ size > 1 ? (
+						<span className="mt-1.5 inline-flex rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-semibold text-primary">
+							{ sprintf(
+								/* translators: %d: number of rooms in the booking shown here. */
+								_n(
+									'%d room',
+									'%d rooms',
+									size,
+									'radius-hotel-booking'
+								),
+								size
+							) }
 						</span>
 					) : null }
 				</span>
@@ -323,6 +340,7 @@ export default function Bookings() {
 					<DataTable
 						columns={ columns }
 						rows={ list.data?.lines || [] }
+						groupBy={ ( line ) => line.booking_id }
 						total={ list.data?.total || 0 }
 						page={ page }
 						perPage={ PER_PAGE }

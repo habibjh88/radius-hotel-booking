@@ -108,21 +108,32 @@ class BookingLineService {
 	}
 
 	/**
-	 * Add a room to a booking (3.11): the same availability, lock and price
-	 * path as creating one.
+	 * Add one room or several to a booking (3.11): the same availability,
+	 * lock and price path as creating one. Several rooms (`room_ids`, one
+	 * rate and window) go through one lock: all are added, or none.
 	 *
 	 * @param int                    $booking_id Booking id.
-	 * @param array                  $input      `{ room_id, rate_plan_id, arrival, units?, checkin_time?, adults,
-	 *                                           children?, room_type_id?, expected_total?, hold_token?, accept_new_price? }`.
+	 * @param array                  $input      `{ room_id | room_ids[], rate_plan_id, arrival, units?, checkin_time?,
+	 *                                           adults, children?, room_type_id?, expected_total? (each room),
+	 *                                           hold_token?, accept_new_price? }`.
 	 * @param array                  $actor      `{ audience, user_id? }` (the hold's owner).
 	 * @param DateTimeImmutable|null $now        Now (checks).
-	 * @return int The new line's id.
+	 * @return int The first new line's id.
 	 * @throws DomainException 404, 409 `booking_closed` / engine codes, 422.
 	 */
 	public function add( int $booking_id, array $input, array $actor, ?DateTimeImmutable $now = null ): int {
-		$now    = $now ?? Dates::now();
-		$errors = array();
-		$req    = BookingService::lineRequest( $input, '', $errors );
+		$now      = $now ?? Dates::now();
+		$errors   = array();
+		$room_ids = isset( $input['room_ids'] ) && is_array( $input['room_ids'] )
+			? array_values( array_unique( array_filter( array_map( 'intval', $input['room_ids'] ) ) ) )
+			: array( (int) ( $input['room_id'] ?? 0 ) );
+		$reqs     = array();
+		foreach ( $room_ids as $room_id ) {
+			$reqs[] = BookingService::lineRequest( array_merge( $input, array( 'room_id' => $room_id ) ), '', $errors );
+		}
+		if ( ! $reqs ) {
+			$errors['room_id'] = __( 'Choose a room.', 'radius-hotel-booking' );
+		}
 		if ( $errors ) {
 			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 			throw DomainException::invalid( $errors );
@@ -131,14 +142,14 @@ class BookingLineService {
 		$this->holds->assertUsable( $token, $actor );
 
 		$result = Transaction::run(
-			function () use ( $booking_id, $req, $token, $input, $now ) {
+			function () use ( $booking_id, $reqs, $token, $input, $now ) {
 				$booking = $this->lockedBooking( $booking_id );
 				if ( ! in_array( (string) $booking->status, self::OPEN, true ) ) {
 					// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 					throw DomainException::conflict( 'booking_closed', __( 'This booking is closed: a room cannot be added to it.', 'radius-hotel-booking' ), array( 'status' => (string) $booking->status ) );
 				}
 				$checked = $this->writer->lockAndCheck(
-					array( $req ),
+					$reqs,
 					$token,
 					array(
 						'audience'         => AvailabilityService::STAFF,
@@ -146,42 +157,51 @@ class BookingLineService {
 						'now'              => $now,
 					)
 				);
-				$item = $checked[0];
 
 				// Read after the room lock (booking-engine §7.1: no plain read before it).
 				$most = BookingService::maxRooms( AvailabilityService::STAFF );
-				if ( self::liveCount( $this->lines->forBooking( $booking_id ) ) >= $most ) {
+				if ( self::liveCount( $this->lines->forBooking( $booking_id ) ) + count( $reqs ) > $most ) {
 					// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 					throw DomainException::invalid( array( 'room_id' => sprintf( /* translators: %d: most rooms per booking. */ __( 'A booking can take at most %d rooms.', 'radius-hotel-booking' ), $most ) ) );
 				}
 
 				// A room added to a booking still waiting for approval waits with it.
 				$status = 'pending' === (string) $booking->status ? 'pending' : 'confirmed';
-				$line   = $this->lines->create(
-					array_merge(
-						BookingWriter::lineFields( $item, $req ),
-						array(
-							'booking_id' => $booking_id,
-							'status'     => $status,
+				$added  = array();
+				foreach ( $checked as $index => $item ) {
+					$line = $this->lines->create(
+						array_merge(
+							BookingWriter::lineFields( $item, $reqs[ $index ] ),
+							array(
+								'booking_id' => $booking_id,
+								'status'     => $status,
+							)
 						)
-					)
-				);
-				if ( ! $line->id ) {
-					throw new \RuntimeException( 'The booking line could not be saved.' );
+					);
+					if ( ! $line->id ) {
+						throw new \RuntimeException( 'The booking line could not be saved.' );
+					}
+					$added[] = $line;
 				}
 				if ( '' !== $token ) {
 					( new HoldRepository() )->delete( $token );
 				}
 
-				$after = self::describe( $line );
 				$money = $this->settle( $booking );
-				$this->log( 'line_add', $booking, (string) $line->room_number, array(), $after, $money );
-				return array( (int) $line->id, array(), $after );
+				$out   = array();
+				foreach ( $added as $line ) {
+					$after = self::describe( $line );
+					$this->log( 'line_add', $booking, (string) $line->room_number, array(), $after, $money );
+					$out[] = array( (int) $line->id, $after );
+				}
+				return $out;
 			}
 		);
 
-		$this->announce( $booking_id, 'line_add', $result[0], $result[1], $result[2] );
-		return $result[0];
+		foreach ( $result as $added ) {
+			$this->announce( $booking_id, 'line_add', $added[0], array(), $added[1] );
+		}
+		return $result[0][0];
 	}
 
 	/**

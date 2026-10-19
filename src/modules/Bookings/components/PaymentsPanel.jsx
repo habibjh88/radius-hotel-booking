@@ -8,7 +8,7 @@
  */
 import { useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { FileText, Printer, Plus, Undo2 } from 'lucide-react';
+import { FileText, Percent, Printer, Plus, Undo2 } from 'lucide-react';
 
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import Money from '@/components/common/Money';
@@ -21,6 +21,7 @@ import { formatDateTime } from '@/lib/format';
 import { toast, toastError } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import { usePaymentAction, usePayments } from '../api';
+import DiscountDialog from './DiscountDialog';
 import RecordPaymentDialog from './RecordPaymentDialog';
 
 /**
@@ -50,7 +51,21 @@ export function MoneySummary( { money } ) {
 			{ row( __( 'Rooms', 'radius-hotel-booking' ), money.subtotal ) }
 			{ Number( money.discount_total )
 				? row(
-						__( 'Discount', 'radius-hotel-booking' ),
+						[
+							'percent' === money.discount?.type
+								? sprintf(
+										/* translators: %s: discount percentage. */
+										__(
+											'Discount (%s%%)',
+											'radius-hotel-booking'
+										),
+										Number( money.discount.value )
+								  )
+								: __( 'Discount', 'radius-hotel-booking' ),
+							money.discount?.reason
+								? ` · ${ money.discount.reason }`
+								: '',
+						].join( '' ),
 						-Math.abs( money.discount_total )
 				  )
 				: null }
@@ -193,7 +208,9 @@ export default function PaymentsPanel( { booking } ) {
 	const canRecord = 'locked' !== useAccess( 'payments.record' );
 	const canVoid = 'locked' !== useAccess( 'payments.void' );
 	const canHold = 'locked' !== useAccess( 'payments.change_status' );
+	const canDiscount = 'locked' !== useAccess( 'payments.discount' );
 	const [ recording, setRecording ] = useState( false );
+	const [ discounting, setDiscounting ] = useState( false );
 	const [ voiding, setVoiding ] = useState( null );
 
 	const run = ( kind, extra ) =>
@@ -219,23 +236,60 @@ export default function PaymentsPanel( { booking } ) {
 	const due = Number( booking.money.balance_due );
 	const paid = Number( booking.money.paid_total );
 	const showRecord = canRecord && ( due > 0 || paid > 0 );
+	// A discount changes what is owed: not on a cancelled or declined booking.
+	const showDiscount =
+		canDiscount &&
+		! [ 'cancelled', 'declined' ].includes( booking.status ) &&
+		Number( booking.money.subtotal ) > 0;
 
 	return (
 		<Panel
 			title={ __( 'Money', 'radius-hotel-booking' ) }
 			actions={
-				showRecord ? (
-					<Button
-						type="button"
-						size="sm"
-						onClick={ () => setRecording( true ) }
-						disabled={ ! ledger.data }
-					>
-						<Plus className="h-4 w-4" aria-hidden="true" />
-						{ due > 0
-							? __( 'Record payment', 'radius-hotel-booking' )
-							: __( 'Record refund', 'radius-hotel-booking' ) }
-					</Button>
+				showRecord || showDiscount ? (
+					<div className="flex flex-wrap gap-2">
+						{ showDiscount ? (
+							<Button
+								type="button"
+								size="sm"
+								variant="outline"
+								onClick={ () => setDiscounting( true ) }
+							>
+								<Percent
+									className="h-4 w-4"
+									aria-hidden="true"
+								/>
+								{ booking.money.discount?.type
+									? __(
+											'Change discount',
+											'radius-hotel-booking'
+									  )
+									: __(
+											'Add discount',
+											'radius-hotel-booking'
+									  ) }
+							</Button>
+						) : null }
+						{ showRecord ? (
+							<Button
+								type="button"
+								size="sm"
+								onClick={ () => setRecording( true ) }
+								disabled={ ! ledger.data }
+							>
+								<Plus className="h-4 w-4" aria-hidden="true" />
+								{ due > 0
+									? __(
+											'Record payment',
+											'radius-hotel-booking'
+									  )
+									: __(
+											'Record refund',
+											'radius-hotel-booking'
+									  ) }
+							</Button>
+						) : null }
+					</div>
 				) : null
 			}
 		>
@@ -432,6 +486,12 @@ export default function PaymentsPanel( { booking } ) {
 				}
 				onClose={ () => setRecording( false ) }
 				onSubmit={ ( body ) => run( 'record', { body } ) }
+			/>
+			<DiscountDialog
+				open={ discounting }
+				money={ booking.money }
+				onClose={ () => setDiscounting( false ) }
+				onSubmit={ ( body ) => run( 'discount', { body } ) }
 			/>
 			<ConfirmDialog
 				open={ Boolean( voiding ) }

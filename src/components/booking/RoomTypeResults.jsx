@@ -13,10 +13,12 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 import {
 	AlertTriangle,
 	BedDouble,
+	CalendarDays,
 	Check,
 	ChevronDown,
 	Clock,
 	ExternalLink,
+	Info,
 	Loader2,
 	Maximize2,
 	Users,
@@ -24,10 +26,14 @@ import {
 
 import Money from '@/components/common/Money';
 import { Button } from '@/components/ui/button';
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from '@/components/ui/popover';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { OtherOptions } from './RateList';
-import { windowLabel } from './rates';
+import { regularPrice, windowLabel } from './rates';
 
 // Rates shown before "Show all rates", and amenities before "+N".
 const FIRST_RATES = 4;
@@ -36,26 +42,76 @@ const FIRST_AMENITIES = 5;
 const FEW_LEFT = 3;
 
 /**
- * The regular price of a quote (the rate's base price for each night or
- * day, before sale and price rules), when it is higher than what the guest
- * pays; null otherwise.
+ * What to tell a guest about a rate that does not fit their dates: a short
+ * label and the note behind the info icon. A rate sold one at a time (not
+ * "for several days or nights") covers one day or one night.
  *
- * @param {Object} quote The rate's price (`total`, `steps` per unit).
- * @return {number|null} Regular total.
+ * @param {Object} rate The rate (`multi_unit`, `window`, `reasons`).
+ * @return {{label: string, note: string}} Texts.
  */
-function regularPrice( quote ) {
-	if ( ! quote?.steps?.length ) {
-		return null;
+function singleStay( rate ) {
+	if ( rate.multi_unit ) {
+		const message =
+			rate.reasons?.[ 0 ]?.message ||
+			__(
+				'This rate does not match the dates chosen.',
+				'radius-hotel-booking'
+			);
+		return { label: message, note: message };
 	}
-	let regular = 0;
-	for ( const unit of quote.steps ) {
-		const base = ( unit.steps || [] ).find( ( s ) => 'base' === s.step );
-		if ( ! base ) {
-			return null;
-		}
-		regular += Number( base.after ) || 0;
-	}
-	return regular - Number( quote.total ) >= 0.5 ? regular : null;
+	return rate.window?.crosses_midnight
+		? {
+				label: __( 'One night only', 'radius-hotel-booking' ),
+				note: __(
+					'This package is made for a one-night booking. To book it, choose a departure the day after your arrival.',
+					'radius-hotel-booking'
+				),
+		  }
+		: {
+				label: __( 'One-day booking only', 'radius-hotel-booking' ),
+				note: __(
+					'This package is made for a one-day booking. To book it, choose the same day for arrival and departure.',
+					'radius-hotel-booking'
+				),
+		  };
+}
+
+/**
+ * Why a rate cannot be booked for these dates, behind an info icon: opens on
+ * hover (mouse) and on tap or click (touch, keyboard).
+ *
+ * @param {Object} props      Props.
+ * @param {string} props.text The explanation.
+ * @return {JSX.Element} Icon and its note.
+ */
+function RateInfo( { text } ) {
+	const [ open, setOpen ] = useState( false );
+	return (
+		<Popover open={ open } onOpenChange={ setOpen }>
+			<PopoverTrigger asChild>
+				<button
+					type="button"
+					className="inline-flex h-6 w-6 items-center justify-center rounded-full border-0 bg-transparent p-0 text-muted-foreground shadow-none hover:bg-primary-softer hover:text-primary focus:bg-primary-softer focus:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+					aria-label={ __(
+						'Why can I not book this?',
+						'radius-hotel-booking'
+					) }
+					onMouseEnter={ () => setOpen( true ) }
+					onMouseLeave={ () => setOpen( false ) }
+				>
+					<Info className="h-4 w-4" aria-hidden="true" />
+				</button>
+			</PopoverTrigger>
+			<PopoverContent
+				side="top"
+				align="start"
+				className="w-72 p-3 text-sm leading-relaxed text-foreground"
+				onOpenAutoFocus={ ( event ) => event.preventDefault() }
+			>
+				{ text }
+			</PopoverContent>
+		</Popover>
+	);
 }
 
 /**
@@ -86,6 +142,9 @@ function RateRow( { rate, selected, onSelect } ) {
 			<div className="min-w-0 flex-1 space-y-1">
 				<p className="m-0 flex flex-wrap items-center gap-2 text-sm font-semibold text-heading">
 					{ rate.name }
+					{ rate.oneDay ? (
+						<RateInfo text={ singleStay( rate ).note } />
+					) : null }
 					{ rate.checkin ? (
 						<span className="rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-semibold text-primary">
 							{ __(
@@ -106,8 +165,10 @@ function RateRow( { rate, selected, onSelect } ) {
 				) : null }
 				{ ! available ? (
 					<p className="m-0 text-xs text-muted-foreground">
-						{ rate.reasons?.[ 0 ]?.message ||
-							__( 'Unavailable', 'radius-hotel-booking' ) }
+						{ rate.oneDay
+							? singleStay( rate ).label
+							: rate.reasons?.[ 0 ]?.message ||
+							  __( 'Unavailable', 'radius-hotel-booking' ) }
 					</p>
 				) : null }
 			</div>
@@ -199,15 +260,27 @@ function RateRow( { rate, selected, onSelect } ) {
  *
  * @param {Object}   props          Props.
  * @param {Object}   props.type     Room type from the search.
+ * @param {Object[]} props.other    This type's rates that do not fit the dates (shown greyed out).
  * @param {Object}   props.choice   `{ room_type_id, rate_plan_id }` or null.
  * @param {Function} props.onSelect Called with `( type, rate )`.
  * @return {JSX.Element} Card.
  */
-function RoomTypeCard( { type, choice, onSelect } ) {
+function RoomTypeCard( { type, other = [], choice, onSelect } ) {
 	const [ allRates, setAllRates ] = useState( false );
 	const details = type.details || {};
-	// Bookable rates first, cheapest first; the rest after, as sent.
-	const rates = [ ...( type.rates || [] ) ].sort( ( a, b ) => {
+	// Bookable rates first, cheapest first; the rest after, as sent; last,
+	// the rates made for other dates (a day rate on a stay of several nights).
+	const rates = [
+		...( type.rates || [] ),
+		...other.map( ( rate ) => ( {
+			...rate,
+			available: false,
+			oneDay: true,
+		} ) ),
+	].sort( ( a, b ) => {
+		if ( Boolean( a.oneDay ) !== Boolean( b.oneDay ) ) {
+			return a.oneDay ? 1 : -1;
+		}
 		if ( a.available !== b.available ) {
 			return a.available ? -1 : 1;
 		}
@@ -463,16 +536,16 @@ function RoomTypeCard( { type, choice, onSelect } ) {
 /**
  * @param {Object}   props              Props.
  * @param {Object}   props.availability The React Query result of the search.
+ * @param {boolean}  props.needsDates   No dates picked yet: the prices are only a preview.
  * @param {Object}   props.choice       `{ room_type_id, rate_plan_id }` or null.
  * @param {Function} props.onSelect     Called with `( type, rate )`.
- * @param {Function} props.onDates      Called with `{ departure }` to switch dates.
  * @return {JSX.Element} Results.
  */
 export default function RoomTypeResults( {
 	availability,
+	needsDates = false,
 	choice,
 	onSelect,
-	onDates,
 } ) {
 	const types = availability.data?.room_types || [];
 	const updating = availability.isFetching && ! availability.isPending;
@@ -553,14 +626,13 @@ export default function RoomTypeResults( {
 					<RoomTypeCard
 						key={ type.id }
 						type={ type }
+						other={ (
+							availability.data?.other_options || []
+						).filter( ( rate ) => rate.room_type_id === type.id ) }
 						choice={ choice }
 						onSelect={ onSelect }
 					/>
 				) ) }
-				<OtherOptions
-					other={ availability.data?.other_options }
-					onDates={ onDates }
-				/>
 			</div>
 		);
 	}
@@ -572,7 +644,18 @@ export default function RoomTypeResults( {
 					<h2 className="m-0 text-xl font-bold text-heading">
 						{ __( 'Available rooms', 'radius-hotel-booking' ) }
 					</h2>
-					{ types.length && ! availability.isPending ? (
+					{ needsDates && types.length ? (
+						<p className="m-0 flex items-center gap-1.5 text-sm text-muted-foreground">
+							<CalendarDays
+								className="h-4 w-4 shrink-0 text-primary"
+								aria-hidden="true"
+							/>
+							{ __(
+								'Choose your dates to see the prices and free rooms for your stay.',
+								'radius-hotel-booking'
+							) }
+						</p>
+					) : types.length && ! availability.isPending ? (
 						<p className="m-0 text-sm text-muted-foreground">
 							{ sprintf(
 								/* translators: %d: number of room types. */

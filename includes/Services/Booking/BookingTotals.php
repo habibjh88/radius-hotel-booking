@@ -20,9 +20,12 @@ defined( 'ABSPATH' ) || exit;
  * follow the lines after every change (a status move, an added, edited or
  * removed room): a declined or cancelled room is not charged and not counted;
  * a no-show still is. Each line's own price stays frozen (3.16) — only the
- * sum moves. Discount and tax stay as stored (none is set before M05), and the
- * balance is total − paid, and the payment status is re-derived with
- * `PaymentService::statusFor()` (the ledger itself is `recalculate()`).
+ * sum moves. The staff discount (`discount_type` amount | percent) is worked
+ * out from the rooms' sum each time: a percent follows the rooms, an amount
+ * never exceeds them; a discount stored without a type (an import) stays as
+ * it is. Tax stays as stored. The balance is total − paid, and the payment
+ * status is re-derived with `PaymentService::statusFor()` (the ledger itself
+ * is `recalculate()`).
  */
 class BookingTotals {
 
@@ -53,11 +56,15 @@ class BookingTotals {
 
 		$fields   = array();
 		$subtotal = Money::sum( $charged );
-		if ( ! Money::equals( $subtotal, (float) $booking->subtotal ) ) {
-			$total                 = max( 0, $subtotal - (float) $booking->discount_total + (float) $booking->tax_total );
-			$fields['subtotal']    = $subtotal;
-			$fields['total']       = $total;
-			$fields['balance_due'] = $total - (float) $booking->paid_total;
+		$discount = self::discount( $booking, $subtotal );
+		$total    = max( 0, $subtotal - $discount + (float) $booking->tax_total );
+		if ( ! Money::equals( $subtotal, (float) $booking->subtotal )
+			|| ! Money::equals( $discount, (float) $booking->discount_total )
+			|| ! Money::equals( $total, (float) $booking->total ) ) {
+			$fields['subtotal']       = $subtotal;
+			$fields['discount_total'] = $discount;
+			$fields['total']          = $total;
+			$fields['balance_due']    = $total - (float) $booking->paid_total;
 			// The payment status follows (M05): what was paid against the new total.
 			$fields['payment_status'] = PaymentService::statusFor( (float) $booking->paid_total, $total, 'refunded' === (string) $booking->payment_status );
 		}
@@ -68,5 +75,25 @@ class BookingTotals {
 		}
 		// The payment deadline follows the first stay (5.4): a room added, changed or removed can move it.
 		return array_merge( $fields, PaymentDeadline::fields( $booking, $lines ) );
+	}
+
+	/**
+	 * What the booking's discount comes to on a rooms' sum: a percent of it,
+	 * or a fixed amount (never more than the sum).
+	 *
+	 * @param Booking $booking  Booking (`discount_type`, `discount_value`, `discount_total`).
+	 * @param float   $subtotal The charged rooms' sum.
+	 * @return float Discount, rounded.
+	 */
+	public static function discount( Booking $booking, float $subtotal ): float {
+		$value = (float) $booking->discount_value;
+		switch ( (string) $booking->discount_type ) {
+			case 'percent':
+				return Money::round( $subtotal * min( 100, max( 0, $value ) ) / 100 );
+			case 'amount':
+				return Money::round( min( $subtotal, max( 0, $value ) ) );
+		}
+		// No staff discount: whatever was stored (0, or an imported booking's own).
+		return Money::round( min( $subtotal, (float) $booking->discount_total ) );
 	}
 }

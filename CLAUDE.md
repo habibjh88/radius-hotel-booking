@@ -237,7 +237,7 @@ that says which plugin each task belongs to.
   never copy it. Every call into the free plugin is guarded with
   `class_exists()` or `function_exists()`, and each add-on loads only when the
   free plugin is active.
-- Existing extension points: `rtbp_api_route_paths`,
+- Existing extension points: `rtbp_shortcode_catalog`, `rtbp_api_route_paths`,
   `rtbp_register_addon_routes`, `rtbp_register_addon_integrations`,
   `rtbp_email_classes`, `rtbp_settings`, `rtbp_capabilities`,
   `rtbp_migration_classes`.
@@ -285,3 +285,15 @@ Multisite is supported: network activation installs per-site, and
 - Each public embed (M04) ships as a shortcode, a block and an Elementor widget
   that all render the **same** template — keep it that way so the three paths
   can't drift.
+- **Every shortcode is listed on the dashboard's Shortcodes page** (System →
+  Shortcodes, `src/modules/Shortcodes`). When you add a shortcode on
+  `rtbp_shortcodes`, also describe it on `rtbp_shortcode_catalog` next to it:
+  `[ 'title', 'description', 'also' => [ block / widget names ], 'order',
+  'attributes' ]` (see `Frontend\Embeds::catalog()`). `Shortcodes::catalog()`
+  sends the list to the app, and the copy button comes with it. **A shortcode
+  with attributes must list every one in `attributes`** (`name`, `label`,
+  `type` select|multiselect|number|text, `default`, `options`, `min`/`max`,
+  `help`, `when`): the page turns them into a builder. Keep one defaults
+  constant shared by `shortcode_atts()` and the catalogue (`Embeds::ROOMS_DEFAULTS`)
+  so the two can't drift. Pro and the client add-on use the same filter, so
+  their shortcodes are listed too.

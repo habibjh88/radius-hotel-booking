@@ -237,6 +237,7 @@ final class AccessRegistry {
 			'payments.record'        => array( $open, __( 'Record a payment', 'radius-hotel-booking' ), 'mark-as-paid' ),
 			'payments.change_status' => array( $open, __( 'Change the payment status', 'radius-hotel-booking' ), 'modify-order-status' ),
 			'payments.void'          => array( $locked, __( 'Void a payment', 'radius-hotel-booking' ), '' ),
+			'payments.discount'      => array( $locked, __( 'Give a discount', 'radius-hotel-booking' ), '' ),
 			'invoices.send'          => array( $open, __( 'Send an invoice', 'radius-hotel-booking' ), '' ),
 			'invoices.regenerate'    => array( $open, __( 'Regenerate an invoice', 'radius-hotel-booking' ), '' ),
 

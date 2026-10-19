@@ -47,6 +47,7 @@ class DashboardPage {
 	 */
 	public static function init(): void {
 		add_filter( 'rtbp_shortcodes', array( __CLASS__, 'register_shortcode' ) );
+		add_filter( 'rtbp_shortcode_catalog', array( __CLASS__, 'describe_shortcode' ) );
 		add_filter( 'template_include', array( __CLASS__, 'template' ), 99 );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_page_style' ) );
 		add_filter( 'body_class', array( __CLASS__, 'body_class' ) );
@@ -191,6 +192,23 @@ class DashboardPage {
 		$shortcodes                    = (array) $shortcodes;
 		$shortcodes[ self::SHORTCODE ] = array( __CLASS__, 'shortcode' );
 		return $shortcodes;
+	}
+
+	/**
+	 * `rtbp_shortcode_catalog`: how the shortcode is described on the
+	 * dashboard's Shortcodes page.
+	 *
+	 * @param array $catalog Key => description.
+	 * @return array
+	 */
+	public static function describe_shortcode( $catalog ): array {
+		$catalog                   = (array) $catalog;
+		$catalog[ self::SHORTCODE ] = array(
+			'title'       => __( 'Staff dashboard', 'radius-hotel-booking' ),
+			'description' => __( 'This hotel dashboard on a page of your site, so staff can work without wp-admin. Visitors who are not signed in see a sign-in form; only staff get in.', 'radius-hotel-booking' ),
+			'order'       => 90,
+		);
+		return $catalog;
 	}
 
 	/**

@@ -10,3 +10,5 @@
 import './search';
 
 import './booking';
+
+import './rooms';

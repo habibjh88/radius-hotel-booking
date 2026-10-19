@@ -16,6 +16,9 @@
  *                 `mobileLabel` is its tab label, an `_x()` string with a
  *                 "phone tab bar" context so a translator can pick a
  *                 shorter word than the menu label (French: "Accueil").
+ * - `subnav`      Optional `[ { path, label } ]` sub-links shown under the item
+ *                 in the sidebar while one of its pages is open (or the item
+ *                 is clicked); they need the item's own capability and keys.
  * - `redirect`    Path to send the user to instead of rendering a screen.
  * - `element`     Lazy component. Routes without one render the module
  *                 placeholder until their module (`module`) is built.
@@ -35,6 +38,7 @@ import {
 	CalendarDays,
 	CalendarPlus,
 	Clock,
+	Code,
 	DoorOpen,
 	Download,
 	LayoutDashboard,
@@ -204,6 +208,20 @@ const baseRoutes = [
 		icon: DoorOpen,
 		capability: VIEW,
 		accessKey: 'page.rooms',
+		subnav: [
+			{
+				path: '/rooms/new',
+				label: __( 'Add room type', 'radius-hotel-booking' ),
+			},
+			{
+				path: '/rooms/floors',
+				label: __( 'Floors', 'radius-hotel-booking' ),
+			},
+			{
+				path: '/rooms/amenities',
+				label: __( 'Amenities', 'radius-hotel-booking' ),
+			},
+		],
 		element: lazy( () => import( '@/modules/Rooms' ) ),
 	},
 	{
@@ -291,6 +309,19 @@ const baseRoutes = [
 		accessKey: 'access.manage',
 		// The permission map is a Settings tab.
 		redirect: '/settings?section=access',
+	},
+	{
+		path: '/shortcodes',
+		group: 'system',
+		label: __( 'Shortcodes', 'radius-hotel-booking' ),
+		description: __(
+			'Shortcodes to place the booking pages on your site',
+			'radius-hotel-booking'
+		),
+		icon: Code,
+		capability: VIEW,
+		accessKey: 'page.settings',
+		element: lazy( () => import( '@/modules/Shortcodes' ) ),
 	},
 	{
 		path: '/settings',

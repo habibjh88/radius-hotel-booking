@@ -384,8 +384,9 @@ class BookingService {
 			if ( $public ) {
 				// The web never books under a guest it was not matched to (M04
 				// critical review): that would show their details to the visitor.
-				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
-				throw DomainException::conflict( 'booking_refused', __( 'We could not take this booking online. Please contact the hotel.', 'radius-hotel-booking' ) );
+				// Say what to change, never whose details these are.
+				$kind = (string) ( $match['match'] ?? '' );
+				throw PublicBookingService::mismatch( 'name', in_array( $kind, array( 'phone', 'email' ), true ) ? array( $kind ) : array() );
 			}
 			$existing = $this->guests->get( (int) $match['id'] );
 			$typed    = trim( (string) ( $input['first_name'] ?? '' ) . ' ' . (string) ( $input['last_name'] ?? '' ) );

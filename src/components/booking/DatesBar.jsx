@@ -132,7 +132,7 @@ export default function DatesBar( { search, onChange, checkin, limits } ) {
 						: ''
 				}
 				description={
-					search.departure === search.arrival
+					search.arrival && search.departure === search.arrival
 						? __( 'Same day: day stays.', 'radius-hotel-booking' )
 						: ''
 				}

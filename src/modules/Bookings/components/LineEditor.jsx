@@ -4,14 +4,19 @@
  * starts from the room as booked; the search leaves that stay out, so its
  * own room shows free and the occupancy price is counted without it.
  *
+ * Adding starts from the booking's own stay (its first room still to come):
+ * the same dates, check-in time, guests, room type and package, so the desk
+ * only picks the room. *Change stay* opens the full search for the rare room
+ * on other terms.
+ *
  * The price follows the freeze rule (3.16): keeping the rate plan, the room
  * type and the times keeps the price the room was sold at; changing one of
  * them takes today's price for the new stay. The server checks everything
  * again under its lock; a price that moved meanwhile is shown to accept.
  */
 import { useEffect, useMemo, useState } from 'react';
-import { __, sprintf } from '@wordpress/i18n';
-import { AlertTriangle } from 'lucide-react';
+import { __, _n, sprintf } from '@wordpress/i18n';
+import { AlertTriangle, CalendarDays } from 'lucide-react';
 
 import Money from '@/components/common/Money';
 import DatesBar from '@/components/booking/DatesBar';
@@ -34,24 +39,44 @@ import {
 	SheetTitle,
 } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
-import { formatDate, formatMoney, siteToday } from '@/lib/format';
+import {
+	formatDate,
+	formatDateRange,
+	formatMoney,
+	siteToday,
+} from '@/lib/format';
 import { toast, toastError } from '@/lib/toast';
 import { useLineChange } from '../api';
 
 /**
+ * The booking's first room still to come (the stay a new room usually
+ * shares), or null.
+ *
+ * @param {Object} booking Booking.
+ * @return {Object|null} Line.
+ */
+function upcomingLine( booking ) {
+	const today = siteToday();
+	return (
+		( booking.lines || [] ).find(
+			( item ) =>
+				[ 'pending', 'confirmed', 'checked_in' ].includes(
+					item.status
+				) && localDate( item.start ) >= today
+		) || null
+	);
+}
+
+/**
  * Where the search starts: the room being edited, or the booking's first
- * room still to come (a room added usually shares the stay).
+ * room still to come.
  *
  * @param {Object}      booking Booking.
  * @param {Object|null} line    The room edited (null = adding).
  * @return {Object} Search.
  */
 function startSearch( booking, line ) {
-	const from =
-		line ||
-		( booking.lines || [] ).find( ( item ) =>
-			[ 'pending', 'confirmed', 'checked_in' ].includes( item.status )
-		);
+	const from = line || upcomingLine( booking );
 	const today = siteToday();
 	if ( ! from || localDate( from.start ) < today ) {
 		return {
@@ -65,10 +90,84 @@ function startSearch( booking, line ) {
 	return {
 		arrival: localDate( from.start ),
 		departure: localDate( from.end ),
-		adults: line ? line.adults : 1,
-		children: line ? line.children : 0,
+		adults: from.adults || 1,
+		children: from.children || 0,
 		checkin_time: String( from.start ).slice( 11, 16 ),
 	};
+}
+
+/**
+ * The stay a new room shares, at the top of *Add a room*: dates and times,
+ * guests, room type and package, and *Change stay*.
+ *
+ * @param {Object}   props          Props.
+ * @param {Object}   props.source   The booking's room it copies.
+ * @param {Function} props.onChange Open the full search.
+ * @return {JSX.Element} Summary.
+ */
+function SameStay( { source, onChange } ) {
+	const guests = [
+		sprintf(
+			/* translators: %d: number of adults. */
+			_n(
+				'%d adult',
+				'%d adults',
+				source.adults,
+				'radius-hotel-booking'
+			),
+			source.adults
+		),
+		source.children
+			? sprintf(
+					/* translators: %d: number of children. */
+					_n(
+						'%d child',
+						'%d children',
+						source.children,
+						'radius-hotel-booking'
+					),
+					source.children
+			  )
+			: null,
+	]
+		.filter( Boolean )
+		.join( ' · ' );
+
+	return (
+		<section className="rounded-xl border border-primary/25 bg-primary-softer p-4">
+			<div className="flex flex-wrap items-start justify-between gap-3">
+				<div className="min-w-0 space-y-1">
+					<p className="m-0 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-primary">
+						<CalendarDays
+							className="h-3.5 w-3.5"
+							aria-hidden="true"
+						/>
+						{ __(
+							'Same stay as this booking',
+							'radius-hotel-booking'
+						) }
+					</p>
+					<p className="m-0 text-sm font-semibold text-heading">
+						{ formatDateRange( source.start, source.end ) }
+					</p>
+					<p className="m-0 text-sm text-muted-foreground">
+						{ [ source.room_type, source.rate_plan_name, guests ]
+							.filter( Boolean )
+							.join( ' · ' ) }
+					</p>
+				</div>
+				<Button
+					type="button"
+					variant="outline"
+					size="sm"
+					className="bg-white"
+					onClick={ onChange }
+				>
+					{ __( 'Change stay', 'radius-hotel-booking' ) }
+				</Button>
+			</div>
+		</section>
+	);
 }
 
 /**
@@ -101,7 +200,11 @@ export default function LineEditor( { booking, line, open, onClose } ) {
 		startSearch( booking, line )
 	);
 	const [ choice, setChoice ] = useState( null );
-	const [ roomId, setRoomId ] = useState( 0 );
+	// Adding: the room shares the booking's stay until *Change stay*.
+	const source = line ? null : upcomingLine( booking );
+	const [ sameStay, setSameStay ] = useState( Boolean( source ) );
+	// The rooms picked: one when changing a room, any number when adding.
+	const [ roomIds, setRoomIds ] = useState( [] );
 	// The server's newer price, to accept before saving: `{ from, to }`.
 	const [ priceChange, setPriceChange ] = useState( null );
 	const change = useLineChange( booking.id );
@@ -112,15 +215,17 @@ export default function LineEditor( { booking, line, open, onClose } ) {
 			return;
 		}
 		setSearch( startSearch( booking, line ) );
+		const from = line || upcomingLine( booking );
 		setChoice(
-			line
+			from
 				? {
-						room_type_id: line.room_type_id,
-						rate_plan_id: line.rate_plan_id,
+						room_type_id: from.room_type_id,
+						rate_plan_id: from.rate_plan_id,
 				  }
 				: null
 		);
-		setRoomId( line ? line.room_id : 0 );
+		setSameStay( ! line && Boolean( from ) );
+		setRoomIds( line ? [ line.room_id ] : [] );
 		setPriceChange( null );
 	}, [ open, line?.id ] ); // Only on opening: later edits of the booking must not reset the form.
 
@@ -163,17 +268,24 @@ export default function LineEditor( { booking, line, open, onClose } ) {
 		new Date( chosen.rate.window.end ).getTime() ===
 			new Date( line.end ).getTime();
 	const price = keepsPrice ? line.total : chosen?.rate?.price?.total;
-	const roomNumber = ( () => {
-		for ( const floor of chosen?.type?.floors || [] ) {
-			const room = ( floor.rooms || [] ).find( ( r ) => r.id === roomId );
-			if ( room ) {
-				return room.number;
+	// The picked rooms' numbers, in the order picked.
+	const roomNumbers = roomIds
+		.map( ( id ) => {
+			for ( const floor of chosen?.type?.floors || [] ) {
+				const room = ( floor.rooms || [] ).find( ( r ) => r.id === id );
+				if ( room ) {
+					return room.number;
+				}
 			}
-		}
-		return '';
-	} )();
+			return '';
+		} )
+		.filter( Boolean );
+	const count = roomNumbers.length;
 	const ready = Boolean(
-		chosen?.rate?.available !== false && chosen && roomId && roomNumber
+		chosen?.rate?.available !== false &&
+			chosen &&
+			count &&
+			count === roomIds.length
 	);
 
 	const onDates = ( fields ) =>
@@ -188,7 +300,7 @@ export default function LineEditor( { booking, line, open, onClose } ) {
 	const save = async ( accept = false ) => {
 		const { type, rate } = chosen;
 		const body = {
-			room_id: roomId,
+			...( line ? { room_id: roomIds[ 0 ] } : { room_ids: roomIds } ),
 			room_type_id: type.id,
 			rate_plan_id: rate.rate_plan_id,
 			arrival: search.arrival,
@@ -196,7 +308,7 @@ export default function LineEditor( { booking, line, open, onClose } ) {
 			...( rate.checkin ? { checkin_time: search.checkin_time } : {} ),
 			adults: Number( search.adults ),
 			children: Number( search.children ),
-			// The price shown: the server refuses if it moved (price_changed).
+			// The price shown, for each room: the server refuses if it moved (price_changed).
 			...( keepsPrice ? {} : { expected_total: price } ),
 			...( accept ? { accept_new_price: true } : {} ),
 		};
@@ -213,7 +325,12 @@ export default function LineEditor( { booking, line, open, onClose } ) {
 				setPriceChange( { from: price, to: err.data?.quote?.total } );
 			} else if ( 'room_unavailable' === err?.code ) {
 				toast.error( err.message );
-				setRoomId( 0 );
+				// Untick the room that was taken; keep the others.
+				setRoomIds( ( prev ) =>
+					err.data?.room_id
+						? prev.filter( ( id ) => id !== err.data.room_id )
+						: []
+				);
 				availability.refetch();
 			} else {
 				toastError( err );
@@ -271,10 +388,10 @@ export default function LineEditor( { booking, line, open, onClose } ) {
 					} );
 					// Another room type has other rooms.
 					if ( type.id !== chosen?.type?.id ) {
-						setRoomId(
+						setRoomIds(
 							line && type.id === line.room_type_id
-								? line.room_id
-								: 0
+								? [ line.room_id ]
+								: []
 						);
 					}
 					setPriceChange( null );
@@ -309,7 +426,7 @@ export default function LineEditor( { booking, line, open, onClose } ) {
 							: sprintf(
 									/* translators: %s: booking reference. */
 									__(
-										'A room for booking %s, at today’s price.',
+										'Add one room or several to booking %s, at today’s price.',
 										'radius-hotel-booking'
 									),
 									booking.reference
@@ -318,17 +435,39 @@ export default function LineEditor( { booking, line, open, onClose } ) {
 				</SheetHeader>
 
 				<div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-5">
-					<DatesBar
-						search={ search }
-						onChange={ onDates }
-						checkin={ checkin }
-					/>
-					<section className="space-y-2">
-						<h3 className="m-0 text-sm font-semibold text-heading">
-							{ __( 'Rate', 'radius-hotel-booking' ) }
-						</h3>
-						{ rates }
-					</section>
+					{ sameStay && source ? (
+						<>
+							<SameStay
+								source={ source }
+								onChange={ () => setSameStay( false ) }
+							/>
+							{ availability.isPending ? (
+								<Skeleton className="h-24 w-full rounded-lg" />
+							) : null }
+							{ ! availability.isPending && ! chosen ? (
+								<p className="m-0 text-sm text-muted-foreground">
+									{ __(
+										'This package is no longer offered for these dates. Use Change stay to pick another.',
+										'radius-hotel-booking'
+									) }
+								</p>
+							) : null }
+						</>
+					) : (
+						<>
+							<DatesBar
+								search={ search }
+								onChange={ onDates }
+								checkin={ checkin }
+							/>
+							<section className="space-y-2">
+								<h3 className="m-0 text-sm font-semibold text-heading">
+									{ __( 'Rate', 'radius-hotel-booking' ) }
+								</h3>
+								{ rates }
+							</section>
+						</>
+					) }
 					{ chosen ? (
 						<section className="space-y-2">
 							<h3 className="m-0 text-sm font-semibold text-heading">
@@ -348,11 +487,32 @@ export default function LineEditor( { booking, line, open, onClose } ) {
 									rate={ chosen.rate }
 									taken={ taken }
 									pending={ 0 }
-									selected={ roomId }
-									onPick={ ( room ) => {
-										setRoomId( room.id );
-										setPriceChange( null );
-									} }
+									{ ...( line
+										? {
+												selected: roomIds[ 0 ] || 0,
+												onPick: ( room ) => {
+													setRoomIds( [ room.id ] );
+													setPriceChange( null );
+												},
+										  }
+										: {
+												picked: roomIds,
+												onToggle: ( room ) => {
+													setRoomIds( ( prev ) =>
+														prev.includes( room.id )
+															? prev.filter(
+																	( id ) =>
+																		id !==
+																		room.id
+															  )
+															: [
+																	...prev,
+																	room.id,
+															  ]
+													);
+													setPriceChange( null );
+												},
+										  } ) }
 								/>
 							) : (
 								<p className="m-0 text-sm text-muted-foreground">
@@ -372,19 +532,34 @@ export default function LineEditor( { booking, line, open, onClose } ) {
 						<div className="flex flex-wrap items-baseline justify-between gap-2 text-sm">
 							<span className="text-heading">
 								{ sprintf(
-									/* translators: 1: room number, 2: rate name, 3: date, 4: times. */
-									__(
+									/* translators: 1: room number(s), 2: rate name, 3: date, 4: times. */
+									_n(
 										'Room %1$s · %2$s · %3$s %4$s',
+										'Rooms %1$s · %2$s · %3$s %4$s',
+										count,
 										'radius-hotel-booking'
 									),
-									roomNumber,
+									roomNumbers.join( ', ' ),
 									chosen.rate.name,
 									formatDate( search.arrival ),
 									windowLabel( chosen.rate.window )
 								) }
 							</span>
 							<span className="font-semibold text-heading">
-								<Money value={ price } />{ ' ' }
+								{ count > 1 ? (
+									<span className="mr-1 text-xs font-normal text-muted-foreground">
+										{ sprintf(
+											/* translators: 1: number of rooms, 2: price of one room. */
+											__(
+												'%1$d × %2$s =',
+												'radius-hotel-booking'
+											),
+											count,
+											formatMoney( price )
+										) }
+									</span>
+								) : null }
+								<Money value={ Number( price ) * count } />{ ' ' }
 								<span className="text-xs font-normal text-muted-foreground">
 									{ keepsPrice
 										? __(
@@ -449,6 +624,15 @@ export default function LineEditor( { booking, line, open, onClose } ) {
 									? __(
 											'Save changes',
 											'radius-hotel-booking'
+									  )
+									: count > 1
+									? sprintf(
+											/* translators: %d: number of rooms. */
+											__(
+												'Add %d rooms',
+												'radius-hotel-booking'
+											),
+											count
 									  )
 									: __( 'Add room', 'radius-hotel-booking' ) }
 							</Button>
