@@ -42,7 +42,7 @@ class AvailabilityRepository {
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
 				'SELECT t.id AS type_id, t.name AS type_name, t.max_adults, t.max_children, t.buffer_minutes,
-					t.slug AS type_slug, t.short_description, t.featured_image_id, t.bed_info, t.size_m2, t.amenities,
+					t.slug AS type_slug, t.short_description, t.featured_image_id, t.gallery, t.bed_info, t.size_m2, t.amenities, t.highlights,
 					r.id AS rate_id, r.rate_plan_id, r.price, r.sale_price, r.min_units, r.max_units, r.enabled,
 					p.name AS plan_name, p.type AS plan_type, p.start_time, p.end_time, p.duration_minutes,
 					p.checkin_from, p.checkin_until, p.multi_unit, p.is_active AS plan_active

@@ -36,6 +36,7 @@ class RoomTypesTable extends Migration {
 				$table->text( 'gallery' )->nullable();
 				$table->unsignedBigInteger( 'featured_image_id' )->default( 0 );
 				$table->text( 'amenities' )->nullable();
+				$table->text( 'highlights' )->nullable();
 				$table->string( 'bed_info', 191 )->default( '' );
 				$table->decimal( 'size_m2', 8, 2 )->nullable();
 				$table->unsignedInteger( 'max_adults' )->default( 2 );

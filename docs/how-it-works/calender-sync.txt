@@ -1,0 +1,41 @@
+Calendar sync is a Pro feature: it lives in radius-hotel-booking-pro (on main), in includes/Ical/, and the screen is src/admin/ical/CalendarSyncScreen.jsx. It is
+  switched on under Settings → Pro features (ical_sync). It keeps each room's availability in step with booking sites such as Booking.com and Airbnb using iCal
+  (.ics) links, which is the standard way those sites share calendars.
+
+  Every physical room (not room type) can sync in two directions.
+
+  1. Share calendar: your hotel → the channel
+
+  - Click Share calendar on a room to get a secret link like …/wp-json/radius-hotel-booking/v1/public/ical/<48-character token>.ics.
+  - Paste that link into the channel's "import calendar" setting. The channel then reads it on its own schedule, usually every few hours.
+  - The feed lists the room's bookings and blocked periods from yesterday to 2 years ahead. Each one appears only as "Not available"; guest names and other details
+    are never included.
+  - All-day periods use the check-in and check-out times from Settings → Booking.
+  - New link replaces the token, and the old link stops working at once. Use it if a link leaks. Stop sharing turns the feed off.
+  - The link needs no sign-in, so it is rate-limited: 120 reads per hour per link, and 30 unknown-link requests per hour per IP address.
+
+2. Channel calendars: the channel → your hotel
+
+- Under Channel calendars → Add, paste the channel's export link. webcal:// links are accepted and turned into https://. Give it a name such as "Airbnb" and choose how often to read it: 15 minutes, 30 minutes, 1, 3, 6 or 12 hours, or 1 day. A room can have up to 10 channel calendars.
+- The calendar is read once straight away, then on the chosen interval. A WordPress cron job runs every 15 minutes and reads whichever calendars are due. Read now reads one immediately.
+- Each event becomes a blocked period on that room, labelled with the calendar's name. That closes the room for those dates in the booking form and on the desk. A channel night from D to E is blocked from check-in time on D to check-out time on E.
+- Each read compares the calendar with the blocks it made earlier:
+  - New events become new blocks.
+  - Events whose dates changed have their blocks updated.
+  - Events that are gone (a cancellation on the channel) have their blocks removed, which reopens the room. Blocks that have already ended are left alone.
+- These blocks show in Blocked dates as "Calendar sync" and can't be edited there, because the next read would undo the edit. Removing the channel calendar removes all its blocks.
+
+
+Safety rules
+
+- A failed read changes nothing. If the channel is down, the link is wrong, or the file is cut off or larger than 2 MB, the existing blocks stay and the error is shown on that calendar. An outage at the channel never reopens rooms.
+- An empty calendar is not trusted automatically. If an automatic read suddenly returns no events while future blocks exist, the blocks are kept and a warning appears. Clicking Read now accepts the empty calendar.
+- Double bookings are flagged. If a channel block overlaps a booking already made in your system, the calendar gets a warning status, which stays until the overlap is resolved.
+- Each read locks the room the same way a booking does, so a guest booking at that moment can't slip past a block being written.
+- The server only fetches public addresses (http or https, ports 80, 443 or 8080). Addresses on your own server or private network are refused.
+- Every change (sharing, new link, adding or removing a calendar, Read now) is recorded in the Activity log.
+
+Two things to know
+
+1. iCal is slow. The channel reads your link on its own schedule, often every 1 to 6 hours, so a room booked here can still look free on Airbnb for a while. That gap is a limit of iCal itself, and a real-time channel manager is the only way to close it. Set your own read interval to 15 minutes to keep the incoming side tight.
+2. The interval needs site traffic. It runs on WP-Cron, which only fires when someone visits the site. On a quiet site, set up a real server cron that calls wp-cron.php, or reads will arrive late.

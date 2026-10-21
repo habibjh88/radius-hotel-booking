@@ -24,6 +24,11 @@ defined( 'ABSPATH' ) || exit;
 class RoomTypeService {
 
 	/**
+	 * Most highlighted amenities a type may have (the booking card's room).
+	 */
+	const MAX_HIGHLIGHTS = 6;
+
+	/**
 	 * Room types.
 	 *
 	 * @var RoomTypeRepository
@@ -90,7 +95,7 @@ class RoomTypeService {
 	 * @throws DomainException When the insert did not happen.
 	 */
 	public function create( array $input ): RoomType {
-		$data         = $this->withLibraryAmenities( $this->validate( $input, null ) );
+		$data         = $this->withLibraryAmenities( $this->validate( $input, null ), null );
 		$data['slug'] = $this->uniqueSlug( (string) ( $input['slug'] ?? '' ) ? (string) $input['slug'] : $data['name'], 0 );
 		$type         = Db::quietly( fn() => $this->types->create( $data ) );
 		if ( ! $type instanceof RoomType || ! $type->id ) {
@@ -129,7 +134,7 @@ class RoomTypeService {
 	public function update( int $id, array $input ): RoomType {
 		$type   = $this->get( $id );
 		$before = self::audited( $type->toArray() );
-		$data   = $this->withLibraryAmenities( $this->validate( $input, $type ) );
+		$data   = $this->withLibraryAmenities( $this->validate( $input, $type ), $type );
 		if ( isset( $input['slug'] ) && '' !== (string) $input['slug'] && (string) $input['slug'] !== $type->slug ) {
 			$data['slug'] = $this->uniqueSlug( (string) $input['slug'], $id );
 		}
@@ -257,6 +262,21 @@ class RoomTypeService {
 			}
 			$data['amenities'] = $clean;
 		}
+		if ( $has( 'highlights' ) ) {
+			$list  = is_array( $input['highlights'] ?? null ) ? $input['highlights'] : array();
+			$clean = array();
+			foreach ( $list as $item ) {
+				$item = mb_substr( sanitize_text_field( (string) $item ), 0, 60 );
+				if ( '' !== $item && ! in_array( mb_strtolower( $item ), array_map( 'mb_strtolower', $clean ), true ) ) {
+					$clean[] = $item;
+				}
+			}
+			if ( count( $clean ) > self::MAX_HIGHLIGHTS ) {
+				/* translators: %d: most highlighted amenities allowed. */
+				$errors['highlights'] = sprintf( __( 'Pick %d highlighted amenities or fewer.', 'radius-hotel-booking' ), self::MAX_HIGHLIGHTS );
+			}
+			$data['highlights'] = $clean;
+		}
 		if ( $has( 'gallery' ) ) {
 			$ids = array_values( array_unique( array_filter( array_map( 'absint', is_array( $input['gallery'] ?? null ) ? $input['gallery'] : array() ) ) ) );
 			foreach ( $ids as $id ) {
@@ -325,14 +345,30 @@ class RoomTypeService {
 
 	/**
 	 * Valid fields with the amenities in the library's spelling and order;
-	 * names it does not know yet are added to it.
+	 * names it does not know yet are added to it. The highlights keep their
+	 * chosen order and only the amenities the type offers, in their spelling.
 	 *
-	 * @param array $data Validated columns.
+	 * @param array         $data Validated columns.
+	 * @param RoomType|null $type The type being changed (null when new).
 	 * @return array
 	 */
-	private function withLibraryAmenities( array $data ): array {
+	private function withLibraryAmenities( array $data, ?RoomType $type ): array {
 		if ( isset( $data['amenities'] ) ) {
 			$data['amenities'] = $this->amenities->resolve( $data['amenities'] );
+		}
+		if ( isset( $data['amenities'] ) || isset( $data['highlights'] ) ) {
+			$offered = array();
+			foreach ( (array) ( $data['amenities'] ?? ( $type ? $type->amenities : array() ) ) as $name ) {
+				$offered[ mb_strtolower( (string) $name ) ] = (string) $name;
+			}
+			$highlights = array();
+			foreach ( (array) ( $data['highlights'] ?? ( $type ? $type->highlights : array() ) ) as $name ) {
+				$key = mb_strtolower( (string) $name );
+				if ( isset( $offered[ $key ] ) && ! in_array( $offered[ $key ], $highlights, true ) ) {
+					$highlights[] = $offered[ $key ];
+				}
+			}
+			$data['highlights'] = $highlights;
 		}
 		return $data;
 	}
@@ -361,7 +397,7 @@ class RoomTypeService {
 	 * @return array
 	 */
 	private static function audited( array $row ): array {
-		$keys = array( 'name', 'slug', 'short_description', 'description', 'gallery', 'featured_image_id', 'amenities', 'bed_info', 'size_m2', 'max_adults', 'max_children', 'buffer_minutes', 'is_active', 'sort_order' );
+		$keys = array( 'name', 'slug', 'short_description', 'description', 'gallery', 'featured_image_id', 'amenities', 'highlights', 'bed_info', 'size_m2', 'max_adults', 'max_children', 'buffer_minutes', 'is_active', 'sort_order' );
 		$out  = array_intersect_key( $row, array_flip( $keys ) );
 		if ( isset( $out['description'] ) ) {
 			// Long HTML: record that it changed, not the whole text.

@@ -8,7 +8,7 @@
  * The desk keeps its compact RateList; this is the guest's face of the same
  * search result.
  */
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import {
 	AlertTriangle,
@@ -17,100 +17,215 @@ import {
 	Check,
 	ChevronDown,
 	Clock,
-	ExternalLink,
-	Info,
 	Loader2,
-	Maximize2,
-	Users,
 } from 'lucide-react';
 
 import Money from '@/components/common/Money';
+import LucideIcon from '@/components/icons/LucideIcon';
 import { Button } from '@/components/ui/button';
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from '@/components/ui/popover';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { regularPrice, windowLabel } from './rates';
+import {
+	RateInfo,
+	RatePrice,
+	RoomDetailsLink,
+	RoomFacts,
+	RoomPhoto,
+	guestsLabel,
+	singleStay,
+} from './RoomCardParts';
+import { windowLabel } from './rates';
 
-// Rates shown before "Show all rates", and amenities before "+N".
-const FIRST_RATES = 4;
+// `room_details="popup"` only: loaded on first open.
+const RoomDetailsDialog = lazy( () => import( './RoomDetailsDialog' ) );
+
+// Amenities before "+N".
 const FIRST_AMENITIES = 5;
-// From this many rooms left, the count turns into a warning.
-const FEW_LEFT = 3;
+// The split card lists amenities down its side: a few more fit.
+const SIDE_AMENITIES = 6;
 
 /**
- * What to tell a guest about a rate that does not fit their dates: a short
- * label and the note behind the info icon. A rate sold one at a time (not
- * "for several days or nights") covers one day or one night.
+ * What a rate's price covers: "Total for 8.5 hours", "Total for 2 days".
  *
- * @param {Object} rate The rate (`multi_unit`, `window`, `reasons`).
- * @return {{label: string, note: string}} Texts.
+ * @param {Object} rate The rate (`window.minutes`: the whole stay).
+ * @return {string} Label.
  */
-function singleStay( rate ) {
-	if ( rate.multi_unit ) {
-		const message =
-			rate.reasons?.[ 0 ]?.message ||
-			__(
-				'This rate does not match the dates chosen.',
-				'radius-hotel-booking'
-			);
-		return { label: message, note: message };
+function totalFor( rate ) {
+	const minutes = Number( rate.window?.minutes || 0 );
+	if ( ! minutes ) {
+		return __( 'Total price', 'radius-hotel-booking' );
 	}
-	return rate.window?.crosses_midnight
-		? {
-				label: __( 'One night only', 'radius-hotel-booking' ),
-				note: __(
-					'This package is made for a one-night booking. To book it, choose a departure the day after your arrival.',
-					'radius-hotel-booking'
-				),
-		  }
-		: {
-				label: __( 'One-day booking only', 'radius-hotel-booking' ),
-				note: __(
-					'This package is made for a one-day booking. To book it, choose the same day for arrival and departure.',
-					'radius-hotel-booking'
-				),
-		  };
+	if ( minutes < 1440 ) {
+		const hours = Math.round( minutes / 6 ) / 10;
+		return sprintf(
+			/* translators: %s: number of hours, e.g. 8.5. */
+			_n(
+				'Total for %s hour',
+				'Total for %s hours',
+				Math.ceil( hours ),
+				'radius-hotel-booking'
+			),
+			String( hours )
+		);
+	}
+	const days = Math.round( minutes / 1440 );
+	return sprintf(
+		/* translators: %d: number of 24-hour days. */
+		_n(
+			'Total for %d day',
+			'Total for %d days',
+			days,
+			'radius-hotel-booking'
+		),
+		days
+	);
 }
 
 /**
- * Why a rate cannot be booked for these dates, behind an info icon: opens on
- * hover (mouse) and on tap or click (touch, keyboard).
+ * The rate's name, badges, times and (when it cannot be booked) why.
  *
- * @param {Object} props      Props.
- * @param {string} props.text The explanation.
- * @return {JSX.Element} Icon and its note.
+ * @param {Object}   props       Props.
+ * @param {Object}   props.rate  The rate.
+ * @param {boolean}  props.large Bigger name (the split card).
+ * @param {string[]} props.added Rooms of this rate already in the booking (numbers).
+ * @return {JSX.Element} Summary.
  */
-function RateInfo( { text } ) {
-	const [ open, setOpen ] = useState( false );
+function RateSummary( { rate, large = false, added = [] } ) {
 	return (
-		<Popover open={ open } onOpenChange={ setOpen }>
-			<PopoverTrigger asChild>
-				<button
-					type="button"
-					className="inline-flex h-6 w-6 items-center justify-center rounded-full border-0 bg-transparent p-0 text-muted-foreground shadow-none hover:bg-primary-softer hover:text-primary focus:bg-primary-softer focus:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-					aria-label={ __(
-						'Why can I not book this?',
-						'radius-hotel-booking'
-					) }
-					onMouseEnter={ () => setOpen( true ) }
-					onMouseLeave={ () => setOpen( false ) }
-				>
-					<Info className="h-4 w-4" aria-hidden="true" />
-				</button>
-			</PopoverTrigger>
-			<PopoverContent
-				side="top"
-				align="start"
-				className="w-72 p-3 text-sm leading-relaxed text-foreground"
-				onOpenAutoFocus={ ( event ) => event.preventDefault() }
+		<div className="min-w-0 flex-1 space-y-1">
+			<p
+				className={ cn(
+					'm-0 flex flex-wrap items-center gap-2 font-semibold text-heading',
+					large ? 'text-base' : 'text-sm'
+				) }
 			>
-				{ text }
-			</PopoverContent>
-		</Popover>
+				{ rate.name }
+				{ rate.oneDay ? (
+					<RateInfo text={ singleStay( rate ).note } />
+				) : null }
+				{ rate.checkin ? (
+					<span className="rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-semibold text-primary">
+						{ __( 'Flexible check-in', 'radius-hotel-booking' ) }
+					</span>
+				) : null }
+				{ added.length ? (
+					<span className="inline-flex items-center gap-1 rounded-full bg-success-soft px-2 py-0.5 text-[11px] font-semibold text-success">
+						<Check
+							className="h-3 w-3"
+							strokeWidth={ 3 }
+							aria-hidden="true"
+						/>
+						{ sprintf(
+							/* translators: %s: room numbers, e.g. "A12, A13". */
+							_n(
+								'Room %s added',
+								'Rooms %s added',
+								added.length,
+								'radius-hotel-booking'
+							),
+							added.join( ', ' )
+						) }
+					</span>
+				) : null }
+			</p>
+			{ rate.window ? (
+				<p className="m-0 flex items-center gap-1.5 text-sm text-muted-foreground">
+					<Clock
+						className="h-3.5 w-3.5 shrink-0"
+						aria-hidden="true"
+					/>
+					{ windowLabel( rate.window ) }
+				</p>
+			) : null }
+			{ ! rate.available ? (
+				<p className="m-0 text-xs text-muted-foreground">
+					{ rate.oneDay
+						? singleStay( rate ).label
+						: rate.reasons?.[ 0 ]?.message ||
+						  __( 'Unavailable', 'radius-hotel-booking' ) }
+				</p>
+			) : null }
+		</div>
+	);
+}
+
+/**
+ * Select / Selected.
+ *
+ * @param {Object}   props          Props.
+ * @param {boolean}  props.selected The current choice.
+ * @param {Function} props.onClick  Choose it.
+ * @param {string}   props.className Extra classes.
+ * @param {boolean}  props.added    Rooms of this rate are already in the booking.
+ * @return {JSX.Element} Button.
+ */
+function SelectButton( { selected, onClick, className, added = false } ) {
+	let label = __( 'Select', 'radius-hotel-booking' );
+	if ( selected ) {
+		label = __( 'Selected', 'radius-hotel-booking' );
+	} else if ( added ) {
+		label = __( 'Add more', 'radius-hotel-booking' );
+	}
+	return (
+		<Button
+			type="button"
+			className={ cn( 'h-11 min-w-[7.5rem]', className ) }
+			variant={ selected ? 'default' : 'outline' }
+			aria-pressed={ selected }
+			onClick={ onClick }
+		>
+			{ selected ? <Check aria-hidden="true" /> : null }
+			{ label }
+		</Button>
+	);
+}
+
+/**
+ * One rate as its own card (the split room type card): name and times on
+ * the left; what the price covers, the price and Select on the right.
+ *
+ * @param {Object}   props          Props.
+ * @param {Object}   props.rate     The rate.
+ * @param {boolean}  props.selected This rate is the current choice.
+ * @param {Function} props.onSelect Called when chosen.
+ * @param {string[]} props.added    Rooms of this rate already in the booking.
+ * @return {JSX.Element} Card.
+ */
+function RateCard( { rate, selected, onSelect, added = [] } ) {
+	const available = rate.available;
+	return (
+		<li
+			className={ cn(
+				'flex flex-col gap-4 rounded-xl border bg-card p-4 transition-all duration-200 sm:flex-row sm:items-center sm:justify-between sm:p-5',
+				selected && 'border-primary shadow-md ring-2 ring-primary/15',
+				! selected &&
+					added.length &&
+					'border-success/50 bg-success-soft/40',
+				! selected && ! added.length && 'border-border',
+				available &&
+					! selected &&
+					'hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md',
+				! available && 'bg-muted/30 opacity-70'
+			) }
+		>
+			<RateSummary rate={ rate } large added={ added } />
+			{ available ? (
+				<div className="flex shrink-0 flex-col gap-3 border-t border-border pt-3 sm:flex-row sm:items-center sm:gap-5 sm:border-0 sm:pt-0 sm:text-right">
+					<div className="space-y-0.5">
+						<span className="block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+							{ totalFor( rate ) }
+						</span>
+						<RatePrice rate={ rate } />
+					</div>
+					<SelectButton
+						selected={ selected }
+						added={ added.length > 0 }
+						onClick={ () => onSelect( rate ) }
+						className="w-full sm:w-auto"
+					/>
+				</div>
+			) : null }
+		</li>
 	);
 }
 
@@ -121,134 +236,31 @@ function RateInfo( { text } ) {
  * @param {Object}   props.rate     The rate.
  * @param {boolean}  props.selected This rate is the current choice.
  * @param {Function} props.onSelect Called when chosen.
+ * @param {string[]} props.added    Rooms of this rate already in the booking.
  * @return {JSX.Element} Row.
  */
-function RateRow( { rate, selected, onSelect } ) {
+function RateRow( { rate, selected, onSelect, added = [] } ) {
 	const available = rate.available;
-	const few = available && rate.free_count <= FEW_LEFT;
-	const regular = available ? regularPrice( rate.price ) : null;
-	const saved = regular
-		? Math.round( ( 1 - Number( rate.price.total ) / regular ) * 100 )
-		: 0;
 
 	return (
 		<li
 			className={ cn(
 				'flex flex-col gap-3 px-4 py-3.5 transition-colors sm:flex-row sm:items-center sm:gap-4 sm:px-5',
 				selected && 'bg-primary-softer',
+				! selected && added.length && 'bg-success-soft/40',
 				! available && 'opacity-60'
 			) }
 		>
-			<div className="min-w-0 flex-1 space-y-1">
-				<p className="m-0 flex flex-wrap items-center gap-2 text-sm font-semibold text-heading">
-					{ rate.name }
-					{ rate.oneDay ? (
-						<RateInfo text={ singleStay( rate ).note } />
-					) : null }
-					{ rate.checkin ? (
-						<span className="rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-semibold text-primary">
-							{ __(
-								'Flexible check-in',
-								'radius-hotel-booking'
-							) }
-						</span>
-					) : null }
-				</p>
-				{ rate.window ? (
-					<p className="m-0 flex items-center gap-1.5 text-sm text-muted-foreground">
-						<Clock
-							className="h-3.5 w-3.5 shrink-0"
-							aria-hidden="true"
-						/>
-						{ windowLabel( rate.window ) }
-					</p>
-				) : null }
-				{ ! available ? (
-					<p className="m-0 text-xs text-muted-foreground">
-						{ rate.oneDay
-							? singleStay( rate ).label
-							: rate.reasons?.[ 0 ]?.message ||
-							  __( 'Unavailable', 'radius-hotel-booking' ) }
-					</p>
-				) : null }
-			</div>
+			<RateSummary rate={ rate } added={ added } />
 
 			{ available ? (
 				<div className="flex items-center justify-between gap-4 sm:justify-end">
-					<div className="text-left sm:text-right">
-						<p className="m-0 flex flex-wrap items-baseline gap-x-2 leading-tight sm:justify-end">
-							{ regular ? (
-								<del className="text-sm font-normal text-muted-foreground">
-									<span className="sr-only">
-										{ __(
-											'Regular price:',
-											'radius-hotel-booking'
-										) }{ ' ' }
-									</span>
-									<Money value={ regular } />
-								</del>
-							) : null }
-							<span className="text-lg font-bold text-heading">
-								{ regular ? (
-									<span className="sr-only">
-										{ __( 'Now:', 'radius-hotel-booking' ) }{ ' ' }
-									</span>
-								) : null }
-								<Money value={ rate.price?.total } />
-							</span>
-							{ saved ? (
-								<span className="rounded-full bg-success-soft px-1.5 py-0.5 text-[11px] font-semibold text-success">
-									{ sprintf(
-										/* translators: %d: discount in percent. */
-										__( '−%d%%', 'radius-hotel-booking' ),
-										saved
-									) }
-								</span>
-							) : null }
-						</p>
-						<p
-							className={ cn(
-								'm-0 text-xs',
-								few
-									? 'font-semibold text-warning'
-									: 'text-muted-foreground'
-							) }
-						>
-							{ few
-								? sprintf(
-										/* translators: %d: rooms left at this rate. */
-										_n(
-											'Only %d room left',
-											'Only %d rooms left',
-											rate.free_count,
-											'radius-hotel-booking'
-										),
-										rate.free_count
-								  )
-								: sprintf(
-										/* translators: %d: rooms free at this rate. */
-										_n(
-											'%d room free',
-											'%d rooms free',
-											rate.free_count,
-											'radius-hotel-booking'
-										),
-										rate.free_count
-								  ) }
-						</p>
-					</div>
-					<Button
-						type="button"
-						className="h-11 min-w-[7.5rem]"
-						variant={ selected ? 'default' : 'outline' }
-						aria-pressed={ selected }
+					<RatePrice rate={ rate } />
+					<SelectButton
+						selected={ selected }
+						added={ added.length > 0 }
 						onClick={ () => onSelect( rate ) }
-					>
-						{ selected ? <Check aria-hidden="true" /> : null }
-						{ selected
-							? __( 'Selected', 'radius-hotel-booking' )
-							: __( 'Select', 'radius-hotel-booking' ) }
-					</Button>
+					/>
 				</div>
 			) : null }
 		</li>
@@ -263,13 +275,34 @@ function RateRow( { rate, selected, onSelect } ) {
  * @param {Object[]} props.other    This type's rates that do not fit the dates (shown greyed out).
  * @param {Object}   props.choice   `{ room_type_id, rate_plan_id }` or null.
  * @param {Function} props.onSelect Called with `( type, rate )`.
+ * @param {string}   props.roomDetails `page` (link to its page) or `popup`.
+ * @param {string}   props.card     `classic` (rates as rows under the type) or
+ *                                  `split` (photo and facts beside the rates, each a card).
+ * @param {number}   props.firstRates Rates before "Show more rates" (0: all, no button).
  * @return {JSX.Element} Card.
  */
-function RoomTypeCard( { type, other = [], choice, onSelect } ) {
+function RoomTypeCard( {
+	type,
+	other = [],
+	choice,
+	onSelect,
+	roomDetails = 'page',
+	card = 'classic',
+	firstRates = 4,
+	booked = {},
+} ) {
 	const [ allRates, setAllRates ] = useState( false );
+	// Rooms of each of this type's rates already in the booking (numbers).
+	const addedTo = ( rate ) => booked[ rate.rate_plan_id ] || [];
+	const addedCount = Object.values( booked ).reduce(
+		( sum, rooms ) => sum + rooms.length,
+		0
+	);
+	const [ showDetails, setShowDetails ] = useState( false );
 	const details = type.details || {};
-	// Bookable rates first, cheapest first; the rest after, as sent; last,
-	// the rates made for other dates (a day rate on a stay of several nights).
+	// The order set on the room type's Rates tab (as sent), with bookable rates
+	// first; then the unavailable ones; last, the rates made for other dates
+	// (a day rate on a stay of several nights). The sort is stable.
 	const rates = [
 		...( type.rates || [] ),
 		...other.map( ( rate ) => ( {
@@ -281,12 +314,10 @@ function RoomTypeCard( { type, other = [], choice, onSelect } ) {
 		if ( Boolean( a.oneDay ) !== Boolean( b.oneDay ) ) {
 			return a.oneDay ? 1 : -1;
 		}
-		if ( a.available !== b.available ) {
+		if ( Boolean( a.available ) !== Boolean( b.available ) ) {
 			return a.available ? -1 : 1;
 		}
-		return a.available
-			? Number( a.price?.total || 0 ) - Number( b.price?.total || 0 )
-			: 0;
+		return 0;
 	} );
 	const open = rates.filter( ( rate ) => rate.available );
 	const from = open.length
@@ -304,114 +335,227 @@ function RoomTypeCard( { type, other = [], choice, onSelect } ) {
 			choice?.rate_plan_id === rate.rate_plan_id
 	);
 	// The chosen rate stays in view even when it is past the first few.
+	// …and so do the rates rooms were already added from.
+	const lastAdded = rates.reduce(
+		( last, rate, index ) =>
+			( booked[ rate.rate_plan_id ] || [] ).length ? index : last,
+		-1
+	);
 	const shown =
-		allRates || selectedIndex >= FIRST_RATES
+		allRates ||
+		! firstRates ||
+		selectedIndex >= firstRates ||
+		lastAdded >= firstRates
 			? rates
-			: rates.slice( 0, FIRST_RATES );
+			: rates.slice( 0, firstRates );
 	const amenities = details.amenities || [];
+	// The type's highlighted amenities (still offered), else the first ones.
+	const highlights = ( details.highlights || [] ).filter( ( name ) =>
+		amenities.includes( name )
+	);
+	const firstOf = ( count ) =>
+		highlights.length ? highlights : amenities.slice( 0, count );
+	const sideAmenities = firstOf( SIDE_AMENITIES );
+	const cardAmenities = firstOf( FIRST_AMENITIES );
+	// Name => Lucide icon, as on the room type page.
+	const icons = details.amenity_icons || {};
 
-	const guests = [
-		sprintf(
-			/* translators: %d: most adults. */
-			_n(
-				'Up to %d adult',
-				'Up to %d adults',
-				type.max_adults,
-				'radius-hotel-booking'
-			),
-			type.max_adults
-		),
-		type.max_children
+	const guests = guestsLabel( type );
+	const isSelected = ( rate ) =>
+		choice?.room_type_id === type.id &&
+		choice?.rate_plan_id === rate.rate_plan_id;
+	const dialog = showDetails ? (
+		<Suspense fallback={ null }>
+			<RoomDetailsDialog
+				type={ type }
+				guests={ guests }
+				onClose={ () => setShowDetails( false ) }
+			/>
+		</Suspense>
+	) : null;
+	const fromPrice =
+		null !== from ? (
+			<div className="shrink-0 whitespace-nowrap text-right">
+				<span className="block text-xs text-muted-foreground">
+					{ __( 'From', 'radius-hotel-booking' ) }
+				</span>
+				<span className="block text-xl font-bold leading-tight text-heading">
+					<Money value={ from } />
+				</span>
+			</div>
+		) : null;
+	const moreRates =
+		shown.length < rates.length
 			? sprintf(
-					/* translators: %d: most children. */
+					/* translators: %d: number of rates not shown yet. */
 					_n(
-						'%d child',
-						'%d children',
-						type.max_children,
+						'Show %d more rate',
+						'Show %d more rates',
+						rates.length - shown.length,
 						'radius-hotel-booking'
 					),
-					type.max_children
+					rates.length - shown.length
 			  )
-			: null,
-	]
-		.filter( Boolean )
-		.join( ' · ' );
+			: '';
+	const noRate = __( 'No rate matches these dates.', 'radius-hotel-booking' );
+	// "2 rooms in your booking", next to the type's name.
+	const inBooking = addedCount ? (
+		<span className="inline-flex items-center gap-1 rounded-full bg-success-soft px-2.5 py-0.5 align-middle text-xs font-semibold text-success">
+			<Check
+				className="h-3.5 w-3.5"
+				strokeWidth={ 3 }
+				aria-hidden="true"
+			/>
+			{ sprintf(
+				/* translators: %d: rooms of this type in the booking. */
+				_n(
+					'%d room in your booking',
+					'%d rooms in your booking',
+					addedCount,
+					'radius-hotel-booking'
+				),
+				addedCount
+			) }
+		</span>
+	) : null;
+
+	if ( 'split' === card ) {
+		return (
+			<article className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-6">
+				{ /* The price keeps its place on the right; a long name or
+				   description wraps beside it. */ }
+				<div className="mb-5 flex items-start justify-between gap-4 sm:gap-6">
+					<div className="min-w-0 flex-1 space-y-1">
+						<h3 className="m-0 flex flex-wrap items-center gap-x-3 gap-y-1 text-xl font-bold leading-snug text-heading sm:text-2xl">
+							{ type.name }
+							{ inBooking }
+						</h3>
+						{ details.short_description ? (
+							<p className="m-0 line-clamp-2 text-sm text-muted-foreground">
+								{ details.short_description }
+							</p>
+						) : null }
+					</div>
+					{ fromPrice }
+				</div>
+
+				<div className="grid gap-6 lg:grid-cols-[minmax(0,19rem)_minmax(0,1fr)]">
+					{ /* Stays in view while the guest scrolls a long list of rates.
+					   Below a theme's sticky header: `--rtbp-sticky-top` (6rem by
+					   default; 1rem inside the booking popup). */ }
+					<aside className="min-w-0 space-y-4 lg:sticky lg:top-[var(--rtbp-sticky-top,6rem)] lg:self-start">
+						<RoomPhoto
+							type={ type }
+							free={ free }
+							className="aspect-[4/3] rounded-xl"
+						/>
+						<RoomFacts type={ type } guests={ guests } />
+						{ amenities.length ? (
+							<ul className="m-0 grid list-none grid-cols-2 gap-x-3 gap-y-2 border-t border-border p-0 pt-4">
+								{ sideAmenities.map( ( amenity ) => (
+									<li
+										key={ amenity }
+										className="flex min-w-0 items-center gap-2 text-sm text-foreground"
+									>
+										<LucideIcon
+											name={ icons[ amenity ] }
+											className="h-4 w-4 text-primary"
+										/>
+										<span className="truncate">
+											{ amenity }
+										</span>
+									</li>
+								) ) }
+								{ amenities.length > sideAmenities.length ? (
+									<li className="col-span-2 text-xs font-semibold text-muted-foreground">
+										{ sprintf(
+											/* translators: %d: number of other amenities. */
+											__(
+												'+%d more',
+												'radius-hotel-booking'
+											),
+											amenities.length -
+												sideAmenities.length
+										) }
+									</li>
+								) : null }
+							</ul>
+						) : null }
+						<RoomDetailsLink
+							type={ type }
+							roomDetails={ roomDetails }
+							onOpen={ () => setShowDetails( true ) }
+							className="text-sm"
+						/>
+					</aside>
+
+					<div className="min-w-0 space-y-3">
+						<p className="m-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+							{ __( 'Choose your stay', 'radius-hotel-booking' ) }
+						</p>
+						{ rates.length ? (
+							<ul className="m-0 list-none space-y-3 p-0">
+								{ shown.map( ( rate ) => (
+									<RateCard
+										key={ rate.rate_plan_id }
+										rate={ rate }
+										selected={ isSelected( rate ) }
+										added={ addedTo( rate ) }
+										added={ addedTo( rate ) }
+										onSelect={ ( picked ) =>
+											onSelect( type, picked )
+										}
+									/>
+								) ) }
+							</ul>
+						) : (
+							<p className="m-0 rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
+								{ noRate }
+							</p>
+						) }
+						{ moreRates ? (
+							<button
+								type="button"
+								className="flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border bg-transparent text-sm font-semibold normal-case text-primary hover:border-primary/40 hover:bg-primary-softer hover:text-primary focus:bg-primary-softer focus:text-primary"
+								onClick={ () => setAllRates( true ) }
+							>
+								<ChevronDown
+									className="h-4 w-4"
+									aria-hidden="true"
+								/>
+								{ moreRates }
+							</button>
+						) : null }
+					</div>
+				</div>
+				{ dialog }
+			</article>
+		);
+	}
 
 	return (
 		<article className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
 			<div className="flex flex-col sm:flex-row">
-				<div className="relative aspect-[16/10] shrink-0 bg-muted sm:aspect-auto sm:min-h-[12rem] sm:w-56">
-					{ details.image ? (
-						<img
-							src={ details.image }
-							alt=""
-							loading="lazy"
-							className="absolute inset-0 m-0 h-full w-full object-cover"
-						/>
-					) : (
-						<div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-							<BedDouble
-								className="h-10 w-10"
-								aria-hidden="true"
-							/>
-						</div>
-					) }
-					{ free ? (
-						<span className="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-heading shadow-sm">
-							{ sprintf(
-								/* translators: %d: rooms available. */
-								_n(
-									'%d room available',
-									'%d rooms available',
-									free,
-									'radius-hotel-booking'
-								),
-								free
-							) }
-						</span>
-					) : null }
-				</div>
+				<RoomPhoto
+					type={ type }
+					free={ free }
+					className="aspect-[16/10] sm:aspect-auto sm:min-h-[12rem] sm:w-56"
+				/>
 
 				<div className="flex min-w-0 flex-1 flex-col gap-3 p-4 sm:p-5">
-					<div className="flex flex-wrap items-start justify-between gap-3">
-						<div className="min-w-0">
-							<h3 className="m-0 text-lg font-bold leading-snug text-heading">
+					<div className="flex items-start justify-between gap-4">
+						<div className="min-w-0 flex-1">
+							<h3 className="m-0 flex flex-wrap items-center gap-x-3 gap-y-1 text-lg font-bold leading-snug text-heading">
 								{ type.name }
+								{ inBooking }
 							</h3>
-							{ details.url ? (
-								<a
-									href={ details.url }
-									target="_blank"
-									rel="noopener noreferrer"
-									className="inline-flex items-center gap-1 text-xs font-semibold text-primary no-underline hover:underline"
-								>
-									{ __(
-										'Room details',
-										'radius-hotel-booking'
-									) }
-									<ExternalLink
-										className="h-3 w-3"
-										aria-hidden="true"
-									/>
-									<span className="sr-only">
-										{ __(
-											'(opens in a new tab)',
-											'radius-hotel-booking'
-										) }
-									</span>
-								</a>
-							) : null }
+							<RoomDetailsLink
+								type={ type }
+								roomDetails={ roomDetails }
+								onOpen={ () => setShowDetails( true ) }
+							/>
 						</div>
-						{ null !== from ? (
-							<div className="text-right">
-								<span className="block text-xs text-muted-foreground">
-									{ __( 'From', 'radius-hotel-booking' ) }
-								</span>
-								<span className="block text-xl font-bold leading-tight text-heading">
-									<Money value={ from } />
-								</span>
-							</div>
-						) : null }
+						{ fromPrice }
 					</div>
 
 					{ details.short_description ? (
@@ -420,51 +564,23 @@ function RoomTypeCard( { type, other = [], choice, onSelect } ) {
 						</p>
 					) : null }
 
-					<ul className="m-0 flex list-none flex-wrap gap-x-4 gap-y-1.5 p-0 text-sm text-foreground">
-						<li className="inline-flex items-center gap-1.5">
-							<Users
-								className="h-4 w-4 text-muted-foreground"
-								aria-hidden="true"
-							/>
-							{ guests }
-						</li>
-						{ details.bed_info ? (
-							<li className="inline-flex items-center gap-1.5">
-								<BedDouble
-									className="h-4 w-4 text-muted-foreground"
-									aria-hidden="true"
-								/>
-								{ details.bed_info }
-							</li>
-						) : null }
-						{ details.size_m2 ? (
-							<li className="inline-flex items-center gap-1.5">
-								<Maximize2
-									className="h-4 w-4 text-muted-foreground"
-									aria-hidden="true"
-								/>
-								{ sprintf(
-									/* translators: %s: room size in square metres. */
-									__( '%s m²', 'radius-hotel-booking' ),
-									details.size_m2
-								) }
-							</li>
-						) : null }
-					</ul>
+					<RoomFacts type={ type } guests={ guests } />
 
 					{ amenities.length ? (
 						<ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
-							{ amenities
-								.slice( 0, FIRST_AMENITIES )
-								.map( ( amenity ) => (
-									<li
-										key={ amenity }
-										className="rounded-full border border-border bg-muted/50 px-2.5 py-0.5 text-xs text-foreground"
-									>
-										{ amenity }
-									</li>
-								) ) }
-							{ amenities.length > FIRST_AMENITIES ? (
+							{ cardAmenities.map( ( amenity ) => (
+								<li
+									key={ amenity }
+									className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/50 px-2.5 py-0.5 text-xs text-foreground"
+								>
+									<LucideIcon
+										name={ icons[ amenity ] }
+										className="h-3.5 w-3.5 text-primary"
+									/>
+									{ amenity }
+								</li>
+							) ) }
+							{ amenities.length > cardAmenities.length ? (
 								<li className="px-1 py-0.5 text-xs font-semibold text-muted-foreground">
 									{ sprintf(
 										/* translators: %d: number of other amenities. */
@@ -472,7 +588,7 @@ function RoomTypeCard( { type, other = [], choice, onSelect } ) {
 											'+%d more',
 											'radius-hotel-booking'
 										),
-										amenities.length - FIRST_AMENITIES
+										amenities.length - cardAmenities.length
 									) }
 								</li>
 							) : null }
@@ -491,10 +607,7 @@ function RoomTypeCard( { type, other = [], choice, onSelect } ) {
 							<RateRow
 								key={ rate.rate_plan_id }
 								rate={ rate }
-								selected={
-									choice?.room_type_id === type.id &&
-									choice?.rate_plan_id === rate.rate_plan_id
-								}
+								selected={ isSelected( rate ) }
 								onSelect={ ( picked ) =>
 									onSelect( type, picked )
 								}
@@ -503,32 +616,21 @@ function RoomTypeCard( { type, other = [], choice, onSelect } ) {
 					</ul>
 				) : (
 					<p className="m-0 px-4 py-3 text-sm text-muted-foreground sm:px-5">
-						{ __(
-							'No rate matches these dates.',
-							'radius-hotel-booking'
-						) }
+						{ noRate }
 					</p>
 				) }
-				{ shown.length < rates.length ? (
+				{ moreRates ? (
 					<button
 						type="button"
 						className="flex min-h-[44px] w-full items-center justify-center gap-1.5 border-0 border-t border-border bg-transparent text-sm font-semibold normal-case text-primary hover:bg-primary-softer hover:text-primary focus:bg-primary-softer focus:text-primary"
 						onClick={ () => setAllRates( true ) }
 					>
 						<ChevronDown className="h-4 w-4" aria-hidden="true" />
-						{ sprintf(
-							/* translators: %d: number of rates not shown yet. */
-							_n(
-								'Show %d more rate',
-								'Show %d more rates',
-								rates.length - shown.length,
-								'radius-hotel-booking'
-							),
-							rates.length - shown.length
-						) }
+						{ moreRates }
 					</button>
 				) : null }
 			</div>
+			{ dialog }
 		</article>
 	);
 }
@@ -539,6 +641,11 @@ function RoomTypeCard( { type, other = [], choice, onSelect } ) {
  * @param {boolean}  props.needsDates   No dates picked yet: the prices are only a preview.
  * @param {Object}   props.choice       `{ room_type_id, rate_plan_id }` or null.
  * @param {Function} props.onSelect     Called with `( type, rate )`.
+ * @param {string}   props.roomDetails  What "Room details" opens: `page` or `popup`.
+ * @param {string}   props.roomCard     Room type card: `classic` or `split`.
+ * @param {number}   props.ratesShown   Rates per room type before "Show more rates" (0: all).
+ * @param {Object[]} props.lines        The booking's rooms (`room_type_id`, `rate_plan_id`, `room_number`)
+ *                                      for these dates: their rates are marked as added.
  * @return {JSX.Element} Results.
  */
 export default function RoomTypeResults( {
@@ -546,7 +653,21 @@ export default function RoomTypeResults( {
 	needsDates = false,
 	choice,
 	onSelect,
+	roomDetails = 'page',
+	roomCard = 'classic',
+	ratesShown = 4,
+	lines = [],
 } ) {
+	// Type id => rate plan id => room numbers already in the booking.
+	const booked = {};
+	lines.forEach( ( line ) => {
+		const byRate = ( booked[ line.room_type_id ] =
+			booked[ line.room_type_id ] || {} );
+		byRate[ line.rate_plan_id ] = [
+			...( byRate[ line.rate_plan_id ] || [] ),
+			line.room_number,
+		];
+	} );
 	const types = availability.data?.room_types || [];
 	const updating = availability.isFetching && ! availability.isPending;
 
@@ -631,6 +752,10 @@ export default function RoomTypeResults( {
 						).filter( ( rate ) => rate.room_type_id === type.id ) }
 						choice={ choice }
 						onSelect={ onSelect }
+						roomDetails={ roomDetails }
+						card={ roomCard }
+						firstRates={ ratesShown }
+						booked={ booked[ type.id ] }
 					/>
 				) ) }
 			</div>

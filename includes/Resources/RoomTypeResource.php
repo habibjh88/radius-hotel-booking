@@ -47,6 +47,7 @@ final class RoomTypeResource {
 			'gallery'           => array_values( array_filter( $gallery ) ),
 			'featured_image'    => $type->featured_image_id ? self::image( (int) $type->featured_image_id ) : null,
 			'amenities'         => array_values( (array) $type->amenities ),
+			'highlights'        => array_values( (array) $type->highlights ),
 			'bed_info'          => (string) $type->bed_info,
 			'size_m2'           => null === $type->size_m2 ? null : (float) $type->size_m2,
 			'max_adults'        => (int) $type->max_adults,

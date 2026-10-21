@@ -209,7 +209,7 @@ final class CoreSettings {
 			'unavailableRooms'  => array(
 				'type'    => 'enum',
 				'options' => array( 'hide', 'disable' ),
-				'default' => 'hide',
+				'default' => 'disable',
 			),
 			// Guests up to this age (years) count as children (8.9).
 			'maxChildAge'       => array(

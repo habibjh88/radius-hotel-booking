@@ -64,15 +64,13 @@ const shiftMonth = ( month, by ) => {
  */
 function Legend() {
 	const items = [
+		[ 'bg-success', __( 'Free', 'radius-hotel-booking' ) ],
 		[
-			'bg-card border border-border',
-			__( 'Open', 'radius-hotel-booking' ),
-		],
-		[
-			'bg-destructive-soft',
+			'bg-warning',
 			__( 'Full: no room free for this rate', 'radius-hotel-booking' ),
 		],
-		[ 'bg-muted', __( 'Closed', 'radius-hotel-booking' ) ],
+		[ 'bg-muted-foreground', __( 'Blocked', 'radius-hotel-booking' ) ],
+		[ 'bg-destructive', __( 'Closed', 'radius-hotel-booking' ) ],
 	];
 	return (
 		<ul className="m-0 flex list-none flex-wrap items-center gap-x-4 gap-y-1 p-0 text-xs text-muted-foreground">
@@ -80,7 +78,7 @@ function Legend() {
 				<li key={ label } className="m-0 flex items-center gap-1.5">
 					<span
 						className={ cn(
-							'inline-block h-3 w-3 rounded-sm',
+							'inline-block h-2 w-2 rounded-full',
 							swatch
 						) }
 						aria-hidden="true"
@@ -301,7 +299,13 @@ export default function Availability() {
 						aria-hidden="true"
 					/>
 				) : null }
-				<span className="block text-sm font-semibold tabular-nums text-heading">
+				<span
+					className={ cn(
+						'block text-sm font-semibold tabular-nums',
+						// A price set for that date stands out from the rate's own.
+						cell.override !== null ? 'text-primary' : 'text-heading'
+					) }
+				>
 					{ cell.price === null ? '—' : formatMoney( cell.price ) }
 				</span>
 				{ cell.closed || typeClosed
@@ -319,18 +323,28 @@ export default function Availability() {
 		);
 	};
 
+	// The status label's colour (the words say the same): free green, full
+	// orange, blocked grey, closed red.
 	const cellClassName = ( row, cell, index ) => {
 		const closed =
 			row.kind === 'type'
 				? cell.closed
 				: cell.closed || dayOf( index ).closed;
 		if ( closed ) {
-			return 'bg-muted text-muted-foreground';
+			return 'text-destructive';
 		}
-		if ( row.kind === 'rate' && cell.free === 0 ) {
-			return 'bg-destructive-soft text-destructive';
+		if ( row.kind === 'type' ) {
+			if ( ! cell.free_rooms ) {
+				return 'text-warning';
+			}
+			return cell.blocked_rooms ? 'text-warning' : 'text-success';
 		}
-		return 'text-muted-foreground';
+		if ( cell.free === 0 ) {
+			return allBlocked( index )
+				? 'text-muted-foreground'
+				: 'text-warning';
+		}
+		return 'text-success';
 	};
 
 	const cellLabel = ( row, cell, index ) => {

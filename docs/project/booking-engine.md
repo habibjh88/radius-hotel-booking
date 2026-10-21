@@ -156,7 +156,8 @@ GET availability?arrival=2026-10-02&departure=2026-10-02&adults=2&children=0
 ```
 
 Staff responses add `booking_ref` to `booked` reasons. Public responses never include booking
-references, state notes or guest data.
+references, block reasons or guest data. A room's `state_note` (the reason staff gave a room in
+maintenance or out of service) is public: the booking form shows it as a tooltip.
 
 ### 5.2 Rule checks (per room type × rate plan), in this order. The first failure is the reason
 

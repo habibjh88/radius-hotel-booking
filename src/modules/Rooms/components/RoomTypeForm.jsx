@@ -3,7 +3,7 @@
  * errors land on their fields; only changed values are sent on edit.
  */
 import { useRef } from 'react';
-import { Controller } from 'react-hook-form';
+import { Controller, useWatch } from 'react-hook-form';
 import { __ } from '@wordpress/i18n';
 
 import { Field, FormSection } from '@/components/common/Form';
@@ -18,6 +18,7 @@ import { applyServerErrors, useZodForm, z } from '@/lib/forms';
 import { toast, toastError } from '@/lib/toast';
 import { useSaveRoomType } from '../api';
 import AmenityPicker from './AmenityPicker';
+import HighlightPicker from './HighlightPicker';
 
 /**
  * A whole number typed in a text box: '' allowed when `optional`.
@@ -59,6 +60,7 @@ const schema = z.object( {
 	gallery: z.array( z.number() ),
 	featured_image_id: z.number(),
 	amenities: z.array( z.string() ),
+	highlights: z.array( z.string() ),
 	bed_info: z
 		.string()
 		.max(
@@ -113,6 +115,7 @@ const toValues = ( type ) => ( {
 	gallery: ( type?.gallery ?? [] ).map( ( image ) => image.id ),
 	featured_image_id: type?.featured_image?.id ?? 0,
 	amenities: type?.amenities ?? [],
+	highlights: type?.highlights ?? [],
 	bed_info: type?.bed_info ?? '',
 	size_m2:
 		type?.size_m2 === null || type?.size_m2 === undefined
@@ -157,6 +160,8 @@ export default function RoomTypeForm( { type, readOnly = false, onSaved } ) {
 	const save = useSaveRoomType();
 	const { register, control, handleSubmit, reset, formState } = form;
 	const { isDirty, dirtyFields } = formState;
+	// The highlights are picked among the amenities ticked in Room facts.
+	const amenities = useWatch( { control, name: 'amenities' } );
 	// Set by a save that worked (for "Save and leave").
 	const savedRef = useRef( false );
 
@@ -167,6 +172,10 @@ export default function RoomTypeForm( { type, readOnly = false, onSaved } ) {
 			const changed = Object.keys( dirtyFields );
 			if ( changed.includes( 'gallery' ) ) {
 				changed.push( 'featured_image_id' );
+			}
+			// Unticking an amenity may drop a highlight: send both.
+			if ( changed.includes( 'amenities' ) ) {
+				changed.push( 'highlights' );
 			}
 			body = Object.fromEntries(
 				Object.entries( body ).filter( ( [ key ] ) =>
@@ -399,6 +408,43 @@ export default function RoomTypeForm( { type, readOnly = false, onSaved } ) {
 										onChange={ field.onChange }
 										disabled={ readOnly }
 										canManage={ ! readOnly }
+									/>
+								) }
+							/>
+						</Field>
+					</FormSection>
+
+					<FormSection
+						title={ __(
+							'Highlighted amenities',
+							'radius-hotel-booking'
+						) }
+						description={ __(
+							'The amenities guests see first on this room type’s card on the booking page. The others show as “+N more” and in the room details.',
+							'radius-hotel-booking'
+						) }
+					>
+						<Field
+							label={ __(
+								'Show on the booking card',
+								'radius-hotel-booking'
+							) }
+							name="highlights"
+							form={ form }
+							description={ __(
+								'Pick from the amenities ticked above, in the order to show them.',
+								'radius-hotel-booking'
+							) }
+						>
+							<Controller
+								control={ control }
+								name="highlights"
+								render={ ( { field } ) => (
+									<HighlightPicker
+										value={ field.value }
+										offered={ amenities }
+										onChange={ field.onChange }
+										disabled={ readOnly }
 									/>
 								) }
 							/>

@@ -284,6 +284,24 @@ Staff can add several rooms to a booking at once; all are added or none.
 New booking discount: an amount or percentage with a reason, shown on totals and invoice.
 New Give a discount permission, locked by default; open it per role under Permissions.
 Desk rate lists are compact rows with sale prices, without the Why this price link.
+Booking form colours unavailable rooms by status; hover shows the reason staff gave.
+Booking form lists rates in the room type's dashboard order; unavailable rates go last.
+Availability calendar colours status labels: free green, full orange, blocked grey, closed red.
+Browser Back now returns to the previous booking step instead of asking to leave.
+Unavailable rooms now show as unavailable in search results by default.
+New one-page booking form: [rtbp_booking layout="onepage"], also in the block and Elementor widget.
+Booking form can open in a popup from a Book now button or any #rtbp-booking link.
+Booking form room photos open the room type photo gallery, as on its page.
+Booking form amenities show their icons, as on the room type page.
+New room_details="popup" option shows room details and a photo slider without leaving the form.
+Shortcodes page remembers the options you last chose for each shortcode.
+New room_card="split" design: room photo and facts, kept in view, beside separate rate cards.
+New rates_shown option sets rates shown before "Show more rates"; 0 shows all.
+One-page booking form: softly tinted parts, no inner stay box, details form on white.
+Fixed the booking form showing "Cookie check failed" to signed-in users after a while.
+Booking form marks the rates and room types your added rooms came from.
+Fixed the room "From" price dropping below a long room name or description.
+New Highlighted amenities on each room type pick which amenities its booking card shows.
 
 = 1.0.0 =
 Initial release.

@@ -28,7 +28,7 @@ export default function BookingLines( { lines, onRemove, failed = -1 } ) {
 						'flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3',
 						index === failed
 							? 'border-destructive bg-destructive/5'
-							: 'border-border'
+							: 'border-border bg-card'
 					) }
 				>
 					<div className="flex min-w-0 items-center gap-3">

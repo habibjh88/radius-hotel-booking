@@ -434,9 +434,11 @@ class AvailabilityService {
 						'slug'              => (string) ( $row['type_slug'] ?? '' ),
 						'short_description' => (string) ( $row['short_description'] ?? '' ),
 						'featured_image_id' => (int) ( $row['featured_image_id'] ?? 0 ),
+						'gallery_ids'       => array_map( 'intval', self::listOf( $row['gallery'] ?? null ) ),
 						'bed_info'          => (string) ( $row['bed_info'] ?? '' ),
 						'size_m2'           => isset( $row['size_m2'] ) && '' !== (string) $row['size_m2'] ? (float) $row['size_m2'] : null,
 						'amenities'         => self::listOf( $row['amenities'] ?? null ),
+						'highlights'        => self::listOf( $row['highlights'] ?? null ),
 					),
 					'rates'          => array(),
 				);

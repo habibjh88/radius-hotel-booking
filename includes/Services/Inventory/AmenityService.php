@@ -612,8 +612,8 @@ class AmenityService {
 	}
 
 	/**
-	 * Apply a change to every room type's amenity list; save the ones that
-	 * changed.
+	 * Apply a change to every room type's amenity list (and its highlighted
+	 * amenities); save the ones that changed.
 	 *
 	 * @param callable $change Gets a list, returns the new list.
 	 * @return string[] Names of the room types changed.
@@ -621,10 +621,18 @@ class AmenityService {
 	private function rewriteRoomTypes( callable $change ): array {
 		$changed = array();
 		foreach ( $this->types->ordered() as $type ) {
-			$list = self::listOf( $type );
-			$new  = $change( $list );
-			if ( $new !== $list ) {
-				$this->types->update( (int) $type->id, array( 'amenities' => array_values( $new ) ) );
+			$list       = self::listOf( $type );
+			$new        = $change( $list );
+			$highlights = array_values( array_filter( array_map( 'strval', (array) $type->highlights ) ) );
+			$new_high   = $highlights ? array_values( $change( $highlights ) ) : $highlights;
+			if ( $new !== $list || $new_high !== $highlights ) {
+				$this->types->update(
+					(int) $type->id,
+					array(
+						'amenities'  => array_values( $new ),
+						'highlights' => $new_high,
+					)
+				);
 				$changed[] = (string) $type->name;
 			}
 		}

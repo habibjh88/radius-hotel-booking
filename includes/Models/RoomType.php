@@ -22,6 +22,7 @@ defined( 'ABSPATH' ) || exit;
  * @property int[]       $gallery           Attachment ids.
  * @property int         $featured_image_id
  * @property string[]    $amenities
+ * @property string[]    $highlights
  * @property string      $bed_info
  * @property float|null  $size_m2
  * @property int         $max_adults
@@ -59,6 +60,7 @@ class RoomType extends BaseModel {
 		'gallery',
 		'featured_image_id',
 		'amenities',
+		'highlights',
 		'bed_info',
 		'size_m2',
 		'max_adults',
@@ -78,6 +80,7 @@ class RoomType extends BaseModel {
 		'gallery'           => 'json',
 		'featured_image_id' => 'int',
 		'amenities'         => 'json',
+		'highlights'        => 'json',
 		// size_m2 and buffer_minutes are not cast: a scalar cast reads NULL as 0.
 		'max_adults'        => 'int',
 		'max_children'      => 'int',

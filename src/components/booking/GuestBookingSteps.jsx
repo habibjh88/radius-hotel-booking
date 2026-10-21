@@ -10,21 +10,11 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import {
-	AlertTriangle,
-	ArrowLeft,
-	ArrowRight,
-	CalendarDays,
-	Check,
-	Filter,
-	Plus,
-	Users,
-	X,
-} from 'lucide-react';
+import { CalendarDays, Check, Filter, Plus, X } from 'lucide-react';
 
 import Money from '@/components/common/Money';
 import { Button } from '@/components/ui/button';
-import { formatDate, formatDateRange, formatTime } from '@/lib/format';
+import { formatDateRange } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import BookingLines from './BookingLines';
 import GuestForm, { guestFormErrors } from './GuestForm';
@@ -33,6 +23,12 @@ import HoldChip from './HoldChip';
 import RoomSelection from './RoomSelection';
 import RoomTypeResults from './RoomTypeResults';
 import { searchIsValid } from './api';
+import {
+	BackButton,
+	LeavePrompt,
+	StaySummary,
+	scrollToTop,
+} from './GuestParts';
 import { useLeaveGuard } from './leaveGuard';
 
 /**
@@ -165,210 +161,6 @@ function Progress( { steps, step } ) {
 }
 
 /**
- * The stay being booked, at the top of the Room step: check-in and check-out
- * (date and time), the rate and the party, and a way back to change them.
- *
- * @param {Object}   props          Props.
- * @param {Object}   props.rate     The chosen rate (`name`, `window { start, end }`).
- * @param {Object}   props.search   `{ adults, children }`.
- * @param {Function} props.onChange Back to the dates.
- * @return {JSX.Element} Summary.
- */
-function StaySummary( { rate, search, onChange } ) {
-	const party = [
-		sprintf(
-			/* translators: %d: number of adults. */
-			_n(
-				'%d adult',
-				'%d adults',
-				search.adults,
-				'radius-hotel-booking'
-			),
-			search.adults
-		),
-		Number( search.children )
-			? sprintf(
-					/* translators: %d: number of children. */
-					_n(
-						'%d child',
-						'%d children',
-						search.children,
-						'radius-hotel-booking'
-					),
-					search.children
-			  )
-			: null,
-	]
-		.filter( Boolean )
-		.join( ' · ' );
-	const end = ( label, value ) => (
-		<div className="min-w-0">
-			<span className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-				{ label }
-			</span>
-			<span className="block text-base font-bold text-heading">
-				{ formatDate( value ) }
-			</span>
-			<span className="block text-sm text-muted-foreground">
-				{ formatTime( value ) }
-			</span>
-		</div>
-	);
-
-	return (
-		<section
-			className="rounded-2xl border border-primary/25 bg-primary-softer p-4 sm:p-5"
-			aria-label={ __( 'Your stay', 'radius-hotel-booking' ) }
-		>
-			<div className="flex flex-wrap items-center justify-between gap-3">
-				<span className="inline-flex items-center gap-2 text-sm font-bold text-primary">
-					<CalendarDays className="h-4 w-4" aria-hidden="true" />
-					{ __( 'Your stay', 'radius-hotel-booking' ) }
-				</span>
-				<Button
-					type="button"
-					variant="outline"
-					size="sm"
-					className="h-9 rounded-full border-primary/30 bg-white px-4 font-semibold text-primary hover:border-primary hover:bg-white hover:text-primary"
-					onClick={ onChange }
-				>
-					{ __( 'Change dates', 'radius-hotel-booking' ) }
-				</Button>
-			</div>
-			<div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-3">
-				{ end(
-					__( 'Check-in', 'radius-hotel-booking' ),
-					rate.window.start
-				) }
-				<ArrowRight
-					className="h-5 w-5 shrink-0 text-primary"
-					aria-hidden="true"
-				/>
-				{ end(
-					__( 'Check-out', 'radius-hotel-booking' ),
-					rate.window.end
-				) }
-				<div className="min-w-0 border-primary/20 sm:ml-auto sm:border-l sm:pl-6">
-					<span className="block text-sm font-semibold text-heading">
-						{ rate.name }
-					</span>
-					<span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-						<Users className="h-4 w-4" aria-hidden="true" />
-						{ party }
-					</span>
-				</div>
-			</div>
-		</section>
-	);
-}
-
-/**
- * The way back to the previous step: a clear, full-size button, so a guest
- * reaches for it rather than the browser's Back.
- *
- * @param {Object}   props          Props.
- * @param {string}   props.label    Label.
- * @param {Function} props.onClick  Called on click.
- * @return {JSX.Element} Button.
- */
-function BackButton( { label, onClick } ) {
-	return (
-		<Button
-			type="button"
-			variant="outline"
-			className="h-11 gap-2 rounded-full border-primary/30 bg-white px-5 font-semibold text-primary shadow-sm hover:border-primary hover:bg-primary-soft hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
-			onClick={ onClick }
-		>
-			<ArrowLeft className="h-4 w-4" aria-hidden="true" />
-			{ label }
-		</Button>
-	);
-}
-
-/**
- * Asked when the browser's Back would leave a booking in progress. Light on
- * purpose (no Radix dialog in the website's bundle): an overlay, focus on
- * *Stay*, Escape stays.
- *
- * @param {Object}   props         Props.
- * @param {Function} props.onStay  Keep booking.
- * @param {Function} props.onLeave Leave and start again.
- * @return {JSX.Element} Prompt.
- */
-function LeavePrompt( { onStay, onLeave } ) {
-	const stayRef = useRef( null );
-	useEffect( () => {
-		stayRef.current?.focus();
-		const onKey = ( event ) => {
-			if ( 'Escape' === event.key ) {
-				onStay();
-			}
-		};
-		document.addEventListener( 'keydown', onKey );
-		return () => document.removeEventListener( 'keydown', onKey );
-	}, [ onStay ] );
-
-	return (
-		<div className="fixed inset-0 z-[100001] flex items-center justify-center bg-black/50 p-4">
-			<div
-				role="alertdialog"
-				aria-modal="true"
-				aria-labelledby="rtbp-leave-title"
-				aria-describedby="rtbp-leave-text"
-				className="w-full max-w-md rounded-2xl bg-card p-6 shadow-xl"
-			>
-				<div className="flex items-start gap-3">
-					<span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-warning-soft text-warning">
-						<AlertTriangle className="h-5 w-5" aria-hidden="true" />
-					</span>
-					<div className="min-w-0 space-y-1.5">
-						<h2
-							id="rtbp-leave-title"
-							className="m-0 text-lg font-bold text-heading"
-						>
-							{ __(
-								'Leave your booking?',
-								'radius-hotel-booking'
-							) }
-						</h2>
-						<p
-							id="rtbp-leave-text"
-							className="m-0 text-sm text-muted-foreground"
-						>
-							{ __(
-								'Your booking is not finished. If you leave now, the rooms held for you are released and you will start again from the beginning. To go to the previous step, use the back button on the page.',
-								'radius-hotel-booking'
-							) }
-						</p>
-					</div>
-				</div>
-				<div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-					<Button
-						type="button"
-						variant="outline"
-						className="h-11"
-						onClick={ onLeave }
-					>
-						{ __(
-							'Leave and start again',
-							'radius-hotel-booking'
-						) }
-					</Button>
-					<Button
-						ref={ stayRef }
-						type="button"
-						className="h-11"
-						onClick={ onStay }
-					>
-						{ __( 'Continue my booking', 'radius-hotel-booking' ) }
-					</Button>
-				</div>
-			</div>
-		</div>
-	);
-}
-
-/**
  * @param {Object} props Everything from BookingFlow (see the call there).
  * @return {JSX.Element} The guest flow.
  */
@@ -402,7 +194,12 @@ export default function GuestBookingSteps( props ) {
 		priceChange,
 		submitting,
 		onConfirm,
+		visible = true,
+		roomDetails = 'page',
+		roomCard = 'classic',
+		ratesShown = 4,
 	} = props;
+	const rootRef = useRef( null );
 	const picks = false !== rules.guestPicksRoom;
 	const [ step, setStep ] = useState( 'rates' );
 	const [ shown, setShown ] = useState( {} );
@@ -429,7 +226,7 @@ export default function GuestBookingSteps( props ) {
 		}
 	}, [ count, step ] );
 	useEffect( () => {
-		window.scrollTo( { top: 0, behavior: 'smooth' } );
+		scrollToTop( rootRef.current );
 	}, [ step ] );
 	// The server refused the guest's details (e.g. a phone on file under
 	// another name): back to the form, where the fields show why.
@@ -467,8 +264,29 @@ export default function GuestBookingSteps( props ) {
 			arrival.click();
 		}
 	};
-	// Past the first step, or rooms held: the browser's Back asks first.
-	const guard = useLeaveGuard( 'rates' !== step || count > 0 );
+	// The browser's Back does what the page's back button does on each step.
+	const goBack = () => {
+		if ( 'review' === step ) {
+			setStep( 'details' );
+			return true;
+		}
+		if ( 'details' === step ) {
+			// Back to the rooms of the rate the last ones came from.
+			if ( picks && left > 0 ) {
+				onAddAnother();
+			} else {
+				onClearChoice();
+			}
+			setStep( 'rates' );
+			return true;
+		}
+		if ( 'room' === step ) {
+			onClearChoice();
+			setStep( 'rates' );
+			return true;
+		}
+		return false;
+	};
 
 	const steps = [
 		{
@@ -496,6 +314,16 @@ export default function GuestBookingSteps( props ) {
 			hint: __( 'Confirm booking', 'radius-hotel-booking' ),
 		},
 	];
+
+	// One history entry per step past the first (and one while rooms are held
+	// on the first): the browser's Back steps back, and asks first when it
+	// would leave the page.
+	const level = Math.max(
+		steps.findIndex( ( item ) => item.key === step ),
+		count > 0 ? 1 : 0
+	);
+	// Hidden (a closed popup): nothing to guard until it opens again.
+	const guard = useLeaveGuard( visible ? level : 0, goBack );
 
 	const toReview = () => {
 		const errors = guestFormErrors( guest );
@@ -585,6 +413,13 @@ export default function GuestBookingSteps( props ) {
 					needsDates={ ! datesPicked }
 					choice={ choice }
 					onSelect={ selectRate }
+					roomDetails={ roomDetails }
+					roomCard={ roomCard }
+					ratesShown={ ratesShown }
+					// The rooms already added for these dates show on their rates.
+					lines={ lines.filter(
+						( line ) => line.arrival === search.arrival
+					) }
 				/>
 			</div>
 		);
@@ -861,7 +696,7 @@ export default function GuestBookingSteps( props ) {
 			: null;
 
 	return (
-		<div className="space-y-5 pb-28 md:pb-0">
+		<div ref={ rootRef } className="space-y-5 pb-28 md:pb-0">
 			{ guard.asking ? (
 				<LeavePrompt onStay={ guard.stay } onLeave={ guard.leave } />
 			) : null }

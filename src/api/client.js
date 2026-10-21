@@ -124,15 +124,26 @@ export async function request( path, options = {} ) {
 async function send( path, options ) {
 	try {
 		const url = toUrl( path );
-		const response = await apiFetch( {
-			...( url ? { url } : { path } ),
-			...options,
-			headers: {
-				// PermissionMiddleware requires the REST nonce on every request.
-				...( params.nonce ? { 'X-WP-Nonce': params.nonce } : {} ),
-				...( options.headers || {} ),
-			},
-		} );
+		// The website's endpoints (`public/…`: the booking form, holds, the
+		// guest's booking page) are anonymous and must go without a nonce:
+		// for a signed-in visitor WordPress refuses a stale one outright
+		// ("Cookie check failed": a page left open for hours, a sign-in in
+		// another tab, a cached page). apiFetch always adds WordPress's own
+		// nonce, so these go through a plain fetch.
+		const response =
+			url && /^\/?public\//.test( String( path ) )
+				? await publicFetch( url, options )
+				: await apiFetch( {
+						...( url ? { url } : { path } ),
+						...options,
+						headers: {
+							// PermissionMiddleware requires the REST nonce on every staff request.
+							...( params.nonce
+								? { 'X-WP-Nonce': params.nonce }
+								: {} ),
+							...( options.headers || {} ),
+						},
+				  } );
 		return unwrap( response );
 	} catch ( error ) {
 		// apiFetch rejects with the parsed body on a non-2xx response.
@@ -141,6 +152,58 @@ async function send( path, options ) {
 		}
 		throw error;
 	}
+}
+
+/**
+ * A request without any nonce, answering like apiFetch: the parsed body, or
+ * a rejection with the parsed body on a non-2xx status.
+ *
+ * @param {string} url     Absolute URL.
+ * @param {Object} options `method`, `data`, `headers`, `signal`.
+ * @return {Promise<Object>} Parsed body.
+ */
+async function publicFetch( url, options ) {
+	const { method = 'GET', data, headers = {}, signal } = options;
+	let response;
+	try {
+		response = await window.fetch( url, {
+			method,
+			credentials: 'same-origin',
+			signal,
+			headers: {
+				Accept: 'application/json, */*;q=0.1',
+				...( undefined !== data
+					? { 'Content-Type': 'application/json' }
+					: {} ),
+				...headers,
+			},
+			...( undefined !== data ? { body: JSON.stringify( data ) } : {} ),
+		} );
+	} catch ( error ) {
+		if ( 'AbortError' === error?.name ) {
+			throw error;
+		}
+		throw new Error(
+			__( 'You are probably offline.', 'radius-hotel-booking' )
+		);
+	}
+	let body = null;
+	try {
+		body = 204 === response.status ? null : await response.json();
+	} catch ( error ) {
+		throw new Error(
+			__(
+				'The response is not a valid JSON response.',
+				'radius-hotel-booking'
+			)
+		);
+	}
+	if ( ! response.ok ) {
+		throw body && typeof body === 'object'
+			? body
+			: new Error( __( 'Request failed.', 'radius-hotel-booking' ) );
+	}
+	return body;
 }
 
 export const get = ( path, query ) =>

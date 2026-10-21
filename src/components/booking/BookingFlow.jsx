@@ -26,6 +26,7 @@ import HoldChip from './HoldChip';
 import RateList from './RateList';
 import SummaryStep from './SummaryStep';
 import { AVAILABILITY_KEY, searchIsValid, useAvailability } from './api';
+import GuestBookingOnePage from './GuestBookingOnePage';
 import GuestBookingSteps from './GuestBookingSteps';
 import { EMPTY_GUEST_FORM } from './GuestForm';
 import {
@@ -73,11 +74,23 @@ const overlaps = ( a, b ) =>
 	new Date( b.start_gmt ) < new Date( a.end_gmt );
 
 /**
- * @param {Object} props      Props.
- * @param {string} props.mode `desk` (staff) or `guest` (the website, M04).
+ * @param {Object}  props           Props.
+ * @param {string}  props.mode      `desk` (staff) or `guest` (the website, M04).
+ * @param {string}  [props.layout]  Website: `steps` (one step at a time) or `onepage`.
+ * @param {boolean} [props.visible] Website: false while its popup is closed.
+ * @param {string}  [props.roomDetails] Website: "Room details" opens its `page` or a `popup`.
+ * @param {string}  [props.roomCard] Website: room type card, `classic` or `split`.
+ * @param {number}  [props.ratesShown] Website: rates per room type before "Show more" (0: all).
  * @return {JSX.Element} Flow.
  */
-export default function BookingFlow( { mode = 'desk' } ) {
+export default function BookingFlow( {
+	mode = 'desk',
+	layout = 'steps',
+	visible = true,
+	roomDetails = 'page',
+	roomCard = 'classic',
+	ratesShown = 4,
+} ) {
 	// The website (M04): its own endpoints and rules; the flow is the same.
 	const guestMode = 'guest' === mode;
 	const [ rules ] = useState( () => ( guestMode ? siteBookingRules() : {} ) );
@@ -643,9 +656,15 @@ export default function BookingFlow( { mode = 'desk' } ) {
 	}
 
 	if ( guestMode ) {
+		const Face =
+			'onepage' === layout ? GuestBookingOnePage : GuestBookingSteps;
 		return (
-			<div data-mode={ mode }>
-				<GuestBookingSteps
+			<div data-mode={ mode } data-layout={ layout }>
+				<Face
+					visible={ visible }
+					roomDetails={ roomDetails }
+					roomCard={ roomCard }
+					ratesShown={ ratesShown }
 					rules={ rules }
 					search={ search }
 					limits={ limits }

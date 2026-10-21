@@ -321,6 +321,10 @@ class LoadAssets {
 		}
 
 		wp_enqueue_script( self::SITE_HANDLE );
+		// The results' thumbnails open the room type's photos (the viewer loads on first click).
+		if ( wp_script_is( self::GALLERY_HANDLE, 'registered' ) ) {
+			wp_enqueue_script( self::GALLERY_HANDLE );
+		}
 
 		if ( wp_style_is( self::SITE_HANDLE, 'registered' ) ) {
 			wp_enqueue_style( self::SITE_HANDLE );

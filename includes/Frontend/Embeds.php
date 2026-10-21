@@ -40,6 +40,20 @@ class Embeds {
 	);
 
 	/**
+	 * `[rtbp_booking]` attributes and their defaults (also the Shortcodes
+	 * page's builder, the block and the Elementor widget). An empty
+	 * `button_text` shows "Book now" in the site's language.
+	 */
+	public const BOOKING_DEFAULTS = array(
+		'layout'       => 'steps',
+		'display'      => 'inline',
+		'button_text'  => '',
+		'room_details' => 'page',
+		'room_card'    => 'classic',
+		'rates_shown'  => 4,
+	);
+
+	/**
 	 * Hook in.
 	 *
 	 * @return void
@@ -91,6 +105,56 @@ class Embeds {
 				__( 'Elementor widget: Hotel booking', 'radius-hotel-booking' ),
 			),
 			'order'       => 20,
+			'attributes'  => array(
+				array(
+					'name'    => 'layout',
+					'label'   => __( 'Layout', 'radius-hotel-booking' ),
+					'type'    => 'select',
+					'default' => self::BOOKING_DEFAULTS['layout'],
+					'options' => self::bookingLayouts(),
+				),
+				array(
+					'name'    => 'display',
+					'label'   => __( 'Display', 'radius-hotel-booking' ),
+					'type'    => 'select',
+					'default' => self::BOOKING_DEFAULTS['display'],
+					'options' => self::bookingDisplays(),
+					'help'    => __( 'In a popup, a button opens the form. Any link to #rtbp-booking on the page opens it too.', 'radius-hotel-booking' ),
+				),
+				array(
+					'name'    => 'button_text',
+					'label'   => __( 'Button text', 'radius-hotel-booking' ),
+					'type'    => 'text',
+					'default' => self::BOOKING_DEFAULTS['button_text'],
+					'help'    => __( 'Empty shows "Book now".', 'radius-hotel-booking' ),
+					'when'    => array( 'display' => 'modal' ),
+				),
+				array(
+					'name'    => 'room_details',
+					'label'   => __( 'Room details', 'radius-hotel-booking' ),
+					'type'    => 'select',
+					'default' => self::BOOKING_DEFAULTS['room_details'],
+					'options' => self::bookingRoomDetails(),
+					'help'    => __( 'What "Room details" on each room type opens.', 'radius-hotel-booking' ),
+				),
+				array(
+					'name'    => 'room_card',
+					'label'   => __( 'Room type design', 'radius-hotel-booking' ),
+					'type'    => 'select',
+					'default' => self::BOOKING_DEFAULTS['room_card'],
+					'options' => self::bookingRoomCards(),
+					'help'    => __( 'How each room type and its rates are laid out in the results.', 'radius-hotel-booking' ),
+				),
+				array(
+					'name'    => 'rates_shown',
+					'label'   => __( 'Rates shown first', 'radius-hotel-booking' ),
+					'type'    => 'number',
+					'default' => (string) self::BOOKING_DEFAULTS['rates_shown'],
+					'min'     => 0,
+					'max'     => 50,
+					'help'    => __( 'Rates per room type before "Show more rates". 0 shows them all, without the button.', 'radius-hotel-booking' ),
+				),
+			),
 		);
 		$catalog['rtbp_rooms']   = array(
 			'title'       => __( 'Room types', 'radius-hotel-booking' ),
@@ -198,7 +262,42 @@ class Embeds {
 				'api_version'     => 3,
 				'title'           => __( 'Hotel booking', 'radius-hotel-booking' ),
 				'category'        => 'radius-hotel-booking',
-				'render_callback' => static fn() => self::booking(),
+				'attributes'      => array(
+					'layout'     => array(
+						'type'    => 'string',
+						'default' => self::BOOKING_DEFAULTS['layout'],
+					),
+					'display'    => array(
+						'type'    => 'string',
+						'default' => self::BOOKING_DEFAULTS['display'],
+					),
+					'buttonText'  => array(
+						'type'    => 'string',
+						'default' => self::BOOKING_DEFAULTS['button_text'],
+					),
+					'roomDetails' => array(
+						'type'    => 'string',
+						'default' => self::BOOKING_DEFAULTS['room_details'],
+					),
+					'roomCard'    => array(
+						'type'    => 'string',
+						'default' => self::BOOKING_DEFAULTS['room_card'],
+					),
+					'ratesShown'  => array(
+						'type'    => 'number',
+						'default' => self::BOOKING_DEFAULTS['rates_shown'],
+					),
+				),
+				'render_callback' => static fn( $attributes = array() ) => self::booking(
+					array(
+						'layout'      => $attributes['layout'] ?? self::BOOKING_DEFAULTS['layout'],
+						'display'     => $attributes['display'] ?? self::BOOKING_DEFAULTS['display'],
+						'button_text'  => $attributes['buttonText'] ?? self::BOOKING_DEFAULTS['button_text'],
+						'room_details' => $attributes['roomDetails'] ?? self::BOOKING_DEFAULTS['room_details'],
+						'room_card'    => $attributes['roomCard'] ?? self::BOOKING_DEFAULTS['room_card'],
+						'rates_shown'  => $attributes['ratesShown'] ?? self::BOOKING_DEFAULTS['rates_shown'],
+					)
+				),
 			)
 		);
 		register_block_type(
@@ -274,22 +373,110 @@ class Embeds {
 
 	/**
 	 * The guest booking flow's markup (4.3–4.10): the mount node the app takes
-	 * over; without JavaScript, a short message with the hotel's phone.
+	 * over; without JavaScript, a short message with the hotel's phone (or, in
+	 * a popup, a link to the booking page).
 	 *
-	 * @param array $atts Shortcode attributes (none yet).
+	 * @param array $atts `layout` steps|onepage, `display` inline|modal, `button_text`.
 	 * @return string
 	 */
 	public static function booking( array $atts = array() ): string {
+		$atts    = shortcode_atts( self::BOOKING_DEFAULTS, $atts, 'rtbp_booking' );
+		$layout  = in_array( $atts['layout'], array_column( self::bookingLayouts(), 'value' ), true ) ? $atts['layout'] : self::BOOKING_DEFAULTS['layout'];
+		$display = in_array( $atts['display'], array_column( self::bookingDisplays(), 'value' ), true ) ? $atts['display'] : self::BOOKING_DEFAULTS['display'];
+		$text    = trim( sanitize_text_field( (string) $atts['button_text'] ) );
+		$details = in_array( $atts['room_details'], array_column( self::bookingRoomDetails(), 'value' ), true ) ? $atts['room_details'] : self::BOOKING_DEFAULTS['room_details'];
+		$card    = in_array( $atts['room_card'], array_column( self::bookingRoomCards(), 'value' ), true ) ? $atts['room_card'] : self::BOOKING_DEFAULTS['room_card'];
+		// Left empty (an emptied field): the default, not 0 (= all).
+		$first = '' === trim( (string) $atts['rates_shown'] ) ? self::BOOKING_DEFAULTS['rates_shown'] : min( 50, absint( $atts['rates_shown'] ) );
 		LoadAssets::enqueue_site_app();
 		ob_start();
 		rtbp_get_template(
 			'embeds/booking.php',
 			array(
-				'phone' => (string) rtbp_setting( 'general', 'phone', '' ),
-				'atts'  => $atts,
+				'phone'       => (string) rtbp_setting( 'general', 'phone', '' ),
+				'atts'        => $atts,
+				'layout'      => $layout,
+				'display'     => $display,
+				'button_text' => '' !== $text ? $text : __( 'Book now', 'radius-hotel-booking' ),
+				'page_url'     => self::rules()['resultsUrl'],
+				'room_details' => $details,
+				'room_card'    => $card,
+				'rates_shown'  => $first,
 			)
 		);
 		return (string) ob_get_clean();
+	}
+
+	/**
+	 * The booking form's layouts.
+	 *
+	 * @return array[] `{ value, label }`.
+	 */
+	public static function bookingLayouts(): array {
+		return array(
+			array(
+				'value' => 'steps',
+				'label' => __( 'Steps (one step at a time)', 'radius-hotel-booking' ),
+			),
+			array(
+				'value' => 'onepage',
+				'label' => __( 'One page (everything on one page)', 'radius-hotel-booking' ),
+			),
+		);
+	}
+
+	/**
+	 * How the booking form lays out each room type in the results.
+	 *
+	 * @return array[] `{ value, label }`.
+	 */
+	public static function bookingRoomCards(): array {
+		return array(
+			array(
+				'value' => 'classic',
+				'label' => __( 'Classic (rates in rows under the room)', 'radius-hotel-booking' ),
+			),
+			array(
+				'value' => 'split',
+				'label' => __( 'Split (room on the left, rate cards on the right)', 'radius-hotel-booking' ),
+			),
+		);
+	}
+
+	/**
+	 * What a room type's "Room details" opens in the booking form.
+	 *
+	 * @return array[] `{ value, label }`.
+	 */
+	public static function bookingRoomDetails(): array {
+		return array(
+			array(
+				'value' => 'page',
+				'label' => __( 'Its own page', 'radius-hotel-booking' ),
+			),
+			array(
+				'value' => 'popup',
+				'label' => __( 'A popup, without leaving the form', 'radius-hotel-booking' ),
+			),
+		);
+	}
+
+	/**
+	 * Where the booking form shows.
+	 *
+	 * @return array[] `{ value, label }`.
+	 */
+	public static function bookingDisplays(): array {
+		return array(
+			array(
+				'value' => 'inline',
+				'label' => __( 'On the page', 'radius-hotel-booking' ),
+			),
+			array(
+				'value' => 'modal',
+				'label' => __( 'In a popup, opened by a button', 'radius-hotel-booking' ),
+			),
+		);
 	}
 
 	/**

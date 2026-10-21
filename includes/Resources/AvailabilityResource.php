@@ -15,11 +15,12 @@ use RadiusTheme\RadiusHotelBooking\Frontend\RoomTypePage;
  * Shapes `AvailabilityService::search()` for its audience.
  *
  * - **Staff** get everything the search found, including the booking
- *   reference behind a `booked` room, a block's reason and a room's state
- *   note.
+ *   reference behind a `booked` room and a block's reason.
  * - **Public** responses never carry booking references or ids, block
- *   reasons, state notes or the time a room frees up (§5.1): a guest learns
- *   only that a room is not available and the generic reason code.
+ *   reasons or the time a room frees up (§5.1): a guest learns only that a
+ *   room is not available, the generic reason code and, for a room in
+ *   maintenance or out of service, the reason staff gave it (its state note,
+ *   shown as a tooltip on the booking form).
  */
 final class AvailabilityResource {
 
@@ -39,8 +40,8 @@ final class AvailabilityResource {
 	}
 
 	/**
-	 * The public shape: no state notes and no staff-only reason fields (booking
-	 * references); optionally without sold-out rates and rooms, or without the
+	 * The public shape: no staff-only reason fields (booking references, block
+	 * reasons); optionally without sold-out rates and rooms, or without the
 	 * room list at all.
 	 *
 	 * @param array $result  Search result.
@@ -78,21 +79,35 @@ final class AvailabilityResource {
 			unset( $type );
 		}
 
-		// The type's photo as a URL (the id means nothing to a visitor).
-		$image_ids = array_filter( array_map( static fn( $type ) => (int) ( $type['details']['featured_image_id'] ?? 0 ), $result['room_types'] ) );
+		// The type's photo as a URL (the id means nothing to a visitor), and
+		// every photo for the lightbox the thumbnail opens (as on its page).
+		$image_ids = array();
+		foreach ( $result['room_types'] as $type ) {
+			$image_ids[] = (int) ( $type['details']['featured_image_id'] ?? 0 );
+			$image_ids   = array_merge( $image_ids, (array) ( $type['details']['gallery_ids'] ?? array() ) );
+		}
+		$image_ids = array_values( array_unique( array_filter( array_map( 'intval', $image_ids ) ) ) );
 		if ( $image_ids ) {
 			_prime_post_caches( $image_ids, false, true );
 		}
+		// The amenity library, read once: each chip shows its icon, as on the room type page.
+		$library = null;
 		foreach ( $result['room_types'] as &$type ) {
 			if ( isset( $type['details'] ) ) {
-				$image_id                  = (int) ( $type['details']['featured_image_id'] ?? 0 );
-				$type['details']['image']  = $image_id ? (string) wp_get_attachment_image_url( $image_id, 'medium_large' ) : '';
-				$type['details']['url']    = '' !== $type['details']['slug'] && class_exists( RoomTypePage::class ) ? RoomTypePage::url( $type['details']['slug'] ) : '';
-				unset( $type['details']['featured_image_id'] );
+				if ( ! empty( $type['details']['amenities'] ) && class_exists( RoomTypePage::class ) ) {
+					$library                          = $library ?? ( new \RadiusTheme\RadiusHotelBooking\Services\Inventory\AmenityService() )->display();
+					$type['details']['amenity_icons'] = (object) RoomTypePage::amenityIcons( (array) $type['details']['amenities'], $library );
+					// By section, for the room details popup (`[rtbp_booking room_details="popup"]`).
+					$type['details']['amenity_groups'] = RoomTypePage::amenityGroups( (array) $type['details']['amenities'], $library );
+				}
+				$image_id                   = (int) ( $type['details']['featured_image_id'] ?? 0 );
+				$type['details']['image']   = $image_id ? (string) wp_get_attachment_image_url( $image_id, 'medium_large' ) : '';
+				$type['details']['url']     = '' !== $type['details']['slug'] && class_exists( RoomTypePage::class ) ? RoomTypePage::url( $type['details']['slug'] ) : '';
+				$type['details']['gallery'] = class_exists( RoomTypePage::class ) ? RoomTypePage::slides( RoomTypePage::imageIds( $image_id, (array) ( $type['details']['gallery_ids'] ?? array() ) ) ) : array();
+				unset( $type['details']['featured_image_id'], $type['details']['gallery_ids'] );
 			}
 			foreach ( $type['floors'] as &$floor ) {
 				foreach ( $floor['rooms'] as &$room ) {
-					unset( $room['state_note'] );
 					$reasons = array();
 					foreach ( (array) $room['reasons_by_rate'] as $plan_id => $reason ) {
 						$reasons[ $plan_id ] = array_diff_key( (array) $reason, array_flip( self::STAFF_REASON_FIELDS ) );

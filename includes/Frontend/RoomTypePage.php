@@ -9,6 +9,7 @@ namespace RadiusTheme\RadiusHotelBooking\Frontend;
 
 use RadiusTheme\RadiusHotelBooking\Assets\LoadAssets;
 use RadiusTheme\RadiusHotelBooking\Repositories\AvailabilityRepository;
+use RadiusTheme\RadiusHotelBooking\Support\Icons;
 use RadiusTheme\RadiusHotelBooking\Support\Money;
 
 defined( 'ABSPATH' ) || exit;
@@ -260,13 +261,7 @@ class RoomTypePage {
 			return false;
 		}
 
-		// Featured image first, then the gallery, each once.
-		$images = array();
-		foreach ( array_merge( array( (int) $type['featured_image_id'] ), array_map( 'intval', self::listOf( $type['gallery'] ) ) ) as $id ) {
-			if ( $id > 0 && ! in_array( $id, $images, true ) && wp_attachment_is_image( $id ) ) {
-				$images[] = $id;
-			}
-		}
+		$images = self::imageIds( (int) $type['featured_image_id'], self::listOf( $type['gallery'] ) );
 
 		// The rates sold for this room type, cheapest "from" price first.
 		$rates = array();
@@ -309,12 +304,138 @@ class RoomTypePage {
 	}
 
 	/**
+	 * Each amenity's icon (a Lucide name), as the room type page shows it:
+	 * the amenity library's icon, else the default (`rtbp_amenity_default_icon`).
+	 *
+	 * @param string[]   $names   Amenity names.
+	 * @param array|null $library AmenityService::display() (read when null).
+	 * @return array<string,string> Name => icon.
+	 */
+	public static function amenityIcons( array $names, ?array $library = null ): array {
+		if ( ! $names ) {
+			return array();
+		}
+		$library = $library ?? ( new \RadiusTheme\RadiusHotelBooking\Services\Inventory\AmenityService() )->display();
+		/**
+		 * The icon of amenities that have none of their own (a Lucide icon name).
+		 *
+		 * @param string $icon Icon name.
+		 */
+		$default = Icons::clean( apply_filters( 'rtbp_amenity_default_icon', 'circle-check' ) );
+		$icons   = array();
+		foreach ( $names as $name ) {
+			$icon                     = (string) ( $library['amenities'][ mb_strtolower( (string) $name ) ]['icon'] ?? '' );
+			$icons[ (string) $name ] = '' !== $icon && Icons::valid( $icon ) ? $icon : $default;
+		}
+		return $icons;
+	}
+
+	/**
+	 * Amenities by section, as the room type page lists them: the library's
+	 * section order, each with its icon (amenityIcons()); amenities in no
+	 * section under "Other", last; empty sections left out.
+	 *
+	 * @param string[]   $names   Amenity names.
+	 * @param array|null $library AmenityService::display() (read when null).
+	 * @return array[] `{ name, items: { name, icon }[] }`.
+	 */
+	public static function amenityGroups( array $names, ?array $library = null ): array {
+		if ( ! $names ) {
+			return array();
+		}
+		$library = $library ?? ( new \RadiusTheme\RadiusHotelBooking\Services\Inventory\AmenityService() )->display();
+		$icons   = self::amenityIcons( $names, $library );
+		$groups  = array();
+		foreach ( (array) ( $library['sections'] ?? array() ) as $section ) {
+			$groups[ (int) $section['id'] ] = array(
+				'name'  => (string) $section['name'],
+				'items' => array(),
+			);
+		}
+		$other = array(
+			'name'  => __( 'Other', 'radius-hotel-booking' ),
+			'items' => array(),
+		);
+		foreach ( $names as $name ) {
+			$section = (int) ( $library['amenities'][ mb_strtolower( (string) $name ) ]['section'] ?? 0 );
+			$item    = array(
+				'name' => (string) $name,
+				'icon' => $icons[ (string) $name ],
+			);
+			if ( isset( $groups[ $section ] ) ) {
+				$groups[ $section ]['items'][] = $item;
+			} else {
+				$other['items'][] = $item;
+			}
+		}
+		$groups[] = $other;
+		return array_values( array_filter( $groups, static fn( $group ) => (bool) $group['items'] ) );
+	}
+
+	/**
+	 * A room type's photos: the featured image first, then the gallery, each
+	 * once, images only.
+	 *
+	 * @param int   $featured Featured image id.
+	 * @param array $gallery  Gallery attachment ids.
+	 * @return int[]
+	 */
+	public static function imageIds( int $featured, array $gallery ): array {
+		$images = array();
+		foreach ( array_merge( array( $featured ), array_map( 'intval', $gallery ) ) as $id ) {
+			if ( $id > 0 && ! in_array( $id, $images, true ) && wp_attachment_is_image( $id ) ) {
+				$images[] = $id;
+			}
+		}
+		return $images;
+	}
+
+	/**
+	 * The lightbox's slides for some photos (src/gallery): full size with
+	 * its smaller sizes as a srcset, a thumbnail and the alt text. The room
+	 * type page and the booking form's results both use it.
+	 *
+	 * @param int[] $ids Attachment ids, in order.
+	 * @return array[] `{ src, width, height, alt, thumb, srcSet }`.
+	 */
+	public static function slides( array $ids ): array {
+		$slides = array();
+		foreach ( $ids as $id ) {
+			$full = wp_get_attachment_image_src( (int) $id, 'full' );
+			if ( ! $full ) {
+				continue;
+			}
+			$thumb  = wp_get_attachment_image_src( (int) $id, 'medium' );
+			$srcset = array();
+			foreach ( array( 'medium_large', 'large', '1536x1536', '2048x2048' ) as $size ) {
+				$src = wp_get_attachment_image_src( (int) $id, $size );
+				if ( $src && $src[1] < $full[1] ) {
+					$srcset[ $src[1] ] = array(
+						'src'    => $src[0],
+						'width'  => (int) $src[1],
+						'height' => (int) $src[2],
+					);
+				}
+			}
+			$slides[] = array(
+				'src'    => $full[0],
+				'width'  => (int) $full[1],
+				'height' => (int) $full[2],
+				'alt'    => (string) get_post_meta( (int) $id, '_wp_attachment_image_alt', true ),
+				'thumb'  => $thumb ? $thumb[0] : $full[0],
+				'srcSet' => array_values( $srcset ),
+			);
+		}
+		return $slides;
+	}
+
+	/**
 	 * A stored list — PHP-serialised (the ORM's json cast) or JSON.
 	 *
 	 * @param mixed $value Stored value.
 	 * @return array
 	 */
-	private static function listOf( $value ): array {
+	public static function listOf( $value ): array {
 		if ( is_array( $value ) ) {
 			return $value;
 		}

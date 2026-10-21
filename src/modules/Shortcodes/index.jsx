@@ -288,7 +288,84 @@ function AttributeField( { attribute, value, onChange } ) {
 }
 
 /**
- * One shortcode's card; with attributes, its builder.
+ * Where a builder's last choices are kept (this browser only).
+ *
+ * @param {string} tag Shortcode tag.
+ * @return {string} Storage key.
+ */
+const storageKey = ( tag ) => `rtbp_shortcode_builder_${ tag }`;
+
+/**
+ * The builder's last choices for a shortcode, over its defaults. A choice
+ * the catalogue no longer offers (an option or attribute removed since, a
+ * room type deleted) falls back to the default.
+ *
+ * @param {string}   tag        Shortcode tag.
+ * @param {Object[]} attributes Catalogue attributes.
+ * @param {Object}   defaults   Name => default.
+ * @return {Object} Name => value.
+ */
+function savedValues( tag, attributes, defaults ) {
+	let saved = {};
+	try {
+		saved =
+			JSON.parse( window.localStorage.getItem( storageKey( tag ) ) ) ||
+			{};
+	} catch ( e ) {
+		return defaults;
+	}
+	const values = { ...defaults };
+	attributes.forEach( ( attribute ) => {
+		const value = saved[ attribute.name ];
+		if ( 'string' !== typeof value ) {
+			return;
+		}
+		const allowed = ( attribute.options || [] ).map( ( option ) =>
+			String( option.value )
+		);
+		if ( 'select' === attribute.type ) {
+			if ( allowed.includes( value ) ) {
+				values[ attribute.name ] = value;
+			}
+		} else if ( 'multiselect' === attribute.type ) {
+			values[ attribute.name ] = value
+				.split( ',' )
+				.filter( ( id ) => allowed.includes( id ) )
+				.join( ',' );
+		} else {
+			values[ attribute.name ] = value;
+		}
+	} );
+	return values;
+}
+
+/**
+ * Keep (or, at the defaults, forget) a builder's choices.
+ *
+ * @param {string}  tag     Shortcode tag.
+ * @param {Object}  values  Name => value.
+ * @param {boolean} changed Anything differs from the defaults.
+ * @return {void}
+ */
+function saveValues( tag, values, changed ) {
+	try {
+		if ( changed ) {
+			window.localStorage.setItem(
+				storageKey( tag ),
+				JSON.stringify( values )
+			);
+		} else {
+			window.localStorage.removeItem( storageKey( tag ) );
+		}
+	} catch ( e ) {
+		// Not kept; the builder still works for this visit.
+	}
+}
+
+/**
+ * One shortcode's card; with attributes, its builder. The last choices are
+ * kept in this browser, so the shortcode built last time is still there;
+ * *Reset to defaults* clears them.
  *
  * @param {Object} props      Props.
  * @param {Object} props.item Catalogue entry.
@@ -299,10 +376,17 @@ function ShortcodeCard( { item } ) {
 	const defaults = Object.fromEntries(
 		attributes.map( ( attribute ) => [ attribute.name, attribute.default ] )
 	);
-	const [ values, setValues ] = useState( defaults );
+	const [ values, setValues ] = useState( () =>
+		savedValues( item.tag, attributes, defaults )
+	);
 	const changed = attributes.some(
 		( attribute ) => values[ attribute.name ] !== attribute.default
 	);
+	useEffect( () => {
+		if ( attributes.length ) {
+			saveValues( item.tag, values, changed );
+		}
+	}, [ item.tag, values, changed, attributes.length ] );
 	const shown = attributes.filter( ( attribute ) =>
 		applies( attribute, values )
 	);

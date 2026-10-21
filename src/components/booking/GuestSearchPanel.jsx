@@ -209,6 +209,7 @@ export function GuestsField( { adults, children, onChange } ) {
  * @param {Object|null} props.checkin  The flexible rates' `{ from, until }` (null: no time field).
  * @param {Object}      props.limits   Optional `{ min, max }` arrivals (`Y-m-d`).
  * @param {boolean}     props.askDates The guest chose a room before the dates: flag the empty ones.
+ * @param {boolean}     props.bare     No box of its own (inside a part that already is one: the one-page form).
  * @return {JSX.Element} Panel.
  */
 export default function GuestSearchPanel( {
@@ -217,6 +218,7 @@ export default function GuestSearchPanel( {
 	checkin,
 	limits,
 	askDates = false,
+	bare = false,
 } ) {
 	const today = siteToday();
 	const first = limits?.min && limits.min > today ? limits.min : today;
@@ -248,7 +250,13 @@ export default function GuestSearchPanel( {
 	}
 
 	return (
-		<div className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
+		<div
+			className={
+				bare
+					? undefined
+					: 'rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5'
+			}
+		>
 			<div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 md:grid-cols-[repeat(auto-fit,minmax(10.5rem,1fr))]">
 				<Cell
 					label={ __( 'Arrival', 'radius-hotel-booking' ) }

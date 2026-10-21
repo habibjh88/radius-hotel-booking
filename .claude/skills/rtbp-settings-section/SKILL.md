@@ -20,7 +20,7 @@ build their own settings screens.
            // Days ahead a guest may book; 0 = unlimited.
            'bookingWindowDays' => array( 'type' => 'int', 'default' => 0, 'min' => 0, 'max' => 3650 ),
            'sameDayCutoff'     => array( 'type' => 'time', 'default' => '14:00' ),
-           'unavailableRooms'  => array( 'type' => 'enum', 'options' => array( 'hide', 'disable' ), 'default' => 'hide' ),
+           'unavailableRooms'  => array( 'type' => 'enum', 'options' => array( 'hide', 'disable' ), 'default' => 'disable' ),
        ) );
    } );
    ```

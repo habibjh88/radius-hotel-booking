@@ -68,7 +68,7 @@ class PublicBookingService {
 		return AvailabilityResource::public(
 			$result,
 			array(
-				'hide_unavailable' => 'hide' === (string) rtbp_setting( 'booking', 'unavailableRooms', 'hide' ),
+				'hide_unavailable' => 'hide' === (string) rtbp_setting( 'booking', 'unavailableRooms', 'disable' ),
 				'rooms'            => (bool) rtbp_setting( 'website', 'guestPicksRoom', true ),
 			)
 		);

@@ -31,34 +31,8 @@ get_header();
 
 		<?php
 		if ( $rtbp_type['images'] ) :
-			// Every photo for the lightbox (opened by assets/gallery: full size, srcset, thumbnail).
-			$rtbp_slides = array();
-			foreach ( $rtbp_type['images'] as $rtbp_image ) {
-				$rtbp_full = wp_get_attachment_image_src( $rtbp_image, 'full' );
-				if ( ! $rtbp_full ) {
-					continue;
-				}
-				$rtbp_thumb   = wp_get_attachment_image_src( $rtbp_image, 'medium' );
-				$rtbp_srcset  = array();
-				foreach ( array( 'medium_large', 'large', '1536x1536', '2048x2048' ) as $rtbp_size ) {
-					$rtbp_src = wp_get_attachment_image_src( $rtbp_image, $rtbp_size );
-					if ( $rtbp_src && $rtbp_src[1] < $rtbp_full[1] ) {
-						$rtbp_srcset[ $rtbp_src[1] ] = array(
-							'src'    => $rtbp_src[0],
-							'width'  => (int) $rtbp_src[1],
-							'height' => (int) $rtbp_src[2],
-						);
-					}
-				}
-				$rtbp_slides[] = array(
-					'src'    => $rtbp_full[0],
-					'width'  => (int) $rtbp_full[1],
-					'height' => (int) $rtbp_full[2],
-					'alt'    => (string) get_post_meta( $rtbp_image, '_wp_attachment_image_alt', true ),
-					'thumb'  => $rtbp_thumb ? $rtbp_thumb[0] : $rtbp_full[0],
-					'srcSet' => array_values( $rtbp_srcset ),
-				);
-			}
+			// Every photo for the lightbox (opened by src/gallery: full size, srcset, thumbnail).
+			$rtbp_slides = \RadiusTheme\RadiusHotelBooking\Frontend\RoomTypePage::slides( $rtbp_type['images'] );
 			$rtbp_count  = count( $rtbp_slides );
 			$rtbp_shown  = array_slice( $rtbp_type['images'], 0, 4 );
 			$rtbp_last   = count( $rtbp_shown ) - 1;
@@ -156,40 +130,8 @@ get_header();
 
 				<?php
 				if ( $rtbp_type['amenities'] ) :
-					/**
-					 * The icon of amenities that have none of their own (a Lucide icon name).
-					 *
-					 * @param string $icon Icon name.
-					 */
-					$rtbp_default_icon = Icons::clean( apply_filters( 'rtbp_amenity_default_icon', 'circle-check' ) );
-					$rtbp_library      = (array) ( $rtbp_type['amenity_library'] ?? array() );
-					// This room type's amenities by section, in the library's section order; unknown ones last.
-					$rtbp_groups = array();
-					foreach ( (array) ( $rtbp_library['sections'] ?? array() ) as $rtbp_section ) {
-						$rtbp_groups[ (int) $rtbp_section['id'] ] = array(
-							'name'  => (string) $rtbp_section['name'],
-							'items' => array(),
-						);
-					}
-					$rtbp_groups[0] = array(
-						'name'  => __( 'Other', 'radius-hotel-booking' ),
-						'items' => array(),
-					);
-					foreach ( $rtbp_type['amenities'] as $rtbp_amenity ) {
-						$rtbp_meta    = $rtbp_library['amenities'][ mb_strtolower( $rtbp_amenity ) ] ?? array();
-						$rtbp_section = (int) ( $rtbp_meta['section'] ?? 0 );
-						$rtbp_section = isset( $rtbp_groups[ $rtbp_section ] ) ? $rtbp_section : 0;
-						$rtbp_icon    = (string) ( $rtbp_meta['icon'] ?? '' );
-						$rtbp_groups[ $rtbp_section ]['items'][] = array(
-							'name' => $rtbp_amenity,
-							'icon' => '' !== $rtbp_icon && Icons::valid( $rtbp_icon ) ? $rtbp_icon : $rtbp_default_icon,
-						);
-					}
-					// "Other" last.
-					$rtbp_other = $rtbp_groups[0];
-					unset( $rtbp_groups[0] );
-					$rtbp_groups[0] = $rtbp_other;
-					$rtbp_groups    = array_filter( $rtbp_groups, static fn( $group ) => (bool) $group['items'] );
+					// This room type's amenities by section, in the library's section order; "Other" last.
+					$rtbp_groups = RoomTypePage::amenityGroups( $rtbp_type['amenities'], (array) ( $rtbp_type['amenity_library'] ?? array() ) );
 					?>
 					<section class="space-y-5">
 						<h2 class="text-xl font-bold text-heading"><?php esc_html_e( 'Amenities', 'radius-hotel-booking' ); ?></h2>
