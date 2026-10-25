@@ -1,7 +1,7 @@
 /**
  * Floors (`#/rooms/floors`, feature 6.3): the hotel's ordered list of named
  * floors. Add, rename, drag (or use the arrows) to reorder, delete. A floor
- * that holds rooms — removed rooms included — cannot be deleted.
+ * that holds current rooms cannot be deleted; removed rooms do not count.
  */
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -333,7 +333,7 @@ function FloorRow( {
 		setError( '' );
 	};
 
-	const inUse = floor.total > 0;
+	const inUse = floor.rooms > 0;
 	const removedOnly = floor.total > floor.rooms;
 
 	return (

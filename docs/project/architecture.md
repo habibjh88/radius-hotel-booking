@@ -249,7 +249,9 @@ framework:
   `rtbp_report_definitions`, `rtbp_export_formats`, `rtbp_block_sources`,
   `rtbp_migration_classes`, `rtbp_register_addon_routes`, `SettingsSchema::register()`,
   `rtbp_email_classes`, `rtbp_access_keys`, `rtbp_activity_actions`), and for the website (M04)
-  `rtbp_room_type_base`, `rtbp_public_hold_limit`, `rtbp_enqueue_site_assets`.
+  `rtbp_room_type_base`, `rtbp_public_hold_limit`, `rtbp_enqueue_site_assets`, and for guest
+  accounts `rtbp_account_guest_profile`, `rtbp_account_find_user`, `rtbp_account_roles`,
+  `rtbp_account_phone_meta_key`, `rtbp_account_phone_logins`, `rtbp_guest_account_created`, `rtbp_express_send_code`.
 - **JS seams:** the `window.rtbp` runtime (`ui`, `lib`, `React`, `hooks`) and the filters
   `rtbp.admin.routes`, `rtbp.settings.sections`, `rtbp.booking.panels`, `rtbp.guest.panels`,
   `rtbp.api.error`, `rtbp.dashboard.widgets`, `rtbp.reports.tabs`.

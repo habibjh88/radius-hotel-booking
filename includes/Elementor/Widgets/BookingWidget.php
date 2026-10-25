@@ -135,6 +135,16 @@ class BookingWidget extends \Elementor\Widget_Base {
 				'max'         => 50,
 			)
 		);
+		$this->add_control(
+			'price_breakdown',
+			array(
+				'label'        => __( 'Price breakdown', 'radius-hotel-booking' ),
+				'description'  => __( 'An info icon next to each price opens how it is made: the stay, any discount and the total.', 'radius-hotel-booking' ),
+				'type'         => \Elementor\Controls_Manager::SWITCHER,
+				'return_value' => 'yes',
+				'default'      => Embeds::BOOKING_DEFAULTS['price_breakdown'],
+			)
+		);
 		$this->end_controls_section();
 	}
 
@@ -145,16 +155,16 @@ class BookingWidget extends \Elementor\Widget_Base {
 	 */
 	protected function render() {
 		$settings = $this->get_settings_for_display();
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the template escapes every value.
-		echo Embeds::booking(
-			array(
-				'layout'       => $settings['layout'] ?? Embeds::BOOKING_DEFAULTS['layout'],
-				'display'      => $settings['display'] ?? Embeds::BOOKING_DEFAULTS['display'],
-				'button_text'  => $settings['button_text'] ?? '',
-				'room_details' => $settings['room_details'] ?? Embeds::BOOKING_DEFAULTS['room_details'],
-				'room_card'    => $settings['room_card'] ?? Embeds::BOOKING_DEFAULTS['room_card'],
-				'rates_shown'  => $settings['rates_shown'] ?? Embeds::BOOKING_DEFAULTS['rates_shown'],
-			)
+		$atts     = array(
+			'layout'          => $settings['layout'] ?? Embeds::BOOKING_DEFAULTS['layout'],
+			'display'         => $settings['display'] ?? Embeds::BOOKING_DEFAULTS['display'],
+			'button_text'     => $settings['button_text'] ?? '',
+			'room_details'    => $settings['room_details'] ?? Embeds::BOOKING_DEFAULTS['room_details'],
+			'room_card'       => $settings['room_card'] ?? Embeds::BOOKING_DEFAULTS['room_card'],
+			'rates_shown'     => $settings['rates_shown'] ?? Embeds::BOOKING_DEFAULTS['rates_shown'],
+			'price_breakdown' => 'yes' === ( $settings['price_breakdown'] ?? '' ) ? 'yes' : 'no',
 		);
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the template escapes every value.
+		echo Embeds::booking( $atts );
 	}
 }

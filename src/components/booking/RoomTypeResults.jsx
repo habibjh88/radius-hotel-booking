@@ -16,6 +16,7 @@ import {
 	CalendarDays,
 	Check,
 	ChevronDown,
+	CircleCheck,
 	Clock,
 	Loader2,
 } from 'lucide-react';
@@ -38,6 +39,7 @@ import { windowLabel } from './rates';
 
 // `room_details="popup"` only: loaded on first open.
 const RoomDetailsDialog = lazy( () => import( './RoomDetailsDialog' ) );
+const RateDetailsDialog = lazy( () => import( './RateDetailsDialog' ) );
 
 // Amenities before "+N".
 const FIRST_AMENITIES = 5;
@@ -82,7 +84,9 @@ function totalFor( rate ) {
 }
 
 /**
- * The rate's name, badges, times and (when it cannot be booked) why.
+ * The rate's name, badges, times, features (Non-refundable…), a "Rate
+ * details" link (features, check-in and check-out, policy) and (when it
+ * cannot be booked) why.
  *
  * @param {Object}   props       Props.
  * @param {Object}   props.rate  The rate.
@@ -91,6 +95,10 @@ function totalFor( rate ) {
  * @return {JSX.Element} Summary.
  */
 function RateSummary( { rate, large = false, added = [] } ) {
+	const [ details, setDetails ] = useState( false );
+	const hasDetails = Boolean(
+		rate.features?.length || rate.policy || rate.window || rate.checkin
+	);
 	return (
 		<div className="min-w-0 flex-1 space-y-1">
 			<p
@@ -136,6 +144,39 @@ function RateSummary( { rate, large = false, added = [] } ) {
 					/>
 					{ windowLabel( rate.window ) }
 				</p>
+			) : null }
+			{ rate.features?.length ? (
+				<ul className="m-0 flex list-none flex-wrap gap-x-4 gap-y-1 p-0">
+					{ rate.features.map( ( feature ) => (
+						<li
+							key={ feature }
+							className="m-0 flex items-center gap-1.5 text-sm text-foreground"
+						>
+							<CircleCheck
+								className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+								aria-hidden="true"
+							/>
+							{ feature }
+						</li>
+					) ) }
+				</ul>
+			) : null }
+			{ hasDetails ? (
+				<button
+					type="button"
+					className="m-0 cursor-pointer border-0 bg-transparent p-0 text-sm font-medium text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+					onClick={ () => setDetails( true ) }
+				>
+					{ __( 'Rate details', 'radius-hotel-booking' ) }
+				</button>
+			) : null }
+			{ details ? (
+				<Suspense fallback={ null }>
+					<RateDetailsDialog
+						rate={ rate }
+						onClose={ () => setDetails( false ) }
+					/>
+				</Suspense>
 			) : null }
 			{ ! rate.available ? (
 				<p className="m-0 text-xs text-muted-foreground">
@@ -189,9 +230,16 @@ function SelectButton( { selected, onClick, className, added = false } ) {
  * @param {boolean}  props.selected This rate is the current choice.
  * @param {Function} props.onSelect Called when chosen.
  * @param {string[]} props.added    Rooms of this rate already in the booking.
+ * @param {boolean}  props.breakdown An info icon beside the price opens its breakdown.
  * @return {JSX.Element} Card.
  */
-function RateCard( { rate, selected, onSelect, added = [] } ) {
+function RateCard( {
+	rate,
+	selected,
+	onSelect,
+	added = [],
+	breakdown = false,
+} ) {
 	const available = rate.available;
 	return (
 		<li
@@ -215,7 +263,7 @@ function RateCard( { rate, selected, onSelect, added = [] } ) {
 						<span className="block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
 							{ totalFor( rate ) }
 						</span>
-						<RatePrice rate={ rate } />
+						<RatePrice rate={ rate } breakdown={ breakdown } />
 					</div>
 					<SelectButton
 						selected={ selected }
@@ -237,9 +285,16 @@ function RateCard( { rate, selected, onSelect, added = [] } ) {
  * @param {boolean}  props.selected This rate is the current choice.
  * @param {Function} props.onSelect Called when chosen.
  * @param {string[]} props.added    Rooms of this rate already in the booking.
+ * @param {boolean}  props.breakdown An info icon beside the price opens its breakdown.
  * @return {JSX.Element} Row.
  */
-function RateRow( { rate, selected, onSelect, added = [] } ) {
+function RateRow( {
+	rate,
+	selected,
+	onSelect,
+	added = [],
+	breakdown = false,
+} ) {
 	const available = rate.available;
 
 	return (
@@ -255,7 +310,7 @@ function RateRow( { rate, selected, onSelect, added = [] } ) {
 
 			{ available ? (
 				<div className="flex items-center justify-between gap-4 sm:justify-end">
-					<RatePrice rate={ rate } />
+					<RatePrice rate={ rate } breakdown={ breakdown } />
 					<SelectButton
 						selected={ selected }
 						added={ added.length > 0 }
@@ -279,6 +334,7 @@ function RateRow( { rate, selected, onSelect, added = [] } ) {
  * @param {string}   props.card     `classic` (rates as rows under the type) or
  *                                  `split` (photo and facts beside the rates, each a card).
  * @param {number}   props.firstRates Rates before "Show more rates" (0: all, no button).
+ * @param {boolean}  props.breakdown  An info icon beside each price opens its breakdown.
  * @return {JSX.Element} Card.
  */
 function RoomTypeCard( {
@@ -289,6 +345,7 @@ function RoomTypeCard( {
 	roomDetails = 'page',
 	card = 'classic',
 	firstRates = 4,
+	breakdown = false,
 	booked = {},
 } ) {
 	const [ allRates, setAllRates ] = useState( false );
@@ -455,11 +512,11 @@ function RoomTypeCard( {
 								{ sideAmenities.map( ( amenity ) => (
 									<li
 										key={ amenity }
-										className="flex min-w-0 items-center gap-2 text-sm text-foreground"
+										className="flex min-w-0 items-center gap-2 text-[13px] text-muted-foreground"
 									>
 										<LucideIcon
 											name={ icons[ amenity ] }
-											className="h-4 w-4 text-primary"
+											className="h-3.5 w-3.5"
 										/>
 										<span className="truncate">
 											{ amenity }
@@ -501,7 +558,7 @@ function RoomTypeCard( {
 										rate={ rate }
 										selected={ isSelected( rate ) }
 										added={ addedTo( rate ) }
-										added={ addedTo( rate ) }
+										breakdown={ breakdown }
 										onSelect={ ( picked ) =>
 											onSelect( type, picked )
 										}
@@ -571,11 +628,11 @@ function RoomTypeCard( {
 							{ cardAmenities.map( ( amenity ) => (
 								<li
 									key={ amenity }
-									className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/50 px-2.5 py-0.5 text-xs text-foreground"
+									className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/50 px-2.5 py-0.5 text-xs text-muted-foreground"
 								>
 									<LucideIcon
 										name={ icons[ amenity ] }
-										className="h-3.5 w-3.5 text-primary"
+										className="h-3.5 w-3.5"
 									/>
 									{ amenity }
 								</li>
@@ -608,6 +665,7 @@ function RoomTypeCard( {
 								key={ rate.rate_plan_id }
 								rate={ rate }
 								selected={ isSelected( rate ) }
+								breakdown={ breakdown }
 								onSelect={ ( picked ) =>
 									onSelect( type, picked )
 								}
@@ -644,6 +702,7 @@ function RoomTypeCard( {
  * @param {string}   props.roomDetails  What "Room details" opens: `page` or `popup`.
  * @param {string}   props.roomCard     Room type card: `classic` or `split`.
  * @param {number}   props.ratesShown   Rates per room type before "Show more rates" (0: all).
+ * @param {boolean}  props.priceBreakdown An info icon beside each price opens its breakdown.
  * @param {Object[]} props.lines        The booking's rooms (`room_type_id`, `rate_plan_id`, `room_number`)
  *                                      for these dates: their rates are marked as added.
  * @return {JSX.Element} Results.
@@ -656,6 +715,7 @@ export default function RoomTypeResults( {
 	roomDetails = 'page',
 	roomCard = 'classic',
 	ratesShown = 4,
+	priceBreakdown = false,
 	lines = [],
 } ) {
 	// Type id => rate plan id => room numbers already in the booking.
@@ -755,6 +815,7 @@ export default function RoomTypeResults( {
 						roomDetails={ roomDetails }
 						card={ roomCard }
 						firstRates={ ratesShown }
+						breakdown={ priceBreakdown }
 						booked={ booked[ type.id ] }
 					/>
 				) ) }

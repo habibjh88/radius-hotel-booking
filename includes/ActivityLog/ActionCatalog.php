@@ -58,6 +58,8 @@ final class ActionCatalog {
 			'security.passcode_failed'   => array( self::SECURITY, __( 'Entered a wrong PIN', 'radius-hotel-booking' ) ),
 			'security.pin_locked'        => array( self::SECURITY, __( 'Locked out after wrong PINs', 'radius-hotel-booking' ) ),
 			'security.pin_changed'       => array( self::SECURITY, __( 'Changed a PIN', 'radius-hotel-booking' ) ),
+			'security.express_code_sent' => array( self::SECURITY, __( 'Sent an express checkout code', 'radius-hotel-booking' ) ),
+			'security.express_locked'    => array( self::SECURITY, __( 'Express checkout code locked after wrong tries', 'radius-hotel-booking' ) ),
 			// M04: a banned guest tried to book on the website (refused with a generic message).
 			'security.booking_refused'   => array( self::SECURITY, __( 'Refused a website booking from a banned guest', 'radius-hotel-booking' ) ),
 
@@ -95,6 +97,7 @@ final class ActionCatalog {
 			'rooms.state'                => array( self::DATA, __( 'Changed a room state', 'radius-hotel-booking' ) ),
 			'rooms.move'                 => array( self::DATA, __( 'Moved a room to another type', 'radius-hotel-booking' ) ),
 			'rooms.bulk_create'          => array( self::DATA, __( 'Added rooms in bulk', 'radius-hotel-booking' ) ),
+			'rooms.restore'              => array( self::DATA, __( 'Restored a removed room', 'radius-hotel-booking' ) ),
 
 			// Rate plans and pricing (M07).
 			'rate_plans.create'          => array( self::DATA, __( 'Added a rate plan', 'radius-hotel-booking' ) ),
@@ -117,6 +120,8 @@ final class ActionCatalog {
 			'guests.edit'                => array( self::DATA, __( 'Changed a guest', 'radius-hotel-booking' ) ),
 			'guests.ban'                 => array( self::DATA, __( 'Banned a guest', 'radius-hotel-booking' ) ),
 			'guests.unban'               => array( self::DATA, __( 'Lifted a guest ban', 'radius-hotel-booking' ) ),
+			'guests.account_linked'      => array( self::DATA, __( 'Linked a guest to a website account', 'radius-hotel-booking' ) ),
+			'guests.account_created'     => array( self::DATA, __( 'Created a website account for a guest', 'radius-hotel-booking' ) ),
 			'guests.view_id'             => array( self::VIEW, __( 'Viewed a guest identity document', 'radius-hotel-booking' ) ),
 			'reports.export'             => array( self::VIEW, __( 'Exported a report', 'radius-hotel-booking' ) ),
 			'exports.generate'           => array( self::DATA, __( 'Generated an export file', 'radius-hotel-booking' ) ),

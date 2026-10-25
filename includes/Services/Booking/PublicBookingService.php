@@ -10,6 +10,8 @@ namespace RadiusTheme\RadiusHotelBooking\Services\Booking;
 use DateTimeImmutable;
 use RadiusTheme\RadiusHotelBooking\Core\Container\Container;
 use RadiusTheme\RadiusHotelBooking\Exceptions\DomainException;
+use RadiusTheme\RadiusHotelBooking\Frontend\ExpressCheckout;
+use RadiusTheme\RadiusHotelBooking\Frontend\GuestAccount;
 use RadiusTheme\RadiusHotelBooking\Models\Guest;
 use RadiusTheme\RadiusHotelBooking\Repositories\GuestRepository;
 use RadiusTheme\RadiusHotelBooking\Resources\AvailabilityResource;
@@ -19,6 +21,7 @@ use RadiusTheme\RadiusHotelBooking\Services\Guests\GuestService;
 use RadiusTheme\RadiusHotelBooking\Services\Payments\GuestBookingView;
 use RadiusTheme\RadiusHotelBooking\Support\Dates;
 use RadiusTheme\RadiusHotelBooking\Support\Phone;
+use WP_User;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -170,14 +173,22 @@ class PublicBookingService {
 	 *
 	 * @param array                  $input   `hold_token`, `lines[]` (as held, each with `adults`, `children`),
 	 *                                        `guest { first_name, last_name, phone, email?, id_type, id_number }`,
-	 *                                        `special_requests?`, `consent`, the honeypot, `accept_new_price?`.
+	 *                                        `special_requests?`, `consent`, the honeypot, `accept_new_price?`,
+	 *                                        `express_token?` (ExpressCheckout: the visitor proved the
+	 *                                        phone of a guest on file, whose details fill empty fields).
 	 * @param string                 $session The visitor's session key.
 	 * @param DateTimeImmutable|null $now     Now.
-	 * @return array `{ reference, token, status, page_url }`.
-	 * @throws DomainException 422 fields, 409 `booking_refused` / `room_unavailable` / `price_changed` / engine rules.
+	 * @param WP_User|null           $account The signed-in visitor, verified by their token
+	 *                                        (GuestAccount): empty fields come from the
+	 *                                        account and the booking goes on its guest.
+	 * @return array `{ reference, token, status, page_url, account }`; `account` is
+	 *               GuestAccount::createFor()'s answer for a visitor who was not signed in.
+	 * @throws DomainException 422 fields, 409 `booking_refused` / `room_unavailable` / `price_changed` / engine rules,
+	 *                         401 `sign_in_required`.
 	 */
-	public function create( array $input, string $session, ?DateTimeImmutable $now = null ): array {
+	public function create( array $input, string $session, ?DateTimeImmutable $now = null, ?WP_User $account = null ): array {
 		$now = $now ?? Dates::now();
+		self::assertSignedIn( $account );
 
 		// A bot filled the hidden field: refuse without saying why.
 		if ( '' !== trim( (string) ( $input[ self::HONEYPOT ] ?? '' ) ) ) {
@@ -185,7 +196,36 @@ class PublicBookingService {
 			throw DomainException::conflict( 'booking_refused', __( 'We could not take this booking online. Please contact the hotel.', 'radius-hotel-booking' ) );
 		}
 
-		$guest  = self::guestFields( (array) ( $input['guest'] ?? array() ) );
+		$typed   = (array) ( $input['guest'] ?? array() );
+		$linked  = null;
+		$on_file = null;
+		// The account to link the booking's guest to afterwards.
+		$link_to = $account;
+		if ( $account ) {
+			$linked  = GuestAccount::guest( $account );
+			$on_file = GuestAccount::fields( $account );
+		} else {
+			$proof = ExpressCheckout::proof( (string) ( $input['express_token'] ?? '' ), $session );
+			if ( $proof ) {
+				$linked  = $proof['guest'] ? $proof['guest'] : ( $proof['user'] ? GuestAccount::guest( $proof['user'] ) : null );
+				$on_file = ExpressCheckout::fields( $proof['guest'], $proof['user'] );
+				$link_to = $proof['user'];
+			}
+		}
+		if ( $on_file ) {
+			// What the visitor left empty comes from the record (the form hides
+			// the document fields when one is on file). A document stays whole.
+			foreach ( array( 'first_name', 'last_name', 'phone', 'email' ) as $key ) {
+				if ( '' === trim( (string) ( $typed[ $key ] ?? '' ) ) ) {
+					$typed[ $key ] = $on_file[ $key ];
+				}
+			}
+			if ( '' === trim( (string) ( $typed['id_number'] ?? '' ) ) ) {
+				$typed['id_type']   = $on_file['id_type'];
+				$typed['id_number'] = $on_file['id_number'];
+			}
+		}
+		$guest  = self::guestFields( $typed );
 		$errors = $guest['errors'];
 		if ( rtbp_setting( 'website', 'privacyConsent', true ) && ! rest_sanitize_boolean( $input['consent'] ?? false ) ) {
 			$errors['consent'] = __( 'Please accept the privacy policy to book.', 'radius-hotel-booking' );
@@ -213,8 +253,9 @@ class PublicBookingService {
 			'note'             => mb_substr( sanitize_textarea_field( (string) ( $input['special_requests'] ?? '' ) ), 0, 1000 ),
 			'accept_new_price' => rest_sanitize_boolean( $input['accept_new_price'] ?? false ),
 		);
-		// A guest already on file is used only when the details agree with it.
-		$known = $this->knownGuest( $guest['fields'] );
+		// The signed-in visitor's own guest record; otherwise a guest already on
+		// file is used only when the details agree with it (and is then linked).
+		$known = $linked ? self::bookable( $linked, $guest['fields'] ) : $this->knownGuest( $guest['fields'] );
 		if ( $known ) {
 			$booking_input['guest_id'] = $known;
 		} else {
@@ -235,7 +276,14 @@ class PublicBookingService {
 			if ( 'guest_banned' !== $e->getErrorCode() ) {
 				throw $e;
 			}
-			self::refuse( (int) ( $e->getContext()['guest_id'] ?? 0 ), $guest['fields'], true );
+			self::refuse( (int) ( $e->getContext()['guest_id'] ?? 0 ), $guest['fields'], 'banned' );
+		}
+
+		$created = '';
+		if ( $link_to ) {
+			GuestAccount::link( $link_to, (int) $booking->guest_id );
+		} elseif ( ! $account ) {
+			$created = GuestAccount::createFor( (int) $booking->guest_id, $guest['fields']['phone'], $guest['fields']['email'] );
 		}
 
 		return array(
@@ -243,7 +291,37 @@ class PublicBookingService {
 			'token'     => (string) $booking->public_token,
 			'status'    => (string) $booking->status,
 			'page_url'  => GuestBookingView::pageUrl( $booking ),
+			'account'   => $created,
 		);
+	}
+
+	/**
+	 * Settings → Guest accounts → Require sign-in: refuse a visitor who is not.
+	 *
+	 * @param WP_User|null $account The signed-in visitor.
+	 * @return void
+	 * @throws DomainException 401 `sign_in_required`.
+	 */
+	public static function assertSignedIn( ?WP_User $account ): void {
+		if ( $account || ! rtbp_setting( 'accounts', 'requireSignIn', false ) ) {
+			return;
+		}
+		// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+		throw new DomainException( 'sign_in_required', __( 'Please sign in to your account to book.', 'radius-hotel-booking' ), 401 );
+	}
+
+	/**
+	 * The signed-in visitor's own guest record, unless it is banned.
+	 *
+	 * @param Guest $guest  Linked guest.
+	 * @param array $fields The booking's guest details.
+	 * @return int Guest id.
+	 */
+	private static function bookable( Guest $guest, array $fields ): int {
+		if ( Guest::BANNED === (string) $guest->standing ) {
+			self::refuse( (int) $guest->id, $fields, 'banned' );
+		}
+		return (int) $guest->id;
 	}
 
 	/**

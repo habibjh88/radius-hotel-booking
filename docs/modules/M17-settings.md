@@ -259,6 +259,10 @@ Map each legacy settings option to its new `section.key` (see the legacy referen
 - 2026-09-28, **T5** (uninstall switch, upgrade notice):
   - **General → Uninstall:** a switch for `deleteDataOnUninstall`, which `uninstall.php` has read
     since M00 T8. Turning it on asks for confirmation first; turning it off doesn't.
+  - **Replaced 2026-10-25:** the switch is gone. `uninstall.php` erases data only when
+    wp-config.php defines `RTBP_REMOVE_ALL_DATA` as `true` (as WooCommerce does), so staff
+    cannot turn it on by accident. General → Uninstall now explains this read-only and
+    warns in red when the constant is set (`remove_all_data` in the admin params).
   - **`Admin\UpgradeNotice`** (ADR-016) is the only upsell, shown only while Pro is inactive:
     - An "Upgrade" link on the Plugins screen row.
     - A dismissible notice at the top of Settings, for `manage_options` users. It never

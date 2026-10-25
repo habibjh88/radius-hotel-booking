@@ -24,6 +24,7 @@ import {
 	Wallet,
 	Globe,
 	FileDown,
+	UserRound,
 } from 'lucide-react';
 
 import { refreshAccess } from '@/lib/access';
@@ -80,6 +81,16 @@ export default function coreSections() {
 			),
 			icon: Globe,
 			Component: lazy( () => import( './Website' ) ),
+		},
+		{
+			key: 'accounts',
+			label: __( 'Guest accounts', 'radius-hotel-booking' ),
+			description: __(
+				'Signing in on the booking form and accounts for new guests',
+				'radius-hotel-booking'
+			),
+			icon: UserRound,
+			Component: lazy( () => import( './Accounts' ) ),
 		},
 		{
 			key: 'phone',

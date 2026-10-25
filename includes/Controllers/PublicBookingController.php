@@ -10,6 +10,8 @@ namespace RadiusTheme\RadiusHotelBooking\Controllers;
 use RadiusTheme\RadiusHotelBooking\Abstracts\BaseController;
 use RadiusTheme\RadiusHotelBooking\Core\Api\ApiResponse;
 use RadiusTheme\RadiusHotelBooking\Core\Api\Middleware\RateLimitMiddleware;
+use RadiusTheme\RadiusHotelBooking\Frontend\ExpressCheckout;
+use RadiusTheme\RadiusHotelBooking\Frontend\GuestAccount;
 use RadiusTheme\RadiusHotelBooking\Frontend\PublicSession;
 use RadiusTheme\RadiusHotelBooking\Repositories\BookingRepository;
 use RadiusTheme\RadiusHotelBooking\Services\Booking\PublicBookingService;
@@ -30,6 +32,8 @@ defined( 'ABSPATH' ) || exit;
  * | POST `public/holds`, DELETE `public/holds/{token}` | 10 / min |
  * | POST `public/bookings` | 5 / min |
  * | GET `public/bookings/{token}` (M05, the 128-bit token is the key) | 30 / min |
+ * | GET `public/account` (the signed-in visitor, Frontend\GuestAccount) | 30 / min |
+ * | POST `public/express/start`, `public/express/verify` (Frontend\ExpressCheckout) | 5 / min, 10 / min |
  *
  * Holds belong to the visitor's `rtbp_guest` cookie (Frontend\PublicSession).
  * The rules live in `PublicBookingService`; this only reads input and answers.
@@ -59,6 +63,8 @@ class PublicBookingController extends BaseController {
 				$patterns['DELETE'][] = $base . 'holds/[A-Za-z0-9]{32}$#';
 				$patterns['PUT'][]    = $base . 'holds/[A-Za-z0-9]{32}$#';
 				$patterns['POST'][]   = $base . 'bookings$#';
+				$patterns['GET'][]    = $base . 'account$#';
+				$patterns['POST'][]   = $base . 'express/(start|verify)$#';
 				return $patterns;
 			}
 		);
@@ -108,6 +114,8 @@ class PublicBookingController extends BaseController {
 				if ( is_array( $room_ids ) && $room_ids ) {
 					$input['room_ids'] = array_slice( array_map( 'absint', $room_ids ), 0, 100 );
 				}
+				// Settings → Guest accounts → Require sign-in (the cookie is enough to hold).
+				PublicBookingService::assertSignedIn( GuestAccount::user() );
 				$hold = ( new PublicBookingService() )->hold( $input, PublicSession::key( true ) );
 				return ApiResponse::created( $hold, __( 'Room held for you.', 'radius-hotel-booking' ) );
 			}
@@ -161,10 +169,69 @@ class PublicBookingController extends BaseController {
 			5,
 			'public_bookings',
 			static function ( $request ) {
-				$result = ( new PublicBookingService() )->create( (array) $request->get_json_params(), PublicSession::key() );
+				// The account counts only with the token it was given (no cross-site bookings).
+				$account = GuestAccount::verified( (string) $request->get_header( 'x-rtbp-account' ) );
+				$result  = ( new PublicBookingService() )->create( (array) $request->get_json_params(), PublicSession::key(), null, $account );
 				return ApiResponse::created( $result, __( 'Thank you — your booking has been received.', 'radius-hotel-booking' ) );
 			}
 		);
+	}
+
+	/**
+	 * GET public/account: the signed-in visitor, their token and the details
+	 * the booking form starts with (`{ signed_in: false }` otherwise).
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function account( WP_REST_Request $request ) {
+		$response = self::limited(
+			$request,
+			30,
+			'public_account',
+			static fn() => ApiResponse::success( GuestAccount::payload() )
+		);
+		// Personal: no page or proxy cache may keep it (WordPress only adds
+		// these for requests it sees as signed in, and this one it does not).
+		if ( $response instanceof \WP_REST_Response ) {
+			$response->header( 'Cache-Control', 'no-store, private, max-age=0' );
+		}
+		return $response;
+	}
+
+	/**
+	 * POST public/express/start `{ phone }`: send a returning guest their code.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function expressStart( WP_REST_Request $request ) {
+		return self::limited(
+			$request,
+			5,
+			'public_express_start',
+			static fn( $request ) => ApiResponse::success( ExpressCheckout::start( (string) $request->get_param( 'phone' ), PublicSession::key( true ) ) )
+		);
+	}
+
+	/**
+	 * POST public/express/verify `{ challenge, code }`: the guest's details and proof.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function expressVerify( WP_REST_Request $request ) {
+		$response = self::limited(
+			$request,
+			10,
+			'public_express_verify',
+			static fn( $request ) => ApiResponse::success( ExpressCheckout::verify( (string) $request->get_param( 'challenge' ), (string) $request->get_param( 'code' ), PublicSession::key() ) )
+		);
+		// Personal: never cached.
+		if ( $response instanceof \WP_REST_Response ) {
+			$response->header( 'Cache-Control', 'no-store, private, max-age=0' );
+		}
+		return $response;
 	}
 
 	/**

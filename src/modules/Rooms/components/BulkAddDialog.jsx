@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/select';
 import { toast, toastError } from '@/lib/toast';
 import { cn } from '@/lib/utils';
+import RoomTypeField from './RoomTypeField';
 import { previewBulkRooms, useBulkAddRooms } from '../api';
 
 /**
@@ -43,14 +44,28 @@ const fieldErrors = ( error ) =>
 
 /**
  * @param {Object}   props         Props.
- * @param {Object}   props.type    Room type.
+ * @param {Object}   props.type    Room type (omit and pass `types` to choose one).
+ * @param {Object[]} props.types   Room types to choose from when adding outside a type.
+ * @param {number}   props.typeId  Preselected room type when choosing one.
  * @param {Object[]} props.floors  Floors.
  * @param {number}   props.floorId Preselected floor.
  * @param {Function} props.onClose Close.
  * @return {JSX.Element} Dialog.
  */
-export default function BulkAddDialog( { type, floors, floorId, onClose } ) {
-	const create = useBulkAddRooms( type.id );
+export default function BulkAddDialog( {
+	type,
+	types = [],
+	typeId: initialTypeId,
+	floors,
+	floorId,
+	onClose,
+} ) {
+	const [ typeId, setTypeId ] = useState(
+		String( type?.id || initialTypeId || '' )
+	);
+	const chosen =
+		type || types.find( ( option ) => String( option.id ) === typeId );
+	const create = useBulkAddRooms( Number( typeId ) );
 	const [ values, setValues ] = useState( {
 		floor_id: String( floorId || floors[ 0 ]?.id || '' ),
 		prefix: '',
@@ -79,9 +94,18 @@ export default function BulkAddDialog( { type, floors, floorId, onClose } ) {
 
 	const preview = async ( event ) => {
 		event.preventDefault();
+		if ( ! chosen ) {
+			setErrors( {
+				room_type_id: __(
+					'Choose a room type.',
+					'radius-hotel-booking'
+				),
+			} );
+			return;
+		}
 		setLoading( true );
 		try {
-			setPlan( await previewBulkRooms( type.id, body() ) );
+			setPlan( await previewBulkRooms( Number( typeId ), body() ) );
 			setErrors( {} );
 		} catch ( error ) {
 			const fields = fieldErrors( error );
@@ -140,11 +164,16 @@ export default function BulkAddDialog( { type, floors, floorId, onClose } ) {
 				<form onSubmit={ preview } noValidate className="space-y-4">
 					<DialogHeader>
 						<DialogTitle>
-							{ sprintf(
-								/* translators: %s: room type name. */
-								__( 'Add rooms to %s', 'radius-hotel-booking' ),
-								type.name
-							) }
+							{ type
+								? sprintf(
+										/* translators: %s: room type name. */
+										__(
+											'Add rooms to %s',
+											'radius-hotel-booking'
+										),
+										type.name
+								  )
+								: __( 'Add rooms', 'radius-hotel-booking' ) }
 						</DialogTitle>
 						<DialogDescription>
 							{ __(
@@ -153,6 +182,24 @@ export default function BulkAddDialog( { type, floors, floorId, onClose } ) {
 							) }
 						</DialogDescription>
 					</DialogHeader>
+
+					{ ! type ? (
+						<RoomTypeField
+							id="rtbp-bulk-room_type_id"
+							types={ types }
+							value={ typeId }
+							onChange={ ( next ) => {
+								setTypeId( next );
+								// The preview depends on the type: start over.
+								setPlan( null );
+								setErrors( ( prev ) => ( {
+									...prev,
+									room_type_id: '',
+								} ) );
+							} }
+							error={ errors.room_type_id }
+						/>
+					) : null }
 
 					{ field(
 						'floor_id',
@@ -265,6 +312,19 @@ export default function BulkAddDialog( { type, floors, floorId, onClose } ) {
 									),
 									plan.create
 								) }
+								{ plan.restore
+									? ' · ' +
+									  sprintf(
+											/* translators: %d: number of removed rooms brought back. */
+											_n(
+												'%d is a removed room and comes back',
+												'%d are removed rooms and come back',
+												plan.restore,
+												'radius-hotel-booking'
+											),
+											plan.restore
+									  )
+									: '' }
 								{ plan.skip
 									? ' · ' +
 									  sprintf(
@@ -285,13 +345,23 @@ export default function BulkAddDialog( { type, floors, floorId, onClose } ) {
 										key={ item.number }
 										className={ cn(
 											'm-0 rounded-md border px-2 py-0.5 text-xs font-semibold',
-											item.status === 'new'
-												? 'border-success bg-success-soft text-success'
-												: 'border-border bg-card text-muted-foreground line-through'
+											item.status === 'taken'
+												? 'border-border bg-card text-muted-foreground line-through'
+												: 'border-success bg-success-soft text-success'
 										) }
 										title={
 											item.status === 'new'
 												? undefined
+												: item.status === 'restore'
+												? sprintf(
+														/* translators: 1: room number, 2: room type name. */
+														__(
+															'%1$s was a removed room of %2$s and comes back',
+															'radius-hotel-booking'
+														),
+														item.number,
+														item.owner
+												  )
 												: sprintf(
 														/* translators: 1: room number, 2: room type name. */
 														__(
@@ -311,7 +381,7 @@ export default function BulkAddDialog( { type, floors, floorId, onClose } ) {
 								<ul className="m-0 list-none space-y-0.5 p-0 text-xs text-muted-foreground">
 									{ plan.numbers
 										.filter(
-											( item ) => item.status !== 'new'
+											( item ) => item.status === 'taken'
 										)
 										.map( ( item ) => (
 											<li

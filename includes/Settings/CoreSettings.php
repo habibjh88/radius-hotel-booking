@@ -34,6 +34,8 @@ final class CoreSettings {
 		SettingsSchema::register( 'invoices', PaymentSettings::invoices() );
 		// How guests book on the website (M04).
 		SettingsSchema::register( 'website', WebsiteSettings::schema() );
+		// Guests' WordPress accounts: sign-in on the booking form, new accounts.
+		SettingsSchema::register( 'accounts', AccountSettings::schema() );
 		// Export files (M11).
 		SettingsSchema::register(
 			'exports',
@@ -79,98 +81,93 @@ final class CoreSettings {
 	private static function general(): array {
 		return array(
 			// The hotel's trading name (e-mails, booking pages, documents).
-			'companyName'           => array(
+			'companyName'       => array(
 				'type'      => 'string',
 				'default'   => static fn() => (string) get_bloginfo( 'name' ),
 				'maxLength' => 120,
 			),
 			// Registered company name for invoices and payslips; empty = the hotel name.
-			'legalName'             => array(
+			'legalName'         => array(
 				'type'      => 'string',
 				'default'   => '',
 				'maxLength' => 160,
 			),
 			// Postal address, several lines.
-			'address'               => array(
+			'address'           => array(
 				'type'      => 'text',
 				'default'   => '',
 				'maxLength' => 500,
 			),
-			'phone'                 => array(
+			'phone'             => array(
 				'type'      => 'string',
 				'default'   => '',
 				'maxLength' => 40,
 			),
-			'contactEmail'          => array(
+			'contactEmail'      => array(
 				'type'    => 'email',
 				'default' => static fn() => (string) get_option( 'admin_email' ),
 			),
 			// Media library image (attachment id, 0 = none): e-mails and documents.
-			'logo'                  => array(
+			'logo'              => array(
 				'type'    => 'media',
 				'default' => 0,
 				'mime'    => array( 'image/' ),
 			),
 			// Tax registration number printed on invoices.
-			'taxNumber'             => array(
+			'taxNumber'         => array(
 				'type'      => 'string',
 				'default'   => '',
 				'maxLength' => 60,
 			),
 			// Employer social-security registration number, printed on invoices and payslips.
-			'cnpsNumber'            => array(
+			'cnpsNumber'        => array(
 				'type'      => 'string',
 				'default'   => '',
 				'maxLength' => 60,
 			),
 			// PHP date format for display; defaults to the WordPress setting.
-			'dateFormat'            => array(
+			'dateFormat'        => array(
 				'type'      => 'string',
 				'default'   => static fn() => (string) get_option( 'date_format', 'Y-m-d' ),
 				'maxLength' => 30,
 			),
 			// '24h' or '12h'; defaults from the WordPress time format.
-			'timeSystem'            => array(
+			'timeSystem'        => array(
 				'type'    => 'enum',
 				'options' => array( '24h', '12h' ),
 				'default' => static fn() => false !== strpbrk( (string) get_option( 'time_format', 'g:i a' ), 'GH' ) ? '24h' : '12h',
 			),
 			// Currency (Support\Money). "15 000 CFA" is XOF / CFA / right_space / ' ' / ',' / 0.
-			'currencyCode'          => array(
+			'currencyCode'      => array(
 				'type'      => 'string',
 				'default'   => 'USD',
 				'maxLength' => 3,
 			),
-			'currencySymbol'        => array(
+			'currencySymbol'    => array(
 				'type'      => 'string',
 				'default'   => '$',
 				'maxLength' => 10,
 			),
-			'currencyPosition'      => array(
+			'currencyPosition'  => array(
 				'type'    => 'enum',
 				'options' => array( 'left', 'right', 'left_space', 'right_space' ),
 				'default' => 'left',
 			),
-			'thousandSeparator'     => array(
+			'thousandSeparator' => array(
 				'type'     => 'string',
 				'default'  => ',',
 				'sanitize' => array( self::class, 'separator' ),
 			),
-			'decimalSeparator'      => array(
+			'decimalSeparator'  => array(
 				'type'     => 'string',
 				'default'  => '.',
 				'sanitize' => array( self::class, 'separator' ),
 			),
-			'decimals'              => array(
+			'decimals'          => array(
 				'type'    => 'int',
 				'default' => 2,
 				'min'     => 0,
 				'max'     => 4,
-			),
-			// uninstall.php removes every table, option, role and file only when true.
-			'deleteDataOnUninstall' => array(
-				'type'    => 'bool',
-				'default' => false,
 			),
 		);
 	}

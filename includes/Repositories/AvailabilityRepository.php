@@ -45,7 +45,7 @@ class AvailabilityRepository {
 					t.slug AS type_slug, t.short_description, t.featured_image_id, t.gallery, t.bed_info, t.size_m2, t.amenities, t.highlights,
 					r.id AS rate_id, r.rate_plan_id, r.price, r.sale_price, r.min_units, r.max_units, r.enabled,
 					p.name AS plan_name, p.type AS plan_type, p.start_time, p.end_time, p.duration_minutes,
-					p.checkin_from, p.checkin_until, p.multi_unit, p.is_active AS plan_active
+					p.checkin_from, p.checkin_until, p.multi_unit, p.features AS plan_features, p.policy AS plan_policy, p.checkin_rules AS plan_checkin_rules, p.is_active AS plan_active
 				FROM %i t
 				LEFT JOIN %i r ON r.room_type_id = t.id
 				LEFT JOIN %i p ON p.id = r.rate_plan_id AND p.deleted_at IS NULL

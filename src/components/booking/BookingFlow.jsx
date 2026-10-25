@@ -18,6 +18,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { addDaysYmd, formatDate, siteToday } from '@/lib/format';
 import { toast, toastError } from '@/lib/toast';
 import { post } from '@/api/client';
+import AccountBar, {
+	SignInGate,
+	accountSettings,
+	useAccount,
+} from './AccountBar';
 import BookingDone from './BookingDone';
 import BookingLines from './BookingLines';
 import DatesBar from './DatesBar';
@@ -81,6 +86,7 @@ const overlaps = ( a, b ) =>
  * @param {string}  [props.roomDetails] Website: "Room details" opens its `page` or a `popup`.
  * @param {string}  [props.roomCard] Website: room type card, `classic` or `split`.
  * @param {number}  [props.ratesShown] Website: rates per room type before "Show more" (0: all).
+ * @param {boolean} [props.priceBreakdown] Website: an info icon beside each rate's price opens its breakdown.
  * @return {JSX.Element} Flow.
  */
 export default function BookingFlow( {
@@ -90,6 +96,7 @@ export default function BookingFlow( {
 	roomDetails = 'page',
 	roomCard = 'classic',
 	ratesShown = 4,
+	priceBreakdown = false,
 } ) {
 	// The website (M04): its own endpoints and rules; the flow is the same.
 	const guestMode = 'guest' === mode;
@@ -124,6 +131,31 @@ export default function BookingFlow( {
 	// The guest's own details and consent (website only).
 	const [ guestForm, setGuestForm ] = useState( EMPTY_GUEST_FORM );
 	const [ consent, setConsent ] = useState( false );
+	// The signed-in visitor (Settings → Guest accounts): their details fill the form once.
+	const { data: account, isFetched: accountChecked } =
+		useAccount( guestMode );
+	useEffect( () => {
+		const details = account?.signed_in ? account.details : null;
+		if ( ! details ) {
+			return;
+		}
+		setGuestForm( ( prev ) => {
+			const next = { ...prev };
+			[ 'first_name', 'last_name', 'phone', 'email' ].forEach(
+				( key ) => {
+					if ( ! next[ key ] && details[ key ] ) {
+						next[ key ] = details[ key ];
+					}
+				}
+			);
+			if ( details.id_on_file && ! next.id_number ) {
+				next.id_on_file = true;
+				next.id_type = details.id_type;
+				next.id_hint = details.id_hint;
+			}
+			return next;
+		} );
+	}, [ account ] );
 	// Until staff set the time themselves, it follows the arrival date.
 	const [ timeTouched, setTimeTouched ] = useState( false );
 	const [ choice, setChoice ] = useState( null );
@@ -450,34 +482,48 @@ export default function BookingFlow( {
 		setGuestErrors( {} );
 		setPriceChange( null );
 		try {
-			const { data } = await post( 'public/bookings', {
-				hold_token: holds.token,
-				lines: lines.map( ( line ) => ( {
-					room_id: line.room_id,
-					room_type_id: line.room_type_id,
-					rate_plan_id: line.rate_plan_id,
-					arrival: line.arrival,
-					units: line.units,
-					...( line.checkin_time
-						? { checkin_time: line.checkin_time }
+			const { data } = await post(
+				'public/bookings',
+				{
+					hold_token: holds.token,
+					lines: lines.map( ( line ) => ( {
+						room_id: line.room_id,
+						room_type_id: line.room_type_id,
+						rate_plan_id: line.rate_plan_id,
+						arrival: line.arrival,
+						units: line.units,
+						...( line.checkin_time
+							? { checkin_time: line.checkin_time }
+							: {} ),
+						adults: line.adults,
+						children: line.children,
+						// The price shown: the server refuses if it moved (price_changed).
+						expected_total: line.total,
+					} ) ),
+					guest: {
+						first_name: guestForm.first_name,
+						last_name: guestForm.last_name,
+						phone: guestForm.phone,
+						email: guestForm.email,
+						// A document on file is not sent: the server takes the one it has.
+						id_type: guestForm.id_on_file ? '' : guestForm.id_type,
+						id_number: guestForm.id_on_file
+							? ''
+							: guestForm.id_number,
+					},
+					special_requests: guestForm.special_requests,
+					consent,
+					company_website: guestForm.company_website,
+					// Express checkout's proof: the server fills the rest from the record.
+					...( guestForm.express_token
+						? { express_token: guestForm.express_token }
 						: {} ),
-					adults: line.adults,
-					children: line.children,
-					// The price shown: the server refuses if it moved (price_changed).
-					expected_total: line.total,
-				} ) ),
-				guest: {
-					first_name: guestForm.first_name,
-					last_name: guestForm.last_name,
-					phone: guestForm.phone,
-					email: guestForm.email,
-					id_type: guestForm.id_type,
-					id_number: guestForm.id_number,
 				},
-				special_requests: guestForm.special_requests,
-				consent,
-				company_website: guestForm.company_website,
-			} );
+				// The account's token: without it the booking is not theirs (no cross-site bookings).
+				account?.token
+					? { headers: { 'X-RTBP-Account': account.token } }
+					: {}
+			);
 			// The booking consumed the holds; the guest's page has the instructions and invoice.
 			holds.releaseAll( false );
 			allowLeave();
@@ -658,13 +704,27 @@ export default function BookingFlow( {
 	if ( guestMode ) {
 		const Face =
 			'onepage' === layout ? GuestBookingOnePage : GuestBookingSteps;
+		// Settings → Guest accounts → Require sign-in (the server refuses too).
+		if (
+			accountSettings().requireSignIn &&
+			accountChecked &&
+			! account?.signed_in
+		) {
+			return (
+				<div data-mode={ mode } data-layout={ layout }>
+					<SignInGate />
+				</div>
+			);
+		}
 		return (
 			<div data-mode={ mode } data-layout={ layout }>
+				<AccountBar account={ account } checked={ accountChecked } />
 				<Face
 					visible={ visible }
 					roomDetails={ roomDetails }
 					roomCard={ roomCard }
 					ratesShown={ ratesShown }
+					priceBreakdown={ priceBreakdown }
 					rules={ rules }
 					search={ search }
 					limits={ limits }

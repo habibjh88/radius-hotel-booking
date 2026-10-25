@@ -28,6 +28,7 @@ defined( 'ABSPATH' ) || exit;
  * @property bool        $multi_unit
  * @property array       $features
  * @property string      $policy
+ * @property string|null $checkin_rules
  * @property bool        $is_active
  * @property int         $sort_order
  */
@@ -67,6 +68,7 @@ class RatePlan extends BaseModel {
 		'multi_unit',
 		'features',
 		'policy',
+		'checkin_rules',
 		'is_active',
 		'sort_order',
 	);

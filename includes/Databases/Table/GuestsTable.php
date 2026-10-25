@@ -65,6 +65,8 @@ class GuestsTable extends Migration {
 				$table->index( 'name_search', 'name_search' );
 				$table->index( 'phone_tail', 'phone_tail' );
 				$table->index( 'standing', 'standing' );
+				// The guest linked to a WordPress account (Frontend\GuestAccount).
+				$table->index( 'wp_user_id', 'wp_user_id' );
 			}
 		);
 	}

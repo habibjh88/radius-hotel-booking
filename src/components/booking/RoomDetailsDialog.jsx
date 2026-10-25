@@ -225,7 +225,7 @@ export default function RoomDetailsDialog( { type, guests, onClose } ) {
 		// Utilities are scoped *under* .rtbp-root, so the overlay is its child.
 		<div className="rtbp-root" data-rtbp-nested-dialog>
 			<div
-				className="fixed inset-0 z-[100020] flex items-stretch justify-center bg-black/60 sm:items-center sm:p-6"
+				className="fixed inset-0 z-[100020] flex items-stretch justify-center bg-black/60 duration-200 animate-in fade-in-0 motion-reduce:animate-none sm:items-center sm:p-6"
 				onMouseDown={ ( event ) => {
 					if ( event.target === event.currentTarget ) {
 						onClose();
@@ -236,7 +236,7 @@ export default function RoomDetailsDialog( { type, guests, onClose } ) {
 					role="dialog"
 					aria-modal="true"
 					aria-labelledby={ `rtbp-room-${ type.id }` }
-					className="flex h-full w-full max-w-[1000px] flex-col overflow-clip bg-card shadow-2xl sm:h-auto sm:max-h-[min(40rem,calc(100vh-3rem))] sm:rounded-2xl md:flex-row"
+					className="flex h-full w-full max-w-[1000px] flex-col overflow-clip bg-card shadow-2xl duration-200 animate-in fade-in-0 zoom-in-95 motion-reduce:animate-none sm:h-auto sm:max-h-[min(40rem,calc(100vh-3rem))] sm:rounded-2xl md:flex-row"
 				>
 					<div className="aspect-[4/3] shrink-0 md:aspect-auto md:w-[42%]">
 						<Slider

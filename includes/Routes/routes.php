@@ -89,8 +89,10 @@ $this->router->post( 'amenities/import', array( AmenityController::class, 'impor
 $this->router->resource( 'amenities', AmenityController::class );
 $this->router->resource( 'room-types', RoomTypeController::class );
 $this->router->get( 'room-types/(?P<id>\d+)/rooms', array( RoomController::class, 'ofType' ) );
-// Before the resource: `rooms/bulk` is not an id.
+// Before the resource: `rooms/bulk…` is not an id.
 $this->router->post( 'rooms/bulk', array( RoomController::class, 'bulk' ) );
+$this->router->post( 'rooms/bulk-action', array( RoomController::class, 'bulkAction' ) );
+$this->router->post( 'rooms/bulk-move', array( RoomController::class, 'bulkMove' ) );
 $this->router->resource( 'rooms', RoomController::class );
 $this->router->post( 'rooms/(?P<id>\d+)/state', array( RoomController::class, 'state' ) );
 $this->router->post( 'rooms/(?P<id>\d+)/move', array( RoomController::class, 'move' ) );
@@ -143,6 +145,9 @@ $this->router->post( 'public/holds', array( PublicBookingController::class, 'hol
 $this->router->delete( 'public/holds/(?P<token>[A-Za-z0-9]{32})', array( PublicBookingController::class, 'holdDestroy' ) );
 $this->router->put( 'public/holds/(?P<token>[A-Za-z0-9]{32})', array( PublicBookingController::class, 'holdExtend' ) );
 $this->router->post( 'public/bookings', array( PublicBookingController::class, 'store' ) );
+$this->router->get( 'public/account', array( PublicBookingController::class, 'account' ) );
+$this->router->post( 'public/express/start', array( PublicBookingController::class, 'expressStart' ) );
+$this->router->post( 'public/express/verify', array( PublicBookingController::class, 'expressVerify' ) );
 $this->router->get( 'public/bookings/(?P<token>[a-f0-9]{32})', array( PublicBookingController::class, 'showByToken' ) );
 
 // Guests (M09). `guests/lookup` before the resource: it is not an id.

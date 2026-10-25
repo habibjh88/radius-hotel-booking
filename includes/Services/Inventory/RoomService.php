@@ -120,21 +120,39 @@ class RoomService {
 	}
 
 	/**
-	 * Add a room.
+	 * Add a room. When the number belongs to a removed room, that room comes
+	 * back (same id, so its past bookings still point at it) on the chosen
+	 * type and floor, instead of a second room with the same number.
 	 *
 	 * @param array $input `{ room_type_id, floor_id, number, state?, state_note? }`.
 	 * @return Room
 	 * @throws DomainException When the insert did not happen.
 	 */
 	public function create( array $input ): Room {
-		$number  = $this->validNumber( $input['number'] ?? '', 0 );
+		$number  = $this->validNumber( $input['number'] ?? '', 0, true );
 		$type_id = absint( $input['room_type_id'] ?? 0 );
 		$floor   = absint( $input['floor_id'] ?? 0 );
 		list( $state, $note ) = $this->validState( $input, Room::AVAILABLE, '' );
 
-		$room = Transaction::run(
-			function () use ( $number, $type_id, $floor, $state, $note ) {
+		$restored = false;
+		$room     = Transaction::run(
+			function () use ( $number, $type_id, $floor, $state, $note, &$restored ) {
 				$this->lockParents( $type_id, $floor );
+				$removed = $this->removedOwner( $number );
+				if ( $removed ) {
+					$restored = true;
+					return $this->restore(
+						(int) $removed->id,
+						array(
+							'room_type_id' => $type_id,
+							'floor_id'     => $floor,
+							'number'       => $number,
+							'number_sort'  => NaturalSort::key( $number ),
+							'state'        => $state,
+							'state_note'   => $note,
+						)
+					);
+				}
 				// Checked again under the locks: two adds of one number cannot both pass.
 				$this->assertNumberFree( $number, 0 );
 				return Db::quietly(
@@ -167,7 +185,7 @@ class RoomService {
 		}
 
 		rtbp_activity(
-			'rooms.create',
+			$restored ? 'rooms.restore' : 'rooms.create',
 			$room,
 			array(
 				'after'       => array(
@@ -176,8 +194,11 @@ class RoomService {
 					'floor_id'     => $floor,
 					'state'        => $state,
 				),
-				/* translators: %s: room number. */
-				'description' => sprintf( __( 'Added room %s', 'radius-hotel-booking' ), $number ),
+				'description' => $restored
+					/* translators: %s: room number. */
+					? sprintf( __( 'Restored removed room %s', 'radius-hotel-booking' ), $number )
+					/* translators: %s: room number. */
+					: sprintf( __( 'Added room %s', 'radius-hotel-booking' ), $number ),
 			)
 		);
 
@@ -199,8 +220,9 @@ class RoomService {
 	/**
 	 * Add a range of rooms: prefix + from…to, optionally zero-padded
 	 * ("A" 1–12 → A1…A12; pad 3 → A001…A012), all on one floor (6.10).
-	 * Numbers that already exist (removed rooms included) are listed and
-	 * skipped. With `dry_run` nothing is written: the answer is the preview.
+	 * Numbers of live rooms are listed and skipped; numbers of removed rooms
+	 * bring those rooms back (see create()). With `dry_run` nothing is
+	 * written: the answer is the preview.
 	 *
 	 * @param array $input `{ room_type_id, floor_id, prefix, from, to, pad, dry_run }`.
 	 * @return array{ numbers: array[], create: int, skip: int, created: array[] }
@@ -265,6 +287,20 @@ class RoomService {
 				$plan    = $this->bulkPlan( $numbers );
 				$created = array();
 				foreach ( $plan['numbers'] as $item ) {
+					if ( 'restore' === $item['status'] ) {
+						$created[] = $this->restore(
+							(int) $item['id'],
+							array(
+								'room_type_id' => $type_id,
+								'floor_id'     => $floor,
+								'number'       => $item['number'],
+								'number_sort'  => NaturalSort::key( $item['number'] ),
+								'state'        => Room::AVAILABLE,
+								'state_note'   => '',
+							)
+						);
+						continue;
+					}
 					if ( 'new' !== $item['status'] ) {
 						continue;
 					}
@@ -295,7 +331,8 @@ class RoomService {
 
 		$created = $result['created'];
 		if ( $created ) {
-			$skipped = array_values( array_column( array_filter( $result['plan']['numbers'], static fn( $item ) => 'new' !== $item['status'] ), 'number' ) );
+			$skipped  = array_values( array_column( array_filter( $result['plan']['numbers'], static fn( $item ) => 'taken' === $item['status'] ), 'number' ) );
+			$restored = array_values( array_column( array_filter( $result['plan']['numbers'], static fn( $item ) => 'restore' === $item['status'] ), 'number' ) );
 			rtbp_activity(
 				'rooms.bulk_create',
 				array(
@@ -307,6 +344,7 @@ class RoomService {
 					'after'       => array(
 						'floor_id' => $floor,
 						'rooms'    => array_map( static fn( Room $room ) => (string) $room->number, $created ),
+						'restored' => $restored,
 						'skipped'  => $skipped,
 					),
 					'description' => sprintf(
@@ -326,10 +364,12 @@ class RoomService {
 	}
 
 	/**
-	 * Which of the numbers are new and which exist already (with the owner).
+	 * Which of the numbers are new, which bring a removed room back
+	 * (`restore`, with its id) and which belong to a live room (`taken`), with
+	 * the owning room type.
 	 *
 	 * @param string[] $numbers Numbers.
-	 * @return array{ numbers: array[], create: int, skip: int }
+	 * @return array{ numbers: array[], create: int, restore: int, skip: int }
 	 */
 	private function bulkPlan( array $numbers ): array {
 		// One IN query finds whether anything clashes. The column's collation
@@ -347,23 +387,27 @@ class RoomService {
 			}
 			$seen[ $key ] = true;
 			$owner        = $any ? $this->rooms->findByNumberAny( $number ) : null;
-			$out[]        = $owner
-				? array(
-					'number' => $number,
-					'status' => 'taken',
-					'owner'  => '' !== (string) $owner->room_type_name ? (string) $owner->room_type_name : __( 'another room type', 'radius-hotel-booking' ),
-				)
-				: array(
+			if ( ! $owner ) {
+				$out[] = array(
 					'number' => $number,
 					'status' => 'new',
 					'owner'  => '',
 				);
+				continue;
+			}
+			$out[] = array(
+				'number' => $number,
+				'status' => $owner->deleted_at ? 'restore' : 'taken',
+				'owner'  => '' !== (string) $owner->room_type_name ? (string) $owner->room_type_name : __( 'another room type', 'radius-hotel-booking' ),
+			) + ( $owner->deleted_at ? array( 'id' => (int) $owner->id ) : array() );
 		}
 
-		$create = count( array_filter( $out, static fn( $item ) => 'new' === $item['status'] ) );
+		$restore = count( array_filter( $out, static fn( $item ) => 'restore' === $item['status'] ) );
+		$create  = $restore + count( array_filter( $out, static fn( $item ) => 'new' === $item['status'] ) );
 		return array(
 			'numbers' => $out,
 			'create'  => $create,
+			'restore' => $restore,
 			'skip'    => count( $out ) - $create,
 		);
 	}
@@ -759,6 +803,222 @@ class RoomService {
 	}
 
 	/**
+	 * Every room of the hotel (not removed), in natural order, each with its
+	 * room type and floor names: the All rooms screen.
+	 *
+	 * @return array[]
+	 */
+	public function listAll(): array {
+		$types = array();
+		foreach ( $this->types->ordered() as $type ) {
+			$types[ (int) $type->id ] = (string) $type->name;
+		}
+		$floors = array();
+		foreach ( $this->floors->ordered() as $floor ) {
+			$floors[ (int) $floor->id ] = (string) $floor->name;
+		}
+
+		$rows = Room::query()->orderBy( 'number_sort' )->get();
+		return array_map(
+			static function ( $row ) use ( $types, $floors ) {
+				$room = Room::hydrate( $row );
+				return self::shape( $room ) + array(
+					'room_type_name' => $types[ (int) $room->room_type_id ] ?? '',
+					'floor_name'     => $floors[ (int) $room->floor_id ] ?? '',
+				);
+			},
+			$rows
+		);
+	}
+
+	/**
+	 * Most rooms one bulk action may change.
+	 */
+	const BULK_ACTION_MAX = 200;
+
+	/**
+	 * Remove several rooms, or set their state. Each room goes through
+	 * delete() / setState(), with their locks, checks and activity events; a
+	 * room that is refused (an upcoming booking, removed meanwhile) is
+	 * reported and the others still change.
+	 *
+	 * @param array $input `{ action: remove|state, ids, state?, note? }`.
+	 * @return array{ done: int[], failed: array[] }
+	 * @throws DomainException With field errors.
+	 */
+	public function bulkAction( array $input ): array {
+		$action = sanitize_key( (string) ( $input['action'] ?? '' ) );
+		if ( ! in_array( $action, array( 'remove', 'state' ), true ) ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw DomainException::invalid( array( 'action' => __( 'Choose what to do with the rooms.', 'radius-hotel-booking' ) ) );
+		}
+		$ids = $this->bulkIds( $input );
+
+		if ( 'remove' === $action ) {
+			return $this->eachRoom( $ids, fn( int $id ) => $this->delete( $id ) );
+		}
+
+		// Validated once, before any room changes.
+		if ( ! array_key_exists( 'state', $input ) ) {
+			$input['state'] = '';
+		}
+		list( $state, $note ) = $this->validState( $input, '', '' );
+		return $this->eachRoom(
+			$ids,
+			fn( int $id ) => $this->setState(
+				$id,
+				array(
+					'state' => $state,
+					'note'  => $note,
+				)
+			)
+		);
+	}
+
+	/**
+	 * Move several rooms to one room type. Each goes through move() with an
+	 * empty "shown" list, so a room with an upcoming booking is refused under
+	 * its lock and reported: it must be moved on its own, after its bookings
+	 * are reviewed. Rooms already of that type are left alone.
+	 *
+	 * @param array $input `{ ids, room_type_id }`.
+	 * @return array{ done: int[], failed: array[], to: array }
+	 * @throws DomainException With field errors.
+	 */
+	public function bulkMove( array $input ): array {
+		$to_id = absint( $input['room_type_id'] ?? 0 );
+		$to    = $to_id ? $this->types->find( $to_id ) : null;
+		if ( ! $to ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw DomainException::invalid( array( 'room_type_id' => __( 'Choose the room type to move the rooms to.', 'radius-hotel-booking' ) ) );
+		}
+		$ids = $this->bulkIds( $input );
+
+		$result = $this->eachRoom(
+			$ids,
+			function ( int $id ) use ( $to_id ) {
+				$room = $this->get( $id );
+				if ( (int) $room->room_type_id === $to_id ) {
+					return;
+				}
+				try {
+					$this->move(
+						$id,
+						array(
+							'room_type_id' => $to_id,
+							'confirm'      => true,
+							'booking_ids'  => array(),
+							'bookings'     => 0,
+						)
+					);
+				} catch ( DomainException $e ) {
+					if ( 'move_needs_confirm' !== $e->getErrorCode() ) {
+						throw $e;
+					}
+					$count = (int) ( $e->getContext()['count'] ?? 0 );
+					// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+					throw DomainException::conflict(
+						'room_has_future_bookings',
+						sprintf(
+							/* translators: 1: room number, 2: number of bookings. */
+							_n( 'Room %1$s has %2$d upcoming booking. Move it on its own to review it.', 'Room %1$s has %2$d upcoming bookings. Move it on its own to review them.', $count, 'radius-hotel-booking' ),
+							$room->number,
+							$count
+						)
+					);
+					// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
+				}
+			}
+		);
+
+		return $result + array(
+			'to' => array(
+				'id'   => $to_id,
+				'name' => (string) $to->name,
+			),
+		);
+	}
+
+	/**
+	 * The room ids of a bulk request: unique, at least one, at most BULK_ACTION_MAX.
+	 *
+	 * @param array $input `{ ids }`.
+	 * @return int[]
+	 * @throws DomainException With the field error.
+	 */
+	private function bulkIds( array $input ): array {
+		$ids = array_values( array_unique( array_filter( array_map( 'absint', (array) ( $input['ids'] ?? array() ) ) ) ) );
+		if ( ! $ids ) {
+			$message = __( 'Select at least one room.', 'radius-hotel-booking' );
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw DomainException::invalid( array( 'ids' => $message ), $message );
+		}
+		if ( count( $ids ) > self::BULK_ACTION_MAX ) {
+			/* translators: %d: most rooms per bulk action. */
+			$message = sprintf( __( 'Select at most %d rooms at a time.', 'radius-hotel-booking' ), self::BULK_ACTION_MAX );
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw DomainException::invalid( array( 'ids' => $message ), $message );
+		}
+		return $ids;
+	}
+
+	/**
+	 * Run one change per room; a refused room is collected, not fatal.
+	 *
+	 * @param int[]    $ids    Room ids.
+	 * @param callable $change Called with each id.
+	 * @return array{ done: int[], failed: array[] }
+	 */
+	private function eachRoom( array $ids, callable $change ): array {
+		$done   = array();
+		$failed = array();
+		foreach ( $ids as $id ) {
+			$number = (string) ( $this->rooms->find( $id )->number ?? '' );
+			try {
+				$change( $id );
+				$done[] = $id;
+			} catch ( DomainException $e ) {
+				$failed[] = array(
+					'id'      => $id,
+					'number'  => $number,
+					'message' => $e->getMessage(),
+				);
+			}
+		}
+		return array(
+			'done'   => $done,
+			'failed' => $failed,
+		);
+	}
+
+	/**
+	 * The removed room that holds a number, if any.
+	 *
+	 * @param string $number Number.
+	 * @return object|null `{ id, number, room_type_id, room_type_name, deleted_at }`.
+	 */
+	private function removedOwner( string $number ): ?object {
+		$owner = $this->rooms->findByNumberAny( $number );
+		return $owner && $owner->deleted_at ? $owner : null;
+	}
+
+	/**
+	 * Bring a removed room back with new columns (inside a transaction).
+	 *
+	 * @param int   $id   Room id.
+	 * @param array $data Columns.
+	 * @return Room
+	 * @throws DomainException When it was restored by someone else meanwhile.
+	 */
+	private function restore( int $id, array $data ): Room {
+		if ( ! $this->rooms->restoreAs( $id, $data ) ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw DomainException::conflict( 'room_changed', __( 'This room was just changed by someone else. Reload and try again.', 'radius-hotel-booking' ) );
+		}
+		return $this->get( $id );
+	}
+
+	/**
 	 * A room for the API.
 	 *
 	 * @param Room $room Room.
@@ -851,12 +1111,13 @@ class RoomService {
 	/**
 	 * A clean room number: letters, digits, spaces and `- / .`, up to 20.
 	 *
-	 * @param mixed $raw        Input.
-	 * @param int   $except_id  The room being renamed.
+	 * @param mixed $raw           Input.
+	 * @param int   $except_id     The room being renamed.
+	 * @param bool  $allow_removed A removed room's number is fine (adding restores it).
 	 * @return string
 	 * @throws DomainException With the field error.
 	 */
-	private function validNumber( $raw, int $except_id ): string {
+	private function validNumber( $raw, int $except_id, bool $allow_removed = false ): string {
 		$number = trim( preg_replace( '/\s+/', ' ', sanitize_text_field( (string) $raw ) ) );
 		if ( '' === $number || mb_strlen( $number ) > 20 || ! preg_match( '/^[\p{L}\p{N}][\p{L}\p{N} \-\/.]*$/u', $number ) ) {
 			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
@@ -865,7 +1126,7 @@ class RoomService {
 			);
 			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		}
-		$this->assertNumberFree( $number, $except_id );
+		$this->assertNumberFree( $number, $except_id, $allow_removed );
 		return $number;
 	}
 
@@ -873,14 +1134,15 @@ class RoomService {
 	 * Refuse a number another room has (removed rooms included; the column's
 	 * collation ignores case, so "a3" clashes with "A3").
 	 *
-	 * @param string $number    Number.
-	 * @param int    $except_id The room being renamed.
+	 * @param string $number        Number.
+	 * @param int    $except_id     The room being renamed.
+	 * @param bool   $allow_removed A removed room's number is fine (adding restores it).
 	 * @return void
 	 * @throws DomainException 409 when taken.
 	 */
-	private function assertNumberFree( string $number, int $except_id ): void {
+	private function assertNumberFree( string $number, int $except_id, bool $allow_removed = false ): void {
 		$owner = $this->rooms->findByNumberAny( $number );
-		if ( ! $owner || (int) $owner->id === $except_id ) {
+		if ( ! $owner || (int) $owner->id === $except_id || ( $allow_removed && $owner->deleted_at ) ) {
 			return;
 		}
 		// The stored spelling ("A3"), not what was typed ("a3").
@@ -888,7 +1150,7 @@ class RoomService {
 		$type    = '' !== (string) $owner->room_type_name ? (string) $owner->room_type_name : __( 'another room type', 'radius-hotel-booking' );
 		$message = $owner->deleted_at
 			/* translators: 1: room number, 2: room type name. */
-			? sprintf( __( 'Room %1$s was used by a removed room of %2$s. Numbers are never reused.', 'radius-hotel-booking' ), $number, $type )
+			? sprintf( __( 'Room %1$s is a removed room of %2$s. Add it as a new room to bring it back.', 'radius-hotel-booking' ), $number, $type )
 			/* translators: 1: room number, 2: room type name. */
 			: sprintf( __( 'Room %1$s already belongs to %2$s.', 'radius-hotel-booking' ), $number, $type );
 		// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).

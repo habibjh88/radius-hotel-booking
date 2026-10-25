@@ -412,6 +412,7 @@ function useRoomMutation( typeId, send ) {
 				exact: true,
 			} );
 			client.invalidateQueries( { queryKey: FLOORS_KEY } );
+			client.invalidateQueries( { queryKey: ALL_ROOMS_KEY } );
 		},
 	} );
 }
@@ -468,10 +469,58 @@ export function useMoveRoom() {
 		onSuccess: ( result ) => {
 			if ( result.moved ) {
 				client.invalidateQueries( { queryKey: ROOM_TYPES_KEY } );
+				client.invalidateQueries( { queryKey: ALL_ROOMS_KEY } );
 			}
 		},
 	} );
 }
+
+export const ALL_ROOMS_KEY = [ 'rooms', 'all' ];
+
+/**
+ * Every room of the hotel, in natural order, each with `room_type_name` and
+ * `floor_name` (the All rooms screen).
+ *
+ * @return {Object} React Query result.
+ */
+export function useAllRooms() {
+	return useQuery( {
+		queryKey: ALL_ROOMS_KEY,
+		queryFn: () => get( 'rooms' ).then( ( { data } ) => data.rooms ),
+	} );
+}
+
+/**
+ * A bulk write on many rooms of any types: refreshes every room list, the
+ * type cards and the floors. Resolves with `{ done, failed, message }`;
+ * refused rooms are in `failed` (`{ id, number, message }`), not an error.
+ *
+ * @param {Function} send Called with the variables; returns the request.
+ * @return {Object} Mutation.
+ */
+function useBulkRoomsMutation( send ) {
+	const client = useQueryClient();
+	return useMutation( {
+		mutationFn: ( variables ) =>
+			send( variables ).then( ( { data, message } ) => ( {
+				...data,
+				message,
+			} ) ),
+		onSettled: () => {
+			client.invalidateQueries( { queryKey: ALL_ROOMS_KEY } );
+			client.invalidateQueries( { queryKey: ROOM_TYPES_KEY } );
+			client.invalidateQueries( { queryKey: FLOORS_KEY } );
+		},
+	} );
+}
+
+/** Remove rooms or set their state: `mutateAsync( { action: 'remove'|'state', ids, state?, note? } )`. */
+export const useBulkRoomAction = () =>
+	useBulkRoomsMutation( ( values ) => post( 'rooms/bulk-action', values ) );
+
+/** Move rooms to one type: `mutateAsync( { ids, room_type_id } )`. */
+export const useBulkMoveRooms = () =>
+	useBulkRoomsMutation( ( values ) => post( 'rooms/bulk-move', values ) );
 
 /**
  * The query key of a room type's Price & Rates grid.

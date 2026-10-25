@@ -130,6 +130,28 @@ class RoomRepository extends BaseRepository {
 	}
 
 	/**
+	 * Bring a removed room back with new columns (type, floor, state…). The
+	 * row is locked first and must still be removed, so two restores of one
+	 * room (or a restore racing another write) cannot both succeed. Call
+	 * inside a transaction.
+	 *
+	 * @param int   $room_id Room id.
+	 * @param array $data    Columns.
+	 * @return bool Whether the room was restored.
+	 */
+	public function restoreAs( int $room_id, array $data ): bool {
+		global $wpdb;
+		$row = $this->lockedRow( 'rooms', $room_id );
+		if ( ! $row || empty( $row['deleted_at'] ) ) {
+			return false;
+		}
+		$data['deleted_at'] = null;
+		$data['updated_at'] = current_time( 'mysql' );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- un-delete a locked row (model queries skip removed rows).
+		return false !== $wpdb->update( rtbp_table( 'rooms' ), $data, array( 'id' => $room_id ) );
+	}
+
+	/**
 	 * Lock a live room row until the transaction ends. Booking writes lock
 	 * rooms the same way (booking-engine §7), so a remove or move and a new
 	 * booking of the room cannot interleave.

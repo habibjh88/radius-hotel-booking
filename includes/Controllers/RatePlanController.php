@@ -147,6 +147,7 @@ class RatePlanController extends BaseController {
 			'multi_unit'       => (bool) $item->multi_unit,
 			'features'         => array_values( (array) $item->features ),
 			'policy'           => (string) $item->policy,
+			'checkin_rules'    => (string) $item->checkin_rules,
 			'is_active'        => (bool) $item->is_active,
 			'sort_order'       => (int) $item->sort_order,
 			'usage'            => $this->service->usage( (int) $item->id ),

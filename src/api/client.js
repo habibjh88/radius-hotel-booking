@@ -209,7 +209,8 @@ async function publicFetch( url, options ) {
 export const get = ( path, query ) =>
 	request( addQueryArgs( path, query ), { method: 'GET' } );
 
-export const post = ( path, data ) => request( path, { method: 'POST', data } );
+export const post = ( path, data, options = {} ) =>
+	request( path, { ...options, method: 'POST', data } );
 
 export const put = ( path, data ) => request( path, { method: 'PUT', data } );
 

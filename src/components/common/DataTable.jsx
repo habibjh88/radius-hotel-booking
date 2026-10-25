@@ -33,6 +33,11 @@
  * key form a group (a booking's rooms). A column with `grouped: true` is
  * shown once for the group (one cell spanning its rows; on phones, only on
  * the first card). `cell( row, { size } )` gets the group's row count.
+ *
+ * Selection (bulk actions): `selection={ { selected, onChange, label } }`
+ * adds a checkbox per row and a "select all on this page" one. `selected` is
+ * an array of row keys, `onChange( keys )` gets the new array, `label( row )`
+ * names the row for screen readers. The screen renders the bulk actions.
  */
 import { useEffect, useRef, useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
@@ -48,6 +53,7 @@ import {
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -253,6 +259,7 @@ function HeaderCell( { column, sort, onSort } ) {
  * @param {JSX.Element} props.toolbar   Filters shown next to the search.
  * @param {JSX.Element} props.empty     Shown when there are no rows.
  * @param {string}   props.caption      Accessible table caption.
+ * @param {Object}   props.selection    `{ selected, onChange, label }` (see file header).
  * @return {JSX.Element} Table.
  */
 export default function DataTable( {
@@ -275,6 +282,7 @@ export default function DataTable( {
 	toolbar,
 	empty,
 	caption,
+	selection,
 } ) {
 	// Per row: does it start a group, and how many rows the group has.
 	const groups = rows.map( () => ( { first: true, size: 1 } ) );
@@ -299,6 +307,64 @@ export default function DataTable( {
 	const detailColumns = columns.filter(
 		( c ) =>
 			c !== titleColumn && c !== subtitleColumn && c.mobile !== 'hidden'
+	);
+
+	// Selection: the page's keys, and how many of them are ticked.
+	const selectedKeys = new Set( selection?.selected || [] );
+	const pageKeys = rows.map( ( row ) => rowKey( row ) );
+	const pageTicked = pageKeys.filter( ( key ) =>
+		selectedKeys.has( key )
+	).length;
+	const allState =
+		pageTicked && pageTicked === pageKeys.length
+			? true
+			: pageTicked
+			? 'indeterminate'
+			: false;
+	const toggleAll = () =>
+		selection.onChange(
+			true === allState
+				? ( selection.selected || [] ).filter(
+						( key ) => ! pageKeys.includes( key )
+				  )
+				: [
+						...new Set( [
+							...( selection.selected || [] ),
+							...pageKeys,
+						] ),
+				  ]
+		);
+	const toggleRow = ( key ) =>
+		selection.onChange(
+			selectedKeys.has( key )
+				? ( selection.selected || [] ).filter( ( k ) => k !== key )
+				: [ ...( selection.selected || [] ), key ]
+		);
+	const rowCheckbox = ( row ) => (
+		<Checkbox
+			checked={ selectedKeys.has( rowKey( row ) ) }
+			onCheckedChange={ () => toggleRow( rowKey( row ) ) }
+			onClick={ ( event ) => event.stopPropagation() }
+			aria-label={
+				selection.label
+					? sprintf(
+							/* translators: %s: row name, e.g. a room number. */
+							__( 'Select %s', 'radius-hotel-booking' ),
+							selection.label( row )
+					  )
+					: __( 'Select row', 'radius-hotel-booking' )
+			}
+		/>
+	);
+	const allCheckbox = (
+		<Checkbox
+			checked={ allState }
+			onCheckedChange={ toggleAll }
+			aria-label={ __(
+				'Select all on this page',
+				'radius-hotel-booking'
+			) }
+		/>
 	);
 
 	const rowProps = ( row ) =>
@@ -389,6 +455,14 @@ export default function DataTable( {
 								) : null }
 								<thead>
 									<tr className="bg-muted">
+										{ selection ? (
+											<th
+												scope="col"
+												className="w-10 px-4 py-3"
+											>
+												{ allCheckbox }
+											</th>
+										) : null }
 										{ columns.map( ( column ) => (
 											<th
 												key={ column.id }
@@ -442,9 +516,19 @@ export default function DataTable( {
 													group.first
 														? 'border-border'
 														: 'border-dashed border-border/70',
+													selection &&
+														selectedKeys.has(
+															rowKey( row )
+														) &&
+														'bg-primary-softer',
 													extra.className
 												) }
 											>
+												{ selection ? (
+													<td className="w-10 px-4 py-3 align-middle">
+														{ rowCheckbox( row ) }
+													</td>
+												) : null }
 												{ columns.map( ( column ) =>
 													column.grouped &&
 													! group.first ? null : (
@@ -501,6 +585,15 @@ export default function DataTable( {
 						</div>
 
 						{ /* Phones: one card per row. */ }
+						{ selection ? (
+							<label className="flex cursor-pointer items-center gap-3 border-b border-border bg-muted px-4 py-2.5 text-[13px] font-medium text-heading md:hidden">
+								{ allCheckbox }
+								{ __(
+									'Select all on this page',
+									'radius-hotel-booking'
+								) }
+							</label>
+						) : null }
 						<ul className="m-0 list-none divide-y divide-border p-0 md:hidden">
 							{ rows.map( ( row, index ) => {
 								const extra = rowProps( row );
@@ -520,27 +613,44 @@ export default function DataTable( {
 											{ ...extra }
 											className={ cn(
 												'space-y-2 p-4',
+												selection &&
+													selectedKeys.has(
+														rowKey( row )
+													) &&
+													'bg-primary-softer',
 												extra.className
 											) }
 										>
 											<div
 												className={ cn(
 													'min-w-0',
+													selection &&
+														'flex items-start gap-3',
 													! showTitle && 'hidden'
 												) }
 											>
-												<p className="m-0 truncate text-sm font-semibold text-heading">
-													{ titleColumn.cell( row, {
-														size: group.size,
-													} ) }
-												</p>
-												{ subtitleColumn ? (
-													<p className="m-0 mt-0.5 truncate text-[13px] text-muted-foreground">
-														{ subtitleColumn.cell(
-															row
+												{ selection ? (
+													<span className="pt-0.5">
+														{ rowCheckbox( row ) }
+													</span>
+												) : null }
+												<div className="min-w-0 flex-1">
+													<p className="m-0 truncate text-sm font-semibold text-heading">
+														{ titleColumn.cell(
+															row,
+															{
+																size: group.size,
+															}
 														) }
 													</p>
-												) : null }
+													{ subtitleColumn ? (
+														<p className="m-0 mt-0.5 truncate text-[13px] text-muted-foreground">
+															{ subtitleColumn.cell(
+																row
+															) }
+														</p>
+													) : null }
+												</div>
 											</div>
 											{ detailColumns.length ? (
 												<dl className="m-0 grid grid-cols-2 gap-x-3 gap-y-1.5">

@@ -13,6 +13,7 @@ use RadiusTheme\RadiusHotelBooking\Models\RatePlan;
 use RadiusTheme\RadiusHotelBooking\Models\Room;
 use RadiusTheme\RadiusHotelBooking\Repositories\AvailabilityRepository;
 use RadiusTheme\RadiusHotelBooking\Services\Pricing\PriceResolver;
+use RadiusTheme\RadiusHotelBooking\Services\Pricing\RatePlanService;
 use RadiusTheme\RadiusHotelBooking\Support\Dates;
 
 defined( 'ABSPATH' ) || exit;
@@ -167,6 +168,9 @@ class AvailabilityService {
 					'name'         => $rate['name'],
 					'type'         => $rate['type'],
 					'multi_unit'   => $rate['multi_unit'],
+					'features'     => $rate['features'] ?? array(),
+					'policy'       => $rate['policy'] ?? '',
+					'checkin_rules' => $rate['checkin_rules'] ?? array(),
 					// Flexible plans: the check-in times the guest may choose (the flow's time field).
 					'checkin'      => 'flexible' === $rate['type'] ? array(
 						'from'  => substr( (string) ( $rate['checkin_from'] ?? '00:00' ), 0, 5 ),
@@ -465,6 +469,12 @@ class AvailabilityService {
 				'checkin_from'     => $row['checkin_from'],
 				'checkin_until'    => $row['checkin_until'],
 				'multi_unit'       => (bool) (int) $row['multi_unit'],
+				// Short tags guests see under the rate (Non-refundable…).
+				'features'         => self::listOf( $row['plan_features'] ?? null ),
+				// The plan's rules for its Rate details popup.
+				'policy'           => RatePlanService::policyHtml( (string) ( $row['plan_policy'] ?? '' ) ),
+				// Typed check-in / check-out lines (empty: the form works them out).
+				'checkin_rules'    => RatePlanService::checkinRuleLines( $row['plan_checkin_rules'] ?? null ),
 				'price'            => (float) $row['price'],
 				'sale_price'       => null === $row['sale_price'] ? null : (float) $row['sale_price'],
 				'min_units'        => max( 1, (int) $row['min_units'] ),

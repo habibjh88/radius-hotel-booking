@@ -50,7 +50,8 @@ class Embeds {
 		'button_text'  => '',
 		'room_details' => 'page',
 		'room_card'    => 'classic',
-		'rates_shown'  => 4,
+		'rates_shown'     => 4,
+		'price_breakdown' => 'no',
 	);
 
 	/**
@@ -153,6 +154,23 @@ class Embeds {
 					'min'     => 0,
 					'max'     => 50,
 					'help'    => __( 'Rates per room type before "Show more rates". 0 shows them all, without the button.', 'radius-hotel-booking' ),
+				),
+				array(
+					'name'    => 'price_breakdown',
+					'label'   => __( 'Price breakdown', 'radius-hotel-booking' ),
+					'type'    => 'select',
+					'default' => self::BOOKING_DEFAULTS['price_breakdown'],
+					'options' => array(
+						array(
+							'value' => 'no',
+							'label' => __( 'Hide (price only)', 'radius-hotel-booking' ),
+						),
+						array(
+							'value' => 'yes',
+							'label' => __( 'Show an info icon next to the price', 'radius-hotel-booking' ),
+						),
+					),
+					'help'    => __( 'The icon opens how each rate\'s price is made: the stay, any discount and the total.', 'radius-hotel-booking' ),
 				),
 			),
 		);
@@ -287,6 +305,10 @@ class Embeds {
 						'type'    => 'number',
 						'default' => self::BOOKING_DEFAULTS['rates_shown'],
 					),
+					'priceBreakdown' => array(
+						'type'    => 'boolean',
+						'default' => false,
+					),
 				),
 				'render_callback' => static fn( $attributes = array() ) => self::booking(
 					array(
@@ -296,6 +318,7 @@ class Embeds {
 						'room_details' => $attributes['roomDetails'] ?? self::BOOKING_DEFAULTS['room_details'],
 						'room_card'    => $attributes['roomCard'] ?? self::BOOKING_DEFAULTS['room_card'],
 						'rates_shown'  => $attributes['ratesShown'] ?? self::BOOKING_DEFAULTS['rates_shown'],
+						'price_breakdown' => ! empty( $attributes['priceBreakdown'] ) ? 'yes' : 'no',
 					)
 				),
 			)
@@ -376,7 +399,7 @@ class Embeds {
 	 * over; without JavaScript, a short message with the hotel's phone (or, in
 	 * a popup, a link to the booking page).
 	 *
-	 * @param array $atts `layout` steps|onepage, `display` inline|modal, `button_text`.
+	 * @param array $atts `layout` steps|onepage, `display` inline|modal, `button_text`, `price_breakdown` yes|no.
 	 * @return string
 	 */
 	public static function booking( array $atts = array() ): string {
@@ -387,7 +410,8 @@ class Embeds {
 		$details = in_array( $atts['room_details'], array_column( self::bookingRoomDetails(), 'value' ), true ) ? $atts['room_details'] : self::BOOKING_DEFAULTS['room_details'];
 		$card    = in_array( $atts['room_card'], array_column( self::bookingRoomCards(), 'value' ), true ) ? $atts['room_card'] : self::BOOKING_DEFAULTS['room_card'];
 		// Left empty (an emptied field): the default, not 0 (= all).
-		$first = '' === trim( (string) $atts['rates_shown'] ) ? self::BOOKING_DEFAULTS['rates_shown'] : min( 50, absint( $atts['rates_shown'] ) );
+		$first     = '' === trim( (string) $atts['rates_shown'] ) ? self::BOOKING_DEFAULTS['rates_shown'] : min( 50, absint( $atts['rates_shown'] ) );
+		$breakdown = in_array( strtolower( (string) $atts['price_breakdown'] ), array( 'yes', 'true', '1' ), true );
 		LoadAssets::enqueue_site_app();
 		ob_start();
 		rtbp_get_template(
@@ -402,6 +426,7 @@ class Embeds {
 				'room_details' => $details,
 				'room_card'    => $card,
 				'rates_shown'  => $first,
+				'breakdown'    => $breakdown,
 			)
 		);
 		return (string) ob_get_clean();

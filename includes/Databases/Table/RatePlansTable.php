@@ -47,6 +47,8 @@ class RatePlansTable extends Migration {
 				$table->boolean( 'multi_unit' )->default( 0 );
 				$table->text( 'features' )->nullable();
 				$table->longText( 'policy' )->nullable();
+				// Typed check-in / check-out lines; empty = worked out from the times.
+				$table->text( 'checkin_rules' )->nullable();
 				$table->boolean( 'is_active' )->default( 1 );
 				$table->unsignedInteger( 'sort_order' )->default( 0 );
 				$table->timestamps();

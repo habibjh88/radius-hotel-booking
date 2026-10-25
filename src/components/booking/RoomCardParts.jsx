@@ -22,8 +22,8 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from '@/components/ui/popover';
+import { formatDate, formatMoney, formatTime } from '@/lib/format';
 import { cn } from '@/lib/utils';
-import { regularPrice } from './rates';
 
 // From this many rooms left, the count turns into a warning.
 export const FEW_LEFT = 3;
@@ -137,20 +137,173 @@ export function guestsLabel( type ) {
 }
 
 /**
- * A rate's price (with the regular price struck through and the saving) and
- * how many rooms are free at it.
+ * How long the stay is, for the breakdown's heading: "8.5 hours", "2 days".
  *
- * @param {Object}  props       Props.
- * @param {Object}  props.rate  An available rate.
- * @param {string}  [props.align] `right` on wide screens (the classic row) or `left`.
+ * @param {Object} rate The rate (`window.minutes`: the whole stay).
+ * @return {string} Label ('' when unknown).
+ */
+function stayLength( rate ) {
+	const minutes = Number( rate.window?.minutes || 0 );
+	if ( ! minutes ) {
+		return '';
+	}
+	if ( minutes < 1440 ) {
+		const hours = Math.round( minutes / 6 ) / 10;
+		return sprintf(
+			/* translators: %s: number of hours, e.g. 8.5. */
+			_n(
+				'%s hour',
+				'%s hours',
+				Math.ceil( hours ),
+				'radius-hotel-booking'
+			),
+			String( hours )
+		);
+	}
+	const days = Math.round( minutes / 1440 );
+	return sprintf(
+		/* translators: %d: number of 24-hour days. */
+		_n( '%d day', '%d days', days, 'radius-hotel-booking' ),
+		days
+	);
+}
+
+/**
+ * The ⓘ beside a rate's price and its popover: for each night or day, the
+ * window (or the date, for several) with its regular price, then every
+ * step that changed it (a sale price, a promotion…) with the price after
+ * it and what it saved or added, then the total.
+ *
+ * @param {Object} props      Props.
+ * @param {Object} props.rate An available rate (`price.steps`, `window`).
+ * @return {JSX.Element|null} Trigger and popover.
+ */
+function StayBreakdown( { rate } ) {
+	const units = rate.price?.steps || [];
+	if ( ! units.length ) {
+		return null;
+	}
+	const several = units.length > 1;
+	const times = rate.window
+		? sprintf(
+				/* translators: 1: start time, 2: end time. */
+				__( '%1$s – %2$s', 'radius-hotel-booking' ),
+				formatTime( rate.window.start ),
+				formatTime( rate.window.end )
+		  )
+		: '';
+	const length = stayLength( rate );
+	const row = 'm-0 flex items-baseline justify-between gap-4 px-4 py-2.5';
+
+	return (
+		<Popover>
+			<PopoverTrigger asChild>
+				<button
+					type="button"
+					className="inline-flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center self-center rounded-full border-0 bg-transparent p-0 text-muted-foreground hover:text-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+					aria-label={ __(
+						'Price breakdown',
+						'radius-hotel-booking'
+					) }
+				>
+					<Info className="h-4 w-4" aria-hidden="true" />
+				</button>
+			</PopoverTrigger>
+			<PopoverContent
+				align="end"
+				className="w-72 max-w-[calc(100vw-2rem)] p-0 text-sm"
+			>
+				<p className={ cn( row, 'font-semibold text-heading' ) }>
+					<span>
+						{ __( 'Price breakdown', 'radius-hotel-booking' ) }
+					</span>
+					{ length ? <span>{ length }</span> : null }
+				</p>
+				<ul className="m-0 list-none divide-y divide-border border-y border-border p-0">
+					{ units.map( ( unit, index ) =>
+						unit.steps.map( ( step, at ) => {
+							const delta =
+								null === step.before
+									? null
+									: step.after - step.before;
+							if ( null !== delta && Math.abs( delta ) < 0.005 ) {
+								return null;
+							}
+							let label = step.label;
+							if ( 'base' === step.step ) {
+								label = several
+									? formatDate( unit.date )
+									: times || step.label;
+							}
+							return (
+								<li
+									key={ `${ index }-${ at }` }
+									className={ cn( row, 'text-foreground' ) }
+								>
+									<span className="min-w-0">
+										{ label }
+										{ null === delta ? null : (
+											<span
+												className={ cn(
+													'block text-xs',
+													delta < 0
+														? 'text-success'
+														: 'text-muted-foreground'
+												) }
+											>
+												{ delta < 0
+													? sprintf(
+															/* translators: %s: amount saved by this step, e.g. a sale price. */
+															__(
+																'You save %s',
+																'radius-hotel-booking'
+															),
+															formatMoney(
+																-delta
+															)
+													  )
+													: sprintf(
+															/* translators: %s: amount added by this step. */
+															__(
+																'+ %s',
+																'radius-hotel-booking'
+															),
+															formatMoney( delta )
+													  ) }
+											</span>
+										) }
+									</span>
+									{ /* The price after this step: a sale price reads as the new price, not the saving. */ }
+									<span className="shrink-0 tabular-nums">
+										<Money value={ step.after } />
+									</span>
+								</li>
+							);
+						} )
+					) }
+				</ul>
+				<p className={ cn( row, 'font-semibold text-heading' ) }>
+					<span>{ __( 'Total', 'radius-hotel-booking' ) }</span>
+					<Money value={ rate.price.total } />
+				</p>
+			</PopoverContent>
+		</Popover>
+	);
+}
+
+/**
+ * A rate's selling price and how many rooms are free at it. With
+ * `breakdown`, an ⓘ beside the price opens how it is made
+ * (`[rtbp_booking price_breakdown="yes"]`).
+ *
+ * @param {Object}  props             Props.
+ * @param {Object}  props.rate        An available rate.
+ * @param {string}  [props.align]     `right` on wide screens (the classic row) or `left`.
+ * @param {boolean} [props.breakdown] Show the ⓘ and its breakdown.
  * @return {JSX.Element} Price.
  */
-export function RatePrice( { rate, align = 'right' } ) {
+export function RatePrice( { rate, align = 'right', breakdown = false } ) {
 	const few = rate.free_count <= FEW_LEFT;
-	const regular = regularPrice( rate.price );
-	const saved = regular
-		? Math.round( ( 1 - Number( rate.price.total ) / regular ) * 100 )
-		: 0;
 	return (
 		<div
 			className={ cn(
@@ -160,35 +313,14 @@ export function RatePrice( { rate, align = 'right' } ) {
 		>
 			<p
 				className={ cn(
-					'm-0 flex flex-wrap items-baseline gap-x-2 leading-tight',
+					'm-0 flex flex-wrap items-baseline gap-x-1.5 leading-tight',
 					'right' === align && 'sm:justify-end'
 				) }
 			>
-				{ regular ? (
-					<del className="text-sm font-normal text-muted-foreground">
-						<span className="sr-only">
-							{ __( 'Regular price:', 'radius-hotel-booking' ) }{ ' ' }
-						</span>
-						<Money value={ regular } />
-					</del>
-				) : null }
 				<span className="text-lg font-bold text-heading">
-					{ regular ? (
-						<span className="sr-only">
-							{ __( 'Now:', 'radius-hotel-booking' ) }{ ' ' }
-						</span>
-					) : null }
 					<Money value={ rate.price?.total } />
 				</span>
-				{ saved ? (
-					<span className="rounded-full bg-success-soft px-1.5 py-0.5 text-[11px] font-semibold text-success">
-						{ sprintf(
-							/* translators: %d: discount in percent. */
-							__( '−%d%%', 'radius-hotel-booking' ),
-							saved
-						) }
-					</span>
-				) : null }
+				{ breakdown ? <StayBreakdown rate={ rate } /> : null }
 			</p>
 			<p
 				className={ cn(

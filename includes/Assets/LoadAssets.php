@@ -376,22 +376,24 @@ class LoadAssets {
 		return apply_filters(
 			'rtbp_admin_localize_params',
 			array(
-				'ajax_url'      => admin_url( 'admin-ajax.php' ),
-				'rest_url'      => esc_url_raw( rest_url( 'radius-hotel-booking/v1/' ) ),
-				'nonce'         => wp_create_nonce( 'wp_rest' ),
-				'plugin_url'    => RADIUS_HOTEL_BOOKING_URL,
-				'assets_url'    => RADIUS_HOTEL_BOOKING_ASSETS,
+				'ajax_url'         => admin_url( 'admin-ajax.php' ),
+				'rest_url'         => esc_url_raw( rest_url( 'radius-hotel-booking/v1/' ) ),
+				'nonce'            => wp_create_nonce( 'wp_rest' ),
+				'plugin_url'       => RADIUS_HOTEL_BOOKING_URL,
+				'assets_url'       => RADIUS_HOTEL_BOOKING_ASSETS,
 				// Country flags for the phone fields (copied into build/ by webpack).
-				'flags_url'     => RADIUS_HOTEL_BOOKING_BUILD . '/flags/',
+				'flags_url'        => RADIUS_HOTEL_BOOKING_BUILD . '/flags/',
 				// Lucide icons (Support\Icons; LucideIcon in React).
-				'icons_url'     => RADIUS_HOTEL_BOOKING_BUILD . '/icons/',
-				'admin_url'     => admin_url(),
-				'version'       => RADIUS_HOTEL_BOOKING_VERSION,
-				'is_addon'      => rtbp_addon_active(),
-				'capabilities'  => Capabilities::forCurrentUser(),
+				'icons_url'        => RADIUS_HOTEL_BOOKING_BUILD . '/icons/',
+				'admin_url'        => admin_url(),
+				'version'          => RADIUS_HOTEL_BOOKING_VERSION,
+				'is_addon'         => rtbp_addon_active(),
+				// wp-config.php asks uninstall.php to erase everything (Settings → General → Uninstall).
+				'remove_all_data'  => defined( 'RTBP_REMOVE_ALL_DATA' ) && true === RTBP_REMOVE_ALL_DATA,
+				'capabilities'     => Capabilities::forCurrentUser(),
 				// The M13 access map (key => open | passcode | locked); `access/me` refreshes it.
-				'access'        => AccessController::payload(),
-				'current_user'  => array(
+				'access'           => AccessController::payload(),
+				'current_user'     => array(
 					'id'         => get_current_user_id(),
 					'name'       => wp_get_current_user()->display_name,
 					'email'      => wp_get_current_user()->user_email,
@@ -399,7 +401,7 @@ class LoadAssets {
 					// decoded, wp_logout_url() escapes its `&` for HTML.
 					'logout_url' => wp_specialchars_decode( wp_logout_url() ),
 				),
-				'settings'      => array(
+				'settings'         => array(
 					'general'       => SettingsHelper::get_setting( 'general' ),
 					'display'       => SettingsHelper::get_setting( 'display' ),
 					// The new-booking alert (poll interval, sound).
@@ -421,6 +423,8 @@ class LoadAssets {
 				// Settings → Public booking (M04): the booking page to choose, and whether a privacy page exists.
 				'site_pages'       => \RadiusTheme\RadiusHotelBooking\Settings\WebsiteSettings::pages(),
 				'privacy_url'      => (string) get_privacy_policy_url(),
+				// Settings → Guest accounts: the roles a guest account may get.
+				'account_roles'    => \RadiusTheme\RadiusHotelBooking\Settings\AccountSettings::roles(),
 				// Reports → Export offers these (M10; Pro adds XLSX through `rtbp_export_formats`).
 				'export_formats'   => \RadiusTheme\RadiusHotelBooking\Services\Export\ExportWriter::choices(),
 				// System → Shortcodes lists these, each with a copy button.
@@ -431,14 +435,14 @@ class LoadAssets {
 				'upgrade'          => UpgradeNotice::params(),
 				// Site configuration warnings, administrators only (M18: time zone; add-ons add theirs).
 				'site_checks'      => SiteChecks::params(),
-				'timezone'      => wp_timezone_string(),
-				'format'        => $this->format_params(),
+				'timezone'         => wp_timezone_string(),
+				'format'           => $this->format_params(),
 				// The developer UI kit route (#/dev/ui): WP_DEBUG sites, admins only.
-				'dev_ui'        => defined( 'WP_DEBUG' ) && WP_DEBUG && current_user_can( 'manage_options' ),
-				'logo_url'      => RADIUS_HOTEL_BOOKING_ASSETS . '/images/logo.svg',
-				'date_format'   => get_option( 'date_format' ),
-				'time_format'   => get_option( 'time_format' ),
-				'start_of_week' => (int) get_option( 'start_of_week' ),
+				'dev_ui'           => defined( 'WP_DEBUG' ) && WP_DEBUG && current_user_can( 'manage_options' ),
+				'logo_url'         => RADIUS_HOTEL_BOOKING_ASSETS . '/images/logo.svg',
+				'date_format'      => get_option( 'date_format' ),
+				'time_format'      => get_option( 'time_format' ),
+				'start_of_week'    => (int) get_option( 'start_of_week' ),
 			)
 		);
 	}
@@ -523,6 +527,8 @@ class LoadAssets {
 				),
 				// The public booking rules the search bar and date pickers follow (M04); nothing private.
 				'booking'     => \RadiusTheme\RadiusHotelBooking\Frontend\Embeds::rules(),
+				// Settings → Guest accounts: sign-in on the booking form (who is signed in comes from `public/account`).
+				'account'     => \RadiusTheme\RadiusHotelBooking\Frontend\GuestAccount::siteParams(),
 			)
 		);
 	}

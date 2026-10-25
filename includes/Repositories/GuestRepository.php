@@ -204,6 +204,20 @@ class GuestRepository extends BaseRepository {
 	}
 
 	/**
+	 * The live guest linked to a WordPress account, if any.
+	 *
+	 * @param int $user_id WordPress user id.
+	 * @return Guest|null
+	 */
+	public function findByUser( int $user_id ): ?Guest {
+		if ( $user_id <= 0 ) {
+			return null;
+		}
+		$row = Guest::query()->where( 'wp_user_id', '=', $user_id )->orderBy( 'id' )->first();
+		return $row ? Guest::hydrate( $row ) : null;
+	}
+
+	/**
 	 * Lock a guest row until the transaction ends.
 	 *
 	 * @param int $id Guest id.

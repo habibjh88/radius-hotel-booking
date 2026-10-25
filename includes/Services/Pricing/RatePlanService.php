@@ -372,6 +372,14 @@ class RatePlanService {
 		if ( $has( 'policy' ) ) {
 			$data['policy'] = wp_kses( (string) ( $input['policy'] ?? '' ), self::POLICY_TAGS );
 		}
+		if ( $has( 'checkin_rules' ) ) {
+			// Plain lines; empty means "work them out from the plan's times".
+			$rules = trim( sanitize_textarea_field( (string) ( $input['checkin_rules'] ?? '' ) ) );
+			if ( mb_strlen( $rules ) > 1000 ) {
+				$errors['checkin_rules'] = __( 'Keep it within 1000 characters.', 'radius-hotel-booking' );
+			}
+			$data['checkin_rules'] = $rules;
+		}
 		if ( array_key_exists( 'is_active', $input ) ) {
 			$data['is_active'] = rest_sanitize_boolean( $input['is_active'] ) ? 1 : 0;
 		}
@@ -407,15 +415,65 @@ class RatePlanService {
 	 * @return array
 	 */
 	private static function audited( array $row ): array {
-		$keys = array( 'name', 'code', 'type', 'start_time', 'end_time', 'duration_minutes', 'checkin_from', 'checkin_until', 'multi_unit', 'features', 'policy', 'is_active' );
+		$keys = array( 'name', 'code', 'type', 'start_time', 'end_time', 'duration_minutes', 'checkin_from', 'checkin_until', 'multi_unit', 'features', 'policy', 'checkin_rules', 'is_active' );
 		$out  = array_intersect_key( $row, array_flip( $keys ) );
-		if ( isset( $out['policy'] ) ) {
-			// Long text: record that it changed, not the whole text.
-			$out['policy'] = '' === (string) $out['policy'] ? '' : md5( (string) $out['policy'] );
+		foreach ( array( 'policy', 'checkin_rules' ) as $long ) {
+			if ( isset( $out[ $long ] ) ) {
+				// Long text: record that it changed, not the whole text.
+				$out[ $long ] = '' === (string) $out[ $long ] ? '' : md5( (string) $out[ $long ] );
+			}
 		}
 		foreach ( array( 'multi_unit', 'is_active' ) as $flag ) {
 			if ( isset( $out[ $flag ] ) ) {
 				$out[ $flag ] = (bool) $out[ $flag ];
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * A plan's policy as HTML for guests: typed lines become paragraphs, and
+	 * lines starting with "* " or "- " become a bulleted list. Basic HTML
+	 * only (POLICY_TAGS), cleaned again on the way out.
+	 *
+	 * @param string $policy Policy as saved.
+	 * @return string HTML.
+	 */
+	public static function policyHtml( string $policy ): string {
+		$lines = preg_split( '/\r\n|\r|\n/', trim( $policy ) );
+		$out   = array();
+		$list  = array();
+		foreach ( $lines as $line ) {
+			if ( preg_match( '/^\s*[*\-\x{2022}]\s+(.*)$/u', $line, $match ) ) {
+				$list[] = '<li>' . $match[1] . '</li>';
+				continue;
+			}
+			if ( $list ) {
+				$out[] = '<ul>' . implode( '', $list ) . '</ul>';
+				$list  = array();
+			}
+			$out[] = $line;
+		}
+		if ( $list ) {
+			$out[] = '<ul>' . implode( '', $list ) . '</ul>';
+		}
+		return wp_kses( wpautop( implode( "\n", $out ) ), self::POLICY_TAGS );
+	}
+
+	/**
+	 * A plan's typed check-in / check-out rules as lines for guests, without
+	 * leading "* " or "- " (the popup draws the bullets). Empty when none
+	 * were typed: the booking form then works them out from the times.
+	 *
+	 * @param string|null $rules Rules as saved.
+	 * @return string[]
+	 */
+	public static function checkinRuleLines( ?string $rules ): array {
+		$out = array();
+		foreach ( preg_split( '/\r\n|\r|\n/', trim( (string) $rules ) ) as $line ) {
+			$line = trim( preg_replace( '/^\s*[*\-\x{2022}]\s+/u', '', $line ) );
+			if ( '' !== $line ) {
+				$out[] = $line;
 			}
 		}
 		return $out;

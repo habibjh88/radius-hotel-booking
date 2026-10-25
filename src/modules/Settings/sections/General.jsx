@@ -3,10 +3,8 @@
  * currency (feature 17.10). Shared with e-mails, invoices (M05) and payslips
  * (M15). Dates and amounts preview with the unsaved values.
  */
-import { useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 
-import ConfirmDialog from '@/components/common/ConfirmDialog';
 import { Field } from '@/components/common/Form';
 import MediaField from '@/components/common/MediaField';
 import SegmentedControl from '@/components/common/SegmentedControl';
@@ -24,7 +22,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { formatDateAs, formatMoney } from '@/lib/format';
 import SiteChecks from '@/components/common/SiteChecks';
-import { NumberInput, ToggleRow } from './fields';
+import { NumberInput } from './fields';
 
 /** PHP date formats offered in the list; anything else is "Custom". */
 const DATE_FORMATS = [ 'j F Y', 'F j, Y', 'd/m/Y', 'm/d/Y', 'd.m.Y', 'Y-m-d' ];
@@ -119,7 +117,6 @@ const bind = ( { value, setField, name } ) => ( {
  */
 export default function General( { value, setField, errors, schema } ) {
 	const text = ( name ) => bind( { value, setField, name } );
-	const [ confirmDelete, setConfirmDelete ] = useState( false );
 
 	const dateFormat = value.dateFormat ?? '';
 	const isPreset = DATE_FORMATS.includes( dateFormat );
@@ -533,41 +530,71 @@ export default function General( { value, setField, errors, schema } ) {
 					'radius-hotel-booking'
 				) }
 			>
-				<ToggleRow
-					label={ __(
-						'Delete all data when the plugin is deleted',
-						'radius-hotel-booking'
-					) }
-					description={ __(
-						'Bookings, guests, rooms, payments, settings and files are removed for good. Leave this off to keep them for a reinstall.',
-						'radius-hotel-booking'
-					) }
-					checked={ value.deleteDataOnUninstall }
-					onChange={ ( on ) =>
-						on
-							? setConfirmDelete( true )
-							: setField( 'deleteDataOnUninstall' )( false )
-					}
-					error={ errors.deleteDataOnUninstall }
-				/>
-				<ConfirmDialog
-					open={ confirmDelete }
-					onOpenChange={ setConfirmDelete }
-					title={ __(
-						'Delete all data on uninstall?',
-						'radius-hotel-booking'
-					) }
-					description={ __(
-						'If the plugin is later deleted from the Plugins screen, every booking, guest, payment and setting is erased and cannot be recovered. Deactivating the plugin never deletes anything.',
-						'radius-hotel-booking'
-					) }
-					confirmLabel={ __( 'Turn on', 'radius-hotel-booking' ) }
-					destructive
-					onConfirm={ () =>
-						setField( 'deleteDataOnUninstall' )( true )
-					}
-				/>
+				<UninstallInfo />
 			</SettingsSection>
 		</>
+	);
+}
+
+/**
+ * The Uninstall card's text. Deleting the plugin keeps the hotel's data
+ * unless the site owner adds the RTBP_REMOVE_ALL_DATA constant to
+ * wp-config.php (uninstall.php): a file edit, so staff cannot turn it on by
+ * accident from here.
+ *
+ * @return {JSX.Element} Explanation.
+ */
+function UninstallInfo() {
+	const removeAll = Boolean(
+		window.radius_hotel_booking_param?.remove_all_data
+	);
+	return (
+		<div className="space-y-3 text-sm text-foreground">
+			{ removeAll ? (
+				<p
+					role="alert"
+					className="m-0 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 font-semibold text-destructive"
+				>
+					{ __(
+						'Full removal is on for this site: deleting the plugin from the Plugins screen erases every booking, guest, payment, setting and file for good.',
+						'radius-hotel-booking'
+					) }
+				</p>
+			) : (
+				<p className="m-0">
+					{ __(
+						'Your data is kept. Deleting the plugin removes only its code: bookings, guests, rooms, payments, settings and files stay, and come back when you install it again. Deactivating never deletes anything.',
+						'radius-hotel-booking'
+					) }
+				</p>
+			) }
+			<div className="space-y-1.5 rounded-lg border border-border bg-muted px-3 py-2.5">
+				<p className="m-0 font-semibold text-heading">
+					{ removeAll
+						? __(
+								'To keep the data instead',
+								'radius-hotel-booking'
+						  )
+						: __(
+								'To erase all data when the plugin is deleted',
+								'radius-hotel-booking'
+						  ) }
+				</p>
+				<p className="m-0 text-muted-foreground">
+					{ removeAll
+						? __(
+								"Remove this line from the site's wp-config.php file:",
+								'radius-hotel-booking'
+						  )
+						: __(
+								'Ask whoever manages the website to add this line to its wp-config.php file, above "That\'s all, stop editing!", then delete the plugin. It cannot be undone, so take a backup first.',
+								'radius-hotel-booking'
+						  ) }
+				</p>
+				<code className="block select-all overflow-x-auto whitespace-nowrap rounded-md border border-border bg-card px-2.5 py-1.5 font-mono text-[13px] text-heading">
+					define( &apos;RTBP_REMOVE_ALL_DATA&apos;, true );
+				</code>
+			</div>
+		</div>
 	);
 }

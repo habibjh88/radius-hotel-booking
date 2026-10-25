@@ -44,21 +44,24 @@ class RoomController extends BaseController {
 		$this->middleware[] = new PermissionMiddleware( Capabilities::VIEW_DASHBOARD );
 		$this->middleware[] = new AccessMiddleware(
 			array(
-				'index'   => 'page.rooms',
-				'show'    => 'page.rooms',
-				'ofType'  => 'page.rooms',
-				'store'   => 'rooms.manage',
-				'update'  => 'rooms.manage',
-				'destroy' => 'rooms.manage',
-				'state'   => 'rooms.manage',
-				'bulk'    => 'rooms.manage',
-				'move'    => 'rooms.move',
+				'index'      => 'page.rooms',
+				'show'       => 'page.rooms',
+				'ofType'     => 'page.rooms',
+				'store'      => 'rooms.manage',
+				'update'     => 'rooms.manage',
+				'destroy'    => 'rooms.manage',
+				'state'      => 'rooms.manage',
+				'bulk'       => 'rooms.manage',
+				'bulkAction' => 'rooms.manage',
+				'move'       => 'rooms.move',
+				'bulkMove'   => 'rooms.move',
 			)
 		);
 	}
 
 	/**
-	 * GET /rooms?room_type_id=: rooms of one type, in natural order.
+	 * GET /rooms?room_type_id=: rooms of one type, in natural order. Without
+	 * `room_type_id`, every room of the hotel with its type and floor names.
 	 *
 	 * @param WP_REST_Request $request Request.
 	 * @return mixed
@@ -66,9 +69,16 @@ class RoomController extends BaseController {
 	public function index( WP_REST_Request $request ) {
 		return $this->respond(
 			$request,
-			fn( $request ) => ApiResponse::success(
-				array( 'rooms' => $this->transformCollection( Container::resolve( RoomRepository::class )->ofType( absint( $request->get_param( 'room_type_id' ) ) ) ) )
-			)
+			function ( $request ) {
+				$type_id = absint( $request->get_param( 'room_type_id' ) );
+				return ApiResponse::success(
+					array(
+						'rooms' => $type_id
+							? $this->transformCollection( Container::resolve( RoomRepository::class )->ofType( $type_id ) )
+							: $this->service->listAll(),
+					)
+				);
+			}
 		);
 	}
 
@@ -164,6 +174,58 @@ class RoomController extends BaseController {
 						/* translators: %d: number of rooms. */
 						_n( '%d room added.', '%d rooms added.', count( $result['created'] ), 'radius-hotel-booking' ),
 						count( $result['created'] )
+					)
+				);
+			}
+		);
+	}
+
+	/**
+	 * POST /rooms/bulk-action: `{ action: remove|state, ids, state?, note? }`.
+	 * Answers `{ done, failed }`; refused rooms do not stop the others.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function bulkAction( WP_REST_Request $request ) {
+		return $this->respond(
+			$request,
+			function ( $request ) {
+				$params = (array) $request->get_json_params();
+				$result = $this->service->bulkAction( $params );
+				$done   = count( $result['done'] );
+				return ApiResponse::success(
+					$result,
+					'remove' === ( $params['action'] ?? '' )
+						/* translators: %d: number of rooms. */
+						? sprintf( _n( '%d room removed.', '%d rooms removed.', $done, 'radius-hotel-booking' ), $done )
+						/* translators: %d: number of rooms. */
+						: sprintf( _n( '%d room updated.', '%d rooms updated.', $done, 'radius-hotel-booking' ), $done )
+				);
+			}
+		);
+	}
+
+	/**
+	 * POST /rooms/bulk-move: `{ ids, room_type_id }`. Rooms with upcoming
+	 * bookings are refused (move them one by one) and listed in `failed`.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function bulkMove( WP_REST_Request $request ) {
+		return $this->respond(
+			$request,
+			function ( $request ) {
+				$result = $this->service->bulkMove( (array) $request->get_json_params() );
+				$done   = count( $result['done'] );
+				return ApiResponse::success(
+					$result,
+					sprintf(
+						/* translators: 1: number of rooms, 2: room type name. */
+						_n( '%1$d room moved to %2$s.', '%1$d rooms moved to %2$s.', $done, 'radius-hotel-booking' ),
+						$done,
+						$result['to']['name']
 					)
 				);
 			}

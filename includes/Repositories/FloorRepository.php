@@ -35,7 +35,9 @@ class FloorRepository extends BaseRepository {
 	}
 
 	/**
-	 * Rooms on a floor, removed rooms included (their history names the floor).
+	 * Current rooms on a floor (removed ones are not counted: bookings keep the
+	 * floor's name, and adding a removed room's number back puts it on the
+	 * floor chosen then).
 	 *
 	 * @param int $floor_id Floor id.
 	 * @return int
@@ -43,7 +45,7 @@ class FloorRepository extends BaseRepository {
 	public function roomCount( int $floor_id ): int {
 		global $wpdb;
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- live count for a guard.
-		return (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i WHERE floor_id = %d', rtbp_table( 'rooms' ), $floor_id ) );
+		return (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i WHERE floor_id = %d AND deleted_at IS NULL', rtbp_table( 'rooms' ), $floor_id ) );
 	}
 
 	/**

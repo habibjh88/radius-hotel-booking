@@ -11,6 +11,7 @@ import {
 	RangeControl,
 	SelectControl,
 	TextControl,
+	ToggleControl,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -32,6 +33,7 @@ registerBlockType( 'radius-hotel-booking/booking', {
 		roomDetails: { type: 'string', default: 'page' },
 		roomCard: { type: 'string', default: 'classic' },
 		ratesShown: { type: 'number', default: 4 },
+		priceBreakdown: { type: 'boolean', default: false },
 	},
 	supports: { html: false, multiple: true },
 	edit: function Edit( { attributes, setAttributes } ) {
@@ -42,6 +44,7 @@ registerBlockType( 'radius-hotel-booking/booking', {
 			roomDetails,
 			roomCard,
 			ratesShown,
+			priceBreakdown,
 		} = attributes;
 		const modal = 'modal' === display;
 		return (
@@ -188,6 +191,20 @@ registerBlockType( 'radius-hotel-booking/booking', {
 							max={ 20 }
 							onChange={ ( value ) =>
 								setAttributes( { ratesShown: value ?? 4 } )
+							}
+						/>
+						<ToggleControl
+							label={ __(
+								'Price breakdown',
+								'radius-hotel-booking'
+							) }
+							help={ __(
+								'An info icon next to each price opens how it is made: the stay, any discount and the total.',
+								'radius-hotel-booking'
+							) }
+							checked={ priceBreakdown }
+							onChange={ ( value ) =>
+								setAttributes( { priceBreakdown: value } )
 							}
 						/>
 					</PanelBody>

@@ -1,6 +1,7 @@
 /**
  * The rate plan editor (a Sheet): name, window type and times with a live
- * preview in words, several-units switch, features, policy, active. The
+ * preview in words, several-units switch, features, policy, check-in and
+ * check-out lines (typed, or worked out from the times), active. The
  * server validates everything; its field errors land on the fields.
  */
 import { useMemo, useState } from 'react';
@@ -30,7 +31,7 @@ import {
 } from '@/components/ui/sheet';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { describeWindow, halfHourOptions } from '@/lib/stayWindow';
+import { describeWindow, halfHourOptions, stayRules } from '@/lib/stayWindow';
 import { toast, toastError } from '@/lib/toast';
 import { usageText } from '../usage';
 import { useDeleteRatePlan, useSaveRatePlan } from '../api';
@@ -54,6 +55,7 @@ const toValues = ( plan ) => ( {
 	multi_unit: plan?.multi_unit ?? false,
 	features: plan?.features ?? [],
 	policy: plan?.policy ?? '',
+	checkin_rules: plan?.checkin_rules ?? '',
 	is_active: plan?.is_active ?? true,
 } );
 
@@ -70,6 +72,7 @@ const toBody = ( values ) => {
 		multi_unit: values.multi_unit,
 		features: values.features,
 		policy: values.policy,
+		checkin_rules: values.checkin_rules,
 		is_active: values.is_active,
 	};
 	if ( values.type === 'flexible' ) {
@@ -103,14 +106,16 @@ export default function RatePlanSheet( { plan, readOnly = false, onClose } ) {
 		setErrors( ( prev ) => ( { ...prev, [ key ]: undefined } ) );
 	};
 
-	const preview = describeWindow(
+	const windowFields =
 		values.type === 'flexible'
 			? {
 					...values,
 					duration_minutes: Math.round( Number( values.hours ) * 60 ),
 			  }
-			: values
-	);
+			: values;
+	const preview = describeWindow( windowFields );
+	// What guests see when no check-in / check-out lines are typed.
+	const autoRules = stayRules( windowFields );
 	const inUse = Boolean( plan?.usage?.room_types || plan?.usage?.bookings );
 
 	const submit = async ( event ) => {
@@ -370,7 +375,7 @@ export default function RatePlanSheet( { plan, readOnly = false, onClose } ) {
 							label={ __( 'Policy', 'radius-hotel-booking' ) }
 							error={ errors.policy }
 							description={ __(
-								'Check-in and check-out rules shown on the booking page. Basic formatting only.',
+								'Rules guests see in the rate\'s "Rate details" popup. Start a line with * or - for a bullet point.',
 								'radius-hotel-booking'
 							) }
 						>
@@ -380,6 +385,29 @@ export default function RatePlanSheet( { plan, readOnly = false, onClose } ) {
 									set( 'policy' )( event.target.value )
 								}
 								rows={ 4 }
+							/>
+						</Field>
+
+						<Field
+							label={ __(
+								'Check-in & check-out',
+								'radius-hotel-booking'
+							) }
+							error={ errors.checkin_rules }
+							description={ __(
+								'One rule per line, shown in "Rate details". Leave empty to show the rules worked out from this plan\'s times (shown greyed out).',
+								'radius-hotel-booking'
+							) }
+						>
+							<Textarea
+								value={ values.checkin_rules }
+								onChange={ ( event ) =>
+									set( 'checkin_rules' )( event.target.value )
+								}
+								placeholder={ autoRules.join( '\n' ) }
+								maxLength={ 1000 }
+								rows={ 3 }
+								disabled={ readOnly }
 							/>
 						</Field>
 

@@ -148,3 +148,74 @@ export function describeWindow( plan ) {
 		formatDuration( minutes )
 	);
 }
+
+/**
+ * The check-in / check-out lines a plan's times give, for the booking
+ * form's "Rate details" popup (and, in the rate plan form, as the hint of
+ * what shows when no lines are typed).
+ *
+ *   stayRules( { type: 'fixed', start_time: '20:00', end_time: '08:00' } )
+ *   → [ "Check-in from 8:00 PM.", "Check-out by 8:00 AM the next day." ]
+ *
+ * @param {Object} plan Plan fields (`type`, times, `duration_minutes`, check-in range).
+ * @return {string[]} Lines ([] while incomplete).
+ */
+export function stayRules( plan ) {
+	if ( plan?.type === 'flexible' ) {
+		const minutes = Number( plan.duration_minutes ) || 0;
+		if (
+			minutesOf( plan.checkin_from ) === null ||
+			minutesOf( plan.checkin_until ) === null
+		) {
+			return [];
+		}
+		return [
+			sprintf(
+				/* translators: 1: earliest check-in time, 2: latest check-in time. */
+				__(
+					'Check in any time from %1$s to %2$s.',
+					'radius-hotel-booking'
+				),
+				formatClock( plan.checkin_from ),
+				formatClock( plan.checkin_until )
+			),
+			minutes
+				? sprintf(
+						/* translators: %s: length of the stay, e.g. "24 h". */
+						__(
+							'Check out %s after you check in.',
+							'radius-hotel-booking'
+						),
+						formatDuration( minutes )
+				  )
+				: null,
+		].filter( Boolean );
+	}
+	const start = minutesOf( plan?.start_time );
+	const end = minutesOf( plan?.end_time );
+	if ( start === null || end === null ) {
+		return [];
+	}
+	return [
+		sprintf(
+			/* translators: %s: check-in time. */
+			__( 'Check-in from %s.', 'radius-hotel-booking' ),
+			formatClock( plan.start_time )
+		),
+		// Equal times are a 24-hour window: check-out is the next day too.
+		end <= start
+			? sprintf(
+					/* translators: %s: check-out time. */
+					__(
+						'Check-out by %s the next day.',
+						'radius-hotel-booking'
+					),
+					formatClock( plan.end_time )
+			  )
+			: sprintf(
+					/* translators: %s: check-out time. */
+					__( 'Check-out by %s.', 'radius-hotel-booking' ),
+					formatClock( plan.end_time )
+			  ),
+	];
+}

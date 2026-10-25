@@ -268,7 +268,8 @@ Multisite is supported: network activation installs per-site, and
 
 - Settings live in `wp_options` as `rtbp_<section>_settings`; sections and their
   defaults are declared in `Helpers\SettingsHelper`.
-- `uninstall.php` removes data only when `general.deleteDataOnUninstall` is on. It
+- `uninstall.php` removes data only when wp-config.php defines `RTBP_REMOVE_ALL_DATA`
+  as `true` (no setting: Settings → General → Uninstall only explains it). It
   matches by prefix (`rtbp_` options, roles and caps; the table prefix), so a new
   table, option or role is covered without editing it.
 - Hook names are prefixed `rtbp_`; so are capabilities, option keys and global

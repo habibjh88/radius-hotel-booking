@@ -10,6 +10,7 @@ import {
 	DoorOpen,
 	ImageOff,
 	Layers,
+	List,
 	Plus,
 	Sparkles,
 	Users,
@@ -48,6 +49,14 @@ export default function RoomTypes() {
 
 	usePageActions(
 		<div className="flex items-center gap-2">
+			<Button asChild variant="outline">
+				<Link to="/rooms/all">
+					<List className="h-4 w-4" aria-hidden="true" />
+					<span className="sr-only sm:not-sr-only">
+						{ __( 'All rooms', 'radius-hotel-booking' ) }
+					</span>
+				</Link>
+			</Button>
 			<Button asChild variant="outline">
 				<Link to="/rooms/amenities">
 					<Sparkles className="h-4 w-4" aria-hidden="true" />

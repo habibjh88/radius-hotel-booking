@@ -214,6 +214,10 @@ const baseRoutes = [
 				label: __( 'Add room type', 'radius-hotel-booking' ),
 			},
 			{
+				path: '/rooms/all',
+				label: __( 'All rooms', 'radius-hotel-booking' ),
+			},
+			{
 				path: '/rooms/floors',
 				label: __( 'Floors', 'radius-hotel-booking' ),
 			},
@@ -223,6 +227,18 @@ const baseRoutes = [
 			},
 		],
 		element: lazy( () => import( '@/modules/Rooms' ) ),
+	},
+	{
+		path: '/rooms/all',
+		hidden: true,
+		label: __( 'All rooms', 'radius-hotel-booking' ),
+		description: __(
+			'Every room of the hotel; select rooms to change them together',
+			'radius-hotel-booking'
+		),
+		capability: VIEW,
+		accessKey: 'page.rooms',
+		element: lazy( () => import( '@/modules/Rooms/AllRooms' ) ),
 	},
 	{
 		path: '/rooms/floors',

@@ -107,6 +107,7 @@ export default function GuestBookingOnePage( props ) {
 		roomDetails = 'page',
 		roomCard = 'classic',
 		ratesShown = 4,
+		priceBreakdown = false,
 	} = props;
 	const picks = false !== rules.guestPicksRoom;
 	const count = lines.length;
@@ -355,6 +356,7 @@ export default function GuestBookingOnePage( props ) {
 							roomDetails={ roomDetails }
 							roomCard={ roomCard }
 							ratesShown={ ratesShown }
+							priceBreakdown={ priceBreakdown }
 							// The rooms already added for these dates show on their rates.
 							lines={ lines.filter(
 								( line ) => line.arrival === search.arrival

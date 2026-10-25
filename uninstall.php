@@ -2,10 +2,12 @@
 /**
  * Uninstall: runs when the plugin is deleted from the Plugins screen.
  *
- * Nothing is removed unless General → "Delete all data on uninstall"
- * (`rtbp_general_settings[deleteDataOnUninstall]`) is on, so deleting the
- * plugin to reinstall it never costs the hotel its bookings. When it is on,
- * each site loses:
+ * Nothing is removed unless the site owner adds
+ * `define( 'RTBP_REMOVE_ALL_DATA', true );` to wp-config.php, so deleting the
+ * plugin to reinstall or update it never costs the hotel its bookings. It is
+ * a constant rather than a setting so staff cannot turn it on by accident
+ * (Settings → General → Uninstall explains it). When it is set, each site
+ * loses:
  *
  * - every table starting with the plugin's table prefix (free, Pro and the
  *   client add-on share it);
@@ -24,13 +26,12 @@
 defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
 /**
- * Whether the site asked for its data to be removed.
+ * Whether the site owner asked for the data to be removed (wp-config.php).
  *
  * @return bool
  */
 function rtbp_uninstall_wanted(): bool {
-	$general = get_option( 'rtbp_general_settings', array() );
-	return is_array( $general ) && ! empty( $general['deleteDataOnUninstall'] );
+	return defined( 'RTBP_REMOVE_ALL_DATA' ) && true === RTBP_REMOVE_ALL_DATA;
 }
 
 /**

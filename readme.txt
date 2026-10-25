@@ -48,8 +48,8 @@ if WooCommerce is installed on the same site.
 = Your data =
 
 Bookings, guests and settings are kept in the plugin's own tables. Deleting the
-plugin keeps them, unless you turn on "Delete all data on uninstall" in
-Settings first.
+plugin keeps them. To erase everything when the plugin is deleted, add
+`define( 'RTBP_REMOVE_ALL_DATA', true );` to wp-config.php first.
 
 = Pro =
 
@@ -302,6 +302,23 @@ Fixed the booking form showing "Cookie check failed" to signed-in users after a 
 Booking form marks the rates and room types your added rooms came from.
 Fixed the room "From" price dropping below a long room name or description.
 New Highlighted amenities on each room type pick which amenities its booking card shows.
+New All rooms screen: see every room together; add, set state, move or remove in bulk.
+Adding a removed room's number now brings that room back instead of refusing it.
+Rate plan features (Non-refundable…) now show under each rate in the booking form.
+New price_breakdown option on the booking form: an info icon shows how each price is made.
+The booking form now shows only the selling price, without the crossed-out regular price.
+Floors whose rooms were all removed can now be deleted.
+New Rate details popup in the booking form: features, check-in and check-out times, and policy.
+Rate plans can set their own check-in and check-out text; empty uses the plan's times.
+Room details and Rate details popups now fade in when they open.
+Room amenities in the booking form are now smaller and softer grey, icons matching the text.
+Deleting the plugin erases data only with RTBP_REMOVE_ALL_DATA in wp-config.php; the switch is gone.
+New Settings → Guest accounts: signed-in guests book without typing their details again.
+Existing WordPress accounts are linked to their guest record on their first booking.
+Optional: require sign-in to book, or create an account for new website guests.
+Guests can sign in with their phone number written with or without the country code.
+New Express checkout: returning guests confirm their phone with a code and skip typing details.
+Fixed a banned guest getting the "details do not match" message instead of a refusal.
 
 = 1.0.0 =
 Initial release.

@@ -16,8 +16,9 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * The hotel's ordered list of named floors (feature 6.3). Any number of
- * floors; names are unique (ignoring case). A floor that holds rooms —
- * removed rooms included, their history names the floor — cannot be deleted.
+ * floors; names are unique (ignoring case). A floor that holds current rooms
+ * cannot be deleted. Removed rooms do not count: bookings keep the floor's
+ * name, and a removed room that is added back goes on the floor chosen then.
  */
 class FloorService {
 
