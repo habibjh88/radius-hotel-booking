@@ -7,6 +7,7 @@
 
 namespace RadiusTheme\RadiusHotelBooking\Settings;
 
+use RadiusTheme\RadiusHotelBooking\Core\Permissions\Capabilities;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
@@ -66,8 +67,8 @@ class AccountSettings {
 	}
 
 	/**
-	 * The roles a guest account may get: Subscriber and WooCommerce's
-	 * Customer, when the site has them. A list, not a test of capabilities:
+	 * The roles a guest account may get: the plugin's Hotel Guest and
+	 * Subscriber, when the site has them. A list, not a test of capabilities:
 	 * some plugins give a role its powers by its name alone (a "kitchen
 	 * manager" with only `read`), so nothing else is safe to assume.
 	 *
@@ -80,7 +81,7 @@ class AccountSettings {
 		 *
 		 * @param string[] $slugs Role slugs.
 		 */
-		$slugs = (array) apply_filters( 'rtbp_account_roles', array( 'customer', 'subscriber' ) );
+		$slugs = (array) apply_filters( 'rtbp_account_roles', array( Capabilities::GUEST_ROLE, 'subscriber' ) );
 		$all   = wp_roles()->roles;
 		$out   = array();
 		foreach ( $slugs as $slug ) {
@@ -93,13 +94,13 @@ class AccountSettings {
 	}
 
 	/**
-	 * Customer when the site has it (WooCommerce), else Subscriber.
+	 * Hotel Guest, else Subscriber.
 	 *
 	 * @return string
 	 */
 	public static function defaultRole(): string {
 		$roles = self::roles();
-		foreach ( array( 'customer', 'subscriber' ) as $slug ) {
+		foreach ( array( Capabilities::GUEST_ROLE, 'subscriber' ) as $slug ) {
 			if ( isset( $roles[ $slug ] ) ) {
 				return $slug;
 			}
@@ -108,19 +109,33 @@ class AccountSettings {
 	}
 
 	/**
-	 * `accountRole`: a role from roles().
+	 * The role new accounts get: the one chosen, else the default when it is
+	 * no longer offered (an earlier version offered WooCommerce's Customer).
+	 *
+	 * @return string
+	 */
+	public static function accountRole(): string {
+		$role = (string) rtbp_setting( 'accounts', 'accountRole', '' );
+		return isset( self::roles()[ $role ] ) ? $role : self::defaultRole();
+	}
+
+	/**
+	 * `accountRole`: a role from roles(). Any other role that can do more
+	 * than read is refused; one that cannot (gone, or no longer offered)
+	 * falls back to the default.
 	 *
 	 * @param mixed $value Input.
 	 * @return string|WP_Error
 	 */
 	public static function role( $value ) {
 		$value = sanitize_key( (string) $value );
-		if ( '' === $value ) {
-			return self::defaultRole();
+		if ( isset( self::roles()[ $value ] ) ) {
+			return $value;
 		}
-		if ( ! isset( self::roles()[ $value ] ) ) {
+		$role = '' !== $value ? get_role( $value ) : null;
+		if ( $role && array_diff( array_keys( array_filter( (array) $role->capabilities ) ), array( 'read', 'level_0' ) ) ) {
 			return new WP_Error( 'invalid', __( 'Choose a role that cannot edit or manage the site.', 'radius-hotel-booking' ) );
 		}
-		return $value;
+		return self::defaultRole();
 	}
 }

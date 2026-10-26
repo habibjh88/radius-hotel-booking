@@ -37,6 +37,13 @@ class Capabilities {
 	const CAPS_OPTION = 'rtbp_role_caps';
 
 	/**
+	 * The role of website guests' accounts (Settings → Guest accounts). It
+	 * holds `read` only and never a plugin capability, so it is kept out of
+	 * the role map and the Roles & Permissions screen.
+	 */
+	const GUEST_ROLE = 'rtbp_guest';
+
+	/**
 	 * Every plugin capability. Filterable so an add-on can register more.
 	 *
 	 * @return string[]

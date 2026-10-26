@@ -172,7 +172,12 @@ export default function Accounts( { value, setField, errors } ) {
 							error={ errors.accountRole }
 						>
 							<Select
-								value={ value.accountRole || '' }
+								value={
+									// A role no longer offered: the default (the first), as the server uses it.
+									roles[ value.accountRole ]
+										? value.accountRole
+										: Object.keys( roles )[ 0 ] || ''
+								}
 								onValueChange={ setField( 'accountRole' ) }
 							>
 								<SelectTrigger>

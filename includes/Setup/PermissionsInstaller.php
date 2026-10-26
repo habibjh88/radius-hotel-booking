@@ -25,7 +25,7 @@ class PermissionsInstaller {
 	/**
 	 * Bump when the capability set or role map changes so existing sites re-sync.
 	 */
-	const ROLES_VERSION = '2';
+	const ROLES_VERSION = '3';
 
 	/**
 	 * Option storing the last-synced roles version.
@@ -96,7 +96,33 @@ class PermissionsInstaller {
 			}
 		}
 
+		self::sync_guest_role();
+
 		update_option( self::VERSION_OPTION, self::ROLES_VERSION );
+	}
+
+	/**
+	 * Create the guest role: `read` only, and no plugin capability even if
+	 * one was added to it by hand.
+	 *
+	 * @return void
+	 */
+	private static function sync_guest_role(): void {
+		$role = get_role( Capabilities::GUEST_ROLE );
+		if ( ! $role ) {
+			$role = add_role( Capabilities::GUEST_ROLE, __( 'Hotel Guest', 'radius-hotel-booking' ), array( 'read' => true ) );
+		}
+		if ( ! $role ) {
+			return;
+		}
+		foreach ( array_merge( Capabilities::all(), Capabilities::retired() ) as $cap ) {
+			if ( $role->has_cap( $cap ) ) {
+				$role->remove_cap( $cap );
+			}
+		}
+		if ( ! $role->has_cap( 'read' ) ) {
+			$role->add_cap( 'read' );
+		}
 	}
 
 	/**
@@ -112,6 +138,7 @@ class PermissionsInstaller {
 				remove_role( $slug );
 			}
 		}
+		remove_role( Capabilities::GUEST_ROLE );
 		delete_option( self::VERSION_OPTION );
 	}
 }

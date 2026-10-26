@@ -327,6 +327,7 @@ New setting: show, hide or require each guest field on the booking form.
 Fixed the guest field settings dropdown dropping below a long description.
 New setting: your own label and placeholder for each booking form field.
 New setting: add, rename or remove the identity documents guests can choose.
+New Hotel Guest role for guest accounts; WooCommerce's Customer role is no longer offered.
 
 = 1.0.0 =
 Initial release.

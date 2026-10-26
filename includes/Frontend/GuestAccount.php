@@ -390,7 +390,7 @@ class GuestAccount {
 		if ( username_exists( $login ) ) {
 			$login = $email;
 		}
-		$role    = (string) rtbp_setting( 'accounts', 'accountRole', AccountSettings::defaultRole() );
+		$role    = AccountSettings::accountRole();
 		$user_id = wp_insert_user(
 			array(
 				'user_login'   => $login,
@@ -399,7 +399,7 @@ class GuestAccount {
 				'first_name'   => (string) $guest->first_name,
 				'last_name'    => (string) $guest->last_name,
 				'display_name' => $guest->fullName(),
-				'role'         => isset( AccountSettings::roles()[ $role ] ) ? $role : AccountSettings::defaultRole(),
+				'role'         => $role,
 			)
 		);
 		if ( is_wp_error( $user_id ) ) {
