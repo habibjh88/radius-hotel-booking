@@ -177,7 +177,7 @@ export default function GuestBookingOnePage( props ) {
 	} );
 
 	const confirm = () => {
-		const errors = guestFormErrors( guest );
+		const errors = guestFormErrors( guest, rules.guestFields );
 		setShown( errors );
 		if ( Object.keys( errors ).length ) {
 			reveal( detailsRef );
@@ -410,6 +410,8 @@ export default function GuestBookingOnePage( props ) {
 							} }
 							errors={ { ...shown, ...guestErrors } }
 							idTypes={ rules.idTypes || {} }
+							fields={ rules.guestFields }
+							texts={ rules.guestFieldText }
 						/>
 						{ priceChange ? (
 							<p

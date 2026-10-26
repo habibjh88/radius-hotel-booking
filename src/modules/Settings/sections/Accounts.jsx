@@ -78,13 +78,34 @@ export default function Accounts( { value, setField, errors } ) {
 						'radius-hotel-booking'
 					) }
 					description={ __(
-						'The guest enters their phone number. If the hotel knows it, a 6-digit code is sent to their e-mail on file, and entering it fills in their details. A new number only fills in the phone. Details are never shown from a phone number alone. Guests without an e-mail address need an SMS add-on to receive a code.',
+						'The guest enters their phone number. If the hotel knows it, their details are used for the booking. A new number only fills in the phone.',
 						'radius-hotel-booking'
 					) }
 					checked={ value.expressCheckout }
 					onChange={ setField( 'expressCheckout' ) }
 					error={ errors.expressCheckout }
-				/>
+				>
+					<ToggleRow
+						label={ __(
+							'Verify the phone with a code',
+							'radius-hotel-booking'
+						) }
+						description={
+							value.expressVerify
+								? __(
+										"A 6-digit code is sent to the guest's e-mail on file, and entering it fills in their details. Guests without an e-mail address need an SMS add-on to receive a code.",
+										'radius-hotel-booking'
+								  )
+								: __(
+										'No code: a known number shows only a masked name and e-mail, and the booking uses the name and e-mail on file. The guest still types their identity document, and the booking is not linked to their account.',
+										'radius-hotel-booking'
+								  )
+						}
+						checked={ value.expressVerify }
+						onChange={ setField( 'expressVerify' ) }
+						error={ errors.expressVerify }
+					/>
+				</ToggleRow>
 			</SettingsSection>
 
 			<SettingsSection

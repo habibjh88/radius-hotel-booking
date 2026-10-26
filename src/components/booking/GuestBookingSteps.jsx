@@ -327,7 +327,7 @@ export default function GuestBookingSteps( props ) {
 	const guard = useLeaveGuard( visible ? level : 0, goBack );
 
 	const toReview = () => {
-		const errors = guestFormErrors( guest );
+		const errors = guestFormErrors( guest, rules.guestFields );
 		setShown( errors );
 		if ( ! Object.keys( errors ).length ) {
 			setStep( 'review' );
@@ -550,6 +550,8 @@ export default function GuestBookingSteps( props ) {
 						} }
 						errors={ { ...shown, ...guestErrors } }
 						idTypes={ rules.idTypes || {} }
+						fields={ rules.guestFields }
+						texts={ rules.guestFieldText }
 					/>
 				</section>
 			</div>
@@ -601,7 +603,8 @@ export default function GuestBookingSteps( props ) {
 					</ul>
 					<p className="m-0 border-t border-border pt-2 text-sm">
 						{ [
-							`${ guest.first_name } ${ guest.last_name }`.trim(),
+							`${ guest.first_name } ${ guest.last_name }`.trim() ||
+								guest.express_hint?.name,
 							guest.phone,
 							guest.email,
 						]

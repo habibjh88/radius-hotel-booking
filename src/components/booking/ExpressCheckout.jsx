@@ -3,7 +3,9 @@
  * their phone number and, when the hotel knows it, the 6-digit code sent to
  * them; their details then fill the form (Frontend\ExpressCheckout). A new
  * number only fills the phone field. Nothing personal is shown before the
- * code: a phone number alone proves nothing.
+ * code: a phone number alone proves nothing. With verification off, a known
+ * number is `recognised` at once: a masked hint, and the server fills the
+ * name and e-mail at booking.
  *
  * Light on purpose like RateDetailsDialog (no Radix dialog in the website's
  * bundle), in a portal on `<body>`, and loaded only when it opens.
@@ -24,6 +26,7 @@ import { invalidPhoneMessage, isPhoneValid } from '@/lib/phone';
  * @param {Object}   props          Props.
  * @param {string}   props.phone    The phone already in the form.
  * @param {Function} props.onKnown  Called with `( details, token )` after the code.
+ * @param {Function} props.onRecognised Called with `{ token, hint, phone }` (no code asked).
  * @param {Function} props.onNew    Called with the phone (E.164) of a number to type details for.
  * @param {Function} props.onClose  Close without filling anything.
  * @return {JSX.Element} Popup.
@@ -31,6 +34,7 @@ import { invalidPhoneMessage, isPhoneValid } from '@/lib/phone';
 export default function ExpressCheckout( {
 	phone: initial,
 	onKnown,
+	onRecognised,
 	onNew,
 	onClose,
 } ) {
@@ -80,6 +84,8 @@ export default function ExpressCheckout( {
 			if ( 'code_sent' === data.status ) {
 				setCode( '' );
 				setSent( data );
+			} else if ( 'recognised' === data.status ) {
+				onRecognised( data );
 			} else {
 				onNew( data.phone || phone );
 			}

@@ -599,6 +599,10 @@ class Embeds {
 			'privacyConsent'    => (bool) rtbp_setting( 'website', 'privacyConsent', true ),
 			'privacyUrl'        => (string) get_privacy_policy_url(),
 			'idTypes'           => \RadiusTheme\RadiusHotelBooking\Services\Guests\GuestService::idTypes(),
+			// Guest field => required|optional|hidden (Settings → Website).
+			'guestFields'       => \RadiusTheme\RadiusHotelBooking\Settings\WebsiteSettings::guestFields(),
+			// Input => { label, placeholder }; '' = the built-in text.
+			'guestFieldText'    => \RadiusTheme\RadiusHotelBooking\Settings\WebsiteSettings::guestFieldText(),
 			// Most rooms one website booking may take (Settings → Booking).
 			'maxRooms'          => \RadiusTheme\RadiusHotelBooking\Services\Booking\BookingService::maxRooms( 'public' ),
 		);

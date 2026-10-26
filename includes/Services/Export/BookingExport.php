@@ -99,7 +99,7 @@ class BookingExport {
 	 */
 	public function rows( ReportRange $range ): \Generator {
 		$rate  = max( 0.0, (float) rtbp_setting( 'invoices', 'taxRate', 0 ) );
-		$types = GuestService::idTypes();
+		$types = GuestService::idTypeLabels();
 		$users = array();
 		$after = 0;
 		do {

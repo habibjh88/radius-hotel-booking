@@ -40,6 +40,11 @@ class AccountSettings {
 				'type'    => 'bool',
 				'default' => true,
 			),
+			// Express checkout sends the code first; off: a known number is recognised at once (masked hint, no document on file).
+			'expressVerify'   => array(
+				'type'    => 'bool',
+				'default' => true,
+			),
 			// A website booking from an unknown phone and e-mail creates a WordPress account.
 			'createAccounts' => array(
 				'type'    => 'bool',

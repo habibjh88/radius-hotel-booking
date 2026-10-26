@@ -12,6 +12,7 @@ use RadiusTheme\RadiusHotelBooking\Emails\EmailSender;
 use RadiusTheme\RadiusHotelBooking\Exceptions\DomainException;
 use RadiusTheme\RadiusHotelBooking\Models\Guest;
 use RadiusTheme\RadiusHotelBooking\Repositories\GuestRepository;
+use RadiusTheme\RadiusHotelBooking\Settings\WebsiteSettings;
 use RadiusTheme\RadiusHotelBooking\Support\Phone;
 use WP_User;
 
@@ -35,6 +36,10 @@ defined( 'ABSPATH' ) || exit;
  * - The proof (a token, 1 hour, same session) goes with the booking; the
  *   server fills empty fields from the record. The document number never
  *   reaches the browser.
+ * - With "Verify with a code" off, start() answers `recognised` at once: a
+ *   masked hint only (`H••• R•••`, `h•••@site.com`) and an unverified proof
+ *   that fills the name and e-mail, but never the document on file and never
+ *   links the booking to an account.
  */
 class ExpressCheckout {
 
@@ -54,12 +59,23 @@ class ExpressCheckout {
 	const MAX_SENDS = 3;
 
 	/**
-	 * Whether the website offers it (Settings → Guest accounts).
+	 * Whether the website offers it (Settings → Guest accounts), which needs
+	 * the form's phone field (Settings → Website).
 	 *
 	 * @return bool
 	 */
 	public static function enabled(): bool {
-		return (bool) rtbp_setting( 'accounts', 'expressCheckout', true );
+		return (bool) rtbp_setting( 'accounts', 'expressCheckout', true )
+			&& 'hidden' !== WebsiteSettings::guestField( 'phone' );
+	}
+
+	/**
+	 * Whether a code proves the phone first (Settings → Guest accounts).
+	 *
+	 * @return bool
+	 */
+	public static function verifies(): bool {
+		return (bool) rtbp_setting( 'accounts', 'expressVerify', true );
 	}
 
 	/**
@@ -67,7 +83,8 @@ class ExpressCheckout {
 	 *
 	 * @param string $phone   As typed.
 	 * @param string $session The visitor's session key.
-	 * @return array `{ status: 'new', phone }` or `{ status: 'code_sent', challenge, channel, to, phone }`.
+	 * @return array `{ status: 'new', phone }`, `{ status: 'code_sent', challenge, channel, to, phone }`
+	 *               or, without verification, `{ status: 'recognised', token, hint: { name, email }, phone }`.
 	 * @throws DomainException 422 an invalid number, 429 too many codes, 403 off.
 	 */
 	public static function start( string $phone, string $session ): array {
@@ -86,6 +103,9 @@ class ExpressCheckout {
 		$target = self::target( $e164 );
 		if ( ! $target ) {
 			return $new;
+		}
+		if ( ! self::verifies() ) {
+			return self::recognise( $target, $session );
 		}
 
 		$sends = (int) get_transient( self::sendsKey( $e164 ) );
@@ -168,22 +188,12 @@ class ExpressCheckout {
 		}
 
 		delete_transient( $key );
-		$token = bin2hex( random_bytes( 16 ) );
-		set_transient(
-			self::proofKey( $token ),
-			array(
-				'session'  => $session,
-				'guest_id' => (int) $state['guest_id'],
-				'user_id'  => (int) $state['user_id'],
-			),
-			HOUR_IN_SECONDS
-		);
+		$token = self::issueProof( $session, (int) $state['guest_id'], (int) $state['user_id'], true );
 
 		$details = self::details( (int) $state['guest_id'], (int) $state['user_id'] );
-		// The number just proved, when the record has none.
-		if ( '' === trim( $details['phone'] ) ) {
-			$details['phone'] = (string) $state['phone'];
-		}
+		// The number just proved, in E.164: an older record may hold `01 92…`,
+		// which the form would read in the wrong country.
+		$details['phone'] = (string) $state['phone'];
 		return array(
 			'token'   => $token,
 			'details' => $details,
@@ -191,11 +201,59 @@ class ExpressCheckout {
 	}
 
 	/**
+	 * A known number without verification: a masked hint and an unverified proof.
+	 *
+	 * @param array  $target  target().
+	 * @param string $session The visitor's session key.
+	 * @return array `{ status: 'recognised', token, hint, phone }`.
+	 */
+	private static function recognise( array $target, string $session ): array {
+		rtbp_activity(
+			'security.express_recognised',
+			self::subject( $target ),
+			array( 'description' => __( 'Recognised a guest at express checkout without a code', 'radius-hotel-booking' ) )
+		);
+		return array(
+			'status' => 'recognised',
+			'token'  => self::issueProof( $session, $target['guest_id'], $target['user_id'], false ),
+			'hint'   => array(
+				'name'  => self::maskName( $target['name'] ),
+				'email' => '' !== $target['email'] ? self::maskEmail( $target['email'] ) : '',
+			),
+			'phone'  => $target['phone'],
+		);
+	}
+
+	/**
+	 * Store the proof a booking carries (1 hour, this session).
+	 *
+	 * @param string $session  The visitor's session key.
+	 * @param int    $guest_id Guest record (0 = none).
+	 * @param int    $user_id  Account (0 = none).
+	 * @param bool   $verified Proved with a code.
+	 * @return string Token.
+	 */
+	private static function issueProof( string $session, int $guest_id, int $user_id, bool $verified ): string {
+		$token = bin2hex( random_bytes( 16 ) );
+		set_transient(
+			self::proofKey( $token ),
+			array(
+				'session'  => $session,
+				'guest_id' => $guest_id,
+				'user_id'  => $user_id,
+				'verified' => $verified,
+			),
+			HOUR_IN_SECONDS
+		);
+		return $token;
+	}
+
+	/**
 	 * The record a booking's proof stands for (PublicBookingService).
 	 *
-	 * @param string $token   From verify().
+	 * @param string $token   From verify() or start() (no code).
 	 * @param string $session The visitor's session key.
-	 * @return array{ guest: Guest|null, user: WP_User|null }|null Null when the proof is missing or not this visitor's.
+	 * @return array{ guest: Guest|null, user: WP_User|null, verified: bool }|null Null when the proof is missing or not this visitor's.
 	 */
 	public static function proof( string $token, string $session ): ?array {
 		if ( ! preg_match( '/^[a-f0-9]{32}$/', $token ) || '' === $session ) {
@@ -208,8 +266,10 @@ class ExpressCheckout {
 		$guest = $state['guest_id'] ? ( new GuestRepository() )->find( (int) $state['guest_id'] ) : null;
 		$user  = $state['user_id'] ? get_userdata( (int) $state['user_id'] ) : false;
 		return array(
-			'guest' => $guest instanceof Guest ? $guest : null,
-			'user'  => $user instanceof WP_User ? $user : null,
+			'guest'    => $guest instanceof Guest ? $guest : null,
+			'user'     => $user instanceof WP_User ? $user : null,
+			// Older proofs (before the setting) were all verified.
+			'verified' => (bool) ( $state['verified'] ?? true ),
 		);
 	}
 
@@ -256,7 +316,9 @@ class ExpressCheckout {
 	private static function details( int $guest_id, int $user_id ): array {
 		$guest  = $guest_id ? ( new GuestRepository() )->find( $guest_id ) : null;
 		$user   = $user_id ? get_userdata( $user_id ) : false;
-		$fields = self::fields( $guest instanceof Guest ? $guest : null, $user instanceof WP_User ? $user : null );
+		$guest  = $guest instanceof Guest ? $guest : null;
+		$user   = $user instanceof WP_User ? $user : null;
+		$fields = self::fields( $guest, $user );
 		$number = preg_replace( '/[^A-Za-z0-9]/', '', $fields['id_number'] );
 		return array(
 			'first_name' => $fields['first_name'],
@@ -266,6 +328,8 @@ class ExpressCheckout {
 			'id_type'    => $fields['id_type'],
 			'id_on_file' => '' !== $number && '' !== $fields['id_type'],
 			'id_hint'    => '' !== $number ? '•••• ' . substr( $number, -4 ) : '',
+			// A guest record: the booking goes to it as it is (the form locks the details).
+			'on_file'    => $guest || ( $user && GuestAccount::guest( $user ) ),
 		);
 	}
 
@@ -353,6 +417,17 @@ class ExpressCheckout {
 			'channel' => __( 'e-mail', 'radius-hotel-booking' ),
 			'to'      => self::maskEmail( $target['email'] ),
 		);
+	}
+
+	/**
+	 * `H••• R•••`.
+	 *
+	 * @param string $name Full name.
+	 * @return string
+	 */
+	private static function maskName( string $name ): string {
+		$words = preg_split( '/\s+/u', trim( $name ), -1, PREG_SPLIT_NO_EMPTY );
+		return implode( ' ', array_map( static fn( $word ) => mb_substr( $word, 0, 1 ) . '•••', $words ) );
 	}
 
 	/**

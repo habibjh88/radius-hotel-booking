@@ -30,7 +30,7 @@ final class GuestResource {
 	 * @return array
 	 */
 	public static function summary( Guest $guest ): array {
-		$types = GuestService::idTypes();
+		$types = GuestService::idTypeLabels();
 		return array(
 			'id'                   => (int) $guest->id,
 			'reference'            => (string) $guest->reference,

@@ -319,6 +319,14 @@ Optional: require sign-in to book, or create an account for new website guests.
 Guests can sign in with their phone number written with or without the country code.
 New Express checkout: returning guests confirm their phone with a code and skip typing details.
 Fixed a banned guest getting the "details do not match" message instead of a refusal.
+Fixed the phone country list opening behind the Express checkout window.
+Express checkout: new option to skip the e-mail code and recognise returning guests by phone.
+Fixed Express checkout showing an older saved phone number under the wrong country.
+Returning and signed-in guests now see their details on file locked instead of editable.
+New setting: show, hide or require each guest field on the booking form.
+Fixed the guest field settings dropdown dropping below a long description.
+New setting: your own label and placeholder for each booking form field.
+New setting: add, rename or remove the identity documents guests can choose.
 
 = 1.0.0 =
 Initial release.

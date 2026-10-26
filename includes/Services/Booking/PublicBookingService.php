@@ -19,6 +19,7 @@ use RadiusTheme\RadiusHotelBooking\Services\Availability\AvailabilityService;
 use RadiusTheme\RadiusHotelBooking\Services\Availability\HoldService;
 use RadiusTheme\RadiusHotelBooking\Services\Guests\GuestService;
 use RadiusTheme\RadiusHotelBooking\Services\Payments\GuestBookingView;
+use RadiusTheme\RadiusHotelBooking\Settings\WebsiteSettings;
 use RadiusTheme\RadiusHotelBooking\Support\Dates;
 use RadiusTheme\RadiusHotelBooking\Support\Phone;
 use WP_User;
@@ -207,9 +208,17 @@ class PublicBookingService {
 		} else {
 			$proof = ExpressCheckout::proof( (string) ( $input['express_token'] ?? '' ), $session );
 			if ( $proof ) {
-				$linked  = $proof['guest'] ? $proof['guest'] : ( $proof['user'] ? GuestAccount::guest( $proof['user'] ) : null );
 				$on_file = ExpressCheckout::fields( $proof['guest'], $proof['user'] );
-				$link_to = $proof['user'];
+				if ( $proof['verified'] ) {
+					$linked  = $proof['guest'] ? $proof['guest'] : ( $proof['user'] ? GuestAccount::guest( $proof['user'] ) : null );
+					$link_to = $proof['user'];
+				} else {
+					// A phone number alone (no code): only the name and e-mail are
+					// filled; knownGuest() still wants the document on file, and
+					// the account is never linked.
+					$on_file['id_type']   = '';
+					$on_file['id_number'] = '';
+				}
 			}
 		}
 		if ( $on_file ) {
@@ -227,6 +236,10 @@ class PublicBookingService {
 		}
 		$guest  = self::guestFields( $typed );
 		$errors = $guest['errors'];
+		$requests = 'hidden' === WebsiteSettings::guestField( 'special_requests' ) ? '' : mb_substr( sanitize_textarea_field( (string) ( $input['special_requests'] ?? '' ) ), 0, 1000 );
+		if ( 'required' === WebsiteSettings::guestField( 'special_requests' ) && '' === trim( $requests ) ) {
+			$errors['special_requests'] = __( 'Please fill in your special requests.', 'radius-hotel-booking' );
+		}
 		if ( rtbp_setting( 'website', 'privacyConsent', true ) && ! rest_sanitize_boolean( $input['consent'] ?? false ) ) {
 			$errors['consent'] = __( 'Please accept the privacy policy to book.', 'radius-hotel-booking' );
 		}
@@ -250,7 +263,7 @@ class PublicBookingService {
 			'hold_token'       => (string) ( $input['hold_token'] ?? '' ),
 			'lines'            => $lines,
 			'payment_state'    => 'unpaid',
-			'note'             => mb_substr( sanitize_textarea_field( (string) ( $input['special_requests'] ?? '' ) ), 0, 1000 ),
+			'note'             => $requests,
 			'accept_new_price' => rest_sanitize_boolean( $input['accept_new_price'] ?? false ),
 		);
 		// The signed-in visitor's own guest record; otherwise a guest already on
@@ -423,11 +436,16 @@ class PublicBookingService {
 		if ( ! $same_name ) {
 			self::refuse( (int) $guest->id, $fields, 'name', $matched );
 		}
-		$same_id = '' !== self::documentKey( (string) $guest->id_number )
+		// The document when both sides have one; otherwise (none on file, or
+		// the form does not require one and none was typed) the contact detail
+		// on file: the same phone, or the same e-mail.
+		$by_document = '' !== self::documentKey( (string) $guest->id_number )
+			&& ( '' !== self::documentKey( $fields['id_number'] ) || 'required' === WebsiteSettings::guestField( 'id_document' ) );
+		$same_id     = $by_document
 			? (string) $guest->id_type === $fields['id_type'] && self::documentKey( (string) $guest->id_number ) === self::documentKey( $fields['id_number'] )
-			: null !== $e164 && (string) $guest->phone_e164 === $e164;
+			: ( null !== $e164 && (string) $guest->phone_e164 === $e164 ) || ( null !== $email && strtolower( (string) $guest->email ) === $email );
 		if ( ! $same_id ) {
-			self::refuse( (int) $guest->id, $fields, '' !== self::documentKey( (string) $guest->id_number ) ? 'document' : 'name', $matched );
+			self::refuse( (int) $guest->id, $fields, $by_document ? 'document' : 'name', $matched );
 		}
 		return (int) $guest->id;
 	}
@@ -547,12 +565,15 @@ class PublicBookingService {
 	}
 
 	/**
-	 * The guest's details, with the website's required fields.
+	 * The guest's details, checked against the website's fields (Settings →
+	 * Website → Guest details: each required, optional or hidden; a hidden
+	 * field is dropped).
 	 *
 	 * @param array $raw Raw fields.
 	 * @return array{fields: array, errors: array<string, string>}
 	 */
 	private static function guestFields( array $raw ): array {
+		$modes  = WebsiteSettings::guestFields();
 		$fields = array(
 			'first_name' => sanitize_text_field( (string) ( $raw['first_name'] ?? '' ) ),
 			'last_name'  => sanitize_text_field( (string) ( $raw['last_name'] ?? '' ) ),
@@ -561,24 +582,50 @@ class PublicBookingService {
 			'id_type'    => sanitize_key( (string) ( $raw['id_type'] ?? '' ) ),
 			'id_number'  => sanitize_text_field( (string) ( $raw['id_number'] ?? '' ) ),
 		);
-		$errors = array();
+		$raw_email = (string) ( $raw['email'] ?? '' );
 		foreach ( array(
-			'first_name' => __( 'Enter your first name.', 'radius-hotel-booking' ),
-			'last_name'  => __( 'Enter your last name.', 'radius-hotel-booking' ),
-			'id_number'  => __( 'Enter the number of your identity document.', 'radius-hotel-booking' ),
-		) as $key => $message ) {
-			if ( '' === trim( $fields[ $key ] ) ) {
-				$errors[ $key ] = $message;
+			'last_name'   => array( 'last_name' ),
+			'phone'       => array( 'phone' ),
+			'email'       => array( 'email' ),
+			'id_document' => array( 'id_type', 'id_number' ),
+		) as $field => $keys ) {
+			if ( 'hidden' === $modes[ $field ] ) {
+				foreach ( $keys as $key ) {
+					$fields[ $key ] = '';
+				}
+				if ( 'email' === $field ) {
+					$raw_email = '';
+				}
 			}
 		}
-		if ( null === Phone::toE164( $fields['phone'] ) ) {
-			$errors['phone'] = __( 'Enter a phone number we can reach you on.', 'radius-hotel-booking' );
+
+		$errors = array();
+		if ( '' === trim( $fields['first_name'] ) ) {
+			$errors['first_name'] = __( 'Enter your first name.', 'radius-hotel-booking' );
 		}
-		if ( ! array_key_exists( $fields['id_type'], GuestService::idTypes() ) ) {
-			$errors['id_type'] = __( 'Choose your identity document type.', 'radius-hotel-booking' );
+		if ( 'required' === $modes['last_name'] && '' === trim( $fields['last_name'] ) ) {
+			$errors['last_name'] = __( 'Enter your last name.', 'radius-hotel-booking' );
 		}
-		if ( '' !== (string) ( $raw['email'] ?? '' ) && ! is_email( $fields['email'] ) ) {
-			$errors['email'] = __( 'Enter a valid e-mail address, or leave it empty.', 'radius-hotel-booking' );
+		if ( '' !== trim( $fields['phone'] ) || 'required' === $modes['phone'] ) {
+			if ( null === Phone::toE164( $fields['phone'] ) ) {
+				$errors['phone'] = __( 'Enter a phone number we can reach you on.', 'radius-hotel-booking' );
+			}
+		}
+		// A document is a type and a number together: asked for when required, or once either is given.
+		if ( 'required' === $modes['id_document'] || '' !== $fields['id_type'] || '' !== trim( $fields['id_number'] ) ) {
+			if ( ! array_key_exists( $fields['id_type'], GuestService::idTypes() ) ) {
+				$errors['id_type'] = __( 'Choose your identity document type.', 'radius-hotel-booking' );
+			}
+			if ( '' === trim( $fields['id_number'] ) ) {
+				$errors['id_number'] = __( 'Enter the number of your identity document.', 'radius-hotel-booking' );
+			}
+		}
+		if ( 'required' === $modes['email'] && '' === $raw_email ) {
+			$errors['email'] = __( 'Enter your e-mail address.', 'radius-hotel-booking' );
+		} elseif ( '' !== $raw_email && ! is_email( $fields['email'] ) ) {
+			$errors['email'] = 'required' === $modes['email']
+				? __( 'Enter a valid e-mail address.', 'radius-hotel-booking' )
+				: __( 'Enter a valid e-mail address, or leave it empty.', 'radius-hotel-booking' );
 		}
 		return array(
 			'fields' => $fields,

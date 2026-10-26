@@ -54,7 +54,7 @@ class GuestExport {
 	 */
 	public function rows(): \Generator {
 		global $wpdb;
-		$types = GuestService::idTypes();
+		$types = GuestService::idTypeLabels();
 		$after = 0;
 		do {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- an export reads each row once.

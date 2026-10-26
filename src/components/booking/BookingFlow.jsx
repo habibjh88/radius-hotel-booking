@@ -140,10 +140,15 @@ export default function BookingFlow( {
 			return;
 		}
 		setGuestForm( ( prev ) => {
-			const next = { ...prev };
+			// A guest record: the booking goes to it as it is, so its details
+			// replace anything typed and are shown locked.
+			const locked = !! details.on_file;
+			const next = { ...prev, details_locked: locked };
 			[ 'first_name', 'last_name', 'phone', 'email' ].forEach(
 				( key ) => {
-					if ( ! next[ key ] && details[ key ] ) {
+					if ( locked ) {
+						next[ key ] = details[ key ] || '';
+					} else if ( ! next[ key ] && details[ key ] ) {
 						next[ key ] = details[ key ];
 					}
 				}

@@ -279,15 +279,20 @@ class GuestAccount {
 	public static function details( WP_User $user ): array {
 		$fields = self::fields( $user );
 		$number = preg_replace( '/[^A-Za-z0-9]/', '', $fields['id_number'] );
+		$guest  = self::guest( $user );
+		// E.164 when the record has it: an older `01 92…` is read in the wrong country.
+		$phone = $guest && '' !== (string) $guest->phone_e164 && (string) $guest->phone === $fields['phone'] ? (string) $guest->phone_e164 : $fields['phone'];
 		return array(
 			'first_name' => $fields['first_name'],
 			'last_name'  => $fields['last_name'],
-			'phone'      => $fields['phone'],
+			'phone'      => $phone,
 			'email'      => $fields['email'],
 			'id_type'    => $fields['id_type'],
 			'id_on_file' => '' !== $number && '' !== $fields['id_type'],
 			// The last four characters, so the guest knows which document it is.
 			'id_hint'    => '' !== $number ? '•••• ' . substr( $number, -4 ) : '',
+			// A guest record: the booking goes to it as it is (the form locks the details).
+			'on_file'    => null !== $guest,
 		);
 	}
 

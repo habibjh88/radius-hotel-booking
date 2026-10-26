@@ -12,6 +12,7 @@ use RadiusTheme\RadiusHotelBooking\Core\Database\Transaction;
 use RadiusTheme\RadiusHotelBooking\Exceptions\DomainException;
 use RadiusTheme\RadiusHotelBooking\Models\Guest;
 use RadiusTheme\RadiusHotelBooking\Repositories\GuestRepository;
+use RadiusTheme\RadiusHotelBooking\Settings\WebsiteSettings;
 use RadiusTheme\RadiusHotelBooking\Support\Dates;
 use RadiusTheme\RadiusHotelBooking\Support\Phone;
 use RadiusTheme\RadiusHotelBooking\Support\Sequence;
@@ -46,7 +47,8 @@ class GuestService {
 	}
 
 	/**
-	 * Identity document types: key => label (9.6).
+	 * Identity document types a guest can choose: key => label (9.6),
+	 * from Settings → Public booking.
 	 *
 	 * @return array<string, string>
 	 */
@@ -56,17 +58,21 @@ class GuestService {
 		 *
 		 * @param array $types Key => translated label.
 		 */
-		return (array) apply_filters(
-			'rtbp_id_document_types',
-			array(
-				'cni'            => __( 'National ID card', 'radius-hotel-booking' ),
-				'passport'       => __( 'Passport', 'radius-hotel-booking' ),
-				'consular_card'  => __( 'Consular card', 'radius-hotel-booking' ),
-				'cni_receipt'    => __( 'National ID receipt', 'radius-hotel-booking' ),
-				'id_certificate' => __( 'Identity certificate', 'radius-hotel-booking' ),
-				'driver_license' => __( 'Driver license', 'radius-hotel-booking' ),
-			)
-		);
+		return (array) apply_filters( 'rtbp_id_document_types', WebsiteSettings::idTypes() );
+	}
+
+	/**
+	 * Every known type's label, for showing a guest's document: the ones in
+	 * the list, then the built-in ones taken out of it (guests keep theirs).
+	 *
+	 * @return array<string, string>
+	 */
+	public static function idTypeLabels(): array {
+		$labels = self::idTypes();
+		foreach ( WebsiteSettings::defaultIdTypes() as $row ) {
+			$labels += array( $row['key'] => $row['label'] );
+		}
+		return $labels;
 	}
 
 	/**
@@ -256,7 +262,7 @@ class GuestService {
 	 */
 	public function revealId( int $id ): array {
 		$guest = $this->get( $id );
-		$types = self::idTypes();
+		$types = self::idTypeLabels();
 		if ( '' !== (string) $guest->id_number ) {
 			rtbp_activity(
 				'guests.view_id',
@@ -522,7 +528,7 @@ class GuestService {
 		if ( $has( 'id_type' ) || $has( 'id_number' ) ) {
 			$type   = sanitize_key( (string) $value( 'id_type' ) );
 			$number = strtoupper( preg_replace( '/\s+/', '', sanitize_text_field( (string) $value( 'id_number' ) ) ) );
-			if ( '' !== $type && ! array_key_exists( $type, self::idTypes() ) ) {
+			if ( '' !== $type && ! array_key_exists( $type, self::idTypeLabels() ) ) {
 				$errors['id_type'] = __( 'Choose a document type from the list.', 'radius-hotel-booking' );
 			} elseif ( '' !== $number && '' === $type ) {
 				$errors['id_type'] = __( 'Choose the document type.', 'radius-hotel-booking' );
