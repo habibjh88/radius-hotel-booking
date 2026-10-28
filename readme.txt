@@ -328,6 +328,10 @@ Fixed the guest field settings dropdown dropping below a long description.
 New setting: your own label and placeholder for each booking form field.
 New setting: add, rename or remove the identity documents guests can choose.
 New Hotel Guest role for guest accounts; WooCommerce's Customer role is no longer offered.
+Hotel booking shortcode now defaults to one page, room popup, split cards, two rates, price breakdown.
+Opening another dashboard page now starts at its top, not where the last page was scrolled.
+Express checkout no longer asks for a code by default; turn it on under Guest accounts.
+Express checkout without a code now also uses the guest's identity document on file.
 
 = 1.0.0 =
 Initial release.

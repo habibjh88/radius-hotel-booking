@@ -97,7 +97,7 @@ export default function Accounts( { value, setField, errors } ) {
 										'radius-hotel-booking'
 								  )
 								: __(
-										'No code: a known number shows only a masked name and e-mail, and the booking uses the name and e-mail on file. The guest still types their identity document, and the booking is not linked to their account.',
+										'No code: a known number shows only a masked name, e-mail and document, and the booking uses the details on file, identity document included. The booking is not linked to their account.',
 										'radius-hotel-booking'
 								  )
 						}

@@ -7,7 +7,15 @@
  * The sidebar is sticky rather than fixed, so it needs no knowledge of the
  * WordPress admin menu width and also works on a front-end mount.
  */
-import { Suspense, lazy, useCallback, useState } from 'react';
+import {
+	Suspense,
+	lazy,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from 'react';
+import { useLocation } from 'react-router-dom';
 import { __ } from '@wordpress/i18n';
 import { Toaster } from 'sonner';
 
@@ -22,6 +30,43 @@ import { useCommandShortcut } from './shortcuts';
 const CommandPalette = lazy( () => import( './CommandPalette' ) );
 
 /**
+ * A new screen opens at its top. The page (not the shell) scrolls, so the
+ * scroll left from the previous screen would otherwise carry over. Only a
+ * path change counts: filters and Settings tabs (`?…`) keep the position.
+ *
+ * @param {Object} shellRef The shell element.
+ * @return {void}
+ */
+function useScrollTopOnNavigate( shellRef ) {
+	const { pathname } = useLocation();
+	const first = useRef( true );
+
+	useEffect( () => {
+		if ( first.current ) {
+			first.current = false;
+			return;
+		}
+		const shell = shellRef.current;
+		if ( ! shell ) {
+			return;
+		}
+		// Under the admin bar, as the sticky header sits.
+		const offset =
+			parseFloat(
+				window
+					.getComputedStyle( shell )
+					.getPropertyValue( '--rtbp-top' )
+			) || 0;
+		const top = shell.getBoundingClientRect().top - offset;
+		// Already showing the top of the app (a front-end page above it stays put).
+		if ( top >= 0 ) {
+			return;
+		}
+		window.scrollTo( { top: Math.max( 0, window.scrollY + top ) } );
+	}, [ pathname, shellRef ] );
+}
+
+/**
  * @param {Object}      props          Props.
  * @param {JSX.Element} props.children Routed screen.
  * @return {JSX.Element} Shell.
@@ -31,6 +76,8 @@ export default function AppShell( { children } ) {
 		useSidebarState();
 	const [ paletteOpen, setPaletteOpen ] = useState( false );
 	const [ paletteLoaded, setPaletteLoaded ] = useState( false );
+	const shellRef = useRef( null );
+	useScrollTopOnNavigate( shellRef );
 
 	const openPalette = useCallback( ( next = true ) => {
 		setPaletteLoaded( true );
@@ -44,7 +91,10 @@ export default function AppShell( { children } ) {
 
 	return (
 		<PageActionsProvider>
-			<div className="rtbp-root rtbp-shell flex bg-app text-foreground">
+			<div
+				ref={ shellRef }
+				className="rtbp-root rtbp-shell flex bg-app text-foreground"
+			>
 				{ isDesktop ? (
 					<Sidebar
 						collapsed={ collapsed }

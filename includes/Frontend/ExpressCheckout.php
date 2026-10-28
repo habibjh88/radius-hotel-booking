@@ -36,10 +36,12 @@ defined( 'ABSPATH' ) || exit;
  * - The proof (a token, 1 hour, same session) goes with the booking; the
  *   server fills empty fields from the record. The document number never
  *   reaches the browser.
- * - With "Verify with a code" off, start() answers `recognised` at once: a
- *   masked hint only (`H••• R•••`, `h•••@site.com`) and an unverified proof
- *   that fills the name and e-mail, but never the document on file and never
- *   links the booking to an account.
+ * - With "Verify with a code" off (the default: many guests have no
+ *   e-mail to send a code to), start() answers `recognised` at once: a
+ *   masked hint only (`H••• R•••`, `h•••@site.com`, `Passport •••• 4813`)
+ *   and an unverified proof that fills the name, e-mail and the document on
+ *   file at booking — its number never reaches the browser — but never links
+ *   the booking to an account.
  */
 class ExpressCheckout {
 
@@ -75,7 +77,7 @@ class ExpressCheckout {
 	 * @return bool
 	 */
 	public static function verifies(): bool {
-		return (bool) rtbp_setting( 'accounts', 'expressVerify', true );
+		return (bool) rtbp_setting( 'accounts', 'expressVerify', false );
 	}
 
 	/**
@@ -84,7 +86,7 @@ class ExpressCheckout {
 	 * @param string $phone   As typed.
 	 * @param string $session The visitor's session key.
 	 * @return array `{ status: 'new', phone }`, `{ status: 'code_sent', challenge, channel, to, phone }`
-	 *               or, without verification, `{ status: 'recognised', token, hint: { name, email }, phone }`.
+	 *               or, without verification, `{ status: 'recognised', token, hint: { name, email, document }, phone }`.
 	 * @throws DomainException 422 an invalid number, 429 too many codes, 403 off.
 	 */
 	public static function start( string $phone, string $session ): array {
@@ -208,6 +210,7 @@ class ExpressCheckout {
 	 * @return array `{ status: 'recognised', token, hint, phone }`.
 	 */
 	private static function recognise( array $target, string $session ): array {
+		$details = self::details( $target['guest_id'], $target['user_id'] );
 		rtbp_activity(
 			'security.express_recognised',
 			self::subject( $target ),
@@ -217,8 +220,15 @@ class ExpressCheckout {
 			'status' => 'recognised',
 			'token'  => self::issueProof( $session, $target['guest_id'], $target['user_id'], false ),
 			'hint'   => array(
-				'name'  => self::maskName( $target['name'] ),
-				'email' => '' !== $target['email'] ? self::maskEmail( $target['email'] ) : '',
+				'name'     => self::maskName( $target['name'] ),
+				'email'    => '' !== $target['email'] ? self::maskEmail( $target['email'] ) : '',
+				// The document on file: its type and last 4 only; the server adds the number at booking.
+				'document' => $details['id_on_file']
+					? array(
+						'id_type' => $details['id_type'],
+						'id_hint' => $details['id_hint'],
+					)
+					: null,
 			),
 			'phone'  => $target['phone'],
 		);

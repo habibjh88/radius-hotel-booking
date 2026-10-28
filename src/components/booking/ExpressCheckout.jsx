@@ -5,7 +5,7 @@
  * number only fills the phone field. Nothing personal is shown before the
  * code: a phone number alone proves nothing. With verification off, a known
  * number is `recognised` at once: a masked hint, and the server fills the
- * name and e-mail at booking.
+ * name, e-mail and document on file at booking.
  *
  * Light on purpose like RateDetailsDialog (no Radix dialog in the website's
  * bundle), in a portal on `<body>`, and loaded only when it opens.

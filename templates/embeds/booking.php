@@ -26,13 +26,14 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$layout      = $layout ?? 'steps';
+$layout      = $layout ?? \RadiusTheme\RadiusHotelBooking\Frontend\Embeds::BOOKING_DEFAULTS['layout'];
 $display     = $display ?? 'inline';
 $button_text = $button_text ?? __( 'Book now', 'radius-hotel-booking' );
 $page_url    = $page_url ?? '';
-$room_details = $room_details ?? 'page';
-$room_card    = $room_card ?? 'classic';
-$rates_shown  = (int) ( $rates_shown ?? 4 );
+$room_details = $room_details ?? \RadiusTheme\RadiusHotelBooking\Frontend\Embeds::BOOKING_DEFAULTS['room_details'];
+$room_card    = $room_card ?? \RadiusTheme\RadiusHotelBooking\Frontend\Embeds::BOOKING_DEFAULTS['room_card'];
+$rates_shown  = (int) ( $rates_shown ?? \RadiusTheme\RadiusHotelBooking\Frontend\Embeds::BOOKING_DEFAULTS['rates_shown'] );
+$breakdown    = $breakdown ?? 'yes' === \RadiusTheme\RadiusHotelBooking\Frontend\Embeds::BOOKING_DEFAULTS['price_breakdown'];
 $breakdown    = ! empty( $breakdown );
 ?>
 <?php if ( 'modal' === $display ) : ?>

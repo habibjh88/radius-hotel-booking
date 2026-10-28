@@ -212,13 +212,10 @@ class PublicBookingService {
 				if ( $proof['verified'] ) {
 					$linked  = $proof['guest'] ? $proof['guest'] : ( $proof['user'] ? GuestAccount::guest( $proof['user'] ) : null );
 					$link_to = $proof['user'];
-				} else {
-					// A phone number alone (no code): only the name and e-mail are
-					// filled; knownGuest() still wants the document on file, and
-					// the account is never linked.
-					$on_file['id_type']   = '';
-					$on_file['id_number'] = '';
 				}
+				// A phone number alone (no code) fills the same fields, the document
+				// on file included (it never reaches the browser), but the account
+				// is never linked.
 			}
 		}
 		if ( $on_file ) {

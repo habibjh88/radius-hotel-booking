@@ -45,13 +45,13 @@ class Embeds {
 	 * `button_text` shows "Book now" in the site's language.
 	 */
 	public const BOOKING_DEFAULTS = array(
-		'layout'       => 'steps',
-		'display'      => 'inline',
-		'button_text'  => '',
-		'room_details' => 'page',
-		'room_card'    => 'classic',
-		'rates_shown'     => 4,
-		'price_breakdown' => 'no',
+		'layout'          => 'onepage',
+		'display'         => 'inline',
+		'button_text'     => '',
+		'room_details'    => 'popup',
+		'room_card'       => 'split',
+		'rates_shown'     => 2,
+		'price_breakdown' => 'yes',
 	);
 
 	/**
@@ -307,7 +307,7 @@ class Embeds {
 					),
 					'priceBreakdown' => array(
 						'type'    => 'boolean',
-						'default' => false,
+						'default' => 'yes' === self::BOOKING_DEFAULTS['price_breakdown'],
 					),
 				),
 				'render_callback' => static fn( $attributes = array() ) => self::booking(

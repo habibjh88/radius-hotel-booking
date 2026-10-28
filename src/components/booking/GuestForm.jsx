@@ -5,7 +5,8 @@
  * server, silently (no public guest lookup: the legacy PII leak). A guest
  * signed in to their account starts with their details filled in
  * (AccountBar); a document already on file shows as "•••• 4821" and is not
- * asked again (`id_on_file`: the server uses the one it has). When those
+ * asked again (`id_on_file`: the server uses the one it has), also after
+ * Express checkout without a code. When those
  * details are a guest record's (signed in, or Express checkout with a code),
  * the booking goes to that record as it is, so the name, phone and e-mail
  * are shown locked (`details_locked`) rather than edited for nothing.
@@ -255,13 +256,33 @@ export default function GuestForm( {
 	};
 	const recognised = ( { token, hint, phone } ) => {
 		setExpress( false );
-		onChange( { express_token: token, express_hint: hint, phone } );
+		const next = { express_token: token, express_hint: hint, phone };
+		// Its document is used as it is on file (the server adds the number).
+		if ( hint?.document ) {
+			next.id_on_file = true;
+			next.id_type = hint.document.id_type;
+			next.id_number = '';
+			next.id_hint = hint.document.id_hint;
+		}
+		onChange( next );
 	};
 	// Another number than the one recognised: the record no longer applies.
 	const changePhone = ( phone ) =>
 		onChange(
 			value.express_hint && phone !== value.phone
-				? { phone, express_token: '', express_hint: null }
+				? {
+						phone,
+						express_token: '',
+						express_hint: null,
+						...( value.express_hint.document
+							? {
+									id_on_file: false,
+									id_type: '',
+									id_number: '',
+									id_hint: '',
+							  }
+							: {} ),
+				  }
 				: { phone }
 		);
 	const hint = value.express_hint;

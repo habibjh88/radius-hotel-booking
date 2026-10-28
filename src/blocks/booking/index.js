@@ -27,13 +27,13 @@ registerBlockType( 'radius-hotel-booking/booking', {
 	keywords: [ 'hotel', 'booking', 'room', 'book', 'popup', 'modal' ],
 	// Defaults: Embeds::BOOKING_DEFAULTS.
 	attributes: {
-		layout: { type: 'string', default: 'steps' },
+		layout: { type: 'string', default: 'onepage' },
 		display: { type: 'string', default: 'inline' },
 		buttonText: { type: 'string', default: '' },
-		roomDetails: { type: 'string', default: 'page' },
-		roomCard: { type: 'string', default: 'classic' },
-		ratesShown: { type: 'number', default: 4 },
-		priceBreakdown: { type: 'boolean', default: false },
+		roomDetails: { type: 'string', default: 'popup' },
+		roomCard: { type: 'string', default: 'split' },
+		ratesShown: { type: 'number', default: 2 },
+		priceBreakdown: { type: 'boolean', default: true },
 	},
 	supports: { html: false, multiple: true },
 	edit: function Edit( { attributes, setAttributes } ) {
@@ -190,7 +190,7 @@ registerBlockType( 'radius-hotel-booking/booking', {
 							min={ 0 }
 							max={ 20 }
 							onChange={ ( value ) =>
-								setAttributes( { ratesShown: value ?? 4 } )
+								setAttributes( { ratesShown: value ?? 2 } )
 							}
 						/>
 						<ToggleControl
