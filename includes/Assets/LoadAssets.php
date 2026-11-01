@@ -353,6 +353,11 @@ class LoadAssets {
 			if ( $needed ) {
 				break;
 			}
+			// [rtbp_dashboard] runs the staff app (admin bundle), not this one; site.css
+			// there would override the staff styles (its .sr-only hid the add buttons' labels).
+			if ( DashboardPage::SHORTCODE === $tag ) {
+				continue;
+			}
 			$needed = has_shortcode( $content, (string) $tag );
 		}
 

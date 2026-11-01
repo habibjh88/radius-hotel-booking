@@ -51,6 +51,7 @@ class DashboardPage {
 		add_filter( 'template_include', array( __CLASS__, 'template' ), 99 );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_page_style' ) );
 		add_filter( 'body_class', array( __CLASS__, 'body_class' ) );
+		add_filter( 'show_admin_bar', array( __CLASS__, 'show_admin_bar' ) );
 
 		// Staff get their profile language here, as they do in wp-admin
 		// (early, before anything on the page is translated).
@@ -61,6 +62,50 @@ class DashboardPage {
 		// both when enqueued normally and when enqueued late for the footer.
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'isolate_assets' ), PHP_INT_MAX );
 		add_action( 'wp_print_footer_scripts', array( __CLASS__, 'isolate_assets' ), 0 );
+		add_action( 'wp_head', array( __CLASS__, 'drop_custom_css' ), 0 );
+	}
+
+	/**
+	 * Drop the Customizer's Additional CSS (`<style id="wp-custom-css">`) on
+	 * the dashboard page: it is the theme's CSS, printed straight into wp_head
+	 * rather than enqueued, so isolate_assets() cannot catch it (a site's
+	 * `body { border: … }` or `h1 { font-size: … !important }` reached the app).
+	 *
+	 * @return void
+	 */
+	public static function drop_custom_css(): void {
+		if ( ! self::is_dashboard_request() ) {
+			return;
+		}
+
+		/**
+		 * Filters whether the Customizer's Additional CSS prints on the dashboard page.
+		 *
+		 * @param bool $keep Keep it (default false).
+		 */
+		if ( ! apply_filters( 'rtbp_dashboard_page_keep_custom_css', false ) ) {
+			remove_action( 'wp_head', 'wp_custom_css_cb', 101 );
+		}
+	}
+
+	/**
+	 * Hide the WordPress admin bar on the dashboard page: the app has its own
+	 * navigation, and the bar only takes space from it.
+	 *
+	 * @param bool $show Show the admin bar.
+	 * @return bool
+	 */
+	public static function show_admin_bar( $show ): bool {
+		if ( ! $show || ! self::is_dashboard_request() ) {
+			return (bool) $show;
+		}
+
+		/**
+		 * Filters whether the WordPress admin bar shows on the dashboard page.
+		 *
+		 * @param bool $show Show it (default false).
+		 */
+		return (bool) apply_filters( 'rtbp_dashboard_admin_bar', false );
 	}
 
 	/**
@@ -157,8 +202,8 @@ class DashboardPage {
 	}
 
 	/**
-	 * The page footer: only what the dashboard needs (admin bar, media
-	 * library templates, enqueued scripts). Replaces wp_footer() in the app
+	 * The page footer: only what the dashboard needs (admin bar when a site
+	 * turns it back on, media library templates, enqueued scripts). Replaces wp_footer() in the app
 	 * template so other plugins cannot inject markup (a shop cart, a chat
 	 * bubble) into the front desk.
 	 *

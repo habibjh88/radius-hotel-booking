@@ -97,7 +97,7 @@ class GuestBookingView {
 	 * The payment instructions of the methods offered, filled in for a booking.
 	 *
 	 * @param Booking $booking Booking.
-	 * @return array[] `{ key, label, instructions, account }`.
+	 * @return array[] `{ key, label, icon, instructions, account }`.
 	 */
 	public static function instructions( Booking $booking ): array {
 		$due  = max( 0, (float) $booking->balance_due );
@@ -111,6 +111,7 @@ class GuestBookingView {
 			static fn( $method ) => array(
 				'key'          => (string) $method['key'],
 				'label'        => (string) $method['label'],
+				'icon'         => PaymentSettings::icon( $method ),
 				'instructions' => strtr( (string) $method['instructions'], $tags ),
 				'account'      => (string) $method['account'],
 			),

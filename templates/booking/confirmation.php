@@ -62,7 +62,9 @@ $rtbp_due   = (float) $view['balance_due'];
 		.deadline { margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: #fffbeb; border: 1px solid #fde68a; }
 		.deadline.late { background: #fef2f2; border-color: #fecaca; }
 		.method { border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 14px; margin-top: 10px; }
-		.method h3 { margin: 0 0 4px; font-size: 15px; }
+		.method h3 { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; font-size: 15px; }
+		.method-icon { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: #eef2ff; background: color-mix(in srgb, <?php echo esc_attr( $rtbp_color ); ?> 12%, #fff); color: <?php echo esc_attr( $rtbp_color ); ?>; }
+		.method-icon svg { width: 18px; height: 18px; }
 		.method p { margin: 0; white-space: pre-line; }
 		.account { margin-top: 6px; padding: 8px 10px; background: #f9fafb; border-radius: 6px; font-family: ui-monospace, Menlo, monospace; white-space: pre-line; }
 		.quote { margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: #eff6ff; }
@@ -151,7 +153,12 @@ $rtbp_due   = (float) $view['balance_due'];
 			</div>
 			<?php foreach ( $view['instructions'] as $rtbp_method ) : ?>
 				<div class="method">
-					<h3><?php echo esc_html( $rtbp_method['label'] ); ?></h3>
+					<h3>
+						<?php if ( ! empty( $rtbp_method['icon'] ) ) : ?>
+							<span class="method-icon"><?php echo RadiusTheme\RadiusHotelBooking\Support\Icons::svg( $rtbp_method['icon'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- sanitised SVG from the plugin's icon files. ?></span>
+						<?php endif; ?>
+						<?php echo esc_html( $rtbp_method['label'] ); ?>
+					</h3>
 					<?php if ( '' !== $rtbp_method['instructions'] ) : ?>
 						<p><?php echo esc_html( $rtbp_method['instructions'] ); ?></p>
 					<?php endif; ?>

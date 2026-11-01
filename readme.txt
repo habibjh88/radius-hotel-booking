@@ -332,6 +332,11 @@ Hotel booking shortcode now defaults to one page, room popup, split cards, two r
 Opening another dashboard page now starts at its top, not where the last page was scrolled.
 Express checkout no longer asks for a code by default; turn it on under Guest accounts.
 Express checkout without a code now also uses the guest's identity document on file.
+The front-end staff dashboard page no longer shows the WordPress admin bar.
+The theme's Additional CSS no longer adds borders or oversized headings to the staff dashboard page.
+Add buttons on the front-end staff dashboard now show their label on desktop, only + on mobile.
+Payment methods now show an icon on the guest booking page; pick it in Settings → Payments.
+Permissions is now its own page in a new Staff & access menu section, no longer a Settings tab.
 
 = 1.0.0 =
 Initial release.

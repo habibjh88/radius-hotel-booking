@@ -1,0 +1,77 @@
+
+
+Filling in Adjoua Pokou's staff details isn't enough on its own. Payroll only pays someone who is on a pay schedule and has a salary set on their Pay tab.
+Payroll comes from the Pro plugin.
+
+One-time setup (skip any step that's already done)
+
+1. Turn payroll on: Settings → Pro features → switch on Payroll. A Payroll page then appears in the admin menu.
+2. Create a pay schedule: Payroll → Pay schedules. Give it a name (e.g. "Monthly staff"), choose how often you pay (weekly, every two weeks, twice a month
+   or monthly), and set the next payday and the date the pay period ends.
+3. Create a work shift (optional but useful): Payroll → Work shifts, e.g. "Day" with hours for each weekday. It gives the normal hours used for hourly pay.
+4. Taxes and contributions: for Residence TATA, the TATA add-on calculates CNPS, IS, CN and IGR automatically. You only enter the work accident rate in    
+   Settings → Payroll. On other sites, the rates are entered in Settings → Payroll.
+
+Put Adjoua Pokou on payroll
+
+Open the staff file for Adjoua Pokou → Pay tab:
+- Pay schedule: the schedule from step 2. If this is left as "Not on a pay schedule", they will never appear in a pay run.
+- Work shift: pick one.
+- Paid: "A salary" (per week, month or year) or "By the hour" (an hourly rate).
+- Salary or Hourly rate: the amount. The tab shows what that comes to for each pay period.
+- If needed, add regular Additional pay (allowances) and Deductions (advances, garnishments) on the same tab.
+- Click Save. The staff file must also be active.
+
+
+Running payroll each period
+
+On Payroll → Pay runs → Run payroll, pick the schedule. It offers the next unpaid period → Create the draft.
+
+A pay run moves through these stages:
+
+┌───────────┬───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐  
+│   Stage   │                                                               What happens                                                                │  
+├───────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤  
+│ Draft     │ Every active employee on that schedule gets one line, with gross pay, taxes and net pay calculated. You can open a line to change hours,  │  
+│           │ add extra pay (overtime, bonus) or a deduction, and it recalculates. You can also delete a draft completely.                              │  
+├───────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤  
+│ Finalised │ Locks the lines. This is only possible once the period's last day has passed, and no one's net pay can be negative. Payslips become       │  
+│           │ available here. If you spot a mistake, Revert the run to Draft, fix it, and run it again.                                                 │  
+├───────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤  
+│ Settled   │ For each person you record how they were paid (cash, bank transfer, mobile money…) and an optional reference. Settling also records what  │  
+│           │ is owed to the tax authorities on the Statutory tab, where you later log those payments.                                                  │  
+├───────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤  
+│ Voided    │ Cancels a settled run. You must give a reason, and the run stays in the history. Once voided, you can run that period again.              │  
+└───────────┴───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+Each schedule can only have one active run per period. If you try to run a period again, you'll get "These days are already in a pay run…" until you void  
+the old one.                          
+
+If the draft says "No employee on this pay schedule can be paid"
+
+That means nobody was found for that schedule. Check that the Pay tab for Adjoua Pokou has that pay schedule selected and was saved, and that their staff  
+file is active.
+
+The other tabs on the Payroll page are Time off (leave requests, approvals and the yearly quota) and the monthly and yearly reports, which can be exported.
+
+That list is empty because no pay schedule exists yet. You create schedules on the Payroll page, not on the staff file.
+
+Add a pay schedule
+
+1. In the admin menu, open Payroll. If you don't see it, go to Settings → Pro features and switch on Payroll.
+2. Open the Pay schedules tab.
+3. Click Add pay schedule and fill in:
+    - Name, e.g. "Monthly staff".
+    - Paid: how often you pay (weekly, every two weeks, twice a month or monthly).
+    - End of the next pay period: the last day of the next period you'll pay. For monthly pay in November 2026, that's 30 Nov 2026.
+    - Pay day: the day that period is paid, e.g. 30 Nov or 5 Dec.
+
+   You only enter the next period. The later periods are worked out from it.
+4. Click Save.
+
+Then go back to the employee   
+
+Open the staff file for Adjoua Pokou → Pay tab. The Pay schedule dropdown now lists "Monthly staff". Select it, set the salary, and click Save.
+
+If the Add pay schedule button is missing or greyed out, your user doesn't have the "Pay schedules" permission. An administrator can always add schedules. 
+          

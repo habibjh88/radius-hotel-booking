@@ -9,6 +9,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
 
 import { Field } from '@/components/common/Form';
+import IconField from '@/components/icons/IconField';
 import SettingsSection from '@/components/common/SettingsSection';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -57,6 +58,10 @@ export default function Payments( { value, setField, errors } ) {
 						'radius-hotel-booking'
 					),
 					TAGS.join( ', ' )
+				) }{ ' ' }
+				{ __(
+					'The icon beside each name shows on the guest page; left empty, one is picked from the name.',
+					'radius-hotel-booking'
 				) }
 			</p>
 			{ errors.methods ? (
@@ -157,18 +162,31 @@ export default function Payments( { value, setField, errors } ) {
 								</Button>
 							</div>
 						</div>
-						<Field
-							label={ __( 'Name', 'radius-hotel-booking' ) }
-							required
-						>
-							<Input
-								value={ method.label ?? '' }
-								maxLength={ 60 }
-								onChange={ ( e ) =>
-									change( index, { label: e.target.value } )
+						<div className="flex items-end gap-2">
+							<IconField
+								value={ method.icon ?? '' }
+								onChange={ ( icon ) =>
+									change( index, { icon } )
 								}
+								compact
+								label={ method.label }
 							/>
-						</Field>
+							<Field
+								label={ __( 'Name', 'radius-hotel-booking' ) }
+								className="flex-1"
+								required
+							>
+								<Input
+									value={ method.label ?? '' }
+									maxLength={ 60 }
+									onChange={ ( e ) =>
+										change( index, {
+											label: e.target.value,
+										} )
+									}
+								/>
+							</Field>
+						</div>
 						<Field
 							label={ __(
 								'Instructions for the guest',
@@ -220,6 +238,7 @@ export default function Payments( { value, setField, errors } ) {
 						{
 							key: '',
 							label: '',
+							icon: '',
 							instructions: '',
 							account: '',
 							enabled: true,

@@ -9,6 +9,8 @@ namespace RadiusTheme\RadiusHotelBooking\Settings;
 
 defined( 'ABSPATH' ) || exit;
 
+use RadiusTheme\RadiusHotelBooking\Support\Icons;
+
 /**
  * The payment methods the hotel accepts, with the instructions guests see
  * (17.12, 5.3), and how invoices are numbered and printed (17.13). Hotel
@@ -95,6 +97,7 @@ class PaymentSettings {
 		return array(
 			array(
 				'key'          => 'cash',
+				'icon'         => 'banknote',
 				'label'        => __( 'Cash at the desk', 'radius-hotel-booking' ),
 				/* translators: Keep the {…} merge tags as they are. */
 				'instructions' => __( 'Pay {amount} in cash at reception, quoting booking {reference}.', 'radius-hotel-booking' ),
@@ -103,6 +106,7 @@ class PaymentSettings {
 			),
 			array(
 				'key'          => 'card',
+				'icon'         => 'credit-card',
 				'label'        => __( 'Card at the desk', 'radius-hotel-booking' ),
 				/* translators: Keep the {…} merge tags as they are. */
 				'instructions' => __( 'Pay {amount} by card at reception, quoting booking {reference}.', 'radius-hotel-booking' ),
@@ -111,6 +115,7 @@ class PaymentSettings {
 			),
 			array(
 				'key'          => 'bank_transfer',
+				'icon'         => 'landmark',
 				'label'        => __( 'Bank transfer', 'radius-hotel-booking' ),
 				/* translators: Keep the {…} merge tags as they are. */
 				'instructions' => __( 'Transfer {amount} to the account below before {deadline}, with {reference} as the transfer reference.', 'radius-hotel-booking' ),
@@ -164,12 +169,39 @@ class PaymentSettings {
 			$clean[]      = array(
 				'key'          => $key,
 				'label'        => $label,
+				'icon'         => Icons::clean( $method['icon'] ?? '' ),
 				'instructions' => mb_substr( sanitize_textarea_field( (string) ( $method['instructions'] ?? '' ) ), 0, 2000 ),
 				'account'      => mb_substr( sanitize_textarea_field( (string) ( $method['account'] ?? '' ) ), 0, 500 ),
 				'enabled'      => ! empty( $method['enabled'] ) && 'false' !== $method['enabled'],
 			);
 		}
 		return $clean;
+	}
+
+	/**
+	 * A method's icon (Lucide name): the one picked in Settings, else a guess
+	 * from its key and name, so methods saved before icons existed get one too.
+	 *
+	 * @param array $method Method.
+	 * @return string
+	 */
+	public static function icon( array $method ): string {
+		$icon = Icons::clean( $method['icon'] ?? '' );
+		if ( '' !== $icon ) {
+			return $icon;
+		}
+		$words = strtolower( ( $method['key'] ?? '' ) . ' ' . ( $method['label'] ?? '' ) );
+		foreach ( array(
+			'banknote'    => '/cash|esp[eè]ce/u',
+			'credit-card' => '/card|carte/u',
+			'landmark'    => '/bank|transfer|virement|wire/u',
+			'smartphone'  => '/mobile|money|momo|phone/u',
+		) as $guess => $pattern ) {
+			if ( preg_match( $pattern, $words ) ) {
+				return $guess;
+			}
+		}
+		return 'wallet';
 	}
 
 	/**

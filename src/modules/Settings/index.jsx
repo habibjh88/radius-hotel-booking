@@ -20,9 +20,13 @@
  *              unsaved bar); replaces the tab's draft
  *
  * The active tab is in the URL: `#/settings?section=display`.
+ *
+ * A tab with `standalone: '/path'` is its own page in the main menu instead
+ * (Permissions): the page renders `<Settings only="key" />`, the tab list
+ * leaves it out, and an old `?section=key` link is sent to that page.
  */
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { applyFilters } from '@wordpress/hooks';
 import { __, sprintf } from '@wordpress/i18n';
 import { RotateCcw, Settings as SettingsIcon } from 'lucide-react';
@@ -206,9 +210,11 @@ function SettingsSkeleton() {
 }
 
 /**
+ * @param {Object} props      Props.
+ * @param {string} props.only Show this one section as a page of its own.
  * @return {JSX.Element} Screen.
  */
-export default function Settings() {
+export default function Settings( { only = '' } ) {
 	const sections = useSections();
 	const state = useSettingsDrafts();
 	const [ params, setParams ] = useSearchParams();
@@ -222,6 +228,9 @@ export default function Settings() {
 			state.drafts
 				? sections.filter(
 						( section ) =>
+							( only
+								? section.key === only
+								: ! section.standalone ) &&
 							section.key in state.drafts &&
 							canAccess(
 								section.accessKey ?? `settings.${ section.key }`
@@ -229,12 +238,21 @@ export default function Settings() {
 				  )
 				: [],
 		// accessLevels: re-filter when the access map changes.
-		[ sections, state.drafts, accessLevels ]
+		[ sections, state.drafts, accessLevels, only ]
 	);
-	const active =
-		available.find(
-			( section ) => section.key === params.get( 'section' )
-		) || available[ 0 ];
+	const active = only
+		? available[ 0 ]
+		: available.find(
+				( section ) => section.key === params.get( 'section' )
+		  ) || available[ 0 ];
+	// An old link to a tab that is now its own page.
+	const moved = only
+		? null
+		: sections.find(
+				( section ) =>
+					section.standalone &&
+					section.key === params.get( 'section' )
+		  );
 
 	const select = ( key ) => setParams( { section: key } );
 
@@ -259,6 +277,10 @@ export default function Settings() {
 		},
 		[]
 	);
+
+	if ( moved ) {
+		return <Navigate to={ moved.standalone } replace />;
+	}
 
 	if ( state.loadError ) {
 		return (
@@ -303,25 +325,37 @@ export default function Settings() {
 			{ /* Other screens: ask before unsaved settings are lost (tabs keep their drafts). */ }
 			<LeaveGuard when={ anyDirty } />
 			<UpgradeNotice />
-			<div className="grid gap-6 md:grid-cols-[13rem_minmax(0,1fr)]">
-				<SectionNav
-					sections={ available }
-					active={ key }
-					onSelect={ select }
-					isDirty={ state.isDirty }
-				/>
+			<div
+				className={ cn(
+					'grid gap-6',
+					! only && 'md:grid-cols-[13rem_minmax(0,1fr)]'
+				) }
+			>
+				{ only ? null : (
+					<SectionNav
+						sections={ available }
+						active={ key }
+						onSelect={ select }
+						isDirty={ state.isDirty }
+					/>
+				) }
 
 				<div className="min-w-0">
 					<div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+						{ /* On its own page the top bar already names it. */ }
 						<div className="min-w-0">
-							<h2 className="m-0 p-0 text-lg font-semibold text-heading">
-								{ active.label }
-							</h2>
-							{ active.description ? (
-								<p className="m-0 mt-1 text-sm text-muted-foreground">
-									{ active.description }
-								</p>
-							) : null }
+							{ only ? null : (
+								<>
+									<h2 className="m-0 p-0 text-lg font-semibold text-heading">
+										{ active.label }
+									</h2>
+									{ active.description ? (
+										<p className="m-0 mt-1 text-sm text-muted-foreground">
+											{ active.description }
+										</p>
+									) : null }
+								</>
+							) }
 						</div>
 						<Button
 							variant="ghost"

@@ -204,6 +204,8 @@ export default function coreSections() {
 			),
 			icon: ShieldCheck,
 			accessKey: 'access.manage',
+			// Its own page in the main menu (System → Permissions), not a tab here.
+			standalone: '/permissions',
 			Component: lazy( () => import( './Permissions' ) ),
 			// Your own menus follow the new map without a reload.
 			onSaved: () => refreshAccess(),

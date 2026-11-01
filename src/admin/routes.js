@@ -58,6 +58,8 @@ export const NAV_GROUPS = [
 	{ key: 'frontDesk', label: __( 'Front desk', 'radius-hotel-booking' ) },
 	{ key: 'hotel', label: __( 'Hotel setup', 'radius-hotel-booking' ) },
 	{ key: 'insights', label: __( 'Reports & data', 'radius-hotel-booking' ) },
+	// Permissions; add-ons put their staff pages here too (Staff, Access roles…).
+	{ key: 'team', label: __( 'Staff & access', 'radius-hotel-booking' ) },
 	{ key: 'system', label: __( 'System', 'radius-hotel-booking' ) },
 ];
 
@@ -314,7 +316,7 @@ const baseRoutes = [
 	},
 	{
 		path: '/permissions',
-		group: 'system',
+		group: 'team',
 		label: __( 'Permissions', 'radius-hotel-booking' ),
 		description: __(
 			'Choose what each staff role may open and do',
@@ -323,8 +325,8 @@ const baseRoutes = [
 		icon: ShieldCheck,
 		capability: VIEW,
 		accessKey: 'access.manage',
-		// The permission map is a Settings tab.
-		redirect: '/settings?section=access',
+		// The permission map is stored as the `access` settings section.
+		element: lazy( () => import( '@/modules/Permissions' ) ),
 	},
 	{
 		path: '/shortcodes',
