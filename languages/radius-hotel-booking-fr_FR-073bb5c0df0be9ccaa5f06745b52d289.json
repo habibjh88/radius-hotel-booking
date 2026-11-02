@@ -1,0 +1,24 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/blocks\/search\/index.js",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Hotel search bar": [
+                "Barre de recherche de l'h\u00f4tel"
+            ],
+            "Arrival, departure and guests, then Find a room \u2014 sends guests to the booking page.": [
+                "Arriv\u00e9e, d\u00e9part et clients, puis Trouver une chambre \u2014 envoie les clients vers la page de r\u00e9servation."
+            ],
+            "Guests pick their dates and party here, then go to the booking page (Settings \u2192 Public booking).": [
+                "Les clients choisissent ici leurs dates et leur groupe, puis passent \u00e0 la page de r\u00e9servation (R\u00e9glages \u2192 R\u00e9servation publique)."
+            ]
+        }
+    }
+}

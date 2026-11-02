@@ -10,6 +10,7 @@ import { matchRoute } from '@/admin/routes';
 import { isMac } from './shortcuts';
 import { useCurrentPageActions } from './PageActions';
 import NotificationBell from './NotificationBell';
+import UserMenu from './UserMenu';
 
 /**
  * Today's date, formatted in the site's time zone and the user's locale.
@@ -100,6 +101,7 @@ export default function Topbar( { onOpenMenu, onOpenSearch, isDesktop } ) {
 				</span>
 				<NotificationBell />
 				{ actions }
+				<UserMenu />
 			</div>
 		</header>
 	);

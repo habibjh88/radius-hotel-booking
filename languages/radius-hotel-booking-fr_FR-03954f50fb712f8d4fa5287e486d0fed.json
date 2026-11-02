@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-09-28 10:00+0000",
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/admin\/App.jsx",
     "domain": "messages",
@@ -8,7 +8,7 @@
             "": {
                 "domain": "messages",
                 "lang": "fr_FR",
-                "plural-forms": "nplurals=2; plural=n > 1;"
+                "plural-forms": "nplurals=2; plural=(n > 1);"
             },
             "This page does not exist": [
                 "Cette page n'existe pas"
@@ -18,6 +18,12 @@
             ],
             "Go to the dashboard": [
                 "Aller au tableau de bord"
+            ],
+            "You do not have access to this page": [
+                "Vous n'avez pas acc\u00e8s \u00e0 cette page"
+            ],
+            "Ask a manager if you need it.": [
+                "Demandez \u00e0 un g\u00e9rant si vous en avez besoin."
             ]
         }
     }

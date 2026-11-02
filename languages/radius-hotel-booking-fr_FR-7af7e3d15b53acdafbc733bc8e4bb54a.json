@@ -1,0 +1,32 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/components\/booking\/rates.js",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "%d night": [
+                "%d nuit",
+                "%d nuits"
+            ],
+            "%1$s \u2192 %2$s": [
+                "%1$s \u2192 %2$s"
+            ],
+            "%1$s\u2013%2$s": [
+                "%1$s\u2013%2$s"
+            ],
+            "%1$s \u2192 %2$s \u00b7 %3$s": [
+                "%1$s \u2192 %2$s \u00b7 %3$s"
+            ],
+            "%d day": [
+                "%d jour",
+                "%d jours"
+            ]
+        }
+    }
+}

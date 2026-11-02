@@ -161,18 +161,22 @@ class GuestRepository extends BaseRepository {
 	 */
 	public function stays( int $guest_id, int $limit = 100 ): array {
 		global $wpdb;
+		// No GROUP BY: MariaDB with ONLY_FULL_GROUP_BY refuses non-grouped columns, which left the list empty.
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the guest's history, index guest_id.
 		$bookings = $wpdb->get_results(
 			$wpdb->prepare(
 				'SELECT b.id, b.reference, b.status, b.payment_status, b.total, b.balance_due, b.source,
-					MIN( br.start_at ) AS arrival, MAX( br.end_at ) AS departure
-				FROM %i b LEFT JOIN %i br ON br.booking_id = b.id
+					( SELECT MIN( br.start_at ) FROM %i br WHERE br.booking_id = b.id ) AS arrival,
+					( SELECT MAX( br.end_at ) FROM %i br WHERE br.booking_id = b.id ) AS departure,
+					EXISTS ( SELECT 1 FROM %i i WHERE i.booking_id = b.id ) AS has_invoice
+				FROM %i b
 				WHERE b.guest_id = %d AND b.deleted_at IS NULL
-				GROUP BY b.id
 				ORDER BY arrival IS NULL, arrival DESC, b.id DESC
 				LIMIT %d',
-				rtbp_table( 'bookings' ),
 				rtbp_table( 'booking_rooms' ),
+				rtbp_table( 'booking_rooms' ),
+				rtbp_table( 'invoices' ),
+				rtbp_table( 'bookings' ),
 				$guest_id,
 				$limit
 			),
@@ -201,6 +205,35 @@ class GuestRepository extends BaseRepository {
 		}
 		unset( $booking );
 		return $bookings;
+	}
+
+	/**
+	 * Recount `stays_count` and `last_stay_at` from the bookings (9.4): a stay is
+	 * a confirmed, checked-in or checked-out booking; the last stay is the latest
+	 * arrival among its rooms in those states.
+	 *
+	 * @param int|null $guest_id One guest, or null for every guest.
+	 * @return void
+	 */
+	public function refreshStays( ?int $guest_id = null ): void {
+		global $wpdb;
+		$in    = "'" . implode( "','", ReportRepository::OCCUPYING_STATUSES ) . "'";
+		$where = null === $guest_id ? '1 = 1' : $wpdb->prepare( 'g.id = %d', $guest_id );
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $in holds fixed status names, $where is prepared above.
+		$wpdb->query(
+			$wpdb->prepare(
+				"UPDATE %i g SET
+					g.stays_count = ( SELECT COUNT(*) FROM %i b WHERE b.guest_id = g.id AND b.deleted_at IS NULL AND b.status IN ( $in ) ),
+					g.last_stay_at = ( SELECT MAX( br.start_at ) FROM %i br JOIN %i b ON b.id = br.booking_id
+						WHERE b.guest_id = g.id AND b.deleted_at IS NULL AND b.status IN ( $in ) AND br.status IN ( $in ) )
+				WHERE $where",
+				rtbp_table( 'guests' ),
+				rtbp_table( 'bookings' ),
+				rtbp_table( 'booking_rooms' ),
+				rtbp_table( 'bookings' )
+			)
+		);
+		// phpcs:enable
 	}
 
 	/**

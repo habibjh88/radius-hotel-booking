@@ -1,0 +1,39 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Rooms\/components\/HighlightPicker.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Clear": [
+                "Effacer"
+            ],
+            "Remove %s": [
+                "Retirer %s"
+            ],
+            "Tick the amenities this room type offers first; they are suggested here.": [
+                "Cochez d'abord les \u00e9quipements que ce type de chambre propose ; ils sont sugg\u00e9r\u00e9s ici."
+            ],
+            "%1$d of %2$d on the card": [
+                "%1$d sur %2$d sur la fiche"
+            ],
+            "Move %s earlier": [
+                "Avancer %s"
+            ],
+            "None picked: the card shows the first amenities of the list.": [
+                "Aucun choisi : la fiche affiche les premiers \u00e9quipements de la liste."
+            ],
+            "Suggestions": [
+                "Suggestions"
+            ],
+            "The card holds %d. Remove one to pick another.": [
+                "La fiche en contient %d. Retirez-en un pour en choisir un autre."
+            ]
+        }
+    }
+}

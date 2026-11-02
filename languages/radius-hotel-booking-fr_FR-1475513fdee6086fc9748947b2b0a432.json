@@ -1,0 +1,120 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Reports\/tabs\/Sales.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Bookings": [
+                "R\u00e9servations"
+            ],
+            "Rooms": [
+                "Chambres"
+            ],
+            "Sales": [
+                "Ventes"
+            ],
+            "Tax": [
+                "Taxe"
+            ],
+            "Net sales": [
+                "Ventes nettes"
+            ],
+            "Collected": [
+                "Encaiss\u00e9"
+            ],
+            "Rooms sold": [
+                "Chambres vendues"
+            ],
+            "Completed": [
+                "Termin\u00e9es"
+            ],
+            "Unsuccessful": [
+                "Non abouties"
+            ],
+            "Payment methods": [
+                "Modes de paiement"
+            ],
+            "Method": [
+                "Mode"
+            ],
+            "Sales by payment method": [
+                "Ventes par mode de paiement"
+            ],
+            "Try again": [
+                "R\u00e9essayer"
+            ],
+            "The report could not be loaded.": [
+                "Le rapport n'a pas pu \u00eatre charg\u00e9."
+            ],
+            "%s with tax included": [
+                "%s TTC"
+            ],
+            "%s%% included in the prices": [
+                "%s%% inclus dans les prix"
+            ],
+            "No tax rate is set (Settings \u2192 Invoices)": [
+                "Aucun taux de taxe d\u00e9fini (R\u00e9glages \u2192 Factures)"
+            ],
+            "Payments received in the period, refunds taken off": [
+                "Paiements re\u00e7us sur la p\u00e9riode, remboursements d\u00e9duits"
+            ],
+            "Paid on these stays so far, refunds taken off": [
+                "Pay\u00e9 jusqu'ici sur ces s\u00e9jours, remboursements d\u00e9duits"
+            ],
+            "Booked rooms counted in the sales": [
+                "Chambres r\u00e9serv\u00e9es compt\u00e9es dans les ventes"
+            ],
+            "Booked rooms on fully paid bookings": [
+                "Chambres r\u00e9serv\u00e9es sur des r\u00e9servations enti\u00e8rement pay\u00e9es"
+            ],
+            "Cancelled, declined or refunded \u00b7 %d no-shows apart": [
+                "Annul\u00e9es, refus\u00e9es ou rembours\u00e9es \u00b7 %d non pr\u00e9sent\u00e9s \u00e0 part"
+            ],
+            "For the day": [
+                "Pour la journ\u00e9e"
+            ],
+            "Per month": [
+                "Par mois"
+            ],
+            "Per day": [
+                "Par jour"
+            ],
+            "No sales in this period": [
+                "Aucune vente sur cette p\u00e9riode"
+            ],
+            "No booking taken in these dates was sold. Try other dates, or switch to arrival date.": [
+                "Aucune r\u00e9servation prise \u00e0 ces dates n'a \u00e9t\u00e9 vendue. Essayez d'autres dates, ou passez \u00e0 la date d'arriv\u00e9e."
+            ],
+            "No stay starting in these dates was sold. Try other dates, or switch to booking date.": [
+                "Aucun s\u00e9jour commen\u00e7ant \u00e0 ces dates n'a \u00e9t\u00e9 vendu. Essayez d'autres dates, ou passez \u00e0 la date de r\u00e9servation."
+            ],
+            "A booking counts under its latest payment.": [
+                "Une r\u00e9servation est compt\u00e9e \u00e0 la date de son dernier paiement."
+            ],
+            "Nothing to show for this period.": [
+                "Rien \u00e0 afficher pour cette p\u00e9riode."
+            ],
+            "Sales are the prices frozen on the booked rooms, never re-priced. Cancelled, declined and no-show rooms, and refunded bookings, are left out.": [
+                "Les ventes sont les prix fig\u00e9s sur les chambres r\u00e9serv\u00e9es, jamais recalcul\u00e9s. Les chambres annul\u00e9es, refus\u00e9es ou non pr\u00e9sent\u00e9es, et les r\u00e9servations rembours\u00e9es, sont exclues."
+            ],
+            "Prices include the tax; net sales are the sales without it, at the tax rate set now in Settings \u2192 Invoices.": [
+                "Les prix incluent la taxe ; les ventes nettes sont les ventes hors taxe, au taux d\u00e9fini actuellement dans R\u00e9glages \u2192 Factures."
+            ],
+            "By arrival date: stays starting in the period. By booking date: bookings taken in the period.": [
+                "Par date d'arriv\u00e9e : s\u00e9jours commen\u00e7ant dans la p\u00e9riode. Par date de r\u00e9servation : r\u00e9servations prises dans la p\u00e9riode."
+            ],
+            "Collected is the money in the payments ledger, refunds and voided payments taken off.": [
+                "Le montant encaiss\u00e9 correspond \u00e0 l'argent du registre des paiements, remboursements et paiements annul\u00e9s d\u00e9duits."
+            ],
+            "How these figures are counted": [
+                "Comment ces chiffres sont calcul\u00e9s"
+            ]
+        }
+    }
+}

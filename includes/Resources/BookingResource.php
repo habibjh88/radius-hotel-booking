@@ -81,6 +81,7 @@ final class BookingResource {
 			'payment_due_at' => $booking->payment_due_at_gmt ? Dates::to_iso( Dates::from_gmt( (string) $booking->payment_due_at_gmt ) ) : null,
 			'overdue'        => PaymentDeadline::overdue( $booking ),
 			'guest_name'     => (string) ( $extra['guest_name'] ?? '' ),
+			'guest_id'       => (int) $booking->guest_id,
 			'guest_phone'    => (string) ( $extra['guest_phone'] ?? '' ),
 			'first_start'    => ! empty( $extra['first_start'] ) ? Dates::to_iso( Dates::from_gmt( (string) $extra['first_start'] ) ) : null,
 		);

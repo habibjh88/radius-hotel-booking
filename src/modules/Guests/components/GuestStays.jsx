@@ -5,7 +5,7 @@
  */
 import { Link } from 'react-router-dom';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import { BedDouble } from 'lucide-react';
+import { BedDouble, FileText, Pencil } from 'lucide-react';
 
 import EmptyState from '@/components/common/EmptyState';
 import Money from '@/components/common/Money';
@@ -125,6 +125,37 @@ export default function GuestStays( { guestId } ) {
 								  ) }`
 								: null }
 						</p>
+					) : null }
+					{ /* Invoice and Edit on each stay (R1-T15). */ }
+					{ canOpen || stay.invoice_url ? (
+						<div className="flex flex-wrap gap-3 pt-0.5 text-xs font-medium">
+							{ stay.invoice_url ? (
+								<a
+									href={ stay.invoice_url }
+									target="_blank"
+									rel="noopener noreferrer"
+									className="inline-flex items-center gap-1 text-primary no-underline hover:underline"
+								>
+									<FileText
+										className="h-3.5 w-3.5"
+										aria-hidden="true"
+									/>
+									{ __( 'Invoice', 'radius-hotel-booking' ) }
+								</a>
+							) : null }
+							{ canOpen ? (
+								<Link
+									to={ `/bookings/${ stay.id }` }
+									className="inline-flex items-center gap-1 text-primary no-underline hover:underline"
+								>
+									<Pencil
+										className="h-3.5 w-3.5"
+										aria-hidden="true"
+									/>
+									{ __( 'Edit', 'radius-hotel-booking' ) }
+								</Link>
+							) : null }
+						</div>
 					) : null }
 				</li>
 			) ) }

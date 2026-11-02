@@ -1,0 +1,36 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/components\/booking\/PaymentDue.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "%1$d d %2$d h": [
+                "%1$d j %2$d h"
+            ],
+            "%1$d h %2$d min": [
+                "%1$d h %2$d min"
+            ],
+            "%d min": [
+                "%d min"
+            ],
+            "%s late": [
+                "%s de retard"
+            ],
+            "due in %s": [
+                "\u00e9ch\u00e9ance dans %s"
+            ],
+            "Was due %1$s (%2$s ago)": [
+                "\u00c9ch\u00e9ance d\u00e9pass\u00e9e : %1$s (il y a %2$s)"
+            ],
+            "Payment due in %1$s \u00b7 %2$s": [
+                "Paiement d\u00fb dans %1$s \u00b7 %2$s"
+            ]
+        }
+    }
+}

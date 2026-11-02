@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-09-28 10:00+0000",
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/admin\/routes.js",
     "domain": "messages",
@@ -8,28 +8,64 @@
             "": {
                 "domain": "messages",
                 "lang": "fr_FR",
-                "plural-forms": "nplurals=2; plural=n > 1;"
+                "plural-forms": "nplurals=2; plural=(n > 1);"
             },
-            "Dashboard": [
-                "Tableau de bord"
-            ],
             "Bookings": [
                 "R\u00e9servations"
-            ],
-            "Availability": [
-                "Disponibilit\u00e9s"
             ],
             "Guests": [
                 "Clients"
             ],
-            "Rooms & floors": [
-                "Chambres et \u00e9tages"
+            "Dashboard": [
+                "Tableau de bord"
+            ],
+            "Availability": [
+                "Disponibilit\u00e9s"
+            ],
+            "Rooms report": [
+                "Rapport des chambres"
+            ],
+            "Exports": [
+                "Exports"
             ],
             "Settings": [
                 "R\u00e9glages"
             ],
+            "Blocked dates": [
+                "Dates bloqu\u00e9es"
+            ],
+            "Payments": [
+                "Paiements"
+            ],
+            "Permissions": [
+                "Autorisations"
+            ],
             "System": [
                 "Syst\u00e8me"
+            ],
+            "Rooms & floors": [
+                "Chambres et \u00e9tages"
+            ],
+            "Amenities": [
+                "\u00c9quipements"
+            ],
+            "Floors": [
+                "\u00c9tages"
+            ],
+            "Room availability": [
+                "Disponibilit\u00e9 des chambres"
+            ],
+            "All rooms": [
+                "Toutes les chambres"
+            ],
+            "Room type": [
+                "Type de chambre"
+            ],
+            "Booking": [
+                "R\u00e9servation"
+            ],
+            "Guest": [
+                "Client"
             ],
             "Overview": [
                 "Vue d'ensemble"
@@ -37,11 +73,17 @@
             "Front desk": [
                 "R\u00e9ception"
             ],
-            "Hotel setup": [
-                "Configuration de l'h\u00f4tel"
+            "My account": [
+                "Mon compte"
             ],
             "Reports & data": [
                 "Rapports et donn\u00e9es"
+            ],
+            "Staff & access": [
+                "Personnel et acc\u00e8s"
+            ],
+            "Hotel setup": [
+                "Configuration de l'h\u00f4tel"
             ],
             "phone tab bar: keep it short\u0004Dashboard": [
                 "Accueil"
@@ -51,6 +93,9 @@
             ],
             "Open, close and price your rooms by date": [
                 "Ouvrez, fermez et tarifez vos chambres par date"
+            ],
+            "Close the hotel, a floor, a room type or a room for a while": [
+                "Fermer l'h\u00f4tel, un \u00e9tage, un type de chambre ou une chambre pour un temps"
             ],
             "phone tab bar: new booking, keep it short\u0004New": [
                 "Nouvelle"
@@ -73,14 +118,23 @@
             "Guest records, documents and stay history": [
                 "Fiches clients, documents et historique des s\u00e9jours"
             ],
-            "Payments": [
-                "Paiements"
-            ],
             "Payments received and bookings to follow up": [
                 "Paiements re\u00e7us et r\u00e9servations \u00e0 relancer"
             ],
             "Room types, floors and every physical room": [
                 "Types de chambre, \u00e9tages et chaque chambre physique"
+            ],
+            "Add room type": [
+                "Ajouter un type de chambre"
+            ],
+            "Every room of the hotel; select rooms to change them together": [
+                "Toutes les chambres de l'h\u00f4tel ; s\u00e9lectionnez des chambres pour les modifier ensemble"
+            ],
+            "The floors of the hotel, in order": [
+                "Les \u00e9tages de l'h\u00f4tel, dans l'ordre"
+            ],
+            "The amenities room types pick from": [
+                "Les \u00e9quipements propos\u00e9s pour les types de chambre"
             ],
             "Rate plans": [
                 "Formules tarifaires"
@@ -94,17 +148,23 @@
             "Sales, rooms and availability reports": [
                 "Rapports de ventes, de chambres et de disponibilit\u00e9s"
             ],
-            "Exports": [
-                "Exports"
+            "Rented and empty rooms in a period, by floor": [
+                "Chambres occup\u00e9es et libres sur une p\u00e9riode, par \u00e9tage"
+            ],
+            "Which rooms are free for each stay window": [
+                "Les chambres libres pour chaque cr\u00e9neau de s\u00e9jour"
             ],
             "Export bookings and guests to a spreadsheet": [
                 "Exportez les r\u00e9servations et les clients vers un tableur"
             ],
-            "Permissions": [
-                "Autorisations"
-            ],
             "Choose what each staff role may open and do": [
                 "Choisissez ce que chaque r\u00f4le du personnel peut ouvrir et faire"
+            ],
+            "Shortcodes": [
+                "Shortcodes"
+            ],
+            "Shortcodes to place the booking pages on your site": [
+                "Shortcodes pour placer les pages de r\u00e9servation sur votre site"
             ],
             "Hotel details, booking rules and appearance": [
                 "Informations de l'h\u00f4tel, r\u00e8gles de r\u00e9servation et apparence"

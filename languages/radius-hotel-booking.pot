@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-26T11:28:49+00:00\n"
+"POT-Creation-Date: 2026-11-02T07:01:54+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: radius-hotel-booking\n"
@@ -62,7 +62,7 @@ msgstr ""
 #: includes/Services/Export/ExportService.php:117
 #: includes/Services/Reports/ReportService.php:337
 #: includes/Services/Reports/ReportService.php:432
-#: src/admin/routes.js:140
+#: src/admin/routes.js:151
 #: src/modules/Bookings/Detail.jsx:417
 #: src/modules/Bookings/index.jsx:392
 #: src/modules/Exports/index.jsx:212
@@ -80,7 +80,7 @@ msgstr ""
 #: includes/Admin/Menu.php:66
 #: includes/Services/Export/ExportService.php:123
 #: templates/documents/invoice.php:125
-#: src/admin/routes.js:159
+#: src/admin/routes.js:170
 #: src/components/booking/GuestSearchPanel.jsx:312
 #: src/modules/Guests/index.jsx:158
 #: src/modules/Guests/index.jsx:221
@@ -102,7 +102,7 @@ msgstr ""
 
 #: includes/Access/AccessRegistry.php:210
 #: includes/Admin/Menu.php:63
-#: src/admin/routes.js:76
+#: src/admin/routes.js:87
 msgid "Dashboard"
 msgstr ""
 
@@ -129,7 +129,7 @@ msgstr ""
 
 #: includes/Access/AccessRegistry.php:214
 #: includes/Admin/Menu.php:65
-#: src/admin/routes.js:89
+#: src/admin/routes.js:100
 #: src/modules/Availability/index.jsx:630
 msgid "Availability"
 msgstr ""
@@ -139,19 +139,20 @@ msgid "Sales report"
 msgstr ""
 
 #: includes/Access/AccessRegistry.php:217
+#: src/admin/routes.js:318
 msgid "Rooms report"
 msgstr ""
 
 #: includes/Access/AccessRegistry.php:218
-#: src/admin/routes.js:305
+#: src/admin/routes.js:344
 #: src/modules/Settings/sections/index.js:138
 msgid "Exports"
 msgstr ""
 
 #: includes/Access/AccessRegistry.php:219
 #: includes/Admin/Menu.php:68
-#: radius-hotel-booking.php:424
-#: src/admin/routes.js:345
+#: radius-hotel-booking.php:429
+#: src/admin/routes.js:384
 msgid "Settings"
 msgstr ""
 
@@ -388,12 +389,12 @@ msgid "Sent an express checkout code"
 msgstr ""
 
 #: includes/ActivityLog/ActionCatalog.php:62
-#: includes/Frontend/ExpressCheckout.php:180
+#: includes/Frontend/ExpressCheckout.php:182
 msgid "Express checkout code locked after wrong tries"
 msgstr ""
 
 #: includes/ActivityLog/ActionCatalog.php:63
-#: includes/Frontend/ExpressCheckout.php:214
+#: includes/Frontend/ExpressCheckout.php:217
 msgid "Recognised a guest at express checkout without a code"
 msgstr ""
 
@@ -556,7 +557,7 @@ msgid "Updated the calendar in bulk"
 msgstr ""
 
 #: includes/ActivityLog/ActionCatalog.php:113
-#: src/admin/routes.js:102
+#: src/admin/routes.js:113
 #: src/modules/Availability/Blocks.jsx:115
 #: src/modules/Availability/Blocks.jsx:158
 msgid "Blocked dates"
@@ -751,14 +752,14 @@ msgid "Sign-in"
 msgstr ""
 
 #: includes/ActivityLog/ActionCatalog.php:223
-#: src/admin/routes.js:190
+#: src/admin/routes.js:201
 #: src/modules/Bookings/components/PaymentsPanel.jsx:338
 #: src/modules/Settings/sections/index.js:109
 msgid "Payments"
 msgstr ""
 
 #: includes/ActivityLog/ActionCatalog.php:224
-#: src/admin/routes.js:318
+#: src/admin/routes.js:357
 #: src/modules/Settings/sections/index.js:200
 msgid "Permissions"
 msgstr ""
@@ -769,12 +770,12 @@ msgstr ""
 
 #: includes/ActivityLog/ActionCatalog.php:226
 #: includes/Core/Permissions/Capabilities.php:136
-#: src/admin/routes.js:61
+#: src/admin/routes.js:72
 msgid "System"
 msgstr ""
 
 #: includes/Admin/Menu.php:67
-#: src/admin/routes.js:203
+#: src/admin/routes.js:214
 msgid "Rooms & floors"
 msgstr ""
 
@@ -797,6 +798,10 @@ msgstr ""
 #: includes/Controllers/AccessController.php:127
 #: includes/Core/Api/Middleware/AccessMiddleware.php:204
 msgid "You do not have access to this. Ask a manager if you need it."
+msgstr ""
+
+#: includes/Controllers/AccountController.php:41
+msgid "Language changed."
 msgstr ""
 
 #. translators: %d: number of amenities.
@@ -1690,7 +1695,7 @@ msgstr ""
 #: includes/Services/Reports/ReportService.php:384
 #: includes/Services/Reports/ReportService.php:432
 #: src/modules/Bookings/index.jsx:256
-#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:19
+#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:21
 #: src/modules/Reports/tabs/Rooms.jsx:134
 msgid "Status"
 msgstr ""
@@ -1727,11 +1732,11 @@ msgstr ""
 msgid "Booking not found"
 msgstr ""
 
-#: includes/Frontend/DashboardPage.php:207
+#: includes/Frontend/DashboardPage.php:252
 msgid "Staff dashboard"
 msgstr ""
 
-#: includes/Frontend/DashboardPage.php:208
+#: includes/Frontend/DashboardPage.php:253
 msgid "This hotel dashboard on a page of your site, so staff can work without wp-admin. Visitors who are not signed in see a sign-in form; only staff get in."
 msgstr ""
 
@@ -1856,66 +1861,66 @@ msgstr ""
 msgid "In a popup, opened by a button"
 msgstr ""
 
-#: includes/Frontend/ExpressCheckout.php:94
+#: includes/Frontend/ExpressCheckout.php:96
 #: includes/Services/Guests/GuestService.php:501
 #: src/lib/phone.js:119
 msgid "Enter a valid phone number."
 msgstr ""
 
-#: includes/Frontend/ExpressCheckout.php:114
+#: includes/Frontend/ExpressCheckout.php:116
 msgid "Too many codes were sent to this number. Please wait a few minutes, or fill in your details."
 msgstr ""
 
 #. translators: %s: how the code was sent (e-mail, SMS…).
-#: includes/Frontend/ExpressCheckout.php:144
+#: includes/Frontend/ExpressCheckout.php:146
 #, php-format
 msgid "Sent an express checkout code by %s"
 msgstr ""
 
-#: includes/Frontend/ExpressCheckout.php:172
+#: includes/Frontend/ExpressCheckout.php:174
 msgid "This code has expired. Ask for a new one."
 msgstr ""
 
-#: includes/Frontend/ExpressCheckout.php:182
+#: includes/Frontend/ExpressCheckout.php:184
 msgid "Too many wrong codes. Ask for a new one."
 msgstr ""
 
-#: includes/Frontend/ExpressCheckout.php:185
+#: includes/Frontend/ExpressCheckout.php:187
 msgid "This code is not right. Check it and try again."
 msgstr ""
 
 #. translators: 1: the code, 2: hotel name.
-#: includes/Frontend/ExpressCheckout.php:397
+#: includes/Frontend/ExpressCheckout.php:407
 #, php-format
 msgid "%1$s is your %2$s booking code"
 msgstr ""
 
 #. translators: %s: guest name.
-#: includes/Frontend/ExpressCheckout.php:402
+#: includes/Frontend/ExpressCheckout.php:412
 #, php-format
 msgid "Hello %s,"
 msgstr ""
 
-#: includes/Frontend/ExpressCheckout.php:403
+#: includes/Frontend/ExpressCheckout.php:413
 msgid "there"
 msgstr ""
 
-#: includes/Frontend/ExpressCheckout.php:405
+#: includes/Frontend/ExpressCheckout.php:415
 msgid "Your code to fill in your details on our booking form is:"
 msgstr ""
 
 #. translators: %d: minutes the code is valid.
-#: includes/Frontend/ExpressCheckout.php:409
+#: includes/Frontend/ExpressCheckout.php:419
 #, php-format
 msgid "It is valid for %d minutes. If you did not ask for it, you can ignore this e-mail: nobody can see your details without it."
 msgstr ""
 
-#: includes/Frontend/ExpressCheckout.php:417
+#: includes/Frontend/ExpressCheckout.php:427
 #: includes/Services/Booking/BookingService.php:400
 msgid "e-mail"
 msgstr ""
 
-#: includes/Frontend/ExpressCheckout.php:473
+#: includes/Frontend/ExpressCheckout.php:483
 msgid "Express checkout is not available."
 msgstr ""
 
@@ -1961,6 +1966,20 @@ msgstr ""
 
 #: includes/Repositories/AvailabilityRepository.php:264
 msgid "Someone else is booking this room right now. Please try again."
+msgstr ""
+
+#: includes/Services/Account/UserLanguage.php:110
+msgid "This language is not available on this site."
+msgstr ""
+
+#. translators: %s: language name.
+#: includes/Services/Account/UserLanguage.php:122
+#, php-format
+msgid "Changed their dashboard language to %s"
+msgstr ""
+
+#: includes/Services/Account/UserLanguage.php:168
+msgid "Administrator"
 msgstr ""
 
 #: includes/Services/Availability/AvailabilityService.php:301
@@ -2698,115 +2717,115 @@ msgid "This room was just taken. Please choose another option."
 msgstr ""
 
 #: includes/Services/Booking/PublicBookingService.php:197
-#: includes/Services/Booking/PublicBookingService.php:484
+#: includes/Services/Booking/PublicBookingService.php:481
 msgid "We could not take this booking online. Please contact the hotel."
 msgstr ""
 
-#: includes/Services/Booking/PublicBookingService.php:241
-#: src/components/booking/GuestForm.jsx:106
+#: includes/Services/Booking/PublicBookingService.php:238
+#: src/components/booking/GuestForm.jsx:107
 msgid "Please fill in your special requests."
 msgstr ""
 
-#: includes/Services/Booking/PublicBookingService.php:244
+#: includes/Services/Booking/PublicBookingService.php:241
 msgid "Please accept the privacy policy to book."
 msgstr ""
 
-#: includes/Services/Booking/PublicBookingService.php:255
+#: includes/Services/Booking/PublicBookingService.php:252
 msgid "Choose a room first."
 msgstr ""
 
-#: includes/Services/Booking/PublicBookingService.php:323
+#: includes/Services/Booking/PublicBookingService.php:320
 msgid "Please sign in to your account to book."
 msgstr ""
 
-#: includes/Services/Booking/PublicBookingService.php:477
+#: includes/Services/Booking/PublicBookingService.php:474
 msgid "A banned guest tried to book on the website; the booking was refused."
 msgstr ""
 
-#: includes/Services/Booking/PublicBookingService.php:478
+#: includes/Services/Booking/PublicBookingService.php:475
 msgid "A website booking used this guest's phone or e-mail with other details; it was refused and the visitor was told which details to check."
 msgstr ""
 
-#: includes/Services/Booking/PublicBookingService.php:501
+#: includes/Services/Booking/PublicBookingService.php:498
 msgid "This phone number is already on file with us under another name."
 msgstr ""
 
-#: includes/Services/Booking/PublicBookingService.php:502
+#: includes/Services/Booking/PublicBookingService.php:499
 msgid "This e-mail is already on file with us under another name."
 msgstr ""
 
-#: includes/Services/Booking/PublicBookingService.php:506
+#: includes/Services/Booking/PublicBookingService.php:503
 msgid "Your phone number and e-mail belong to two different guests on file. Use the phone and e-mail of one person, or contact the hotel."
 msgstr ""
 
-#: includes/Services/Booking/PublicBookingService.php:508
+#: includes/Services/Booking/PublicBookingService.php:505
 msgid "This phone number belongs to another guest on file."
 msgstr ""
 
-#: includes/Services/Booking/PublicBookingService.php:509
+#: includes/Services/Booking/PublicBookingService.php:506
 msgid "This e-mail belongs to another guest on file."
 msgstr ""
 
-#: includes/Services/Booking/PublicBookingService.php:512
+#: includes/Services/Booking/PublicBookingService.php:509
 msgid "Your name and contact details match an earlier booking, but the identity document does not. Enter the same document as last time, or contact the hotel."
 msgstr ""
 
-#: includes/Services/Booking/PublicBookingService.php:514
+#: includes/Services/Booking/PublicBookingService.php:511
 msgid "This is not the document we have on file for you."
 msgstr ""
 
-#: includes/Services/Booking/PublicBookingService.php:518
+#: includes/Services/Booking/PublicBookingService.php:515
 msgid "Your phone number and e-mail are already on file with us under another name. Enter the name from your earlier booking, use your own phone and e-mail, or contact the hotel."
 msgstr ""
 
-#: includes/Services/Booking/PublicBookingService.php:520
+#: includes/Services/Booking/PublicBookingService.php:517
 msgid "This phone number is already on file with us under another name. Enter the name from your earlier booking, use your own phone number, or contact the hotel."
 msgstr ""
 
-#: includes/Services/Booking/PublicBookingService.php:521
+#: includes/Services/Booking/PublicBookingService.php:518
 msgid "This e-mail is already on file with us under another name. Enter the name from your earlier booking, use your own e-mail, or contact the hotel."
 msgstr ""
 
-#: includes/Services/Booking/PublicBookingService.php:604
-#: src/components/booking/GuestForm.jsx:119
+#: includes/Services/Booking/PublicBookingService.php:601
+#: src/components/booking/GuestForm.jsx:120
 msgid "Enter your first name."
 msgstr ""
 
-#: includes/Services/Booking/PublicBookingService.php:607
-#: src/components/booking/GuestForm.jsx:129
+#: includes/Services/Booking/PublicBookingService.php:604
+#: src/components/booking/GuestForm.jsx:130
 msgid "Enter your last name."
 msgstr ""
 
-#: includes/Services/Booking/PublicBookingService.php:611
-#: src/components/booking/GuestForm.jsx:138
+#: includes/Services/Booking/PublicBookingService.php:608
+#: src/components/booking/GuestForm.jsx:139
 msgid "Enter a phone number we can reach you on."
 msgstr ""
 
-#: includes/Services/Booking/PublicBookingService.php:617
-#: src/components/booking/GuestForm.jsx:182
+#: includes/Services/Booking/PublicBookingService.php:614
+#: src/components/booking/GuestForm.jsx:183
 msgid "Choose your identity document type."
 msgstr ""
 
-#: includes/Services/Booking/PublicBookingService.php:620
-#: src/components/booking/GuestForm.jsx:188
+#: includes/Services/Booking/PublicBookingService.php:617
+#: src/components/booking/GuestForm.jsx:189
 msgid "Enter the number of your identity document."
 msgstr ""
 
-#: includes/Services/Booking/PublicBookingService.php:624
-#: src/components/booking/GuestForm.jsx:152
+#: includes/Services/Booking/PublicBookingService.php:621
+#: src/components/booking/GuestForm.jsx:153
 msgid "Enter your e-mail address."
 msgstr ""
 
-#: includes/Services/Booking/PublicBookingService.php:627
+#: includes/Services/Booking/PublicBookingService.php:624
 #: includes/Services/Guests/GuestService.php:513
 #: includes/Settings/SettingsValidator.php:164
-#: src/components/booking/GuestForm.jsx:159
+#: src/components/booking/GuestForm.jsx:160
 #: src/lib/email.js:23
 msgid "Enter a valid e-mail address."
 msgstr ""
 
-#: includes/Services/Booking/PublicBookingService.php:628
-#: src/components/booking/GuestForm.jsx:160
+#: includes/Services/Booking/PublicBookingService.php:625
+#: src/components/booking/GuestForm.jsx:161
 msgid "Enter a valid e-mail address, or leave it empty."
 msgstr ""
 
@@ -3059,7 +3078,7 @@ msgid "Last Name"
 msgstr ""
 
 #: includes/Services/Export/GuestExport.php:36
-#: src/components/booking/GuestForm.jsx:406
+#: src/components/booking/GuestForm.jsx:427
 #: src/components/booking/GuestStep.jsx:208
 #: src/modules/Guests/components/AddGuestDialog.jsx:170
 #: src/modules/Guests/components/EditGuestDialog.jsx:193
@@ -3370,8 +3389,8 @@ msgstr ""
 #: includes/Services/Inventory/AmenityService.php:507
 #: includes/Services/Inventory/AmenityService.php:882
 #: templates/booking/room-type.php:137
-#: src/admin/routes.js:226
-#: src/admin/routes.js:258
+#: src/admin/routes.js:237
+#: src/admin/routes.js:269
 #: src/components/booking/RoomDetailsDialog.jsx:299
 #: src/modules/Rooms/Amenities.jsx:378
 #: src/modules/Rooms/components/RoomTypeForm.jsx:394
@@ -3506,8 +3525,8 @@ msgid "The list of floors has changed. Reload the page and try again."
 msgstr ""
 
 #: includes/Services/Inventory/FloorService.php:182
-#: src/admin/routes.js:222
-#: src/admin/routes.js:246
+#: src/admin/routes.js:233
+#: src/admin/routes.js:257
 #: src/modules/Rooms/Floors.jsx:166
 #: src/modules/Rooms/index.jsx:72
 msgid "Floors"
@@ -3811,7 +3830,7 @@ msgstr ""
 #: includes/Settings/CoreSettings.php:366
 #: includes/Settings/CoreSettings.php:387
 #: includes/Settings/CoreSettings.php:423
-#: includes/Settings/PaymentSettings.php:133
+#: includes/Settings/PaymentSettings.php:138
 #: includes/Settings/PhoneSettings.php:105
 #: includes/Settings/PhoneSettings.php:126
 #: includes/Settings/SettingsValidator.php:287
@@ -4261,6 +4280,7 @@ msgid "Sales"
 msgstr ""
 
 #: includes/Services/Reports/ReportService.php:151
+#: src/admin/routes.js:332
 #: src/modules/Reports/tabs/index.js:37
 msgid "Room availability"
 msgstr ""
@@ -4350,7 +4370,7 @@ msgstr ""
 
 #: includes/Services/Reports/ReportService.php:336
 #: src/modules/Reports/tabs/Sales.jsx:229
-#: src/modules/Settings/sections/Payments.jsx:46
+#: src/modules/Settings/sections/Payments.jsx:47
 msgid "Payment methods"
 msgstr ""
 
@@ -4368,8 +4388,8 @@ msgid "Sales by payment method"
 msgstr ""
 
 #: includes/Services/Reports/ReportService.php:369
-#: src/admin/routes.js:218
-#: src/admin/routes.js:234
+#: src/admin/routes.js:229
+#: src/admin/routes.js:245
 #: src/modules/Rooms/AllRooms.jsx:236
 #: src/modules/Rooms/AllRooms.jsx:420
 #: src/modules/Rooms/index.jsx:56
@@ -4398,7 +4418,7 @@ msgstr ""
 #: src/modules/Availability/components/BlockEditor.jsx:341
 #: src/modules/Bookings/components/CheckInDialog.jsx:81
 #: src/modules/Bookings/index.jsx:219
-#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:16
+#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:18
 #: src/modules/Reports/tabs/Rooms.jsx:115
 #: src/modules/Rooms/AllRooms.jsx:163
 msgid "Room"
@@ -4407,7 +4427,7 @@ msgstr ""
 #: includes/Services/Reports/ReportService.php:379
 #: includes/Services/Reports/ReportService.php:384
 #: includes/Services/Reports/ReportService.php:432
-#: src/admin/routes.js:271
+#: src/admin/routes.js:282
 #: src/modules/Availability/components/BlockEditor.jsx:307
 #: src/modules/Availability/components/BlockEditor.jsx:325
 #: src/modules/Availability/index.jsx:408
@@ -4425,10 +4445,10 @@ msgid "Booked rooms"
 msgstr ""
 
 #: includes/Services/Reports/ReportService.php:384
-#: templates/booking/confirmation.php:85
+#: templates/booking/confirmation.php:87
 #: templates/documents/invoice.php:85
 #: templates/documents/receipt.php:64
-#: src/admin/routes.js:173
+#: src/admin/routes.js:184
 #: src/modules/Bookings/index.jsx:179
 #: src/modules/Payments/index.jsx:52
 #: src/modules/Reports/tabs/Rooms.jsx:89
@@ -4436,10 +4456,10 @@ msgid "Booking"
 msgstr ""
 
 #: includes/Services/Reports/ReportService.php:384
-#: src/admin/routes.js:182
+#: src/admin/routes.js:193
 #: src/components/booking/BookingFlow.jsx:904
 #: src/modules/Bookings/Detail.jsx:673
-#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:15
+#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:17
 #: src/modules/Guests/index.jsx:67
 #: src/modules/Payments/index.jsx:66
 #: src/modules/Reports/tabs/Rooms.jsx:99
@@ -4469,11 +4489,11 @@ msgid "Departure"
 msgstr ""
 
 #: includes/Services/Reports/ReportService.php:384
-#: templates/booking/confirmation.php:117
+#: templates/booking/confirmation.php:119
 #: src/components/booking/SummaryStep.jsx:70
 #: src/components/booking/SummaryStep.jsx:73
 #: src/modules/Bookings/components/RecordPaymentDialog.jsx:183
-#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:18
+#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:20
 #: src/modules/Reports/tabs/Rooms.jsx:127
 msgid "Payment"
 msgstr ""
@@ -4524,7 +4544,7 @@ msgid "Partially paid"
 msgstr ""
 
 #: includes/Services/Reports/ReportService.php:456
-#: templates/booking/confirmation.php:120
+#: templates/booking/confirmation.php:122
 #: templates/emails/guest-booking-received.php:42
 #: src/lib/status.js:60
 #: src/modules/Bookings/components/PaymentsPanel.jsx:80
@@ -4587,52 +4607,52 @@ msgstr ""
 msgid "Use %d characters or fewer."
 msgstr ""
 
-#: includes/Settings/PaymentSettings.php:98
+#: includes/Settings/PaymentSettings.php:101
 msgid "Cash at the desk"
 msgstr ""
 
 #. translators: Keep the {…} merge tags as they are.
-#: includes/Settings/PaymentSettings.php:100
+#: includes/Settings/PaymentSettings.php:103
 msgid "Pay {amount} in cash at reception, quoting booking {reference}."
 msgstr ""
 
-#: includes/Settings/PaymentSettings.php:106
+#: includes/Settings/PaymentSettings.php:110
 msgid "Card at the desk"
 msgstr ""
 
 #. translators: Keep the {…} merge tags as they are.
-#: includes/Settings/PaymentSettings.php:108
+#: includes/Settings/PaymentSettings.php:112
 msgid "Pay {amount} by card at reception, quoting booking {reference}."
 msgstr ""
 
-#: includes/Settings/PaymentSettings.php:114
+#: includes/Settings/PaymentSettings.php:119
 msgid "Bank transfer"
 msgstr ""
 
 #. translators: Keep the {…} merge tags as they are.
-#: includes/Settings/PaymentSettings.php:116
+#: includes/Settings/PaymentSettings.php:121
 msgid "Transfer {amount} to the account below before {deadline}, with {reference} as the transfer reference."
 msgstr ""
 
 #. translators: %d: most payment methods.
-#: includes/Settings/PaymentSettings.php:137
+#: includes/Settings/PaymentSettings.php:142
 #, php-format
 msgid "List at most %d payment methods."
 msgstr ""
 
 #. translators: %d: position of the method in the list.
-#: includes/Settings/PaymentSettings.php:148
+#: includes/Settings/PaymentSettings.php:153
 #, php-format
 msgid "Method %d needs a name of at most 60 characters."
 msgstr ""
 
 #. translators: %s: payment method name.
-#: includes/Settings/PaymentSettings.php:161
+#: includes/Settings/PaymentSettings.php:166
 #, php-format
 msgid "\"%s\" is listed twice."
 msgstr ""
 
-#: includes/Settings/PaymentSettings.php:184
+#: includes/Settings/PaymentSettings.php:216
 msgid "Use up to 20 letters, digits and - / _ . only."
 msgstr ""
 
@@ -4841,12 +4861,12 @@ msgid "Booking %1$s · %2$s"
 msgstr ""
 
 #. translators: %s: guest name.
-#: templates/booking/confirmation.php:92
+#: templates/booking/confirmation.php:94
 #, php-format
 msgid "In the name of %s"
 msgstr ""
 
-#: templates/booking/confirmation.php:99
+#: templates/booking/confirmation.php:101
 #: src/components/booking/GuestBookingOnePage.jsx:214
 #: src/components/booking/GuestParts.jsx:73
 #: src/components/booking/GuestParts.jsx:78
@@ -4856,7 +4876,7 @@ msgstr ""
 #. translators: 1: room number, 2: rate name.
 #. translators: 1: room number, 2: floor name.
 #. translators: 1: room number, 2: rate plan.
-#: templates/booking/confirmation.php:106
+#: templates/booking/confirmation.php:108
 #: templates/emails/guest-booking-received.php:29
 #: templates/emails/guest-booking-status.php:33
 #: src/components/booking/BookingDone.jsx:65
@@ -4866,7 +4886,7 @@ msgstr ""
 msgid "Room %1$s · %2$s"
 msgstr ""
 
-#: templates/booking/confirmation.php:118
+#: templates/booking/confirmation.php:120
 #: templates/documents/invoice.php:152
 #: templates/emails/guest-booking-received.php:37
 #: templates/emails/guest-booking-status.php:41
@@ -4878,66 +4898,66 @@ msgstr ""
 msgid "Total"
 msgstr ""
 
-#: templates/booking/confirmation.php:123
+#: templates/booking/confirmation.php:125
 #: templates/emails/guest-booking-received.php:48
 msgid "To pay"
 msgstr ""
 
-#: templates/booking/confirmation.php:125
+#: templates/booking/confirmation.php:127
 msgid "Paid in full. Thank you!"
 msgstr ""
 
 #. translators: %s: date and time.
-#: templates/booking/confirmation.php:133
+#: templates/booking/confirmation.php:135
 #, php-format
 msgid "The payment was due %s. Please pay now or contact the hotel: your room may be released."
 msgstr ""
 
 #. translators: %s: date and time.
-#: templates/booking/confirmation.php:138
+#: templates/booking/confirmation.php:140
 #: templates/emails/guest-booking-received.php:61
 #, php-format
 msgid "Please pay before %s."
 msgstr ""
 
 #. translators: %s: booking reference.
-#: templates/booking/confirmation.php:149
+#: templates/booking/confirmation.php:151
 #: templates/emails/guest-booking-received.php:68
 #, php-format
 msgid "Quote the reference %s with your payment."
 msgstr ""
 
-#: templates/booking/confirmation.php:168
+#: templates/booking/confirmation.php:175
 msgid "Documents"
 msgstr ""
 
 #. translators: %s: invoice number.
-#: templates/booking/confirmation.php:173
+#: templates/booking/confirmation.php:180
 #: templates/documents/invoice.php:36
 #, php-format
 msgid "Invoice %s"
 msgstr ""
 
 #. translators: 1: receipt number, 2: amount.
-#: templates/booking/confirmation.php:181
+#: templates/booking/confirmation.php:188
 #, php-format
 msgid "Receipt %1$s · %2$s"
 msgstr ""
 
 #. translators: 1: days, 2: hours.
-#: templates/booking/confirmation.php:206
+#: templates/booking/confirmation.php:213
 #, php-format
 msgid "(%1$d d %2$d h left)"
 msgstr ""
 
 #. translators: 1: hours, 2: minutes.
-#: templates/booking/confirmation.php:208
+#: templates/booking/confirmation.php:215
 #, php-format
 msgid "(%1$d h %2$d min left)"
 msgstr ""
 
 #. translators: %d: minutes.
-#: templates/booking/confirmation.php:210
+#: templates/booking/confirmation.php:217
 #, php-format
 msgid "(%d min left)"
 msgstr ""
@@ -5118,7 +5138,7 @@ msgstr ""
 
 #: templates/documents/invoice.php:124
 #: src/modules/Bookings/index.jsx:244
-#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:17
+#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:19
 msgid "Stay"
 msgstr ""
 
@@ -5175,7 +5195,7 @@ msgstr ""
 #: templates/emails/guest-payment-received.php:35
 #: src/components/booking/SummaryStep.jsx:126
 #: src/modules/Bookings/components/RecordPaymentDialog.jsx:246
-#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:14
+#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:16
 msgid "Reference"
 msgstr ""
 
@@ -5243,12 +5263,12 @@ msgid "Your receipt"
 msgstr ""
 
 #. translators: %s: the hotel's phone number.
-#: templates/embeds/booking.php:53
+#: templates/embeds/booking.php:54
 #, php-format
 msgid "Loading the booking form… If it does not appear, please call us on %s to book."
 msgstr ""
 
-#: templates/embeds/booking.php:57
+#: templates/embeds/booking.php:58
 msgid "Loading the booking form…"
 msgstr ""
 
@@ -5336,134 +5356,150 @@ msgstr ""
 msgid "Ask a manager if you need it."
 msgstr ""
 
-#: src/admin/routes.js:57
+#: src/admin/routes.js:64
 msgid "Overview"
 msgstr ""
 
-#: src/admin/routes.js:58
+#: src/admin/routes.js:65
 msgid "Front desk"
 msgstr ""
 
-#: src/admin/routes.js:59
-msgid "Hotel setup"
+#: src/admin/routes.js:67
+msgid "My account"
 msgstr ""
 
-#: src/admin/routes.js:60
+#: src/admin/routes.js:68
 msgid "Reports & data"
 msgstr ""
 
 #: src/admin/routes.js:70
+msgid "Staff & access"
+msgstr ""
+
+#: src/admin/routes.js:71
+msgid "Hotel setup"
+msgstr ""
+
+#: src/admin/routes.js:81
 msgctxt "phone tab bar: keep it short"
 msgid "Dashboard"
 msgstr ""
 
-#: src/admin/routes.js:77
+#: src/admin/routes.js:88
 msgid "Today at your hotel, at a glance"
 msgstr ""
 
-#: src/admin/routes.js:90
+#: src/admin/routes.js:101
 msgid "Open, close and price your rooms by date"
 msgstr ""
 
-#: src/admin/routes.js:103
+#: src/admin/routes.js:114
 msgid "Close the hotel, a floor, a room type or a room for a while"
 msgstr ""
 
-#: src/admin/routes.js:115
+#: src/admin/routes.js:126
 msgctxt "phone tab bar: new booking, keep it short"
 msgid "New"
 msgstr ""
 
-#: src/admin/routes.js:121
+#: src/admin/routes.js:132
 #: src/modules/Bookings/index.jsx:146
-#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:118
+#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:131
 #: src/modules/Dashboard/index.jsx:104
 msgid "New booking"
 msgstr ""
 
-#: src/admin/routes.js:122
+#: src/admin/routes.js:133
 msgid "Take a walk-in booking at the front desk"
 msgstr ""
 
-#: src/admin/routes.js:134
+#: src/admin/routes.js:145
 msgctxt "phone tab bar: keep it short"
 msgid "Bookings"
 msgstr ""
 
-#: src/admin/routes.js:141
+#: src/admin/routes.js:152
 msgid "Every booking, arrival and departure"
 msgstr ""
 
-#: src/admin/routes.js:153
+#: src/admin/routes.js:164
 msgctxt "phone tab bar: keep it short"
 msgid "Guests"
 msgstr ""
 
-#: src/admin/routes.js:160
+#: src/admin/routes.js:171
 msgid "Guest records, documents and stay history"
 msgstr ""
 
-#: src/admin/routes.js:191
+#: src/admin/routes.js:202
 msgid "Payments received and bookings to follow up"
 msgstr ""
 
-#: src/admin/routes.js:204
+#: src/admin/routes.js:215
 msgid "Room types, floors and every physical room"
 msgstr ""
 
-#: src/admin/routes.js:214
+#: src/admin/routes.js:225
 #: src/modules/Rooms/components/RoomTypeForm.jsx:537
 #: src/modules/Rooms/index.jsx:81
 #: src/modules/Rooms/index.jsx:139
 msgid "Add room type"
 msgstr ""
 
-#: src/admin/routes.js:235
+#: src/admin/routes.js:246
 msgid "Every room of the hotel; select rooms to change them together"
 msgstr ""
 
-#: src/admin/routes.js:247
+#: src/admin/routes.js:258
 msgid "The floors of the hotel, in order"
 msgstr ""
 
-#: src/admin/routes.js:259
+#: src/admin/routes.js:270
 msgid "The amenities room types pick from"
 msgstr ""
 
-#: src/admin/routes.js:279
+#: src/admin/routes.js:290
 msgid "Rate plans"
 msgstr ""
 
-#: src/admin/routes.js:280
+#: src/admin/routes.js:291
 msgid "Stay windows such as Half Day or Overnight, and their prices"
 msgstr ""
 
-#: src/admin/routes.js:292
+#: src/admin/routes.js:303
 #: src/modules/Reports/index.jsx:104
 msgid "Reports"
 msgstr ""
 
-#: src/admin/routes.js:293
+#: src/admin/routes.js:304
 msgid "Sales, rooms and availability reports"
 msgstr ""
 
-#: src/admin/routes.js:306
-msgid "Export bookings and guests to a spreadsheet"
-msgstr ""
-
 #: src/admin/routes.js:319
-msgid "Choose what each staff role may open and do"
-msgstr ""
-
-#: src/admin/routes.js:332
-msgid "Shortcodes"
+msgid "Rented and empty rooms in a period, by floor"
 msgstr ""
 
 #: src/admin/routes.js:333
+msgid "Which rooms are free for each stay window"
+msgstr ""
+
+#: src/admin/routes.js:345
+msgid "Export bookings and guests to a spreadsheet"
+msgstr ""
+
+#: src/admin/routes.js:358
+msgid "Choose what each staff role may open and do"
+msgstr ""
+
+#: src/admin/routes.js:371
+msgid "Shortcodes"
+msgstr ""
+
+#: src/admin/routes.js:372
 msgid "Shortcodes to place the booking pages on your site"
 msgstr ""
 
-#: src/admin/routes.js:346
+#: src/admin/routes.js:385
 msgid "Hotel details, booking rules and appearance"
 msgstr ""
 
@@ -5515,7 +5551,7 @@ msgid "Signed in as %s. Your details are filled in for you."
 msgstr ""
 
 #: src/components/booking/AccountBar.jsx:96
-#: src/components/layout/Sidebar.jsx:301
+#: src/components/layout/UserMenu.jsx:195
 msgid "Sign out"
 msgstr ""
 
@@ -5631,7 +5667,7 @@ msgstr ""
 #: src/modules/Rooms/Detail.jsx:120
 #: src/modules/Rooms/Floors.jsx:121
 #: src/modules/Rooms/index.jsx:112
-#: src/modules/Settings/index.jsx:271
+#: src/modules/Settings/index.jsx:293
 #: src/modules/Settings/sections/Permissions.jsx:81
 msgid "Try again"
 msgstr ""
@@ -5942,41 +5978,41 @@ msgstr ""
 msgid "Room %1$s · %2$s, %3$s"
 msgstr ""
 
-#: src/components/booking/GuestForm.jsx:285
+#: src/components/booking/GuestForm.jsx:306
 msgid "Booked with us before?"
 msgstr ""
 
-#: src/components/booking/GuestForm.jsx:291
+#: src/components/booking/GuestForm.jsx:312
 msgid "Use express checkout"
 msgstr ""
 
 #. translators: %s: masked guest name, e.g. "H••• R•••".
-#: src/components/booking/GuestForm.jsx:315
+#: src/components/booking/GuestForm.jsx:336
 #, js-format
 msgid "Welcome back, %s!"
 msgstr ""
 
-#: src/components/booking/GuestForm.jsx:321
+#: src/components/booking/GuestForm.jsx:342
 msgid "Welcome back!"
 msgstr ""
 
-#: src/components/booking/GuestForm.jsx:323
+#: src/components/booking/GuestForm.jsx:344
 msgid "Leave your name and e-mail empty to use the ones we have on file."
 msgstr ""
 
-#: src/components/booking/GuestForm.jsx:333
+#: src/components/booking/GuestForm.jsx:354
 msgid "Your details on file"
 msgstr ""
 
-#: src/components/booking/GuestForm.jsx:339
+#: src/components/booking/GuestForm.jsx:360
 msgid "To change them, please contact the hotel."
 msgstr ""
 
-#: src/components/booking/GuestForm.jsx:354
+#: src/components/booking/GuestForm.jsx:375
 msgid "Not you? Use other details"
 msgstr ""
 
-#: src/components/booking/GuestForm.jsx:365
+#: src/components/booking/GuestForm.jsx:386
 #: src/components/booking/GuestStep.jsx:194
 #: src/modules/Guests/components/AddGuestDialog.jsx:160
 #: src/modules/Guests/components/EditGuestDialog.jsx:183
@@ -5985,7 +6021,7 @@ msgstr ""
 msgid "First name"
 msgstr ""
 
-#: src/components/booking/GuestForm.jsx:384
+#: src/components/booking/GuestForm.jsx:405
 #: src/components/booking/GuestStep.jsx:201
 #: src/modules/Guests/components/AddGuestDialog.jsx:165
 #: src/modules/Guests/components/EditGuestDialog.jsx:188
@@ -5994,7 +6030,7 @@ msgstr ""
 msgid "Last name"
 msgstr ""
 
-#: src/components/booking/GuestForm.jsx:424
+#: src/components/booking/GuestForm.jsx:445
 #: src/components/booking/GuestStep.jsx:218
 #: src/modules/Guests/components/EditGuestDialog.jsx:198
 #: src/modules/Guests/Detail.jsx:295
@@ -6005,19 +6041,19 @@ msgstr ""
 msgid "E-mail"
 msgstr ""
 
-#: src/components/booking/GuestForm.jsx:426
+#: src/components/booking/GuestForm.jsx:447
 msgid "For your confirmation and invoice."
 msgstr ""
 
-#: src/components/booking/GuestForm.jsx:452
+#: src/components/booking/GuestForm.jsx:473
 msgid "Identity document on file"
 msgstr ""
 
-#: src/components/booking/GuestForm.jsx:475
+#: src/components/booking/GuestForm.jsx:496
 msgid "Use another document"
 msgstr ""
 
-#: src/components/booking/GuestForm.jsx:487
+#: src/components/booking/GuestForm.jsx:508
 #: src/components/booking/GuestStep.jsx:237
 #: src/modules/Guests/components/AddGuestDialog.jsx:187
 #: src/modules/Guests/components/EditGuestDialog.jsx:211
@@ -6027,12 +6063,12 @@ msgstr ""
 msgid "Identity document"
 msgstr ""
 
-#: src/components/booking/GuestForm.jsx:501
+#: src/components/booking/GuestForm.jsx:522
 #: src/modules/Settings/sections/Website.jsx:99
 msgid "Choose…"
 msgstr ""
 
-#: src/components/booking/GuestForm.jsx:516
+#: src/components/booking/GuestForm.jsx:537
 #: src/components/booking/GuestStep.jsx:270
 #: src/modules/Guests/components/AddGuestDialog.jsx:235
 #: src/modules/Settings/sections/Website.jsx:106
@@ -6040,17 +6076,17 @@ msgstr ""
 msgid "Document number"
 msgstr ""
 
-#: src/components/booking/GuestForm.jsx:537
+#: src/components/booking/GuestForm.jsx:558
 #: src/modules/Settings/sections/Website.jsx:65
 #: src/modules/Settings/sections/Website.jsx:113
 msgid "Special requests"
 msgstr ""
 
-#: src/components/booking/GuestForm.jsx:541
+#: src/components/booking/GuestForm.jsx:562
 msgid "Arrival time, a cot, anything the hotel should know."
 msgstr ""
 
-#: src/components/booking/GuestForm.jsx:545
+#: src/components/booking/GuestForm.jsx:566
 msgid "Optional: arrival time, a cot, anything the hotel should know."
 msgstr ""
 
@@ -6729,7 +6765,7 @@ msgid "Working…"
 msgstr ""
 
 #: src/components/common/DataTable.jsx:95
-#: src/components/layout/Topbar.jsx:88
+#: src/components/layout/Topbar.jsx:89
 msgid "Search…"
 msgstr ""
 
@@ -6909,7 +6945,7 @@ msgstr ""
 #: src/components/common/LeaveGuard.jsx:193
 #: src/modules/Rooms/components/RatesTab.jsx:557
 #: src/modules/Rooms/components/RoomTypeForm.jsx:534
-#: src/modules/Settings/index.jsx:182
+#: src/modules/Settings/index.jsx:186
 msgid "Saving…"
 msgstr ""
 
@@ -7262,12 +7298,12 @@ msgstr ""
 msgid "Insert"
 msgstr ""
 
-#: src/components/layout/AppShell.jsx:60
+#: src/components/layout/AppShell.jsx:110
 msgid "Menu"
 msgstr ""
 
-#: src/components/layout/AppShell.jsx:67
-#: src/components/layout/Sidebar.jsx:368
+#: src/components/layout/AppShell.jsx:117
+#: src/components/layout/Sidebar.jsx:248
 msgid "Close menu"
 msgstr ""
 
@@ -7291,11 +7327,11 @@ msgstr ""
 msgid "Searching bookings, guests and rooms by name, phone or number comes with the bookings module."
 msgstr ""
 
-#: src/components/layout/MobileTabBar.jsx:32
+#: src/components/layout/MobileTabBar.jsx:34
 msgid "Quick navigation"
 msgstr ""
 
-#: src/components/layout/MobileTabBar.jsx:65
+#: src/components/layout/MobileTabBar.jsx:67
 msgid "More"
 msgstr ""
 
@@ -7321,36 +7357,40 @@ msgstr[1] ""
 msgid "No booking awaiting approval"
 msgstr ""
 
-#: src/components/layout/Sidebar.jsx:55
+#: src/components/layout/Sidebar.jsx:46
 msgid "Manage your hotel"
 msgstr ""
 
-#: src/components/layout/Sidebar.jsx:247
-msgid "Account menu"
-msgstr ""
-
-#: src/components/layout/Sidebar.jsx:359
+#: src/components/layout/Sidebar.jsx:239
 msgid "Hotel navigation"
 msgstr ""
 
-#: src/components/layout/Sidebar.jsx:379
+#: src/components/layout/Sidebar.jsx:259
 msgid "Expand menu"
 msgstr ""
 
-#: src/components/layout/Sidebar.jsx:380
+#: src/components/layout/Sidebar.jsx:260
 msgid "Collapse menu"
 msgstr ""
 
-#: src/components/layout/Topbar.jsx:50
+#: src/components/layout/Topbar.jsx:51
 msgid "Page not found"
 msgstr ""
 
-#: src/components/layout/Topbar.jsx:59
+#: src/components/layout/Topbar.jsx:60
 msgid "Open menu"
 msgstr ""
 
-#: src/components/layout/Topbar.jsx:81
+#: src/components/layout/Topbar.jsx:82
 msgid "Search and go to a screen"
+msgstr ""
+
+#: src/components/layout/UserMenu.jsx:97
+msgid "Account menu"
+msgstr ""
+
+#: src/components/layout/UserMenu.jsx:147
+msgid "Language"
 msgstr ""
 
 #: src/components/ui/pagination.jsx:11
@@ -8131,7 +8171,7 @@ msgstr ""
 
 #: src/modules/Bookings/components/LineEditor.jsx:624
 #: src/modules/Rooms/components/RoomTypeForm.jsx:536
-#: src/modules/Settings/index.jsx:183
+#: src/modules/Settings/index.jsx:187
 msgid "Save changes"
 msgstr ""
 
@@ -8513,7 +8553,7 @@ msgid "No booking matches"
 msgstr ""
 
 #: src/modules/Bookings/index.jsx:374
-#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:109
+#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:122
 msgid "No bookings yet"
 msgstr ""
 
@@ -8557,19 +8597,19 @@ msgstr ""
 msgid "Mark room %s as a no-show?"
 msgstr ""
 
-#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:32
+#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:34
 msgid "Recent bookings"
 msgstr ""
 
-#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:33
+#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:35
 msgid "The latest bookings taken at the desk or online"
 msgstr ""
 
-#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:40
+#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:42
 msgid "View all"
 msgstr ""
 
-#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:110
+#: src/modules/Dashboard/components/RecentBookingsPanel.jsx:123
 msgid "Take a walk-in booking at the desk, or share your booking page with guests."
 msgstr ""
 
@@ -9095,7 +9135,7 @@ msgstr ""
 
 #: src/modules/RatePlans/components/RatePlanSheet.jsx:213
 #: src/modules/Rooms/components/RoomTypeForm.jsx:231
-#: src/modules/Settings/sections/Payments.jsx:161
+#: src/modules/Settings/sections/Payments.jsx:175
 #: src/modules/Settings/sections/Phone.jsx:129
 #: src/modules/Settings/sections/Phone.jsx:160
 msgid "Name"
@@ -10210,7 +10250,7 @@ msgstr ""
 
 #: src/modules/Rooms/components/RatesTab.jsx:549
 #: src/modules/Rooms/components/RoomTypeForm.jsx:526
-#: src/modules/Settings/index.jsx:178
+#: src/modules/Settings/index.jsx:182
 msgid "Discard"
 msgstr ""
 
@@ -10588,39 +10628,39 @@ msgstr ""
 msgid "Pick a custom colour"
 msgstr ""
 
-#: src/modules/Settings/index.jsx:84
+#: src/modules/Settings/index.jsx:88
 msgid "Settings section"
 msgstr ""
 
-#: src/modules/Settings/index.jsx:106
+#: src/modules/Settings/index.jsx:110
 msgid "Settings sections"
 msgstr ""
 
-#: src/modules/Settings/index.jsx:137
-#: src/modules/Settings/index.jsx:166
+#: src/modules/Settings/index.jsx:141
+#: src/modules/Settings/index.jsx:170
 msgid "Unsaved changes"
 msgstr ""
 
-#: src/modules/Settings/index.jsx:170
+#: src/modules/Settings/index.jsx:174
 msgid "You have unsaved changes."
 msgstr ""
 
-#: src/modules/Settings/index.jsx:333
+#: src/modules/Settings/index.jsx:367
 #: src/modules/Shortcodes/index.jsx:433
 msgid "Reset to defaults"
 msgstr ""
 
 #. translators: %s: settings section, e.g. "General".
-#: src/modules/Settings/index.jsx:366
+#: src/modules/Settings/index.jsx:400
 #, js-format
 msgid "Reset %s to its defaults?"
 msgstr ""
 
-#: src/modules/Settings/index.jsx:372
+#: src/modules/Settings/index.jsx:406
 msgid "Every setting on this tab goes back to its default value. Other tabs are not changed."
 msgstr ""
 
-#: src/modules/Settings/index.jsx:376
+#: src/modules/Settings/index.jsx:410
 msgid "Reset"
 msgstr ""
 
@@ -10669,7 +10709,7 @@ msgid "A 6-digit code is sent to the guest's e-mail on file, and entering it fil
 msgstr ""
 
 #: src/modules/Settings/sections/Accounts.jsx:99
-msgid "No code: a known number shows only a masked name and e-mail, and the booking uses the name and e-mail on file. The guest still types their identity document, and the booking is not linked to their account."
+msgid "No code: a known number shows only a masked name, e-mail and document, and the booking uses the details on file, identity document included. The booking is not linked to their account."
 msgstr ""
 
 #: src/modules/Settings/sections/Accounts.jsx:112
@@ -11368,59 +11408,63 @@ msgstr ""
 msgid "seconds"
 msgstr ""
 
-#: src/modules/Settings/sections/Payments.jsx:47
+#: src/modules/Settings/sections/Payments.jsx:48
 msgid "How guests can pay you, in the order they see them. Guests get these instructions on the confirmation page and e-mail; staff pick the method when recording a payment."
 msgstr ""
 
 #. translators: %s: the merge tags, e.g. "{amount}, {reference}".
-#: src/modules/Settings/sections/Payments.jsx:55
+#: src/modules/Settings/sections/Payments.jsx:56
 #, js-format
 msgid "In the instructions, these tags are replaced for each booking: %s."
 msgstr ""
 
+#: src/modules/Settings/sections/Payments.jsx:62
+msgid "The icon beside each name shows on the guest page; left empty, one is picked from the name."
+msgstr ""
+
 #. translators: %s: payment method name.
-#: src/modules/Settings/sections/Payments.jsx:84
+#: src/modules/Settings/sections/Payments.jsx:89
 #, js-format
 msgid "Offer %s to guests"
 msgstr ""
 
-#: src/modules/Settings/sections/Payments.jsx:89
+#: src/modules/Settings/sections/Payments.jsx:94
 msgid "this method"
 msgstr ""
 
-#: src/modules/Settings/sections/Payments.jsx:96
+#: src/modules/Settings/sections/Payments.jsx:101
 msgid "New method"
 msgstr ""
 
-#: src/modules/Settings/sections/Payments.jsx:99
+#: src/modules/Settings/sections/Payments.jsx:104
 msgid "off"
 msgstr ""
 
-#: src/modules/Settings/sections/Payments.jsx:110
+#: src/modules/Settings/sections/Payments.jsx:115
 msgid "Move up"
 msgstr ""
 
-#: src/modules/Settings/sections/Payments.jsx:126
+#: src/modules/Settings/sections/Payments.jsx:131
 msgid "Move down"
 msgstr ""
 
-#: src/modules/Settings/sections/Payments.jsx:148
+#: src/modules/Settings/sections/Payments.jsx:153
 msgid "Remove this method"
 msgstr ""
 
-#: src/modules/Settings/sections/Payments.jsx:173
+#: src/modules/Settings/sections/Payments.jsx:191
 msgid "Instructions for the guest"
 msgstr ""
 
-#: src/modules/Settings/sections/Payments.jsx:191
+#: src/modules/Settings/sections/Payments.jsx:209
 msgid "Account details"
 msgstr ""
 
-#: src/modules/Settings/sections/Payments.jsx:195
+#: src/modules/Settings/sections/Payments.jsx:213
 msgid "The number or account to pay into, shown under the instructions. Optional."
 msgstr ""
 
-#: src/modules/Settings/sections/Payments.jsx:231
+#: src/modules/Settings/sections/Payments.jsx:250
 msgid "Add a method"
 msgstr ""
 

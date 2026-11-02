@@ -1,0 +1,79 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Reports\/tabs\/Availability.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Bookings": [
+                "R\u00e9servations"
+            ],
+            "Rooms": [
+                "Chambres"
+            ],
+            "Room %s": [
+                "Chambre %s"
+            ],
+            "Available": [
+                "Disponible"
+            ],
+            "Whole days": [
+                "Journ\u00e9es enti\u00e8res"
+            ],
+            "No rooms yet": [
+                "Aucune chambre pour le moment"
+            ],
+            "From time": [
+                "Heure de d\u00e9but"
+            ],
+            "To time": [
+                "Heure de fin"
+            ],
+            "Right now": [
+                "Maintenant"
+            ],
+            "Every room of the hotel": [
+                "Toutes les chambres de l'h\u00f4tel"
+            ],
+            "Occupied": [
+                "Occup\u00e9e"
+            ],
+            "A stay at some moment of the window": [
+                "Un s\u00e9jour \u00e0 un moment de la p\u00e9riode"
+            ],
+            "Free for the whole window": [
+                "Libre pendant toute la p\u00e9riode"
+            ],
+            "Booked rooms taken in the window": [
+                "Chambres r\u00e9serv\u00e9es prises pendant la p\u00e9riode"
+            ],
+            "Booked rooms staying in the window": [
+                "Chambres r\u00e9serv\u00e9es en s\u00e9jour pendant la p\u00e9riode"
+            ],
+            "Legend": [
+                "L\u00e9gende"
+            ],
+            "%1$d of %2$d room occupied": [
+                "%1$d chambre occup\u00e9e sur %2$d",
+                "%1$d chambres occup\u00e9es sur %2$d"
+            ],
+            "This room type has no rooms.": [
+                "Ce type de chambre n'a aucune chambre."
+            ],
+            "Add room types and rooms in Rooms & floors.": [
+                "Ajoutez des types de chambre et des chambres dans Chambres et \u00e9tages."
+            ],
+            "Room %1$s: %2$s": [
+                "Chambre %1$s : %2$s"
+            ],
+            "No booking for this room in the window.": [
+                "Aucune r\u00e9servation pour cette chambre sur la p\u00e9riode."
+            ]
+        }
+    }
+}

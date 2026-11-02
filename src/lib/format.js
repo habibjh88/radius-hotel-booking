@@ -334,6 +334,45 @@ export function formatDateRange( start, end ) {
 		: `${ formatDateTime( start ) } → ${ formatDateTime( end ) }`;
 }
 
+/**
+ * How long ago something happened: "5 minutes ago", "yesterday", in the
+ * page language (Intl.RelativeTimeFormat). Older than a week, the date
+ * instead.
+ *
+ * @param {Date|string} value An ISO date with offset (API) or a Date.
+ * @param {number}      now   Current time in ms (tests, live re-render).
+ * @return {string} Label, or '' for an empty/invalid value.
+ */
+export function formatTimeAgo( value, now = Date.now() ) {
+	const date = value instanceof Date ? value : new Date( value || '' );
+	if ( Number.isNaN( date.getTime() ) ) {
+		return '';
+	}
+	const seconds = Math.round( ( date.getTime() - now ) / 1000 );
+	const abs = Math.abs( seconds );
+	if ( abs >= 7 * 86400 ) {
+		return formatDate( value );
+	}
+	const steps = [
+		[ 60, 'second', 1 ],
+		[ 3600, 'minute', 60 ],
+		[ 86400, 'hour', 3600 ],
+		[ Infinity, 'day', 86400 ],
+	];
+	const [ , unit, size ] = steps.find( ( [ limit ] ) => abs < limit );
+	const lang =
+		( typeof document !== 'undefined' && document.documentElement.lang ) ||
+		undefined;
+	try {
+		return new Intl.RelativeTimeFormat( lang, { numeric: 'auto' } ).format(
+			Math.round( seconds / size ),
+			unit
+		);
+	} catch ( e ) {
+		return formatDateTime( value );
+	}
+}
+
 /* --------------------------------------------------------- Calendar days */
 
 /**

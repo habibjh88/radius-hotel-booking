@@ -14,7 +14,9 @@ import {
 	AlertCircle,
 	BedDouble,
 	DoorOpen,
+	FileText,
 	KeyRound,
+	Pencil,
 	PowerOff,
 	Wrench,
 } from 'lucide-react';
@@ -25,6 +27,7 @@ import EmptyState from '@/components/common/EmptyState';
 import Money from '@/components/common/Money';
 import Panel from '@/components/common/Panel';
 import StatCard from '@/components/common/StatCard';
+import GuestLink from '@/components/common/GuestLink';
 import StatusBadge from '@/components/common/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -97,7 +100,9 @@ export default function Rooms( { range } ) {
 		{
 			id: 'guest',
 			header: __( 'Guest', 'radius-hotel-booking' ),
-			cell: ( row ) => row.guest,
+			cell: ( row ) => (
+				<GuestLink id={ row.guest_id } name={ row.guest } />
+			),
 			mobile: 'subtitle',
 		},
 		{
@@ -280,6 +285,39 @@ export default function Rooms( { range } ) {
 					onRowClick={ ( row ) =>
 						navigate( `/bookings/${ row.booking_id }` )
 					}
+					// Invoice and Edit on each booked room (R1-T15); Edit opens the
+					// room's editor while it can still change, otherwise the booking.
+					rowActions={ ( row ) => [
+						row.invoice_url
+							? {
+									label: __(
+										'Invoice',
+										'radius-hotel-booking'
+									),
+									icon: FileText,
+									inline: true,
+									onSelect: () =>
+										window.open(
+											row.invoice_url,
+											'_blank',
+											'noopener'
+										),
+							  }
+							: null,
+						{
+							label: __( 'Edit', 'radius-hotel-booking' ),
+							icon: Pencil,
+							inline: true,
+							onSelect: () =>
+								navigate(
+									[ 'pending', 'confirmed' ].includes(
+										row.status
+									)
+										? `/bookings/${ row.booking_id }?edit=${ row.line_id }`
+										: `/bookings/${ row.booking_id }`
+								),
+						},
+					] }
 					loading={ loading }
 					caption={ __( 'Booked rooms', 'radius-hotel-booking' ) }
 					empty={

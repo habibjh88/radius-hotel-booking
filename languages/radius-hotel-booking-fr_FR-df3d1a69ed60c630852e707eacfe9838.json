@@ -1,0 +1,93 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Bookings\/components\/LineEditor.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "%d child": [
+                "%d enfant",
+                "%d enfants"
+            ],
+            "%d adult": [
+                "%d adulte",
+                "%d adultes"
+            ],
+            "Choose the dates and the number of guests.": [
+                "Choisissez les dates et le nombre de clients."
+            ],
+            "The rooms could not be loaded.": [
+                "Les chambres n'ont pas pu \u00eatre charg\u00e9es."
+            ],
+            "Try again": [
+                "R\u00e9essayer"
+            ],
+            "Cancel": [
+                "Annuler"
+            ],
+            "Same stay as this booking": [
+                "M\u00eame s\u00e9jour que cette r\u00e9servation"
+            ],
+            "Change stay": [
+                "Modifier le s\u00e9jour"
+            ],
+            "Change room %s": [
+                "Modifier la chambre %s"
+            ],
+            "Add a room": [
+                "Ajouter une chambre"
+            ],
+            "Keep the rate, room type and times to keep the price. Changing one of them takes today\u2019s price.": [
+                "Gardez le tarif, le type de chambre et les horaires pour conserver le prix. En changer un applique le prix du jour."
+            ],
+            "Add one room or several to booking %s, at today\u2019s price.": [
+                "Ajoutez une ou plusieurs chambres \u00e0 la r\u00e9servation %s, au prix du jour."
+            ],
+            "This package is no longer offered for these dates. Use Change stay to pick another.": [
+                "Cette offre n'est plus propos\u00e9e \u00e0 ces dates. Utilisez Modifier le s\u00e9jour pour en choisir une autre."
+            ],
+            "Rate": [
+                "Tarif"
+            ],
+            "Room: %1$s, %2$s": [
+                "Chambre : %1$s, %2$s"
+            ],
+            "This rate is not available for these dates.": [
+                "Ce tarif n'est pas disponible \u00e0 ces dates."
+            ],
+            "Room %1$s \u00b7 %2$s \u00b7 %3$s %4$s": [
+                "Chambre %1$s \u00b7 %2$s \u00b7 %3$s %4$s",
+                "Chambres %1$s \u00b7 %2$s \u00b7 %3$s %4$s"
+            ],
+            "%1$d \u00d7 %2$s =": [
+                "%1$d \u00d7 %2$s ="
+            ],
+            "price kept": [
+                "prix conserv\u00e9"
+            ],
+            "today\u2019s price": [
+                "prix du jour"
+            ],
+            "The price changed from %1$s to %2$s.": [
+                "Le prix est pass\u00e9 de %1$s \u00e0 %2$s."
+            ],
+            "Accept the new price and save": [
+                "Accepter le nouveau prix et enregistrer"
+            ],
+            "Save changes": [
+                "Enregistrer les modifications"
+            ],
+            "Add %d rooms": [
+                "Ajouter %d chambres"
+            ],
+            "Add room": [
+                "Ajouter la chambre"
+            ]
+        }
+    }
+}

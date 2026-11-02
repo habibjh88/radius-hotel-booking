@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/sheet';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import RecordHistory from '@/components/common/RecordHistory';
 import { describeWindow, halfHourOptions, stayRules } from '@/lib/stayWindow';
 import { toast, toastError } from '@/lib/toast';
 import { usageText } from '../usage';
@@ -434,6 +435,13 @@ export default function RatePlanSheet( { plan, readOnly = false, onClose } ) {
 
 					{ ! readOnly ? (
 						<SheetFooter className="flex-row flex-wrap items-center justify-between gap-2 border-t border-border px-5 py-3 sm:justify-between">
+							{ plan ? (
+								<RecordHistory
+									type="rate_plan"
+									id={ plan.id }
+									title={ plan.name }
+								/>
+							) : null }
 							{ plan ? (
 								<Button
 									type="button"

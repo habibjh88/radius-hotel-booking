@@ -18,7 +18,7 @@ import {
 	CommandList,
 } from '@/components/ui/command';
 import { DialogDescription, DialogTitle } from '@/components/ui/dialog';
-import { NAV_GROUPS, canSee, getRoutes } from '@/admin/routes';
+import { NAV_GROUPS, canSee, getRoutes, navKey, navTarget } from '@/admin/routes';
 import { useAccessMap } from '@/lib/access';
 
 /**
@@ -70,6 +70,11 @@ export default function CommandPalette( { open, onOpenChange } ) {
 
 	const go = ( path ) => {
 		onOpenChange( false );
+		// Another page of the site (an add-on's dashboard, R1-T18).
+		if ( /^https?:\/\//.test( path ) ) {
+			window.location.href = path;
+			return;
+		}
 		navigate( path );
 	};
 
@@ -90,11 +95,11 @@ export default function CommandPalette( { open, onOpenChange } ) {
 							const Icon = route.icon;
 							return (
 								<CommandItem
-									key={ route.path }
+									key={ navKey( route ) }
 									// Label first; the description only helps matching.
-									value={ `${ route.label } ${ route.path }` }
+									value={ `${ route.label } ${ navTarget( route ) }` }
 									keywords={ route.description ? [ route.description ] : [] }
-									onSelect={ () => go( route.path ) }
+									onSelect={ () => go( navTarget( route ) ) }
 									className="cursor-pointer gap-3"
 								>
 									{ Icon ? <Icon className="text-muted-foreground" aria-hidden="true" /> : null }

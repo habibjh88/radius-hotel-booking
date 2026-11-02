@@ -1,0 +1,51 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/components\/booking\/ExpressCheckout.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Enter the 6-digit code.": [
+                "Saisissez le code \u00e0 6 chiffres."
+            ],
+            "Express checkout": [
+                "R\u00e9servation express"
+            ],
+            "Close": [
+                "Fermer"
+            ],
+            "Enter your phone number so we can recognise you and speed up your booking.": [
+                "Saisissez votre num\u00e9ro de t\u00e9l\u00e9phone pour que nous vous reconnaissions et acc\u00e9l\u00e9rions votre r\u00e9servation."
+            ],
+            "Phone number": [
+                "Num\u00e9ro de t\u00e9l\u00e9phone"
+            ],
+            "Continue": [
+                "Continuer"
+            ],
+            "Fill in my details myself": [
+                "Remplir mes informations moi-m\u00eame"
+            ],
+            "Welcome back! We sent a 6-digit code by %1$s to %2$s. Enter it to fill in your details.": [
+                "Bon retour ! Nous avons envoy\u00e9 un code \u00e0 6 chiffres par %1$s \u00e0 %2$s. Saisissez-le pour remplir vos informations."
+            ],
+            "Code": [
+                "Code"
+            ],
+            "Fill in my details": [
+                "Remplir mes informations"
+            ],
+            "Send a new code": [
+                "Envoyer un nouveau code"
+            ],
+            "Use another number": [
+                "Utiliser un autre num\u00e9ro"
+            ]
+        }
+    }
+}

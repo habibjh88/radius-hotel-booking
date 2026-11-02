@@ -1,0 +1,150 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Rooms\/components\/RoomTypeForm.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Room type added.": [
+                "Type de chambre ajout\u00e9."
+            ],
+            "Room type saved.": [
+                "Type de chambre enregistr\u00e9."
+            ],
+            "Amenities": [
+                "\u00c9quipements"
+            ],
+            "Between 1 and 20 adults.": [
+                "Entre 1 et 20 adultes."
+            ],
+            "Between 0 and 20 children.": [
+                "Entre 0 et 20 enfants."
+            ],
+            "Give the size in square metres.": [
+                "Indiquez la surface en m\u00e8tres carr\u00e9s."
+            ],
+            "Between 0 and 720 minutes, or empty to use the default.": [
+                "Entre 0 et 720 minutes, ou vide pour utiliser la valeur par d\u00e9faut."
+            ],
+            "Add room type": [
+                "Ajouter un type de chambre"
+            ],
+            "Saving\u2026": [
+                "Enregistrement\u2026"
+            ],
+            "Photos": [
+                "Photos"
+            ],
+            "Save changes": [
+                "Enregistrer les modifications"
+            ],
+            "Name": [
+                "Nom"
+            ],
+            "Discard": [
+                "Annuler"
+            ],
+            "Give the room type a name.": [
+                "Donnez un nom au type de chambre."
+            ],
+            "Use 120 characters or fewer.": [
+                "Utilisez 120 caract\u00e8res maximum."
+            ],
+            "Use 500 characters or fewer.": [
+                "Utilisez 500 caract\u00e8res maximum."
+            ],
+            "Use 191 characters or fewer.": [
+                "Utilisez 191 caract\u00e8res maximum."
+            ],
+            "About the room": [
+                "\u00c0 propos de la chambre"
+            ],
+            "Shown to guests on the booking form.": [
+                "Affich\u00e9 aux clients sur le formulaire de r\u00e9servation."
+            ],
+            "e.g. Standard Room": [
+                "ex. Chambre standard"
+            ],
+            "Short description": [
+                "Description courte"
+            ],
+            "One or two lines for the room list.": [
+                "Une ou deux lignes pour la liste des chambres."
+            ],
+            "Description": [
+                "Description"
+            ],
+            "The full text on the room page. Basic HTML is allowed.": [
+                "Le texte complet de la page de la chambre. Le HTML de base est autoris\u00e9."
+            ],
+            "From the media library. The cover is shown first.": [
+                "Depuis la m\u00e9diath\u00e8que. La couverture est affich\u00e9e en premier."
+            ],
+            "Gallery": [
+                "Galerie"
+            ],
+            "Room facts": [
+                "Caract\u00e9ristiques de la chambre"
+            ],
+            "Guests and bedding. Occupancy limits apply to every booking of this type.": [
+                "Clients et literie. Les limites d\u2019occupation s\u2019appliquent \u00e0 chaque r\u00e9servation de ce type."
+            ],
+            "Max adults": [
+                "Adultes max"
+            ],
+            "Max children": [
+                "Enfants max"
+            ],
+            "Beds": [
+                "Lits"
+            ],
+            "e.g. 1 king bed": [
+                "ex. 1 lit king size"
+            ],
+            "Size (m\u00b2)": [
+                "Surface (m\u00b2)"
+            ],
+            "Tick what this room type offers. The list is shared by every room type.": [
+                "Cochez ce que ce type de chambre propose. La liste est commune \u00e0 tous les types de chambre."
+            ],
+            "Highlighted amenities": [
+                "\u00c9quipements mis en avant"
+            ],
+            "The amenities guests see first on this room type\u2019s card on the booking page. The others show as \u201c+N more\u201d and in the room details.": [
+                "Les \u00e9quipements que les clients voient en premier sur la carte de ce type de chambre dans la page de r\u00e9servation. Les autres s\u2019affichent en \u00ab +N autres \u00bb et dans le d\u00e9tail de la chambre."
+            ],
+            "Show on the booking card": [
+                "Afficher sur la carte de r\u00e9servation"
+            ],
+            "Pick from the amenities ticked above, in the order to show them.": [
+                "Choisissez parmi les \u00e9quipements coch\u00e9s ci-dessus, dans l\u2019ordre d\u2019affichage."
+            ],
+            "Selling": [
+                "Vente"
+            ],
+            "Whether the type can be booked, and the cleaning time between stays.": [
+                "Si le type peut \u00eatre r\u00e9serv\u00e9, et le temps de nettoyage entre les s\u00e9jours."
+            ],
+            "Available for booking": [
+                "Disponible \u00e0 la r\u00e9servation"
+            ],
+            "Off hides the type from the booking form and the desk.": [
+                "D\u00e9sactiv\u00e9, le type est masqu\u00e9 du formulaire de r\u00e9servation et de la r\u00e9ception."
+            ],
+            "Buffer between stays": [
+                "D\u00e9lai entre deux s\u00e9jours"
+            ],
+            "Minutes the room stays blocked after checkout. Leave empty to use the Booking rules setting.": [
+                "Minutes pendant lesquelles la chambre reste bloqu\u00e9e apr\u00e8s le d\u00e9part. Laissez vide pour utiliser le r\u00e9glage des r\u00e8gles de r\u00e9servation."
+            ],
+            "Default": [
+                "Par d\u00e9faut"
+            ]
+        }
+    }
+}

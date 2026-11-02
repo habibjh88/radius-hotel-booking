@@ -253,6 +253,9 @@ final class AccessRegistry {
 			// Rooms, rates and availability.
 			'rooms.manage'           => array( $locked, __( 'Manage rooms', 'radius-hotel-booking' ), 'manage-room-number' ),
 			'rooms.move'             => array( $locked, __( 'Move a room to another room type', 'radius-hotel-booking' ), '' ),
+			'rooms.note_add'         => array( $open, __( 'Add a room note', 'radius-hotel-booking' ), '' ),
+			'rooms.note_edit'        => array( $open, __( 'Edit a room note', 'radius-hotel-booking' ), '' ),
+			'rooms.note_remove'      => array( $open, __( 'Remove a room note', 'radius-hotel-booking' ), '' ),
 			'room_types.manage'      => array( $locked, __( 'Manage room types', 'radius-hotel-booking' ), '' ),
 			'rates.manage'           => array( $locked, __( 'Manage rate plans', 'radius-hotel-booking' ), '' ),
 			'pricing.manage'         => array( $locked, __( 'Manage prices', 'radius-hotel-booking' ), '' ),
@@ -263,6 +266,7 @@ final class AccessRegistry {
 			'exports.generate'       => array( $locked, __( 'Generate an export', 'radius-hotel-booking' ), 'generate-booking-backup' ),
 			'exports.download'       => array( $locked, __( 'Download an export', 'radius-hotel-booking' ), 'download-booking-backup' ),
 			'exports.delete'         => array( $locked, __( 'Delete an export', 'radius-hotel-booking' ), 'remove-booking-backup' ),
+			'exports.restore'        => array( $locked, __( 'Restore bookings from an export file', 'radius-hotel-booking' ), '' ),
 
 			// Access.
 			'access.manage'          => array( $locked, __( 'Manage permissions', 'radius-hotel-booking' ), '' ),

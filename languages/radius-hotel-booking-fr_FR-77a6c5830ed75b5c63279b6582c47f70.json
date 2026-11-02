@@ -1,0 +1,60 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Settings\/sections\/Invoices.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Tax": [
+                "Taxe"
+            ],
+            "Rate": [
+                "Tarif"
+            ],
+            "Prefix": [
+                "Pr\u00e9fixe"
+            ],
+            "Numbering": [
+                "Num\u00e9rotation"
+            ],
+            "Every booking gets an invoice with the next number. Numbers never skip, and start again each year.": [
+                "Chaque r\u00e9servation re\u00e7oit une facture avec le num\u00e9ro suivant. Les num\u00e9ros ne sautent jamais et repartent \u00e0 z\u00e9ro chaque ann\u00e9e."
+            ],
+            "Letters, digits and - \/ _ . only.": [
+                "Lettres, chiffres et - \/ _ . uniquement."
+            ],
+            "First number": [
+                "Premier num\u00e9ro"
+            ],
+            "Where each year\u2019s numbering starts.": [
+                "Le num\u00e9ro de d\u00e9part de chaque ann\u00e9e."
+            ],
+            "The first invoice of the year will be %s.": [
+                "La premi\u00e8re facture de l\u2019ann\u00e9e sera %s."
+            ],
+            "Your prices include the tax. The invoice shows how much of the total it is. Leave the rate at 0 for no tax line.": [
+                "Vos prix incluent la taxe. La facture indique la part qu\u2019elle repr\u00e9sente dans le total. Laissez le taux \u00e0 0 pour ne pas afficher de ligne de taxe."
+            ],
+            "Tax name": [
+                "Nom de la taxe"
+            ],
+            "For example VAT.": [
+                "Par exemple TVA."
+            ],
+            "Footer": [
+                "Pied de page"
+            ],
+            "Printed at the bottom of every invoice and receipt. Your hotel\u2019s name, address, tax and social security numbers and logo come from General.": [
+                "Imprim\u00e9 en bas de chaque facture et de chaque re\u00e7u. Le nom, l\u2019adresse, les num\u00e9ros fiscal et de s\u00e9curit\u00e9 sociale et le logo de votre h\u00f4tel proviennent de G\u00e9n\u00e9ral."
+            ],
+            "Footer text": [
+                "Texte du pied de page"
+            ]
+        }
+    }
+}

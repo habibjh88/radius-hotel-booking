@@ -1,0 +1,141 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Availability\/index.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Availability": [
+                "Disponibilit\u00e9s"
+            ],
+            "Blocked": [
+                "Bloqu\u00e9e"
+            ],
+            "Room type": [
+                "Type de chambre"
+            ],
+            "Free": [
+                "Libre"
+            ],
+            "Try again": [
+                "R\u00e9essayer"
+            ],
+            "%d room free": [
+                "%d chambre libre",
+                "%d chambres libres"
+            ],
+            "This month": [
+                "Ce mois-ci"
+            ],
+            "Closed": [
+                "Ferm\u00e9e"
+            ],
+            "Block dates": [
+                "Bloquer des dates"
+            ],
+            "Choose a room type": [
+                "Choisir un type de chambre"
+            ],
+            "Whole room type": [
+                "Tout le type de chambre"
+            ],
+            "Full: no room free for this rate": [
+                "Complet : aucune chambre libre pour ce tarif"
+            ],
+            "Price set for that date": [
+                "Prix d\u00e9fini pour cette date"
+            ],
+            "Blocked in %s": [
+                "Bloqu\u00e9 en %s"
+            ],
+            "All blocked dates": [
+                "Toutes les dates bloqu\u00e9es"
+            ],
+            "%1$s \u00b7 %2$d room here": [
+                "%1$s \u00b7 %2$d chambre ici",
+                "%1$s \u00b7 %2$d chambres ici"
+            ],
+            "Nothing blocked for this room type this month.": [
+                "Rien de bloqu\u00e9 pour ce type de chambre ce mois-ci."
+            ],
+            "%d room to sell": [
+                "%d chambre \u00e0 vendre",
+                "%d chambres \u00e0 vendre"
+            ],
+            "%d blocked": [
+                "%d bloqu\u00e9e(s)"
+            ],
+            "free all day": [
+                "libre toute la journ\u00e9e"
+            ],
+            "Full": [
+                "Complet"
+            ],
+            "%d free": [
+                "%d libre(s)"
+            ],
+            "Whole room type, %s: closed": [
+                "Tout le type de chambre, %s : ferm\u00e9"
+            ],
+            "Whole room type, %1$s: %2$d of %3$d rooms free all day, %4$d blocked": [
+                "Tout le type de chambre, %1$s : %2$d chambre(s) sur %3$d libre(s) toute la journ\u00e9e, %4$d bloqu\u00e9e(s)"
+            ],
+            "closed": [
+                "ferm\u00e9"
+            ],
+            "%1$s, %2$s: %3$s, %4$s%5$s": [
+                "%1$s, %2$s : %3$s, %4$s%5$s"
+            ],
+            " (price set for this date)": [
+                " (prix d\u00e9fini pour cette date)"
+            ],
+            "%s (hidden)": [
+                "%s (masqu\u00e9)"
+            ],
+            "Previous month": [
+                "Mois pr\u00e9c\u00e9dent"
+            ],
+            "Next month": [
+                "Mois suivant"
+            ],
+            "Update several dates": [
+                "Modifier plusieurs dates"
+            ],
+            "No room types yet": [
+                "Aucun type de chambre pour le moment"
+            ],
+            "Add a room type and its rooms first; the calendar shows what they sell.": [
+                "Ajoutez d'abord un type de chambre et ses chambres ; le calendrier montre ce qu'elles vendent."
+            ],
+            "Go to Rooms": [
+                "Aller aux chambres"
+            ],
+            "This room type sells no rate yet": [
+                "Ce type de chambre ne vend encore aucun tarif"
+            ],
+            "Switch on at least one rate plan and give it a price.": [
+                "Activez au moins une formule tarifaire et donnez-lui un prix."
+            ],
+            "Set the rates": [
+                "D\u00e9finir les tarifs"
+            ],
+            "Availability of %1$s in %2$s": [
+                "Disponibilit\u00e9s de %1$s en %2$s"
+            ],
+            "You can view the calendar. Ask a manager to change prices or close dates.": [
+                "Vous pouvez consulter le calendrier. Demandez \u00e0 un g\u00e9rant de modifier les prix ou de fermer des dates."
+            ],
+            "Prices are for a stay starting that day. Click a date to change it, or update several dates at once.": [
+                "Les prix valent pour un s\u00e9jour commen\u00e7ant ce jour-l\u00e0. Cliquez sur une date pour la modifier, ou modifiez plusieurs dates \u00e0 la fois."
+            ],
+            "Prices are for a stay starting that day.": [
+                "Les prix valent pour un s\u00e9jour commen\u00e7ant ce jour-l\u00e0."
+            ]
+        }
+    }
+}

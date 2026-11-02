@@ -1,0 +1,57 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Payments\/index.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Booking": [
+                "R\u00e9servation"
+            ],
+            "Guest": [
+                "Client"
+            ],
+            "Arrival": [
+                "Arriv\u00e9e"
+            ],
+            "Remind": [
+                "Relancer"
+            ],
+            "Release": [
+                "Lib\u00e9rer"
+            ],
+            "Its rooms are free again at once, and the guest is told by e-mail that the booking was released for non-payment.": [
+                "Ses chambres sont imm\u00e9diatement lib\u00e9r\u00e9es, et le client est inform\u00e9 par e-mail que la r\u00e9servation a \u00e9t\u00e9 lib\u00e9r\u00e9e pour d\u00e9faut de paiement."
+            ],
+            "Release booking": [
+                "Lib\u00e9rer la r\u00e9servation"
+            ],
+            "Still due": [
+                "Reste d\u00fb"
+            ],
+            "Deadline": [
+                "\u00c9ch\u00e9ance"
+            ],
+            "Payments to follow up": [
+                "Paiements \u00e0 relancer"
+            ],
+            "Bookings past their payment deadline. Remind the guest, or release the booking to free its rooms.": [
+                "R\u00e9servations dont le d\u00e9lai de paiement est d\u00e9pass\u00e9. Relancez le client, ou lib\u00e9rez la r\u00e9servation pour lib\u00e9rer ses chambres."
+            ],
+            "Nothing to follow up": [
+                "Rien \u00e0 relancer"
+            ],
+            "No unpaid booking is past its payment deadline.": [
+                "Aucune r\u00e9servation impay\u00e9e n'a d\u00e9pass\u00e9 son d\u00e9lai de paiement."
+            ],
+            "Release booking %s?": [
+                "Lib\u00e9rer la r\u00e9servation %s ?"
+            ]
+        }
+    }
+}

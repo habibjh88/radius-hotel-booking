@@ -1,0 +1,117 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Bookings\/components\/PaymentsPanel.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Rooms": [
+                "Chambres"
+            ],
+            "Payments": [
+                "Paiements"
+            ],
+            "Cancelled": [
+                "Annul\u00e9e"
+            ],
+            "Tax": [
+                "Taxe"
+            ],
+            "Paid": [
+                "Pay\u00e9"
+            ],
+            "Total": [
+                "Total"
+            ],
+            "Print": [
+                "Imprimer"
+            ],
+            "Invoice": [
+                "Facture"
+            ],
+            "Discount": [
+                "Remise"
+            ],
+            "Receipt %s": [
+                "Re\u00e7u %s"
+            ],
+            "Balance due": [
+                "Reste \u00e0 payer"
+            ],
+            "Try again": [
+                "R\u00e9essayer"
+            ],
+            "On hold": [
+                "En attente"
+            ],
+            "Discount (%s%%)": [
+                "Remise (%s %%)"
+            ],
+            "Refund owed": [
+                "Remboursement d\u00fb"
+            ],
+            "Revised, version %d": [
+                "R\u00e9vis\u00e9e, version %d"
+            ],
+            "Download %s": [
+                "T\u00e9l\u00e9charger %s"
+            ],
+            "Earlier versions:": [
+                "Versions pr\u00e9c\u00e9dentes :"
+            ],
+            "version %d": [
+                "version %d"
+            ],
+            "Money": [
+                "Paiements"
+            ],
+            "Change discount": [
+                "Modifier la remise"
+            ],
+            "Add discount": [
+                "Ajouter une remise"
+            ],
+            "Record payment": [
+                "Enregistrer un paiement"
+            ],
+            "Record refund": [
+                "Enregistrer un remboursement"
+            ],
+            "Paid by %s": [
+                "Pay\u00e9 par %s"
+            ],
+            "Waiting for money the guest promised. The first payment takes it off hold.": [
+                "En attente de l'argent promis par le client. Le premier paiement l\u00e8ve l'attente."
+            ],
+            "No payment recorded yet.": [
+                "Aucun paiement enregistr\u00e9 pour le moment."
+            ],
+            "Refund by %s": [
+                "Remboursement par %s"
+            ],
+            "%1$s \u00b7 by %2$s": [
+                "%1$s \u00b7 par %2$s"
+            ],
+            "Voided: %s": [
+                "Annul\u00e9 : %s"
+            ],
+            "Void": [
+                "Annuler"
+            ],
+            "Void this payment?": [
+                "Annuler ce paiement ?"
+            ],
+            "For a payment recorded by mistake. It stays in the history, struck through, and no longer counts.": [
+                "Pour un paiement enregistr\u00e9 par erreur. Il reste dans l'historique, barr\u00e9, et ne compte plus."
+            ],
+            "Void payment": [
+                "Annuler le paiement"
+            ]
+        }
+    }
+}

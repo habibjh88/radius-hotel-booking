@@ -59,11 +59,11 @@ rm -rf "$STAGE/includes/Commands"
 # No hidden files (.DS_Store, .gitkeep …): Plugin Check rejects them.
 find "$STAGE" -name '.*' -not -name '.' -exec rm -rf {} + 2>/dev/null || true
 
-# Languages: ship only the template (.pot), which Loco Translate starts from.
-# No bundled locale files: translations come from a translation plugin or
-# translate.wordpress.org (ADR-019), and the M00 fr_FR scaffold covers only a
-# fraction of the strings, so it would show a half-French screen.
-find "$STAGE/languages" -type f ! -name '*.pot' ! -name 'index.php' -delete 2>/dev/null || true
+# Languages: the template (.pot), which Loco Translate starts from, and the
+# complete bundled translations (fr_FR since client review R1). Loco or
+# translate.wordpress.org can still override them (ADR-019, amended). Editor
+# backups are left out.
+find "$STAGE/languages" -type f \( -name '*.po~' -o -name '*-backup-*' \) -delete 2>/dev/null || true
 
 # Zip from inside dist/ so the archive root is "$SLUG/", as WordPress expects.
 ( cd "$DIST" && zip -rq "$SLUG.zip" "$SLUG/" )

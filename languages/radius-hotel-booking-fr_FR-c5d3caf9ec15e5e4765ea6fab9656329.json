@@ -1,0 +1,106 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Availability\/components\/BlockEditor.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Dates blocked.": [
+                "Dates bloqu\u00e9es."
+            ],
+            "Block saved.": [
+                "Blocage enregistr\u00e9."
+            ],
+            "Floor": [
+                "\u00c9tage"
+            ],
+            "Room": [
+                "Chambre"
+            ],
+            "Room type": [
+                "Type de chambre"
+            ],
+            "%1$s \u00b7 %2$s": [
+                "%1$s \u00b7 %2$s"
+            ],
+            "Reason": [
+                "Motif"
+            ],
+            "Cancel": [
+                "Annuler"
+            ],
+            "Save": [
+                "Enregistrer"
+            ],
+            "Block dates": [
+                "Bloquer des dates"
+            ],
+            "%d booked room already falls in this period. The block does not move it.": [
+                "%d chambre r\u00e9serv\u00e9e tombe d\u00e9j\u00e0 dans cette p\u00e9riode. Le blocage ne la d\u00e9place pas.",
+                "%d chambres r\u00e9serv\u00e9es tombent d\u00e9j\u00e0 dans cette p\u00e9riode. Le blocage ne les d\u00e9place pas."
+            ],
+            "One room": [
+                "Une chambre"
+            ],
+            "A room type": [
+                "Un type de chambre"
+            ],
+            "A floor": [
+                "Un \u00e9tage"
+            ],
+            "The whole property": [
+                "Tout l'\u00e9tablissement"
+            ],
+            "Choose a room type": [
+                "Choisir un type de chambre"
+            ],
+            "Change the block": [
+                "Modifier le blocage"
+            ],
+            "Nothing in the block can be booked while it lasts. Existing bookings are kept.": [
+                "Rien de ce qui est bloqu\u00e9 ne peut \u00eatre r\u00e9serv\u00e9 tant que le blocage dure. Les r\u00e9servations existantes sont conserv\u00e9es."
+            ],
+            "What to block": [
+                "Que bloquer"
+            ],
+            "Choose a floor": [
+                "Choisir un \u00e9tage"
+            ],
+            "Choose a room": [
+                "Choisir une chambre"
+            ],
+            "Whole days": [
+                "Journ\u00e9es enti\u00e8res"
+            ],
+            "First day": [
+                "Premier jour"
+            ],
+            "Starts": [
+                "D\u00e9but"
+            ],
+            "Start time": [
+                "Heure de d\u00e9but"
+            ],
+            "Last day": [
+                "Dernier jour"
+            ],
+            "Ends": [
+                "Fin"
+            ],
+            "End time": [
+                "Heure de fin"
+            ],
+            "Painting, water works, private event\u2026": [
+                "Peinture, travaux d'eau, \u00e9v\u00e9nement priv\u00e9\u2026"
+            ],
+            "Block": [
+                "Bloquer"
+            ]
+        }
+    }
+}

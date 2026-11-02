@@ -45,7 +45,7 @@ final class RadiusHotelBooking {
 	 *
 	 * @var string
 	 */
-	const DBVERSION = '1.0.20';
+	const DBVERSION = '1.0.21';
 
 	/**
 	 * Plugin slug — the admin page slug and the asset handle prefix.
@@ -353,6 +353,11 @@ final class RadiusHotelBooking {
 		// The front desk counters on the dashboard summary (M01).
 		RadiusTheme\RadiusHotelBooking\Services\Dashboard\DashboardCounters::init();
 		RadiusTheme\RadiusHotelBooking\Services\Dashboard\DashboardToday::init();
+		RadiusTheme\RadiusHotelBooking\Services\Dashboard\DashboardOverview::init();
+		// Each guest's stay count and last stay follow their bookings (9.4).
+		RadiusTheme\RadiusHotelBooking\Services\Guests\GuestStays::init();
+		// Each staff member's dashboard language, picked in the account menu (R1-T6).
+		RadiusTheme\RadiusHotelBooking\Services\Account\UserLanguage::init();
 		// Reports: drop cached figures when bookings or payments change (M10).
 		RadiusTheme\RadiusHotelBooking\Services\Reports\ReportService::init();
 		// Export files: their protected file kind and download access (M11).

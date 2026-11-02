@@ -1,0 +1,72 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Bookings\/components\/RecordPaymentDialog.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Record a payment": [
+                "Enregistrer un paiement"
+            ],
+            "Nothing is due on this booking.": [
+                "Rien n'est d\u00fb sur cette r\u00e9servation."
+            ],
+            "Method": [
+                "Mode"
+            ],
+            "Payment": [
+                "Paiement"
+            ],
+            "Amount": [
+                "Montant"
+            ],
+            "Received": [
+                "Re\u00e7u le"
+            ],
+            "Reference": [
+                "R\u00e9f\u00e9rence"
+            ],
+            "Choose": [
+                "Choisir"
+            ],
+            "Note": [
+                "Note"
+            ],
+            "Cancel": [
+                "Annuler"
+            ],
+            "Record payment": [
+                "Enregistrer un paiement"
+            ],
+            "Record refund": [
+                "Enregistrer un remboursement"
+            ],
+            "Balance due: %s": [
+                "Reste \u00e0 payer : %s"
+            ],
+            "A refund of %s is owed.": [
+                "Un remboursement de %s est d\u00fb."
+            ],
+            "Record a refund": [
+                "Enregistrer un remboursement"
+            ],
+            "Type": [
+                "Type"
+            ],
+            "Refund": [
+                "Remboursement"
+            ],
+            "The transaction number, or anything to find it by.": [
+                "Le num\u00e9ro de transaction, ou tout ce qui permet de la retrouver."
+            ],
+            "No payment method is switched on. Add one in Settings \u2192 Payments.": [
+                "Aucun moyen de paiement n'est activ\u00e9. Ajoutez-en un dans R\u00e9glages \u2192 Paiements."
+            ]
+        }
+    }
+}

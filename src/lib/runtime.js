@@ -75,6 +75,10 @@ const ConfirmDialog = lazy( () =>
 const DataTable = lazy( () => import( '@/components/common/DataTable' ) );
 // M09: notes carry react-query hooks and several composites: lazy too.
 const NotesPanel = lazy( () => import( '@/components/common/NotesPanel' ) );
+// R1-T14: a record's "Notes and history" button + drawer (<RecordHistory type="…" id={ … } />).
+const RecordHistory = lazy( () =>
+	import( '@/components/common/RecordHistory' )
+);
 const DateRangePicker = lazy( () =>
 	import( '@/components/common/DateRangePicker' )
 );
@@ -235,6 +239,7 @@ export function publishRuntime() {
 			CalendarGrid,
 			// M09: a record's author-stamped notes (<NotesPanel type="…" id={ … } />).
 			NotesPanel,
+			RecordHistory,
 			ConfirmDialog,
 			DataTable,
 			DateRangePicker,

@@ -14,7 +14,7 @@ import { applyFilters } from '@wordpress/hooks';
 import { __ } from '@wordpress/i18n';
 import { BarChart3 } from 'lucide-react';
 
-import DateRangePicker from '@/components/common/DateRangePicker';
+import PeriodFilter from '@/components/common/PeriodFilter';
 import EmptyState from '@/components/common/EmptyState';
 import FilterTabs from '@/components/common/FilterTabs';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -56,10 +56,19 @@ export default function Reports() {
 	const today = siteToday();
 	const active =
 		tabs.find( ( tab ) => tab.key === params.get( 'tab' ) ) || tabs[ 0 ];
+	// What the tab offers (R1-T12): its date modes (none when `mode: false`)
+	// and whether the dates take a time (`time: false` for tabs with their own).
+	const tabModes =
+		false === active?.mode
+			? []
+			: active?.modes || [ 'arrival', 'departure', 'created' ];
+	const withTime = false !== active?.mode && false !== active?.time;
+	const asked = params.get( 'mode' );
+	const fit = ( value ) => ( withTime ? value : value.slice( 0, 10 ) );
 	const range = {
-		from: params.get( 'from' ) || `${ today.slice( 0, 8 ) }01`,
-		to: params.get( 'to' ) || today,
-		mode: params.get( 'mode' ) === 'created' ? 'created' : 'arrival',
+		from: fit( params.get( 'from' ) || `${ today.slice( 0, 8 ) }01` ),
+		to: fit( params.get( 'to' ) || today ),
+		mode: tabModes.includes( asked ) ? asked : 'arrival',
 	};
 
 	const setView = ( changes ) =>
@@ -109,32 +118,6 @@ export default function Reports() {
 					</h2>
 				) }
 				<div className="flex flex-wrap items-center gap-2">
-					{ false !== active.range ? (
-						<DateRangePicker
-							value={ { from: range.from, to: range.to } }
-							onChange={ ( next ) =>
-								setView( {
-									from: next?.from || '',
-									to: next?.to || '',
-								} )
-							}
-							mode={
-								false !== active.mode ? range.mode : undefined
-							}
-							onModeChange={
-								false !== active.mode
-									? ( mode ) =>
-											setView( {
-												mode:
-													'created' === mode
-														? mode
-														: '',
-											} )
-									: undefined
-							}
-							align="end"
-						/>
-					) : null }
 					{ false !== active.export ? (
 						<ExportButton
 							report={ active.report || active.key }
@@ -158,6 +141,26 @@ export default function Reports() {
 					) : null }
 				</div>
 			</div>
+			{ false !== active.range ? (
+				<PeriodFilter
+					modes={ tabModes }
+					mode={ range.mode }
+					from={ range.from }
+					to={ range.to }
+					withTime={ withTime }
+					clearable={ Boolean(
+						params.get( 'from' ) || params.get( 'to' )
+					) }
+					idPrefix="rtbp-report-filter"
+					onApply={ ( next ) =>
+						setView( {
+							from: next.from,
+							to: next.to,
+							mode: 'arrival' === next.mode ? '' : next.mode,
+						} )
+					}
+				/>
+			) : null }
 			<Suspense fallback={ <Skeleton className="h-96 w-full" /> }>
 				<Component range={ range } />
 			</Suspense>

@@ -337,6 +337,26 @@ The theme's Additional CSS no longer adds borders or oversized headings to the s
 Add buttons on the front-end staff dashboard now show their label on desktop, only + on mobile.
 Payment methods now show an icon on the guest booking page; pick it in Settings → Payments.
 Permissions is now its own page in a new Staff & access menu section, no longer a Settings tab.
+Fixed guest records showing 0 stays and an empty stays list on some databases.
+Fixed the dashboard's recent bookings, rooms by status and setup checklist always showing empty.
+Rooms report and Room availability now have their own menu items; daily menus come before setup.
+Account menu moved to the top right, with your role and a Language choice.
+Complete French translation; add-on screens are translated through the same loader.
+Booking list shows order time, separate check-in and check-out, payment method, and desk or online.
+Each booking row has one-click Check in or out, View, Invoice, Edit and Cancel.
+Booking list filter by check-in or creation date and time, with search above the table.
+The dashboard shows the full booking list under its counters, replacing the recent bookings panel.
+Guest names in lists, payments and reports open the guest's stays, notes and history.
+Reports filter by check-in, check-out or booking date, with times, including their exports.
+Notes on rooms and room types; a History drawer on rooms, floors, rate plans and blocked dates.
+Invoice and Edit buttons on the booking page, each room, guest stays and the rooms report.
+The applied period shows under the date filter, as on the old dashboard.
+Add-ons can link other dashboards from the menu, under Other dashboards.
+Dashboard counters take the old dashboard's look: coloured outline icons on a soft tint.
+Restore bookings from an export file: missing ones are re-created, existing ones never changed.
+Large restores run in batches with a progress bar and a Stop button.
+File library: a Restore action previews a bookings CSV for restoring, without re-uploading.
+Exports: "Any date" exports every booking; clearing the period restores this month.
 
 = 1.0.0 =
 Initial release.

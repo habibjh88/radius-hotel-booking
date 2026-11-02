@@ -25,6 +25,7 @@ import Panel from '@/components/common/Panel';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import RecordHistory from '@/components/common/RecordHistory';
 import { useAccess } from '@/lib/access';
 import { toast, toastError } from '@/lib/toast';
 import { cn } from '@/lib/utils';
@@ -451,6 +452,13 @@ function FloorRow( {
 				</div>
 			) }
 
+			{ ! editing ? (
+				<RecordHistory
+					type="floor"
+					id={ floor.id }
+					title={ floor.name }
+				/>
+			) : null }
 			{ canManage && ! editing ? (
 				<div className="flex shrink-0 items-center gap-0.5">
 					<Button

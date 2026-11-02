@@ -1,0 +1,100 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Guests\/Detail.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Guest banned.": [
+                "Client banni."
+            ],
+            "Ban lifted.": [
+                "Bannissement lev\u00e9."
+            ],
+            "Notes": [
+                "Notes"
+            ],
+            "Phone": [
+                "T\u00e9l\u00e9phone"
+            ],
+            "Stays": [
+                "S\u00e9jours"
+            ],
+            "Try again": [
+                "R\u00e9essayer"
+            ],
+            "E-mail": [
+                "E-mail"
+            ],
+            "Identity document": [
+                "Pi\u00e8ce d'identit\u00e9"
+            ],
+            "%d stay": [
+                "%d s\u00e9jour",
+                "%d s\u00e9jours"
+            ],
+            "Reason": [
+                "Motif"
+            ],
+            "Edit": [
+                "Modifier"
+            ],
+            "None given": [
+                "Aucun motif indiqu\u00e9"
+            ],
+            "All guests": [
+                "Tous les clients"
+            ],
+            "This guest does not exist": [
+                "Ce client n'existe pas"
+            ],
+            "The guest could not be loaded": [
+                "Le client n'a pas pu \u00eatre charg\u00e9"
+            ],
+            "last stay %s": [
+                "dernier s\u00e9jour %s"
+            ],
+            "Lift ban": [
+                "Lever l'interdiction"
+            ],
+            "Ban": [
+                "Interdire"
+            ],
+            "Banned: %1$s \u2014 by %2$s on %3$s. This guest cannot be booked.": [
+                "Interdit : %1$s \u2014 par %2$s le %3$s. Ce client ne peut pas \u00eatre r\u00e9serv\u00e9."
+            ],
+            "someone": [
+                "quelqu'un"
+            ],
+            "Contact": [
+                "Contact"
+            ],
+            "Added %1$s by %2$s": [
+                "Ajout\u00e9 le %1$s par %2$s"
+            ],
+            "the website": [
+                "le site web"
+            ],
+            "Ban %s?": [
+                "Interdire %s ?"
+            ],
+            "Lift the ban on %s?": [
+                "Lever l'interdiction de %s ?"
+            ],
+            "They cannot be booked until the ban is lifted. The reason is recorded and shown to staff.": [
+                "Cette personne ne peut pas \u00eatre r\u00e9serv\u00e9e tant que l'interdiction n'est pas lev\u00e9e. Le motif est enregistr\u00e9 et visible du personnel."
+            ],
+            "They can be booked again. The reason is recorded in the activity log.": [
+                "Cette personne peut de nouveau \u00eatre r\u00e9serv\u00e9e. Le motif est enregistr\u00e9 dans le journal d'activit\u00e9."
+            ],
+            "Ban guest": [
+                "Interdire le client"
+            ]
+        }
+    }
+}

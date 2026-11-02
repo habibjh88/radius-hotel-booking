@@ -1,33 +1,24 @@
 /**
- * Sidebar navigation: brand, grouped routes, current user.
+ * Sidebar navigation: brand and grouped routes. The account menu is in the
+ * top bar (UserMenu, R1-T6).
  *
  * Built from src/admin/routes.js, so a route added there (or by an add-on
  * through `rtbp.admin.routes`) appears here with no other change.
  */
 import { useEffect, useState } from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { applyFilters } from '@wordpress/hooks';
+import { NavLink, useLocation } from 'react-router-dom';
 import { __ } from '@wordpress/i18n';
-import {
-	ChevronDown,
-	ChevronLeft,
-	ChevronRight,
-	ChevronsUpDown,
-	LogOut,
-	X,
-} from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 import Logo from '@/components/brand/Logo';
-import { NAV_GROUPS, canSee, getRoutes } from '@/admin/routes';
-import { useAccessMap } from '@/lib/access';
 import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+	NAV_GROUPS,
+	canSee,
+	getRoutes,
+	navKey,
+	navTarget,
+} from '@/admin/routes';
+import { useAccessMap } from '@/lib/access';
 import { cn } from '@/lib/utils';
 
 /**
@@ -65,15 +56,28 @@ function Brand( { collapsed } ) {
  * only while one of the item's pages is open; clicking the item there folds
  * them away again.
  *
- * @param {Object}   props           Props.
- * @param {Object}   props.route     Route.
- * @param {boolean}  props.collapsed Icon-only mode.
+ * @param {Object}   props            Props.
+ * @param {Object}   props.route      Route.
+ * @param {Array}    props.claimed    `navSearch` of the menu-only entries sharing this path.
+ * @param {boolean}  props.collapsed  Icon-only mode.
  * @param {Function} props.onNavigate Called after a click (closes the drawer).
  * @return {JSX.Element} Link.
  */
-function NavItem( { route, collapsed, onNavigate } ) {
+function NavItem( { route, claimed = [], collapsed, onNavigate } ) {
 	const Icon = route.icon;
-	const { pathname } = useLocation();
+	const { pathname, search } = useLocation();
+	const query = new URLSearchParams( search );
+	const matches = ( wanted ) =>
+		Object.entries( wanted ).every(
+			( [ key, value ] ) => query.get( key ) === String( value )
+		);
+	// A menu-only entry is active on its query; the plain entry yields to it.
+	const resolve = ( isActive ) => {
+		if ( route.navSearch ) {
+			return pathname === route.path && matches( route.navSearch );
+		}
+		return isActive && ! claimed.some( matches );
+	};
 	const subnav =
 		! collapsed && Array.isArray( route.subnav ) ? route.subnav : [];
 	const inside =
@@ -93,65 +97,98 @@ function NavItem( { route, collapsed, onNavigate } ) {
 	};
 	const shown = subnav.length > 0 && open;
 
+	// Another page of the site (an add-on's other dashboard, R1-T18): a plain link.
+	if ( route.href ) {
+		return (
+			<a
+				href={ route.href }
+				onClick={ () => onNavigate?.() }
+				title={ collapsed ? route.label : undefined }
+				aria-label={ collapsed ? route.label : undefined }
+				className={ cn(
+					'group relative flex h-10 items-center gap-3 rounded-lg text-sm font-medium text-sidebar-foreground no-underline outline-none transition-colors duration-150 hover:bg-primary-softer hover:text-heading',
+					'focus-visible:ring-2 focus-visible:ring-ring',
+					collapsed ? 'justify-center px-0' : 'px-3'
+				) }
+			>
+				{ Icon ? (
+					<Icon
+						className="h-[18px] w-[18px] shrink-0 text-muted-foreground group-hover:text-heading"
+						aria-hidden="true"
+					/>
+				) : null }
+				{ ! collapsed ? (
+					<span className="min-w-0 flex-1 truncate">
+						{ route.label }
+					</span>
+				) : null }
+			</a>
+		);
+	}
+
 	return (
 		<>
 			<NavLink
-				to={ route.path }
+				to={ navTarget( route ) }
 				// `/bookings` must not light up on `/bookings/new` (as the tab bar does).
 				end={ route.path === '/' || route.path === '/bookings' }
 				onClick={ onClick }
 				title={ collapsed ? route.label : undefined }
 				aria-label={ collapsed ? route.label : undefined }
 				aria-expanded={ subnav.length ? shown : undefined }
-				className={ ( { isActive } ) =>
-					cn(
+				className={ ( { isActive: linkActive } ) => {
+					const isActive = resolve( linkActive );
+					return cn(
 						'group relative flex h-10 items-center gap-3 rounded-lg text-sm no-underline outline-none transition-colors duration-150',
 						'focus-visible:ring-2 focus-visible:ring-ring',
 						collapsed ? 'justify-center px-0' : 'px-3',
 						isActive
 							? 'bg-primary-soft font-semibold text-primary'
 							: 'font-medium text-sidebar-foreground hover:bg-primary-softer hover:text-heading'
-					)
-				}
+					);
+				} }
 			>
-				{ ( { isActive } ) => (
-					<>
-						{ isActive ? (
-							<span
-								aria-hidden="true"
-								className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full bg-primary"
-							/>
-						) : null }
-						{ Icon ? (
-							<Icon
-								className={ cn(
-									'h-[18px] w-[18px] shrink-0',
-									isActive
-										? 'text-primary'
-										: 'text-muted-foreground group-hover:text-heading'
-								) }
-								aria-hidden="true"
-							/>
-						) : null }
-						{ ! collapsed ? (
-							<span className="min-w-0 flex-1 truncate">
-								{ route.label }
-							</span>
-						) : null }
-						{ subnav.length ? (
-							<ChevronDown
-								className={ cn(
-									'h-4 w-4 shrink-0 transition-transform duration-200',
-									isActive
-										? 'text-primary'
-										: 'text-muted-foreground',
-									shown && 'rotate-180'
-								) }
-								aria-hidden="true"
-							/>
-						) : null }
-					</>
-				) }
+				{ ( { isActive: linkActive } ) => {
+					const isActive = resolve( linkActive );
+					return (
+						<>
+							{ isActive ? (
+								<span
+									aria-hidden="true"
+									className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full bg-primary"
+								/>
+							) : null }
+							{ Icon ? (
+								<Icon
+									className={ cn(
+										'h-[18px] w-[18px] shrink-0',
+										isActive
+											? 'text-primary'
+											: 'text-muted-foreground group-hover:text-heading'
+									) }
+									aria-hidden="true"
+								/>
+							) : null }
+							{ ! collapsed ? (
+								<span className="min-w-0 flex-1 truncate">
+									{ route.label }
+								</span>
+							) : null }
+							{ subnav.length ? (
+								<ChevronDown
+									className={ cn(
+										'h-4 w-4 shrink-0 transition-transform duration-200',
+										isActive
+											? 'text-primary'
+											: 'text-muted-foreground',
+										shown && 'rotate-180'
+									) }
+									aria-hidden="true"
+								/>
+							) : null }
+						</>
+					);
+				} }
 			</NavLink>
 			{ shown ? (
 				<ul className="m-0 mb-1 ml-[21px] mt-0.5 list-none space-y-0.5 border-l border-border p-0 pl-3">
@@ -178,132 +215,6 @@ function NavItem( { route, collapsed, onNavigate } ) {
 				</ul>
 			) : null }
 		</>
-	);
-}
-
-/**
- * Initials for the avatar.
- *
- * @param {string} name Display name.
- * @return {string} Up to two letters.
- */
-const initials = ( name = '' ) =>
-	name
-		.split( /\s+/ )
-		.filter( Boolean )
-		.slice( 0, 2 )
-		.map( ( part ) => part[ 0 ].toUpperCase() )
-		.join( '' ) || '?';
-
-/**
- * The sign-out link, coming back to the page the app runs on (the hotel
- * dashboard page shows its sign-in screen; wp-admin goes to the login).
- *
- * @param {string} base `wp_logout_url()` (carries its nonce).
- * @return {string} URL.
- */
-const signOutUrl = ( base ) => {
-	try {
-		const url = new URL( base, window.location.href );
-		url.searchParams.set(
-			'redirect_to',
-			window.location.href.split( '#' )[ 0 ]
-		);
-		return url.toString();
-	} catch ( e ) {
-		return base;
-	}
-};
-
-/**
- * The current user, opening the account menu: items add-ons register on
- * `rtbp.user.menu` (`{ key, label, icon, to }` — `to` is a dashboard route),
- * then *Sign out*.
- *
- * @param {Object}   props           Props.
- * @param {Object}   props.user      `{ name, email, logout_url }`.
- * @param {boolean}  props.collapsed Icon-only mode.
- * @param {Function} props.onClose   Closes the mobile drawer (optional).
- * @return {JSX.Element} Menu.
- */
-function UserMenu( { user, collapsed, onClose } ) {
-	const navigate = useNavigate();
-	// Controlled, so the items are read again each time the menu opens.
-	const [ open, setOpen ] = useState( false );
-	const items = (
-		applyFilters( 'rtbp.user.menu', [], { user } ) || []
-	).filter( ( item ) => item && item.key && item.label && item.to );
-
-	return (
-		<DropdownMenu open={ open } onOpenChange={ setOpen }>
-			<DropdownMenuTrigger asChild>
-				<button
-					type="button"
-					className={ cn(
-						'flex w-full min-w-0 items-center gap-3 rounded-lg border-0 bg-transparent p-1.5 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-						collapsed && 'w-auto justify-center'
-					) }
-					title={ collapsed ? user.name : undefined }
-					aria-label={ __( 'Account menu', 'radius-hotel-booking' ) }
-				>
-					<span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-soft text-xs font-semibold text-primary">
-						{ initials( user.name ) }
-					</span>
-					{ ! collapsed ? (
-						<>
-							<span className="min-w-0 flex-1">
-								<span className="block truncate text-sm font-semibold text-heading">
-									{ user.name }
-								</span>
-								<span className="block truncate text-xs text-muted-foreground">
-									{ user.email }
-								</span>
-							</span>
-							<ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
-						</>
-					) : null }
-				</button>
-			</DropdownMenuTrigger>
-			<DropdownMenuContent
-				className="rtbp-root w-56"
-				side={ collapsed ? 'right' : 'top' }
-				align="start"
-			>
-				<DropdownMenuLabel className="truncate font-normal text-muted-foreground">
-					{ user.email || user.name }
-				</DropdownMenuLabel>
-				{ items.map( ( item ) => {
-					const Icon = item.icon;
-					return (
-						<DropdownMenuItem
-							key={ item.key }
-							onSelect={ () => {
-								navigate( item.to );
-								onClose?.();
-							} }
-						>
-							{ Icon ? <Icon className="h-4 w-4" /> : null }
-							{ item.label }
-						</DropdownMenuItem>
-					);
-				} ) }
-				{ user.logout_url ? (
-					<>
-						<DropdownMenuSeparator />
-						<DropdownMenuItem
-							onSelect={ () => {
-								window.location.href = signOutUrl(
-									user.logout_url
-								);
-							} }
-						>
-							<LogOut className="h-4 w-4" />
-							{ __( 'Sign out', 'radius-hotel-booking' ) }
-						</DropdownMenuItem>
-					</>
-				) : null }
-			</DropdownMenuContent>
-		</DropdownMenu>
 	);
 }
 
@@ -341,8 +252,6 @@ export default function Sidebar( {
 			routes: routes.filter( ( route ) => route.group === group.key ),
 		} ) )
 		.filter( ( group ) => group.routes.length );
-
-	const user = window.radius_hotel_booking_param?.current_user || {};
 
 	return (
 		<aside
@@ -410,9 +319,18 @@ export default function Sidebar( {
 						) }
 						<ul className="m-0 list-none space-y-0.5 p-0">
 							{ group.routes.map( ( route ) => (
-								<li key={ route.path } className="m-0">
+								<li key={ navKey( route ) } className="m-0">
 									<NavItem
 										route={ route }
+										claimed={ routes
+											.filter(
+												( other ) =>
+													other.navOnly &&
+													other.path === route.path
+											)
+											.map(
+												( other ) => other.navSearch
+											) }
 										collapsed={ collapsed }
 										onNavigate={
 											mobile ? onClose : undefined
@@ -424,19 +342,6 @@ export default function Sidebar( {
 					</div>
 				) ) }
 			</nav>
-
-			<div
-				className={ cn(
-					'flex shrink-0 items-center border-t border-border py-2',
-					collapsed ? 'justify-center px-0' : 'px-2.5'
-				) }
-			>
-				<UserMenu
-					user={ user }
-					collapsed={ collapsed }
-					onClose={ mobile ? onClose : undefined }
-				/>
-			</div>
 		</aside>
 	);
 }

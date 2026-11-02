@@ -1,0 +1,174 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Bookings\/Detail.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Bookings": [
+                "R\u00e9servations"
+            ],
+            "Rooms": [
+                "Chambres"
+            ],
+            "Notes": [
+                "Notes"
+            ],
+            "Room %s": [
+                "Chambre %s"
+            ],
+            "Guest": [
+                "Client"
+            ],
+            "%d child": [
+                "%d enfant",
+                "%d enfants"
+            ],
+            "%d adult": [
+                "%d adulte",
+                "%d adultes"
+            ],
+            "%d room": [
+                "%d chambre",
+                "%d chambres"
+            ],
+            "Try again": [
+                "R\u00e9essayer"
+            ],
+            "Reason": [
+                "Motif"
+            ],
+            "Add a room": [
+                "Ajouter une chambre"
+            ],
+            "At the desk": [
+                "\u00c0 la r\u00e9ception"
+            ],
+            "On the website": [
+                "Sur le site web"
+            ],
+            "Imported": [
+                "Import\u00e9e"
+            ],
+            "From a calendar feed": [
+                "Depuis un flux de calendrier"
+            ],
+            "(room since removed)": [
+                "(chambre supprim\u00e9e depuis)"
+            ],
+            "Price details": [
+                "D\u00e9tail du prix"
+            ],
+            "In %1$s by %2$s": [
+                "Arriv\u00e9e %1$s par %2$s"
+            ],
+            "Out %1$s by %2$s": [
+                "D\u00e9part %1$s par %2$s"
+            ],
+            "More for room %s": [
+                "Plus d'actions pour la chambre %s"
+            ],
+            "Cancel this room": [
+                "Annuler cette chambre"
+            ],
+            "Decline this room": [
+                "Refuser cette chambre"
+            ],
+            "Approve this room": [
+                "Approuver cette chambre"
+            ],
+            "Change room, rate or dates": [
+                "Modifier la chambre, le tarif ou les dates"
+            ],
+            "Remove this room": [
+                "Retirer cette chambre"
+            ],
+            "Guest notes": [
+                "Notes du client"
+            ],
+            "This booking does not exist": [
+                "Cette r\u00e9servation n'existe pas"
+            ],
+            "The booking could not be loaded": [
+                "La r\u00e9servation n'a pas pu \u00eatre charg\u00e9e"
+            ],
+            "Made %s": [
+                "Faite le %s"
+            ],
+            "by %s": [
+                "par %s"
+            ],
+            "Reason: %s": [
+                "Motif : %s"
+            ],
+            "Approve": [
+                "Approuver"
+            ],
+            "Decline": [
+                "Refuser"
+            ],
+            "Cancel booking": [
+                "Annuler la r\u00e9servation"
+            ],
+            "Remind": [
+                "Relancer"
+            ],
+            "Release": [
+                "Lib\u00e9rer"
+            ],
+            "None given": [
+                "Aucun motif indiqu\u00e9"
+            ],
+            "No guest on this booking.": [
+                "Aucun client sur cette r\u00e9servation."
+            ],
+            "Note from booking": [
+                "Note de la r\u00e9servation"
+            ],
+            "Release this unpaid booking?": [
+                "Lib\u00e9rer cette r\u00e9servation impay\u00e9e ?"
+            ],
+            "Its rooms are free again at once, and the guest is told by e-mail that the booking was released for non-payment.": [
+                "Ses chambres sont imm\u00e9diatement lib\u00e9r\u00e9es, et le client est inform\u00e9 par e-mail que la r\u00e9servation a \u00e9t\u00e9 lib\u00e9r\u00e9e pour d\u00e9faut de paiement."
+            ],
+            "Release booking": [
+                "Lib\u00e9rer la r\u00e9servation"
+            ],
+            "Remove room %s from the booking?": [
+                "Retirer la chambre %s de la r\u00e9servation ?"
+            ],
+            "For a room booked by mistake: it is taken off the booking, free again at once, and no longer counts towards the total. The history keeps it.": [
+                "Pour une chambre r\u00e9serv\u00e9e par erreur : elle est retir\u00e9e de la r\u00e9servation, imm\u00e9diatement lib\u00e9r\u00e9e, et n'est plus compt\u00e9e dans le total. L'historique la conserve."
+            ],
+            "Remove room": [
+                "Retirer la chambre"
+            ],
+            "Decline this booking?": [
+                "Refuser cette r\u00e9servation ?"
+            ],
+            "Cancel this booking?": [
+                "Annuler cette r\u00e9servation ?"
+            ],
+            "This room is free again at once and no longer counts towards the total.": [
+                "Cette chambre est imm\u00e9diatement lib\u00e9r\u00e9e et n'est plus compt\u00e9e dans le total."
+            ],
+            "The rooms are free again at once. A guest with an e-mail address is sent the reason.": [
+                "Les chambres sont imm\u00e9diatement lib\u00e9r\u00e9es. Un client ayant une adresse e-mail re\u00e7oit le motif."
+            ],
+            "The guest did not come. The room is free again from now.": [
+                "Le client ne s'est pas pr\u00e9sent\u00e9. La chambre est lib\u00e9r\u00e9e d\u00e8s maintenant."
+            ],
+            "%s is still due on this booking. Check out anyway?": [
+                "%s reste d\u00fb sur cette r\u00e9servation. Enregistrer le d\u00e9part quand m\u00eame ?"
+            ],
+            "The room is free again once the guest has left.": [
+                "La chambre est lib\u00e9r\u00e9e d\u00e8s que le client est parti."
+            ]
+        }
+    }
+}

@@ -17,6 +17,7 @@ payroll. It has 18 modules, the ones the client signed off in `requiremetnt/clie
 | [`project/decisions.md`](project/decisions.md) | ADRs and **open questions for the client (D1–D6)** |
 | [`project/legacy-reference.md`](project/legacy-reference.md) | How the client's current system does each module: file pointers, data, behaviour to keep, bugs to avoid |
 | [`modules/`](modules/) | One spec per module: scope, data, API, screens, settings, access keys, log actions, tasks, acceptance |
+| [`reviews/`](reviews/) | Client review rounds after the build, each a task tracker (R1: 2026-11-02, `/next-review1`) |
 
 `requiremetnt/` holds the proposal pack and the client-approved feature list
 (`08-feature-list.md`, 248 features). Documents `01`–`05` there are superseded on scope and payment
@@ -36,6 +37,7 @@ Use the Claude Code commands (in `.claude/skills/`):
 /module-status          where are we?
 /next-module            start the next module in dependency order (or: /next-module M07)
 /next-task              build the next task of the current module (or: /next-task all)
+/next-review1           fix the next item of client review R1 (or: /next-review1 all)
 ```
 
 Each task ends with lint, build and tests passing, a ticked checkbox in its module doc, and a

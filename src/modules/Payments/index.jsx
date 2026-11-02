@@ -16,6 +16,7 @@ import DataTable from '@/components/common/DataTable';
 import EmptyState from '@/components/common/EmptyState';
 import Money from '@/components/common/Money';
 import Panel from '@/components/common/Panel';
+import GuestLink from '@/components/common/GuestLink';
 import StatusBadge from '@/components/common/StatusBadge';
 import { useAccess } from '@/lib/access';
 import { formatDate } from '@/lib/format';
@@ -65,8 +66,12 @@ export default function Payments() {
 			id: 'guest',
 			header: __( 'Guest', 'radius-hotel-booking' ),
 			mobile: 'subtitle',
-			cell: ( b ) =>
-				[ b.guest_name, b.guest_phone ].filter( Boolean ).join( ' · ' ),
+			cell: ( b ) => (
+				<span>
+					<GuestLink id={ b.guest_id } name={ b.guest_name } />
+					{ b.guest_phone ? ` · ${ b.guest_phone }` : null }
+				</span>
+			),
 		},
 		{
 			id: 'stay',

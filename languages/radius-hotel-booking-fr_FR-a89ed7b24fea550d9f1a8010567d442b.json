@@ -1,0 +1,39 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Settings\/sections\/Permissions.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Try again": [
+                "R\u00e9essayer"
+            ],
+            "Open": [
+                "Ouvert"
+            ],
+            "Locked": [
+                "Verrouill\u00e9"
+            ],
+            "How permissions work": [
+                "Comment fonctionnent les autorisations"
+            ],
+            "Open: staff with this role may use it. Locked: it is hidden and the server refuses it. Administrators are never locked out.": [
+                "Ouvert : le personnel ayant ce r\u00f4le peut l\u2019utiliser. Verrouill\u00e9 : il est masqu\u00e9 et le serveur le refuse. Les administrateurs ne sont jamais bloqu\u00e9s."
+            ],
+            "Changes apply to everyone with the role after you save.": [
+                "Les modifications s\u2019appliquent \u00e0 toutes les personnes ayant le r\u00f4le apr\u00e8s l\u2019enregistrement."
+            ],
+            "Page or action": [
+                "Page ou action"
+            ],
+            "%1$s for %2$s": [
+                "%1$s pour %2$s"
+            ]
+        }
+    }
+}

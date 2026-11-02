@@ -1,0 +1,73 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Guests\/index.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Guests": [
+                "Clients"
+            ],
+            "Phone": [
+                "T\u00e9l\u00e9phone"
+            ],
+            "Standing": [
+                "Statut"
+            ],
+            "Stays": [
+                "S\u00e9jours"
+            ],
+            "Banned": [
+                "Banni"
+            ],
+            "Guest": [
+                "Client"
+            ],
+            "E-mail": [
+                "E-mail"
+            ],
+            "Show": [
+                "Afficher"
+            ],
+            "Add guest": [
+                "Ajouter un client"
+            ],
+            "All guests": [
+                "Tous les clients"
+            ],
+            "No e-mail": [
+                "Pas d'e-mail"
+            ],
+            "Last stay": [
+                "Dernier s\u00e9jour"
+            ],
+            "No guest matches": [
+                "Aucun client ne correspond"
+            ],
+            "Nothing found for \u201c%s\u201d. Try part of the name, the phone number or the e-mail.": [
+                "Aucun r\u00e9sultat pour \u00ab %s \u00bb. Essayez une partie du nom, le num\u00e9ro de t\u00e9l\u00e9phone ou l'e-mail."
+            ],
+            "No banned guests": [
+                "Aucun client interdit"
+            ],
+            "No guests yet": [
+                "Aucun client pour l'instant"
+            ],
+            "Guests are added when they book, or here by hand.": [
+                "Les clients sont ajout\u00e9s lorsqu'ils r\u00e9servent, ou ici \u00e0 la main."
+            ],
+            "%d guest": [
+                "%d client",
+                "%d clients"
+            ],
+            "Name, phone or e-mail": [
+                "Nom, t\u00e9l\u00e9phone ou e-mail"
+            ]
+        }
+    }
+}

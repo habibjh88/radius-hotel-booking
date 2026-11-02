@@ -110,10 +110,11 @@ function SearchBox( { value, onChange, placeholder } ) {
 }
 
 /**
- * Row actions: the `primary` one as a button, the rest in a ⋯ menu.
+ * Row actions: the `primary` one as a button, `inline` ones as icon buttons
+ * beside it (one click, label as tooltip), the rest in a ⋯ menu.
  *
  * @param {Object} props         Props.
- * @param {Array}  props.actions `[{ label, onSelect, icon, primary, destructive, disabled }]`.
+ * @param {Array}  props.actions `[{ label, onSelect, icon, primary, inline, destructive, disabled }]`.
  * @param {boolean} props.stretch Full-width buttons (mobile cards).
  * @return {JSX.Element|null} Actions.
  */
@@ -122,13 +123,19 @@ function RowActions( { actions, stretch = false } ) {
 	if ( ! visible.length ) {
 		return null;
 	}
-	const primary = visible.find( ( action ) => action.primary );
-	const rest = visible.filter( ( action ) => action !== primary );
+	const primary = visible.find(
+		( action ) => action.primary && ! action.inline
+	);
+	const inline = visible.filter( ( action ) => action.inline && action.icon );
+	const rest = visible.filter(
+		( action ) => action !== primary && ! inline.includes( action )
+	);
 
 	return (
 		<div
 			className={ cn(
-				'flex items-center justify-end gap-2',
+				'flex items-center justify-end',
+				inline.length ? 'gap-0.5' : 'gap-2',
 				stretch && 'w-full'
 			) }
 		>
@@ -149,13 +156,36 @@ function RowActions( { actions, stretch = false } ) {
 					{ primary.label }
 				</Button>
 			) : null }
+			{ inline.map( ( action ) => (
+				<Button
+					key={ action.label }
+					size="sm"
+					variant={ action.primary ? 'outline' : 'ghost' }
+					disabled={ action.disabled }
+					onClick={ ( event ) => {
+						event.stopPropagation();
+						action.onSelect();
+					} }
+					className={ cn(
+						'w-7 px-0',
+						action.destructive &&
+							'text-destructive hover:text-destructive'
+					) }
+					aria-label={ action.label }
+					title={ action.label }
+				>
+					<action.icon aria-hidden="true" />
+				</Button>
+			) ) }
 			{ rest.length ? (
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
 						<Button
 							size="sm"
 							variant="ghost"
-							className="w-8 px-0"
+							className={
+								inline.length ? 'w-7 px-0' : 'w-8 px-0'
+							}
 							aria-label={ __(
 								'More actions',
 								'radius-hotel-booking'
@@ -257,6 +287,7 @@ function HeaderCell( { column, sort, onSort } ) {
  * @param {Function} props.onRetry      Retry after an error.
  * @param {Object}   props.search       `{ value, onChange, placeholder }`.
  * @param {JSX.Element} props.toolbar   Filters shown next to the search.
+ * @param {JSX.Element} props.toolbarEnd Filters at the right end of the search row (e.g. quick-filter tabs).
  * @param {JSX.Element} props.empty     Shown when there are no rows.
  * @param {string}   props.caption      Accessible table caption.
  * @param {Object}   props.selection    `{ selected, onChange, label }` (see file header).
@@ -280,6 +311,7 @@ export default function DataTable( {
 	onRetry,
 	search,
 	toolbar,
+	toolbarEnd,
 	empty,
 	caption,
 	selection,
@@ -383,13 +415,16 @@ export default function DataTable( {
 
 	return (
 		<div className="min-w-0 space-y-3">
-			{ search || toolbar ? (
+			{ search || toolbar || toolbarEnd ? (
 				<div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
 					{ search ? <SearchBox { ...search } /> : null }
 					{ toolbar ? (
 						<div className="flex flex-wrap items-center gap-2">
 							{ toolbar }
 						</div>
+					) : null }
+					{ toolbarEnd ? (
+						<div className="min-w-0 sm:ml-auto">{ toolbarEnd }</div>
 					) : null }
 				</div>
 			) : null }

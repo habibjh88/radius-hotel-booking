@@ -1,0 +1,52 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Rooms\/components\/MoveRoomDialog.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Room %1$s moved to %2$s.": [
+                "Chambre %1$s d\u00e9plac\u00e9e vers %2$s."
+            ],
+            "Choose the room type to move the room to.": [
+                "Choisissez le type de chambre vers lequel d\u00e9placer la chambre."
+            ],
+            "Continue": [
+                "Continuer"
+            ],
+            "Cancel": [
+                "Annuler"
+            ],
+            "Choose a room type": [
+                "Choisir un type de chambre"
+            ],
+            "Move to": [
+                "D\u00e9placer vers"
+            ],
+            "Move room %s": [
+                "D\u00e9placer la chambre %s"
+            ],
+            "The room leaves %s and is sold under the room type you choose.": [
+                "La chambre quitte %s et est vendue sous le type de chambre que vous choisissez."
+            ],
+            "There is no other room type yet.": [
+                "Il n'y a pas encore d'autre type de chambre."
+            ],
+            "This room has %d upcoming booking. It keeps the room, which becomes busy under the new type.": [
+                "Cette chambre a %d r\u00e9servation \u00e0 venir. Elle conserve la chambre, qui devient occup\u00e9e sous le nouveau type.",
+                "Cette chambre a %d r\u00e9servations \u00e0 venir. Elles conservent la chambre, qui devient occup\u00e9e sous le nouveau type."
+            ],
+            "No upcoming bookings. The room can be moved.": [
+                "Aucune r\u00e9servation \u00e0 venir. La chambre peut \u00eatre d\u00e9plac\u00e9e."
+            ],
+            "Move room": [
+                "D\u00e9placer la chambre"
+            ]
+        }
+    }
+}

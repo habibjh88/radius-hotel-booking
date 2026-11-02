@@ -19,6 +19,7 @@ import Panel from '@/components/common/Panel';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import RecordHistory from '@/components/common/RecordHistory';
 import { useAccess } from '@/lib/access';
 import { toast } from '@/lib/toast';
 import RoomTypeForm from './components/RoomTypeForm';
@@ -169,16 +170,25 @@ export default function RoomTypeDetail() {
 							  __( 'Hidden from sale', 'radius-hotel-booking' ) }
 					</p>
 				</div>
-				{ canManage ? (
-					<Button
-						variant="outline"
-						onClick={ () => setConfirmDelete( true ) }
-						className="text-destructive"
-					>
-						<Trash2 className="h-4 w-4" aria-hidden="true" />
-						{ __( 'Delete', 'radius-hotel-booking' ) }
-					</Button>
-				) : null }
+				<div className="flex flex-wrap items-center gap-2">
+					<RecordHistory
+						type="room_type"
+						id={ type.id }
+						title={ type.name }
+						notes
+						size="default"
+					/>
+					{ canManage ? (
+						<Button
+							variant="outline"
+							onClick={ () => setConfirmDelete( true ) }
+							className="text-destructive"
+						>
+							<Trash2 className="h-4 w-4" aria-hidden="true" />
+							{ __( 'Delete', 'radius-hotel-booking' ) }
+						</Button>
+					) : null }
+				</div>
 			</div>
 
 			<Tabs

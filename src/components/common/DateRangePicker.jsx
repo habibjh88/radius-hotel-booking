@@ -129,6 +129,9 @@ function rangeLabel( value ) {
  * @param {Function} props.onModeChange Mode setter (with `mode`).
  * @param {string}   props.align        Popover alignment.
  * @param {string}   props.className    Extra classes for the trigger.
+ * @param {boolean}  props.anyDate      List "Any date" first among the presets.
+ * @param {{from: string, to: string}} props.resetTo Range the clear buttons go back to (default: none).
+ * @param {string[]} props.hidePresets  Preset keys left out (e.g. `next7`).
  * @return {JSX.Element} Picker.
  */
 export default function DateRangePicker( {
@@ -138,10 +141,18 @@ export default function DateRangePicker( {
 	onModeChange,
 	align = 'start',
 	className,
+	anyDate = false,
+	resetTo = null,
+	hidePresets = [],
 } ) {
 	const [ open, setOpen ] = useState( false );
 	const wide = useMediaQuery( '(min-width: 768px)' );
-	const active = !! value?.from;
+	const empty = resetTo || { from: '', to: '' };
+	// The clear button shows while the range differs from what it resets to.
+	const active =
+		( value?.from || '' ) !== empty.from ||
+		( value?.to || '' ) !== empty.to;
+	const clear = () => onChange( { ...empty } );
 
 	const select = ( range ) => {
 		onChange( {
@@ -193,7 +204,25 @@ export default function DateRangePicker( {
 				>
 					<div className="flex flex-col md:flex-row">
 						<div className="flex flex-wrap gap-1 border-b border-border p-3 md:w-40 md:flex-col md:flex-nowrap md:border-b-0 md:border-r">
-							{ presets().map( ( preset ) => (
+							{ [
+								...( anyDate
+									? [
+											{
+												key: 'any',
+												label: __(
+													'Any date',
+													'radius-hotel-booking'
+												),
+												from: '',
+												to: '',
+											},
+									  ]
+									: [] ),
+								...presets().filter(
+									( preset ) =>
+										! hidePresets.includes( preset.key )
+								),
+							].map( ( preset ) => (
 								<button
 									key={ preset.key }
 									type="button"
@@ -206,8 +235,8 @@ export default function DateRangePicker( {
 									} }
 									className={ cn(
 										'rounded-md border-0 px-2.5 py-1.5 text-left text-[13px] font-medium',
-										value.from === preset.from &&
-											value.to === preset.to
+										( value.from || '' ) === preset.from &&
+											( value.to || '' ) === preset.to
 											? 'bg-primary-soft text-primary'
 											: 'bg-transparent text-heading hover:bg-primary-softer'
 									) }
@@ -260,9 +289,7 @@ export default function DateRangePicker( {
 								<Button
 									variant="ghost"
 									size="sm"
-									onClick={ () =>
-										onChange( { from: '', to: '' } )
-									}
+									onClick={ () => clear() }
 								>
 									{ __( 'Clear', 'radius-hotel-booking' ) }
 								</Button>
@@ -282,7 +309,7 @@ export default function DateRangePicker( {
 					variant="outline"
 					size="icon"
 					className="rounded-l-none"
-					onClick={ () => onChange( { from: '', to: '' } ) }
+					onClick={ clear }
 					aria-label={ __( 'Clear dates', 'radius-hotel-booking' ) }
 				>
 					<X aria-hidden="true" />

@@ -1,0 +1,45 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/RatePlans\/index.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Try again": [
+                "R\u00e9essayer"
+            ],
+            "Inactive": [
+                "Inactif"
+            ],
+            "Add rate plan": [
+                "Ajouter une formule tarifaire"
+            ],
+            "The rate plans could not be loaded": [
+                "Les formules tarifaires n'ont pas pu \u00eatre charg\u00e9es"
+            ],
+            "No rate plans yet": [
+                "Aucune formule tarifaire pour l'instant"
+            ],
+            "A rate plan is a stay window you sell, such as Half Day 08:30\u201317:00 or Overnight 20:00\u201308:00.": [
+                "Une formule tarifaire est un cr\u00e9neau de s\u00e9jour que vous vendez, comme Demi-journ\u00e9e 08:30\u201317:00 ou Nuit\u00e9e 20:00\u201308:00."
+            ],
+            "Flexible": [
+                "Flexible"
+            ],
+            "Several days or nights": [
+                "Plusieurs jours ou nuits"
+            ],
+            "Rate plan library": [
+                "Biblioth\u00e8que de formules tarifaires"
+            ],
+            "Defined once, then priced per room type on each room type\u2019s Rates tab.": [
+                "D\u00e9finies une fois, puis tarif\u00e9es par type de chambre dans l'onglet Tarifs de chaque type de chambre."
+            ]
+        }
+    }
+}

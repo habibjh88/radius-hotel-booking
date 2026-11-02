@@ -1,0 +1,123 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/RatePlans\/components\/RatePlanSheet.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Rate plan added.": [
+                "Formule tarifaire ajout\u00e9e."
+            ],
+            "Rate plan saved.": [
+                "Formule tarifaire enregistr\u00e9e."
+            ],
+            "Rate plan deleted.": [
+                "Formule tarifaire supprim\u00e9e."
+            ],
+            "Flexible check-in": [
+                "Arriv\u00e9e flexible"
+            ],
+            "Check-in": [
+                "Arriv\u00e9e"
+            ],
+            "Check-out": [
+                "D\u00e9part"
+            ],
+            "Check-in & check-out": [
+                "Arriv\u00e9e et d\u00e9part"
+            ],
+            "Policy": [
+                "Conditions"
+            ],
+            "Cancel": [
+                "Annuler"
+            ],
+            "Save": [
+                "Enregistrer"
+            ],
+            "Active": [
+                "Actif"
+            ],
+            "Delete": [
+                "Supprimer"
+            ],
+            "Give the rate plan a name.": [
+                "Donnez un nom \u00e0 la formule tarifaire."
+            ],
+            "New rate plan": [
+                "Nouvelle formule tarifaire"
+            ],
+            "A stay window you can price on each room type.": [
+                "Un cr\u00e9neau de s\u00e9jour que vous pouvez tarifer pour chaque type de chambre."
+            ],
+            "Name": [
+                "Nom"
+            ],
+            "e.g. Half Day": [
+                "p. ex. Demi-journ\u00e9e"
+            ],
+            "Stay window": [
+                "Cr\u00e9neau de s\u00e9jour"
+            ],
+            "Fixed times": [
+                "Horaires fixes"
+            ],
+            "Stay length (hours)": [
+                "Dur\u00e9e du s\u00e9jour (heures)"
+            ],
+            "In half hours, e.g. 24 or 8.5.": [
+                "Par demi-heure, p. ex. 24 ou 8,5."
+            ],
+            "Earliest check-in": [
+                "Arriv\u00e9e au plus t\u00f4t"
+            ],
+            "Latest check-in": [
+                "Arriv\u00e9e au plus tard"
+            ],
+            "Choose the times to see the window.": [
+                "Choisissez les horaires pour voir le cr\u00e9neau."
+            ],
+            "Sold for several days or nights": [
+                "Vendu pour plusieurs jours ou nuits"
+            ],
+            "On for Overnight or 24 h plans a guest can book several times in a row. Off for part-day plans such as Half Day.": [
+                "Activ\u00e9 pour les formules Nuit\u00e9e ou 24 h qu'un client peut r\u00e9server plusieurs fois de suite. D\u00e9sactiv\u00e9 pour les formules sur une partie de la journ\u00e9e, comme Demi-journ\u00e9e."
+            ],
+            "Features": [
+                "Atouts"
+            ],
+            "Short tags shown to guests: Non-refundable, Flexible check-in\u2026": [
+                "Courtes \u00e9tiquettes affich\u00e9es aux clients : Non remboursable, Arriv\u00e9e flexible\u2026"
+            ],
+            "Rules guests see in the rate's \"Rate details\" popup. Start a line with * or - for a bullet point.": [
+                "R\u00e8gles que les clients voient dans la fen\u00eatre \u00ab D\u00e9tails du tarif \u00bb. Commencez une ligne par * ou - pour une puce."
+            ],
+            "One rule per line, shown in \"Rate details\". Leave empty to show the rules worked out from this plan's times (shown greyed out).": [
+                "Une r\u00e8gle par ligne, affich\u00e9e dans \u00ab D\u00e9tails du tarif \u00bb. Laissez vide pour afficher les r\u00e8gles d\u00e9duites des horaires de cette formule (affich\u00e9es en gris\u00e9)."
+            ],
+            "Off stops new bookings of this plan; existing bookings keep it.": [
+                "D\u00e9sactiv\u00e9e, la formule n'accepte plus de nouvelles r\u00e9servations ; les r\u00e9servations existantes la conservent."
+            ],
+            "A rate plan in use cannot be deleted. Deactivate it instead.": [
+                "Une formule tarifaire utilis\u00e9e ne peut pas \u00eatre supprim\u00e9e. D\u00e9sactivez-la plut\u00f4t."
+            ],
+            "Add rate plan": [
+                "Ajouter une formule tarifaire"
+            ],
+            "Delete this rate plan?": [
+                "Supprimer cette formule tarifaire ?"
+            ],
+            "It disappears from the library. Past bookings keep its name and window.": [
+                "Elle dispara\u00eet de la biblioth\u00e8que. Les r\u00e9servations pass\u00e9es conservent son nom et son cr\u00e9neau."
+            ],
+            "Delete rate plan": [
+                "Supprimer la formule tarifaire"
+            ]
+        }
+    }
+}

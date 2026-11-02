@@ -103,15 +103,20 @@ class BookingLineList {
 				$wpdb->prepare(
 					"SELECT r.id, r.booking_id, r.status, r.room_number, r.floor_name, r.rate_plan_name, r.start_at_gmt, r.end_at_gmt,
 						r.units, r.adults, r.children, r.total,
-						b.reference, b.status AS booking_status, b.payment_status, b.balance_due, b.payment_due_at_gmt, b.on_hold, b.source, b.created_at_gmt,
+						b.reference, b.guest_id, b.status AS booking_status, b.payment_status, b.balance_due, b.payment_due_at_gmt, b.on_hold, b.source, b.created_at_gmt,
 						COALESCE( t.name, '' ) AS room_type,
 						TRIM( CONCAT( COALESCE( g.first_name, '' ), ' ', COALESCE( g.last_name, '' ) ) ) AS guest_name, COALESCE( g.phone, '' ) AS guest_phone,
+						COALESCE( u.display_name, '' ) AS created_by_name,
+						( SELECT p.method FROM %i p WHERE p.booking_id = b.id AND p.type = 'payment'
+							AND NOT EXISTS ( SELECT 1 FROM %i v WHERE v.voids_payment_id = p.id )
+							ORDER BY p.received_at_gmt DESC, p.id DESC LIMIT 1 ) AS payment_method,
+						EXISTS ( SELECT 1 FROM %i i WHERE i.booking_id = b.id ) AS has_invoice,
 						( {$tabs['overdue'][0]} ) AS is_overdue
-					FROM {$from[0]} LEFT JOIN %i t ON t.id = r.room_type_id
+					FROM {$from[0]} LEFT JOIN %i t ON t.id = r.room_type_id LEFT JOIN %i u ON u.ID = b.created_by
 					WHERE {$where} AND ( {$tabs[ $tab ][0]} )
 					ORDER BY " . self::order( $tab, $filters['mode'], $filters['has_range'] ) . '
 					LIMIT %d OFFSET %d',
-					array_merge( $tabs['overdue'][1], $from[1], array( rtbp_table( 'room_types' ) ), $args, $tabs[ $tab ][1], array( $per_page, ( $page - 1 ) * $per_page ) )
+					array_merge( array( rtbp_table( 'payments' ), rtbp_table( 'payments' ), rtbp_table( 'invoices' ) ), $tabs['overdue'][1], $from[1], array( rtbp_table( 'room_types' ), $wpdb->users ), $args, $tabs[ $tab ][1], array( $per_page, ( $page - 1 ) * $per_page ) )
 				),
 				ARRAY_A
 			);
@@ -325,11 +330,16 @@ class BookingLineList {
 		if ( (float) $row['balance_due'] > 0 && ! in_array( (string) $row['booking_status'], array( 'cancelled', 'declined', 'no_show' ), true ) ) {
 			$actions[] = 'record_payment';
 		}
+		// The room can still be changed (the booking screen's rule), for the row's Edit button (R1-T8).
+		if ( in_array( (string) $row['status'], BookingLineService::EDITABLE, true ) ) {
+			$actions[] = 'line_edit';
+		}
 		return array(
 			'id'             => (int) $row['id'],
 			'booking_id'     => (int) $row['booking_id'],
 			'reference'      => (string) $row['reference'],
 			'guest'          => array(
+				'id'    => (int) $row['guest_id'],
 				'name'  => (string) $row['guest_name'],
 				'phone' => (string) $row['guest_phone'],
 			),
@@ -350,6 +360,11 @@ class BookingLineList {
 			'on_hold'        => (bool) $row['on_hold'],
 			'overdue'        => (bool) $row['is_overdue'],
 			'source'         => (string) $row['source'],
+			// Who took it at the desk, and how it was last paid (R1-T7).
+			'created_by'     => (string) ( $row['created_by_name'] ?? '' ),
+			'payment_method' => ( $row['payment_method'] ?? '' ) ? \RadiusTheme\RadiusHotelBooking\Settings\PaymentSettings::method_label( (string) $row['payment_method'] ) : '',
+			// The invoice's print view, for the row's Invoice button (R1-T8).
+			'invoice_url'    => ! empty( $row['has_invoice'] ) ? \RadiusTheme\RadiusHotelBooking\Documents\DocumentService::url( 'invoice', (int) $row['booking_id'] ) : '',
 			'created_at'     => Dates::to_iso( Dates::from_gmt( (string) $row['created_at_gmt'] ) ),
 			'actions'        => $actions,
 		);

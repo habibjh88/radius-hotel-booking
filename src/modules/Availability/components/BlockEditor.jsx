@@ -28,6 +28,7 @@ import {
 	SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import RecordHistory from '@/components/common/RecordHistory';
 import { addDaysYmd, siteToday } from '@/lib/format';
 import { toast, toastError } from '@/lib/toast';
 import { useFloors, useRoomTypes, useTypeRooms } from '@/modules/Rooms/api';
@@ -498,6 +499,18 @@ export default function BlockEditor( { block, preset, onClose } ) {
 					</div>
 
 					<DialogFooter className="gap-2">
+						{ block?.id ? (
+							<div className="sm:mr-auto">
+								<RecordHistory
+									type="block"
+									id={ block.id }
+									title={ __(
+										'Blocked dates',
+										'radius-hotel-booking'
+									) }
+								/>
+							</div>
+						) : null }
 						<Button
 							type="button"
 							variant="ghost"

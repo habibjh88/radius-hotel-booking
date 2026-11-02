@@ -1,0 +1,80 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/components\/booking\/BookingFlow.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Choose the guest or add a new one.": [
+                "Choisissez le client ou ajoutez-en un nouveau."
+            ],
+            "Guest": [
+                "Client"
+            ],
+            "Room %s is held for you while you book.": [
+                "La chambre %s est retenue pour vous pendant votre r\u00e9servation.",
+                "Les chambres %s sont retenues pour vous pendant votre r\u00e9servation."
+            ],
+            "Room %s is held for this booking.": [
+                "La chambre %s est retenue pour cette r\u00e9servation.",
+                "Les chambres %s sont retenues pour cette r\u00e9servation."
+            ],
+            "Room %s was just taken. Choose another room.": [
+                "La chambre %s vient d'\u00eatre prise. Choisissez une autre chambre."
+            ],
+            "The last room at this rate was just taken. Choose another rate.": [
+                "La derni\u00e8re chambre \u00e0 ce tarif vient d'\u00eatre prise. Choisissez un autre tarif."
+            ],
+            "A room was just taken. Choose another room.": [
+                "Une chambre vient d'\u00eatre prise. Choisissez une autre chambre."
+            ],
+            "Add a room first.": [
+                "Ajoutez d'abord une chambre."
+            ],
+            "Enter the guest's first name, last name and phone.": [
+                "Saisissez le pr\u00e9nom, le nom et le t\u00e9l\u00e9phone du client."
+            ],
+            "Choose the dates and the number of guests.": [
+                "Choisissez les dates et le nombre de clients."
+            ],
+            "The rooms could not be loaded.": [
+                "Les chambres n'ont pas pu \u00eatre charg\u00e9es."
+            ],
+            "Try again": [
+                "R\u00e9essayer"
+            ],
+            "Dates and guests": [
+                "Dates et clients"
+            ],
+            "Rates": [
+                "Tarifs"
+            ],
+            "Every rate for these dates, by room type.": [
+                "Tous les tarifs pour ces dates, par type de chambre."
+            ],
+            "Updating\u2026": [
+                "Mise \u00e0 jour\u2026"
+            ],
+            "Rooms in this booking": [
+                "Chambres de cette r\u00e9servation"
+            ],
+            "To add more rooms, choose a rate above.": [
+                "Pour ajouter d'autres chambres, choisissez un tarif ci-dessus."
+            ],
+            "Find the guest, or add them with their identity document.": [
+                "Recherchez le client, ou ajoutez-le avec sa pi\u00e8ce d'identit\u00e9."
+            ],
+            "Use %s": [
+                "Utiliser %s"
+            ],
+            "Summary": [
+                "R\u00e9capitulatif"
+            ]
+        }
+    }
+}

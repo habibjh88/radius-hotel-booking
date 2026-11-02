@@ -1,0 +1,76 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/components\/booking\/GuestStep.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Phone": [
+                "T\u00e9l\u00e9phone"
+            ],
+            "First name": [
+                "Pr\u00e9nom"
+            ],
+            "Last name": [
+                "Nom"
+            ],
+            "E-mail": [
+                "E-mail"
+            ],
+            "Identity document": [
+                "Pi\u00e8ce d'identit\u00e9"
+            ],
+            "Document number": [
+                "Num\u00e9ro du document"
+            ],
+            "This guest is banned": [
+                "Ce client est banni"
+            ],
+            "A booking cannot be made for them. The guest record says why.": [
+                "Aucune r\u00e9servation ne peut \u00eatre faite pour lui. La fiche client en indique la raison."
+            ],
+            "Change": [
+                "Modifier"
+            ],
+            "For the confirmation. Optional.": [
+                "Pour la confirmation. Facultatif."
+            ],
+            "Not shown": [
+                "Non affich\u00e9"
+            ],
+            "If this phone or e-mail is already on file, the booking goes to that guest.": [
+                "Si ce t\u00e9l\u00e9phone ou cet e-mail est d\u00e9j\u00e0 en dossier, la r\u00e9servation est rattach\u00e9e \u00e0 ce client."
+            ],
+            "Find an existing guest instead": [
+                "Rechercher plut\u00f4t un client existant"
+            ],
+            "Find the guest": [
+                "Rechercher le client"
+            ],
+            "Name, phone or e-mail \u2014 at least two characters.": [
+                "Nom, t\u00e9l\u00e9phone ou e-mail \u2014 au moins deux caract\u00e8res."
+            ],
+            "e.g. Kon\u00e9 or 07 01 02": [
+                "ex. Kon\u00e9 ou 07 01 02"
+            ],
+            "New guest": [
+                "Nouveau client"
+            ],
+            "Searching\u2026": [
+                "Recherche\u2026"
+            ],
+            "No guest found. Add them as a new guest.": [
+                "Aucun client trouv\u00e9. Ajoutez-le comme nouveau client."
+            ],
+            "%d stay": [
+                "%d s\u00e9jour",
+                "%d s\u00e9jours"
+            ]
+        }
+    }
+}

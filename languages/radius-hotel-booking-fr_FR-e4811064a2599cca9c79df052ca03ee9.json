@@ -1,0 +1,90 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/blocks\/booking\/index.js",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Hotel booking": [
+                "R\u00e9servation d'h\u00f4tel"
+            ],
+            "Layout": [
+                "Disposition"
+            ],
+            "Display": [
+                "Affichage"
+            ],
+            "In a popup, a button opens the form. Any link to #rtbp-booking on the page opens it too.": [
+                "Dans une fen\u00eatre contextuelle, un bouton ouvre le formulaire. Tout lien vers #rtbp-booking sur la page l'ouvre aussi."
+            ],
+            "Button text": [
+                "Texte du bouton"
+            ],
+            "Book now": [
+                "R\u00e9server"
+            ],
+            "Room details": [
+                "D\u00e9tails de la chambre"
+            ],
+            "What \"Room details\" on each room type opens.": [
+                "Ce qu'ouvre \u00ab D\u00e9tails de la chambre \u00bb sur chaque type de chambre."
+            ],
+            "Room type design": [
+                "Pr\u00e9sentation des types de chambre"
+            ],
+            "How each room type and its rates are laid out in the results.": [
+                "Comment chaque type de chambre et ses tarifs sont pr\u00e9sent\u00e9s dans les r\u00e9sultats."
+            ],
+            "Rates shown first": [
+                "Tarifs affich\u00e9s d'abord"
+            ],
+            "Rates per room type before \"Show more rates\". 0 shows them all, without the button.": [
+                "Tarifs par type de chambre avant \u00ab Afficher plus de tarifs \u00bb. 0 les affiche tous, sans le bouton."
+            ],
+            "Price breakdown": [
+                "D\u00e9tail du prix"
+            ],
+            "An info icon next to each price opens how it is made: the stay, any discount and the total.": [
+                "Une ic\u00f4ne d'information \u00e0 c\u00f4t\u00e9 de chaque prix en d\u00e9taille le calcul : le s\u00e9jour, la remise \u00e9ventuelle et le total."
+            ],
+            "Steps (one step at a time)": [
+                "\u00c9tapes (une \u00e9tape \u00e0 la fois)"
+            ],
+            "One page (everything on one page)": [
+                "Une seule page (tout sur une page)"
+            ],
+            "Classic (rates in rows under the room)": [
+                "Classique (tarifs en lignes sous la chambre)"
+            ],
+            "Split (room on the left, rate cards on the right)": [
+                "Divis\u00e9 (chambre \u00e0 gauche, cartes de tarifs \u00e0 droite)"
+            ],
+            "Its own page": [
+                "Sa propre page"
+            ],
+            "A popup, without leaving the form": [
+                "Une fen\u00eatre contextuelle, sans quitter le formulaire"
+            ],
+            "On the page": [
+                "Sur la page"
+            ],
+            "In a popup, opened by a button": [
+                "Dans une fen\u00eatre contextuelle, ouverte par un bouton"
+            ],
+            "The rooms free for the dates searched, then the guest's details and confirmation.": [
+                "Les chambres libres pour les dates recherch\u00e9es, puis les informations du client et la confirmation."
+            ],
+            "A button that opens the booking form in a popup. Change the text and layout in the block settings.": [
+                "Un bouton qui ouvre le formulaire de r\u00e9servation dans une fen\u00eatre. Modifiez le texte et la mise en page dans les r\u00e9glages du bloc."
+            ],
+            "Guests see the rooms free for their dates here and book. Put it on the booking page (Settings \u2192 Public booking).": [
+                "Les clients voient ici les chambres libres pour leurs dates et r\u00e9servent. Placez-le sur la page de r\u00e9servation (R\u00e9glages \u2192 R\u00e9servation publique)."
+            ]
+        }
+    }
+}

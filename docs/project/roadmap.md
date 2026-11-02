@@ -11,6 +11,7 @@ Commands:
 | `/module-status` | Shows this table with task counts, what's next, and what's blocked |
 | `/next-module` | Starts the next module (or `/next-module M07` to switch to one) |
 | `/next-task` | Builds the next unchecked task of the current module (`/next-task all` for the rest) |
+| `/next-review1` | Fixes the next item of client review R1 (`docs/reviews/R1-client-review-2026-11-02.md`) |
 
 ## Three plugins
 

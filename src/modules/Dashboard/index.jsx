@@ -9,13 +9,13 @@
 import { Link } from 'react-router-dom';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import {
+	AlarmClock,
 	AlertCircle,
 	BedDouble,
-	Clock,
+	CalendarArrowDown,
+	CalendarArrowUp,
+	Clock3,
 	DoorOpen,
-	Hourglass,
-	LogIn,
-	LogOut,
 	Plus,
 } from 'lucide-react';
 
@@ -23,8 +23,8 @@ import SiteChecks from '@/components/common/SiteChecks';
 import StatCard from '@/components/common/StatCard';
 import { usePageActions } from '@/components/layout/PageActions';
 import { Button } from '@/components/ui/button';
+import { BookingList } from '@/modules/Bookings';
 import { useDashboardSummary } from './api';
-import RecentBookingsPanel from './components/RecentBookingsPanel';
 import RoomStatusPanel from './components/RoomStatusPanel';
 import SetupPanel from './components/SetupPanel';
 import TodayPanel from './components/TodayPanel';
@@ -45,21 +45,24 @@ export default function Dashboard() {
 	const counters = [
 		{
 			key: 'awaiting_approval',
-			icon: Hourglass,
+			icon: Clock3,
+			tone: 'red',
 			label: __( 'Awaiting approval', 'radius-hotel-booking' ),
 			hint: __( 'Bookings to accept or decline', 'radius-hotel-booking' ),
 			to: '/bookings?tab=awaiting',
 		},
 		{
 			key: 'arrivals_today',
-			icon: LogIn,
+			icon: CalendarArrowUp,
+			tone: 'green',
 			label: __( 'Arriving today', 'radius-hotel-booking' ),
 			hint: __( 'Guests due to check in', 'radius-hotel-booking' ),
 			to: '/bookings?tab=arriving',
 		},
 		{
 			key: 'departures_today',
-			icon: LogOut,
+			icon: CalendarArrowDown,
+			tone: 'orange',
 			label: __( 'Leaving today', 'radius-hotel-booking' ),
 			hint: __( 'Guests due to check out', 'radius-hotel-booking' ),
 			to: '/bookings?tab=leaving',
@@ -67,6 +70,7 @@ export default function Dashboard() {
 		{
 			key: 'in_house',
 			icon: DoorOpen,
+			tone: 'purple',
 			label: __( 'In house', 'radius-hotel-booking' ),
 			hint: __( 'Rooms checked in now', 'radius-hotel-booking' ),
 			to: '/bookings?tab=in_house',
@@ -74,6 +78,7 @@ export default function Dashboard() {
 		{
 			key: 'rooms_free',
 			icon: BedDouble,
+			tone: 'blue',
 			label: __( 'Rooms free now', 'radius-hotel-booking' ),
 			hint: sprintf(
 				/* translators: %d: total number of rooms. */
@@ -89,7 +94,8 @@ export default function Dashboard() {
 		},
 		{
 			key: 'overdue',
-			icon: Clock,
+			icon: AlarmClock,
+			tone: 'amber',
 			label: __( 'Payment overdue', 'radius-hotel-booking' ),
 			hint: __( 'Past their payment deadline', 'radius-hotel-booking' ),
 			to: '/bookings?tab=overdue',
@@ -136,7 +142,7 @@ export default function Dashboard() {
 		<div className="space-y-6">
 			<SiteChecks />
 			{ /* A strip that scrolls sideways on a phone (M01); a grid from sm up. */ }
-			<div className="-mx-4 flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3 2xl:grid-cols-6">
+			<div className="-mx-4 flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3 min-[1600px]:grid-cols-6">
 				{ counters.map( ( counter ) => (
 					<div
 						key={ counter.key }
@@ -148,30 +154,28 @@ export default function Dashboard() {
 							value={ stats[ counter.key ] ?? 0 }
 							hint={ counter.hint }
 							to={ counter.to }
+							tone={ counter.tone }
 							loading={ loading }
 						/>
 					</div>
 				) ) }
 			</div>
 
+			{ /* The booking list under the counters, as on the old dashboard (R1-T10). */ }
+			<BookingList withPageActions={ false } />
+
 			<div className="grid gap-6 lg:grid-cols-3">
 				<div className="min-w-0 lg:col-span-2">
 					<TodayPanel today={ data?.today } loading={ loading } />
 				</div>
-				<SetupPanel steps={ data?.setup } loading={ loading } />
-			</div>
-
-			<div className="grid gap-6 lg:grid-cols-3">
-				<div className="min-w-0 lg:col-span-2">
-					<RecentBookingsPanel
-						bookings={ data?.recent_bookings }
+				{ /* Not stretched to the row: the panels inside are h-full. */ }
+				<div className="space-y-6 self-start">
+					<SetupPanel steps={ data?.setup } loading={ loading } />
+					<RoomStatusPanel
+						counts={ data?.rooms_by_state }
 						loading={ loading }
 					/>
 				</div>
-				<RoomStatusPanel
-					counts={ data?.rooms_by_state }
-					loading={ loading }
-				/>
 			</div>
 		</div>
 	);

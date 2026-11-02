@@ -20,7 +20,9 @@ export default function MobileTabBar( { onOpenMenu } ) {
 	// Re-render when the access map changes (canSee reads it).
 	useAccessMap();
 	const tabs = getRoutes()
-		.filter( ( route ) => route.mobileTab && canSee( route ) )
+		.filter(
+			( route ) => route.mobileTab && ! route.navOnly && canSee( route )
+		)
 		.slice( 0, 4 );
 
 	const itemClass =

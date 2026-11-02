@@ -1,0 +1,164 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Rooms\/Amenities.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Amenity added.": [
+                "\u00c9quipement ajout\u00e9."
+            ],
+            "Amenity renamed.": [
+                "\u00c9quipement renomm\u00e9."
+            ],
+            "Section added.": [
+                "Section ajout\u00e9e."
+            ],
+            "Section renamed.": [
+                "Section renomm\u00e9e."
+            ],
+            "Room types": [
+                "Types de chambre"
+            ],
+            "Amenities": [
+                "\u00c9quipements"
+            ],
+            "Try again": [
+                "R\u00e9essayer"
+            ],
+            "Cancel": [
+                "Annuler"
+            ],
+            "Not used by any room type": [
+                "Utilis\u00e9 par aucun type de chambre"
+            ],
+            "The amenities could not be loaded": [
+                "Les \u00e9quipements n'ont pas pu \u00eatre charg\u00e9s"
+            ],
+            "No amenities yet": [
+                "Aucun \u00e9quipement pour l'instant"
+            ],
+            "Add what your rooms offer once, in sections, e.g. Wi-Fi under Technology. Then tick them on each room type.": [
+                "Ajoutez une fois ce que vos chambres offrent, par sections, p. ex. Wi-Fi sous Technologie. Cochez-les ensuite sur chaque type de chambre."
+            ],
+            "Add common amenities": [
+                "Ajouter les \u00e9quipements courants"
+            ],
+            "No amenities here yet. Drag one in, or add one above with this section chosen.": [
+                "Aucun \u00e9quipement ici pour l'instant. Glissez-en un, ou ajoutez-en un ci-dessus en choisissant cette section."
+            ],
+            "No amenities in this section.": [
+                "Aucun \u00e9quipement dans cette section."
+            ],
+            "One list for the whole hotel, in sections. Room types tick from it, and room pages show the amenities by section, in this order.": [
+                "Une liste unique pour tout l'h\u00f4tel, par sections. Les types de chambre la cochent, et les pages des chambres affichent les \u00e9quipements par section, dans cet ordre."
+            ],
+            "Delete %s?": [
+                "Supprimer %s ?"
+            ],
+            "It is also taken off %1$d room type: %2$s.": [
+                "Il est aussi retir\u00e9 de %1$d type de chambre : %2$s.",
+                "Il est aussi retir\u00e9 de %1$d types de chambre : %2$s."
+            ],
+            "No room type uses it.": [
+                "Aucun type de chambre ne l'utilise."
+            ],
+            "Delete amenity": [
+                "Supprimer l'\u00e9quipement"
+            ],
+            "%s deleted.": [
+                "%s supprim\u00e9."
+            ],
+            "Merge %1$s into %2$s?": [
+                "Fusionner %1$s dans %2$s ?"
+            ],
+            "There is already an amenity called %2$s. Room types that offer %1$s will offer %2$s instead, and %1$s is removed from the list.": [
+                "Un \u00e9quipement nomm\u00e9 %2$s existe d\u00e9j\u00e0. Les types de chambre proposant %1$s proposeront %2$s \u00e0 la place, et %1$s est retir\u00e9 de la liste."
+            ],
+            "Merge": [
+                "Fusionner"
+            ],
+            "Section name": [
+                "Nom de la section"
+            ],
+            "Save name": [
+                "Enregistrer le nom"
+            ],
+            "Move section %s up": [
+                "Monter la section %s"
+            ],
+            "Move section %s down": [
+                "Descendre la section %s"
+            ],
+            "Rename section %s": [
+                "Renommer la section %s"
+            ],
+            "Delete section %s": [
+                "Supprimer la section %s"
+            ],
+            "Add section": [
+                "Ajouter une section"
+            ],
+            "Give the section a name.": [
+                "Donnez un nom \u00e0 la section."
+            ],
+            "Section name, e.g. Kitchen": [
+                "Nom de la section, p. ex. Cuisine"
+            ],
+            "Give the amenity a name.": [
+                "Donnez un nom \u00e0 l'\u00e9quipement."
+            ],
+            "New amenity name": [
+                "Nom du nouvel \u00e9quipement"
+            ],
+            "Section": [
+                "Section"
+            ],
+            "New amenity, e.g. Balcony": [
+                "Nouvel \u00e9quipement, p. ex. Balcon"
+            ],
+            "Add amenity": [
+                "Ajouter l'\u00e9quipement"
+            ],
+            "Choose its section; the icon is optional. Guests see both on room pages.": [
+                "Choisissez sa section ; l'ic\u00f4ne est facultative. Les clients voient les deux sur les pages des chambres."
+            ],
+            "Icon saved.": [
+                "Ic\u00f4ne enregistr\u00e9e."
+            ],
+            "Icon removed.": [
+                "Ic\u00f4ne retir\u00e9e."
+            ],
+            "Amenity name": [
+                "Nom de l'\u00e9quipement"
+            ],
+            "%1$d room type: %2$s": [
+                "%1$d type de chambre : %2$s",
+                "%1$d types de chambre : %2$s"
+            ],
+            "Move %s up": [
+                "Monter %s"
+            ],
+            "Move %s down": [
+                "Descendre %s"
+            ],
+            "Move %s to another section": [
+                "D\u00e9placer %s vers une autre section"
+            ],
+            "Move to section": [
+                "D\u00e9placer vers la section"
+            ],
+            "Rename %s": [
+                "Renommer %s"
+            ],
+            "Delete %s": [
+                "Supprimer %s"
+            ]
+        }
+    }
+}

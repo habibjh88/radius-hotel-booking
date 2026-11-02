@@ -13,6 +13,8 @@ use RadiusTheme\RadiusHotelBooking\Models\Note;
 use RadiusTheme\RadiusHotelBooking\Repositories\BookingRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\GuestRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\NoteRepository;
+use RadiusTheme\RadiusHotelBooking\Repositories\RoomRepository;
+use RadiusTheme\RadiusHotelBooking\Repositories\RoomTypeRepository;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -81,6 +83,37 @@ class NoteService {
 						'type'  => 'booking',
 						'id'    => (int) $booking->id,
 						'label' => (string) $booking->reference,
+					) : null;
+				},
+			),
+			// Rooms and room types (R1-T14): what the team should know, e.g. "AC broken in A12".
+			'room'      => array(
+				'read'     => 'page.rooms',
+				'add'      => 'rooms.note_add',
+				'edit'     => 'rooms.note_edit',
+				'remove'   => 'rooms.note_remove',
+				'activity' => 'rooms.note',
+				'find'     => static function ( int $id ): ?array {
+					$room = ( new RoomRepository() )->find( $id );
+					return $room ? array(
+						'type'  => 'room',
+						'id'    => (int) $room->id,
+						'label' => (string) $room->number,
+					) : null;
+				},
+			),
+			'room_type' => array(
+				'read'     => 'page.rooms',
+				'add'      => 'rooms.note_add',
+				'edit'     => 'rooms.note_edit',
+				'remove'   => 'rooms.note_remove',
+				'activity' => 'rooms.note',
+				'find'     => static function ( int $id ): ?array {
+					$type = ( new RoomTypeRepository() )->find( $id );
+					return $type ? array(
+						'type'  => 'room_type',
+						'id'    => (int) $type->id,
+						'label' => (string) $type->name,
 					) : null;
 				},
 			),

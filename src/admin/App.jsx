@@ -140,13 +140,17 @@ export default function App() {
 				<AppShell>
 					<Suspense fallback={ <ScreenSkeleton /> }>
 						<Routes>
-							{ getRoutes().map( ( route ) => (
-								<Route
-									key={ route.path }
-									path={ route.path }
-									element={ <RouteScreen route={ route } /> }
-								/>
-							) ) }
+							{ getRoutes()
+								.filter( ( route ) => ! route.navOnly )
+								.map( ( route ) => (
+									<Route
+										key={ route.path }
+										path={ route.path }
+										element={
+											<RouteScreen route={ route } />
+										}
+									/>
+								) ) }
 							<Route path="*" element={ <NotFound /> } />
 						</Routes>
 					</Suspense>

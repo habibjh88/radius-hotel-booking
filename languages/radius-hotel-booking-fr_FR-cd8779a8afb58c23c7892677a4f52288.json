@@ -1,0 +1,60 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/components\/booking\/SummaryStep.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Payment": [
+                "Paiement"
+            ],
+            "Unpaid": [
+                "Non pay\u00e9"
+            ],
+            "Total": [
+                "Total"
+            ],
+            "Reference": [
+                "R\u00e9f\u00e9rence"
+            ],
+            "Paid by": [
+                "Pay\u00e9 par"
+            ],
+            "Confirm booking": [
+                "Confirmer la r\u00e9servation"
+            ],
+            "Paid now": [
+                "Pay\u00e9 maintenant"
+            ],
+            "Choose": [
+                "Choisir"
+            ],
+            "Optional: the transaction number.": [
+                "Facultatif : le num\u00e9ro de transaction."
+            ],
+            "Note": [
+                "Note"
+            ],
+            "Special requests or anything the team should know. Optional.": [
+                "Demandes particuli\u00e8res ou tout ce que l'\u00e9quipe doit savoir. Facultatif."
+            ],
+            "The price of room %1$s changed from %2$s to %3$s.": [
+                "Le prix de la chambre %1$s est pass\u00e9 de %2$s \u00e0 %3$s."
+            ],
+            "Accept the new price and confirm": [
+                "Accepter le nouveau prix et confirmer"
+            ],
+            "The guest is banned: this booking cannot be confirmed.": [
+                "Ce client est banni : cette r\u00e9servation ne peut pas \u00eatre confirm\u00e9e."
+            ],
+            "Confirming\u2026": [
+                "Confirmation\u2026"
+            ]
+        }
+    }
+}

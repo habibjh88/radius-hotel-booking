@@ -1,0 +1,81 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Settings\/sections\/Phone.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Code": [
+                "Code"
+            ],
+            "Remove": [
+                "Retirer"
+            ],
+            "Custom codes": [
+                "Indicatifs personnalis\u00e9s"
+            ],
+            "Countries": [
+                "Pays"
+            ],
+            "Remove %s": [
+                "Retirer %s"
+            ],
+            "Name": [
+                "Nom"
+            ],
+            "Every phone field \u2014 the booking form, guests, staff \u2014 starts on the default country and offers the allowed ones.": [
+                "Chaque champ de t\u00e9l\u00e9phone \u2014 le formulaire de r\u00e9servation, les clients, le personnel \u2014 d\u00e9marre sur le pays par d\u00e9faut et propose les pays autoris\u00e9s."
+            ],
+            "Default country": [
+                "Pays par d\u00e9faut"
+            ],
+            "Numbers typed without a code are read in this country.": [
+                "Les num\u00e9ros saisis sans indicatif sont lus dans ce pays."
+            ],
+            "Allowed countries": [
+                "Pays autoris\u00e9s"
+            ],
+            "Only these countries are offered. Leave it empty to allow every country.": [
+                "Seuls ces pays sont propos\u00e9s. Laissez vide pour autoriser tous les pays."
+            ],
+            "Calling codes the country list does not cover, such as a private network or an old numbering plan. A number with one of these codes is checked by its number of digits only.": [
+                "Indicatifs que la liste des pays ne couvre pas, comme un r\u00e9seau priv\u00e9 ou un ancien plan de num\u00e9rotation. Un num\u00e9ro avec l\u2019un de ces indicatifs est v\u00e9rifi\u00e9 uniquement d\u2019apr\u00e8s son nombre de chiffres."
+            ],
+            "Fewest digits": [
+                "Nombre minimum de chiffres"
+            ],
+            "Most digits": [
+                "Nombre maximum de chiffres"
+            ],
+            "Name, e.g. Hotel network": [
+                "Nom, ex. R\u00e9seau de l\u2019h\u00f4tel"
+            ],
+            "Calling code": [
+                "Indicatif"
+            ],
+            "this code": [
+                "cet indicatif"
+            ],
+            "No custom codes. The country list covers most numbers.": [
+                "Aucun indicatif personnalis\u00e9. La liste des pays couvre la plupart des num\u00e9ros."
+            ],
+            "Add a code": [
+                "Ajouter un indicatif"
+            ],
+            "Try it": [
+                "Essayer"
+            ],
+            "A phone field with the settings above, before you save. Nothing typed here is kept.": [
+                "Un champ de t\u00e9l\u00e9phone avec les r\u00e9glages ci-dessus, avant d\u2019enregistrer. Rien de ce qui est saisi ici n\u2019est conserv\u00e9."
+            ],
+            "Saved as %s": [
+                "Enregistr\u00e9 comme %s"
+            ]
+        }
+    }
+}

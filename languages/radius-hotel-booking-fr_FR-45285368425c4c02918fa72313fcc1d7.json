@@ -1,0 +1,87 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Settings\/sections\/index.js",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Exports": [
+                "Exports"
+            ],
+            "Payments": [
+                "Paiements"
+            ],
+            "Permissions": [
+                "Autorisations"
+            ],
+            "General": [
+                "G\u00e9n\u00e9ral"
+            ],
+            "Display": [
+                "Affichage"
+            ],
+            "E-mail": [
+                "E-mail"
+            ],
+            "Your hotel\u2019s details, formats and currency": [
+                "Les informations, formats et la devise de votre h\u00f4tel"
+            ],
+            "Booking rules": [
+                "R\u00e8gles de r\u00e9servation"
+            ],
+            "Booking window, same-day bookings, approval and turnover": [
+                "D\u00e9lai de r\u00e9servation, r\u00e9servations le jour m\u00eame, validation et rotation des chambres"
+            ],
+            "Public booking": [
+                "R\u00e9servation publique"
+            ],
+            "The search bar, the booking page and the booking form": [
+                "La barre de recherche, la page de r\u00e9servation et le formulaire de r\u00e9servation"
+            ],
+            "Guest accounts": [
+                "Comptes clients"
+            ],
+            "Signing in on the booking form and accounts for new guests": [
+                "Connexion sur le formulaire de r\u00e9servation et comptes des nouveaux clients"
+            ],
+            "Phone numbers": [
+                "Num\u00e9ros de t\u00e9l\u00e9phone"
+            ],
+            "Default country, allowed countries and custom calling codes": [
+                "Pays par d\u00e9faut, pays autoris\u00e9s et indicatifs personnalis\u00e9s"
+            ],
+            "How guests can pay, with the instructions they receive": [
+                "Comment les clients peuvent payer, avec les instructions qu\u2019ils re\u00e7oivent"
+            ],
+            "Invoices": [
+                "Factures"
+            ],
+            "Invoice numbers, tax and the footer text": [
+                "Num\u00e9ros de facture, taxe et texte de pied de page"
+            ],
+            "How export files are written": [
+                "Comment les fichiers d\u2019export sont r\u00e9dig\u00e9s"
+            ],
+            "Notifications": [
+                "Notifications"
+            ],
+            "The new-booking alert and its sound": [
+                "L\u2019alerte de nouvelle r\u00e9servation et son son"
+            ],
+            "Sender, reply-to and which e-mails are sent": [
+                "Exp\u00e9diteur, adresse de r\u00e9ponse et e-mails envoy\u00e9s"
+            ],
+            "Brand colour of the dashboard and booking pages": [
+                "Couleur de la marque du tableau de bord et des pages de r\u00e9servation"
+            ],
+            "What each staff role may open and do": [
+                "Ce que chaque r\u00f4le du personnel peut ouvrir et faire"
+            ]
+        }
+    }
+}

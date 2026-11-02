@@ -405,6 +405,10 @@ class LoadAssets {
 					// The account menu's *Sign out* (the app adds where to come back to);
 					// decoded, wp_logout_url() escapes its `&` for HTML.
 					'logout_url' => wp_specialchars_decode( wp_logout_url() ),
+					// The account menu: role line and Language (R1-T6).
+					'role'       => \RadiusTheme\RadiusHotelBooking\Services\Account\UserLanguage::roleLabel( get_current_user_id() ),
+					'locale'     => \RadiusTheme\RadiusHotelBooking\Services\Account\UserLanguage::current( get_current_user_id() ),
+					'languages'  => \RadiusTheme\RadiusHotelBooking\Services\Account\UserLanguage::options(),
 				),
 				'settings'         => array(
 					'general'       => SettingsHelper::get_setting( 'general' ),
@@ -539,6 +543,26 @@ class LoadAssets {
 	}
 
 	/**
+	 * Text domains whose script translations are merged (see
+	 * load_merged_script_translations()), each with its plugin's languages
+	 * folder. Add-ons add theirs so their bundles are translated the same way.
+	 *
+	 * @return array<string,string> Text domain => languages folder.
+	 */
+	public static function script_translation_domains(): array {
+		/**
+		 * Filters the text domains whose JS translations are merged from every
+		 * JSON file and the compiled catalog, instead of one bundle-hashed file.
+		 *
+		 * @param array<string,string> $domains Text domain => the plugin's languages folder.
+		 */
+		return (array) apply_filters(
+			'rtbp_script_translation_domains',
+			array( 'radius-hotel-booking' => RADIUS_HOTEL_BOOKING_DIR . '/languages' )
+		);
+	}
+
+	/**
 	 * Merge all JSON translation files for the current locale into one
 	 * locale_data block and return it as the script translations payload.
 	 *
@@ -554,9 +578,11 @@ class LoadAssets {
 	 * @return string|null JSON string to use as locale data, or null to defer.
 	 */
 	public function load_merged_script_translations( $translations, $file, $handle, $domain ) {
-		if ( 'radius-hotel-booking' !== $domain ) {
+		$domains = self::script_translation_domains();
+		if ( ! isset( $domains[ $domain ] ) ) {
 			return $translations;
 		}
+		$dir = untrailingslashit( (string) $domains[ $domain ] );
 
 		static $cache = array();
 		// determine_locale() returns the admin user's profile language on
@@ -565,7 +591,7 @@ class LoadAssets {
 		// get_locale() as a fallback so a site-language change works without
 		// needing to also change the user profile.
 		$locales = array_unique( array_filter( array( determine_locale(), get_locale() ) ) );
-		$cache_key = implode( '|', $locales );
+		$cache_key = $domain . '|' . implode( '|', $locales );
 		if ( isset( $cache[ $cache_key ] ) ) {
 			return $cache[ $cache_key ];
 		}
@@ -586,12 +612,12 @@ class LoadAssets {
 		// to English until someone runs `wp i18n make-json`. Sourcing the JS
 		// strings from the same catalog PHP uses means translations "just
 		// work" from a .mo alone — no JSON required.
-		$this->merge_php_catalog_messages( $messages, $locales );
+		$this->merge_php_catalog_messages( $messages, $locales, $domain, $dir );
 
 		// 2) Overlay any per-script JSON files if present. These are effectively
 		// identical to the catalog for JS strings, but we let them win so a
 		// freshly regenerated JSON can override an older .mo.
-		$files = $this->find_translation_json_files( $locales );
+		$files = $this->find_translation_json_files( $locales, $domain, $dir );
 		foreach ( $files as $f ) {
 			$raw = @file_get_contents( $f ); // phpcs:ignore WordPress.PHP.NoSilencedErrors,WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 			if ( false === $raw ) {
@@ -652,12 +678,14 @@ class LoadAssets {
 	 *
 	 * @param array    $messages Reference to the locale_data messages array to fill.
 	 * @param string[] $locales  Locale codes in priority order.
+	 * @param string   $domain   Text domain.
+	 * @param string   $dir      The plugin's own languages folder.
 	 *
 	 * @return void
 	 */
-	private function merge_php_catalog_messages( array &$messages, array $locales ) {
+	private function merge_php_catalog_messages( array &$messages, array $locales, $domain = 'radius-hotel-booking', $dir = '' ) {
 		$locale = reset( $locales );
-		$mofile = $this->find_newest_mofile( $locale );
+		$mofile = $this->find_newest_mofile( $locale, $domain, $dir );
 		if ( '' === $mofile ) {
 			return;
 		}
@@ -716,12 +744,14 @@ class LoadAssets {
 	 * fallback reads exactly the catalog PHP would.
 	 *
 	 * @param string $locale Locale code, e.g. 'de_DE'.
+	 * @param string $domain Text domain.
+	 * @param string $dir    The plugin's own languages folder ('' = this plugin's).
 	 *
 	 * @return string Absolute path to the newest .mo, or '' if none found.
 	 */
-	private function find_newest_mofile( $locale ) {
+	private function find_newest_mofile( $locale, $domain = 'radius-hotel-booking', $dir = '' ) {
 		$dirs = array(
-			RADIUS_HOTEL_BOOKING_DIR . '/languages',
+			'' !== $dir ? $dir : RADIUS_HOTEL_BOOKING_DIR . '/languages',
 			WP_LANG_DIR . '/loco/plugins',
 			WP_LANG_DIR . '/plugins',
 		);
@@ -729,7 +759,7 @@ class LoadAssets {
 		$best      = '';
 		$best_time = -1;
 		foreach ( $dirs as $dir ) {
-			$candidate = $dir . '/radius-hotel-booking-' . $locale . '.mo';
+			$candidate = $dir . '/' . $domain . '-' . $locale . '.mo';
 			if ( is_readable( $candidate ) ) {
 				$time = (int) filemtime( $candidate );
 				if ( $time > $best_time ) {
@@ -753,12 +783,14 @@ class LoadAssets {
 	 * free to pick whichever is appropriate for their server.
 	 *
 	 * @param string[] $locales Locale codes to try, in priority order.
+	 * @param string   $domain  Text domain.
+	 * @param string   $dir     The plugin's own languages folder ('' = this plugin's).
 	 *
 	 * @return string[] List of absolute file paths.
 	 */
-	private function find_translation_json_files( array $locales ) {
+	private function find_translation_json_files( array $locales, $domain = 'radius-hotel-booking', $dir = '' ) {
 		$dirs = array(
-			RADIUS_HOTEL_BOOKING_DIR . '/languages',
+			'' !== $dir ? $dir : RADIUS_HOTEL_BOOKING_DIR . '/languages',
 			WP_LANG_DIR . '/loco/plugins',
 			WP_LANG_DIR . '/plugins',
 		);
@@ -770,8 +802,8 @@ class LoadAssets {
 				// so community translations from translate.wordpress.org are
 				// picked up too.
 				$patterns = array(
-					$dir . '/radius-hotel-booking-' . $locale . '-*.json',
-					$dir . '/radius-hotel-booking-' . $locale . '.json',
+					$dir . '/' . $domain . '-' . $locale . '-*.json',
+					$dir . '/' . $domain . '-' . $locale . '.json',
 				);
 				foreach ( $patterns as $pattern ) {
 					$matches = glob( $pattern );

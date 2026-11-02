@@ -1,0 +1,21 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/components\/booking\/HoldChip.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Hold expired: rooms are checked again on confirm": [
+                "Option expir\u00e9e : les chambres seront rev\u00e9rifi\u00e9es \u00e0 la confirmation"
+            ],
+            "Rooms held for %1$d:%2$s": [
+                "Chambres retenues pendant %1$d:%2$s"
+            ]
+        }
+    }
+}

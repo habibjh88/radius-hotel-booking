@@ -1,0 +1,106 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Rooms\/components\/RatesTab.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Prices saved.": [
+                "Prix enregistr\u00e9s."
+            ],
+            "Price": [
+                "Prix"
+            ],
+            "Sale price": [
+                "Prix promotionnel"
+            ],
+            "Enter the price to sell this rate plan.": [
+                "Saisissez le prix de vente de cette formule tarifaire."
+            ],
+            "The sale price must be lower than the price.": [
+                "Le prix promotionnel doit \u00eatre inf\u00e9rieur au prix."
+            ],
+            "Try again": [
+                "R\u00e9essayer"
+            ],
+            "Saving\u2026": [
+                "Enregistrement\u2026"
+            ],
+            "None": [
+                "Aucun"
+            ],
+            "No rate plans yet": [
+                "Aucune formule tarifaire pour l'instant"
+            ],
+            "Move %s up": [
+                "Monter %s"
+            ],
+            "Move %s down": [
+                "Descendre %s"
+            ],
+            "Rate plan": [
+                "Formule tarifaire"
+            ],
+            "Use at most %d decimal.": [
+                "Utilisez au plus %d d\u00e9cimale.",
+                "Utilisez au plus %d d\u00e9cimales."
+            ],
+            "Use a whole amount.": [
+                "Utilisez un montant entier."
+            ],
+            "The maximum must be at least the minimum.": [
+                "Le maximum doit \u00eatre au moins \u00e9gal au minimum."
+            ],
+            "The prices could not be loaded": [
+                "Les prix n'ont pas pu \u00eatre charg\u00e9s"
+            ],
+            "Create your stay windows first, then price them here.": [
+                "Cr\u00e9ez d'abord vos cr\u00e9neaux de s\u00e9jour, puis tarifez-les ici."
+            ],
+            "Go to rate plans": [
+                "Aller aux formules tarifaires"
+            ],
+            "Any": [
+                "Tous"
+            ],
+            "Price & Rates": [
+                "Prix et tarifs"
+            ],
+            "Switch on the rate plans this room type sells and set their prices. The order here is the order guests see.": [
+                "Activez les formules tarifaires vendues pour ce type de chambre et fixez leurs prix. L\u2019ordre ici est celui que voient les clients."
+            ],
+            "Sell": [
+                "Vente"
+            ],
+            "Min": [
+                "Min"
+            ],
+            "Max": [
+                "Max"
+            ],
+            "Sell %s": [
+                "Vente %s"
+            ],
+            "Plan inactive": [
+                "Formule inactive"
+            ],
+            "One stay": [
+                "Un s\u00e9jour"
+            ],
+            "You have unsaved price changes.": [
+                "Vous avez des modifications de prix non enregistr\u00e9es."
+            ],
+            "Discard": [
+                "Annuler"
+            ],
+            "Save prices": [
+                "Enregistrer les prix"
+            ]
+        }
+    }
+}

@@ -1,0 +1,174 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Settings\/sections\/General.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Currency": [
+                "Devise"
+            ],
+            "Phone": [
+                "T\u00e9l\u00e9phone"
+            ],
+            "US dollar (USD)": [
+                "Dollar am\u00e9ricain (USD)"
+            ],
+            "Euro (EUR)": [
+                "Euro (EUR)"
+            ],
+            "Pound sterling (GBP)": [
+                "Livre sterling (GBP)"
+            ],
+            "Indian rupee (INR)": [
+                "Roupie indienne (INR)"
+            ],
+            "CFA franc (XOF)": [
+                "Franc CFA (XOF)"
+            ],
+            "Hotel details": [
+                "Informations de l\u2019h\u00f4tel"
+            ],
+            "Shown on e-mails, invoices, payslips and the booking pages.": [
+                "Affich\u00e9 sur les e-mails, les factures, les bulletins de paie et les pages de r\u00e9servation."
+            ],
+            "Hotel name": [
+                "Nom de l\u2019h\u00f4tel"
+            ],
+            "Legal name": [
+                "Raison sociale"
+            ],
+            "The registered company name on invoices. Leave empty to use the hotel name.": [
+                "Le nom officiel de l\u2019entreprise sur les factures. Laissez vide pour utiliser le nom de l\u2019h\u00f4tel."
+            ],
+            "Address": [
+                "Adresse"
+            ],
+            "Contact e-mail": [
+                "E-mail de contact"
+            ],
+            "Logo": [
+                "Logo"
+            ],
+            "Shown at the top of e-mails and documents. A square image works best.": [
+                "Affich\u00e9 en haut des e-mails et des documents. Une image carr\u00e9e convient le mieux."
+            ],
+            "Choose a logo": [
+                "Choisir un logo"
+            ],
+            "Registration numbers": [
+                "Num\u00e9ros d\u2019immatriculation"
+            ],
+            "Printed on invoices and payslips when filled in.": [
+                "Imprim\u00e9s sur les factures et les bulletins de paie lorsqu\u2019ils sont renseign\u00e9s."
+            ],
+            "Tax number": [
+                "Num\u00e9ro fiscal"
+            ],
+            "Social security number": [
+                "Num\u00e9ro de s\u00e9curit\u00e9 sociale"
+            ],
+            "Your employer registration with the social security office, printed on invoices and payslips.": [
+                "Votre num\u00e9ro d\u2019employeur aupr\u00e8s de l\u2019organisme de s\u00e9curit\u00e9 sociale, imprim\u00e9 sur les factures et les bulletins de paie."
+            ],
+            "Date and time": [
+                "Date et heure"
+            ],
+            "How dates and times appear across the dashboard, e-mails and documents.": [
+                "Comment les dates et les heures apparaissent dans le tableau de bord, les e-mails et les documents."
+            ],
+            "Date format": [
+                "Format de date"
+            ],
+            "Custom\u2026": [
+                "Personnalis\u00e9\u2026"
+            ],
+            "Custom date format": [
+                "Format de date personnalis\u00e9"
+            ],
+            "Empty: the WordPress date format is used.": [
+                "Vide : le format de date de WordPress est utilis\u00e9."
+            ],
+            "Time format": [
+                "Format d\u2019heure"
+            ],
+            "Preview: %s": [
+                "Aper\u00e7u : %s"
+            ],
+            "Every price, payment, invoice and report uses this currency.": [
+                "Chaque prix, paiement, facture et rapport utilise cette devise."
+            ],
+            "Quick setup:": [
+                "Configuration rapide :"
+            ],
+            "Currency code": [
+                "Code de la devise"
+            ],
+            "Three letters, e.g. USD.": [
+                "Trois lettres, ex. USD."
+            ],
+            "Symbol": [
+                "Symbole"
+            ],
+            "Symbol position": [
+                "Position du symbole"
+            ],
+            "Before": [
+                "Avant"
+            ],
+            "Before, with a space": [
+                "Avant, avec une espace"
+            ],
+            "After": [
+                "Apr\u00e8s"
+            ],
+            "After, with a space": [
+                "Apr\u00e8s, avec une espace"
+            ],
+            "Thousands separator": [
+                "S\u00e9parateur des milliers"
+            ],
+            "Currently a space.": [
+                "Actuellement une espace."
+            ],
+            "A space is allowed.": [
+                "Une espace est autoris\u00e9e."
+            ],
+            "Decimal separator": [
+                "S\u00e9parateur d\u00e9cimal"
+            ],
+            "Decimals": [
+                "D\u00e9cimales"
+            ],
+            "Uninstall": [
+                "D\u00e9sinstallation"
+            ],
+            "What happens to your data when the plugin is deleted.": [
+                "Ce qui arrive \u00e0 vos donn\u00e9es lorsque le plugin est supprim\u00e9."
+            ],
+            "Full removal is on for this site: deleting the plugin from the Plugins screen erases every booking, guest, payment, setting and file for good.": [
+                "La suppression compl\u00e8te est activ\u00e9e pour ce site : supprimer le plugin depuis l\u2019\u00e9cran Extensions efface d\u00e9finitivement toutes les r\u00e9servations, tous les clients, paiements, r\u00e9glages et fichiers."
+            ],
+            "Your data is kept. Deleting the plugin removes only its code: bookings, guests, rooms, payments, settings and files stay, and come back when you install it again. Deactivating never deletes anything.": [
+                "Vos donn\u00e9es sont conserv\u00e9es. Supprimer le plugin n\u2019enl\u00e8ve que son code : les r\u00e9servations, clients, chambres, paiements, r\u00e9glages et fichiers restent, et reviennent quand vous le r\u00e9installez. D\u00e9sactiver ne supprime jamais rien."
+            ],
+            "To keep the data instead": [
+                "Pour conserver les donn\u00e9es"
+            ],
+            "To erase all data when the plugin is deleted": [
+                "Pour effacer toutes les donn\u00e9es lors de la suppression du plugin"
+            ],
+            "Remove this line from the site's wp-config.php file:": [
+                "Retirez cette ligne du fichier wp-config.php du site :"
+            ],
+            "Ask whoever manages the website to add this line to its wp-config.php file, above \"That's all, stop editing!\", then delete the plugin. It cannot be undone, so take a backup first.": [
+                "Demandez \u00e0 la personne qui g\u00e8re le site d\u2019ajouter cette ligne \u00e0 son fichier wp-config.php, au-dessus de \u00ab That's all, stop editing! \u00bb, puis supprimez le plugin. C\u2019est irr\u00e9versible, faites donc d\u2019abord une sauvegarde."
+            ]
+        }
+    }
+}

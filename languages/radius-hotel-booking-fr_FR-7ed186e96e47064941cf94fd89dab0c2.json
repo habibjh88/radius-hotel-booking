@@ -1,0 +1,141 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Settings\/sections\/Booking.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Guests": [
+                "Clients"
+            ],
+            "On the website": [
+                "Sur le site web"
+            ],
+            "minutes": [
+                "minutes"
+            ],
+            "Online bookings": [
+                "R\u00e9servations en ligne"
+            ],
+            "What guests can book on your website. Staff at the front desk are not limited by these rules.": [
+                "Ce que les clients peuvent r\u00e9server sur votre site. Le personnel de la r\u00e9ception n\u2019est pas limit\u00e9 par ces r\u00e8gles."
+            ],
+            "Booking window": [
+                "D\u00e9lai de r\u00e9servation"
+            ],
+            "How many days ahead guests can book. 0 means no limit.": [
+                "Combien de jours \u00e0 l\u2019avance les clients peuvent r\u00e9server. 0 signifie aucune limite."
+            ],
+            "days": [
+                "jours"
+            ],
+            "Same-day bookings": [
+                "R\u00e9servations le jour m\u00eame"
+            ],
+            "Let guests book a stay that starts today.": [
+                "Permettre aux clients de r\u00e9server un s\u00e9jour qui commence aujourd\u2019hui."
+            ],
+            "Cut-off time": [
+                "Heure limite"
+            ],
+            "The last time of day guests can book a stay that starts today on the website. After it, the calendar starts from tomorrow. Rates that have already started are never offered, so a late cut-off (such as your last check-in time) is safe. Staff can always book today at the desk.": [
+                "L\u2019heure la plus tardive \u00e0 laquelle les clients peuvent r\u00e9server sur le site un s\u00e9jour commen\u00e7ant aujourd\u2019hui. Apr\u00e8s, le calendrier commence \u00e0 demain. Les tarifs d\u00e9j\u00e0 commenc\u00e9s ne sont jamais propos\u00e9s, une heure limite tardive (comme votre derni\u00e8re heure d\u2019arriv\u00e9e) est donc sans risque. Le personnel peut toujours r\u00e9server pour aujourd\u2019hui \u00e0 la r\u00e9ception."
+            ],
+            "Approve bookings manually": [
+                "Valider les r\u00e9servations manuellement"
+            ],
+            "New bookings stay pending until a staff member approves them. The room is held meanwhile.": [
+                "Les nouvelles r\u00e9servations restent en attente jusqu\u2019\u00e0 validation par un membre du personnel. La chambre est retenue entre-temps."
+            ],
+            "Unavailable rooms in search results": [
+                "Chambres indisponibles dans les r\u00e9sultats"
+            ],
+            "Hide them": [
+                "Les masquer"
+            ],
+            "Show as unavailable": [
+                "Afficher comme indisponibles"
+            ],
+            "How guests are counted when a room\u2019s capacity is checked.": [
+                "Comment les clients sont compt\u00e9s lors de la v\u00e9rification de la capacit\u00e9 d\u2019une chambre."
+            ],
+            "Maximum child age": [
+                "\u00c2ge maximum d\u2019un enfant"
+            ],
+            "Guests up to this age count as children; older guests count as adults.": [
+                "Les clients jusqu\u2019\u00e0 cet \u00e2ge sont compt\u00e9s comme enfants ; les plus \u00e2g\u00e9s comme adultes."
+            ],
+            "years": [
+                "ans"
+            ],
+            "Rooms between stays": [
+                "Chambres entre deux s\u00e9jours"
+            ],
+            "Holding a room while a booking is filled in, and cleaning time after a stay.": [
+                "Retenir une chambre pendant le remplissage d\u2019une r\u00e9servation, et temps de nettoyage apr\u00e8s un s\u00e9jour."
+            ],
+            "Hold a selected room for": [
+                "Retenir une chambre s\u00e9lectionn\u00e9e pendant"
+            ],
+            "While a booking is being filled in, nobody else can take the room. The hold ends after this time.": [
+                "Pendant qu\u2019une r\u00e9servation est remplie, personne d\u2019autre ne peut prendre la chambre. La retenue prend fin apr\u00e8s ce d\u00e9lai."
+            ],
+            "Cleaning time after a stay": [
+                "Temps de nettoyage apr\u00e8s un s\u00e9jour"
+            ],
+            "The room can be sold again only this long after the previous guest leaves. A room type can override it.": [
+                "La chambre ne peut \u00eatre revendue qu\u2019apr\u00e8s ce d\u00e9lai suivant le d\u00e9part du client pr\u00e9c\u00e9dent. Un type de chambre peut le remplacer."
+            ],
+            "Rooms per booking": [
+                "Chambres par r\u00e9servation"
+            ],
+            "The most rooms one booking can take, for groups. Rooms can be ticked and held together.": [
+                "Le nombre maximum de chambres pour une r\u00e9servation, pour les groupes. Les chambres peuvent \u00eatre coch\u00e9es et retenues ensemble."
+            ],
+            "At the front desk": [
+                "\u00c0 la r\u00e9ception"
+            ],
+            "rooms": [
+                "chambres"
+            ],
+            "Also the most rooms one visitor can hold at once.": [
+                "C\u2019est aussi le nombre maximum de chambres qu\u2019un visiteur peut retenir en m\u00eame temps."
+            ],
+            "Nightly stays": [
+                "S\u00e9jours \u00e0 la nuit"
+            ],
+            "Default times for rate plans sold by the night. A rate plan with its own times uses those instead.": [
+                "Horaires par d\u00e9faut des formules tarifaires vendues \u00e0 la nuit. Une formule ayant ses propres horaires utilise ceux-ci \u00e0 la place."
+            ],
+            "Check-in from": [
+                "Arriv\u00e9e \u00e0 partir de"
+            ],
+            "Check-out by": [
+                "D\u00e9part avant"
+            ],
+            "Payment deadline": [
+                "\u00c9ch\u00e9ance de paiement"
+            ],
+            "When an unpaid booking must be paid: so many hours after it is made, but no later than so many hours before arrival. Guests see the deadline counted down.": [
+                "Quand une r\u00e9servation impay\u00e9e doit \u00eatre r\u00e9gl\u00e9e : un certain nombre d\u2019heures apr\u00e8s sa cr\u00e9ation, mais au plus tard un certain nombre d\u2019heures avant l\u2019arriv\u00e9e. Les clients voient le compte \u00e0 rebours de l\u2019\u00e9ch\u00e9ance."
+            ],
+            "Due after booking": [
+                "\u00c0 r\u00e9gler apr\u00e8s la r\u00e9servation"
+            ],
+            "0 means no deadline.": [
+                "0 signifie aucune \u00e9ch\u00e9ance."
+            ],
+            "hours": [
+                "heures"
+            ],
+            "At the latest, before arrival": [
+                "Au plus tard, avant l\u2019arriv\u00e9e"
+            ]
+        }
+    }
+}

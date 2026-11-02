@@ -263,6 +263,8 @@ class ReportService {
 		$name_parts = array( 'report', $name, $range->from, $range->to );
 		if ( 'created' === $range->mode ) {
 			$name_parts[] = 'booked';
+		} elseif ( 'departure' === $range->mode ) {
+			$name_parts[] = 'departures';
 		}
 		$file = ExportWriter::write( $format, $tables, implode( '-', $name_parts ) );
 
@@ -474,12 +476,15 @@ class ReportService {
 	 */
 	private static function periodTitle( string $name, ReportRange $range ): string {
 		return sprintf(
-			/* translators: 1: report name, 2: first day, 3: last day, 4: "by arrival date" or "by booking date". */
+			/* translators: 1: report name, 2: first day, 3: last day, 4: "by arrival date", "by departure date" or "by booking date". */
 			__( '%1$s, %2$s to %3$s, %4$s', 'radius-hotel-booking' ),
 			$name,
 			$range->from,
 			$range->to,
-			'created' === $range->mode ? __( 'by booking date', 'radius-hotel-booking' ) : __( 'by arrival date', 'radius-hotel-booking' )
+			array(
+				'created'   => __( 'by booking date', 'radius-hotel-booking' ),
+				'departure' => __( 'by departure date', 'radius-hotel-booking' ),
+			)[ $range->mode ] ?? __( 'by arrival date', 'radius-hotel-booking' )
 		);
 	}
 

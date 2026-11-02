@@ -159,7 +159,7 @@ state for UI only. No Redux, no `@wordpress/data` stores for domain data.
 | Plugin | Contains |
 |---|---|
 | **Free** `radius-hotel-booking` (wordpress.org) | The complete core hotel: inventory, rate plans at base, sale and date-override price, the availability engine, calendar and blocks, guests, desk and public booking, the booking record, manual payment with invoice numbers and a print view, the dashboard, basic reports, basic access control (open/locked per access key per role), settings, and translatable strings |
-| **Pro** `radius-hotel-booking-pro` | Advanced pricing rules (seasonal, occupancy, early-bird, last-minute) · iCal sync · the **activity log** (M14) · the passcode level, PINs, custom access roles, per-person overrides and profile-field control · PDF invoices and receipts, and the overdue auto-release · advanced reports (occupancy %, revenue breakdowns, XLSX) · scheduled exports and archive-and-remove · staff records (M12) · staff self-service (M16) |
+| **Pro** `radius-hotel-booking-pro` | Advanced pricing rules (seasonal, occupancy, early-bird, last-minute) · iCal sync · the **activity log** (M14) · the passcode level, PINs, custom access roles, per-person overrides and profile-field control · PDF invoices and receipts, and the overdue auto-release · advanced reports (occupancy %, revenue breakdowns, XLSX) · scheduled exports (archive-and-remove dropped in R1, 2026-11-02) · staff records (M12) · staff self-service (M16) |
 | **Client add-on** `radius-hotel-booking-residencetata` | Côte d'Ivoire payroll (M15), the legacy data import (M18), and the client's defaults and branding |
 
 The per-module split is the **Tier** line in each module doc and the Tier column in `roadmap.md`.
@@ -198,7 +198,7 @@ neither.
 | `BookingStatusService::release( $id, $reason, $only_if )` (**live**, M05 T6; `$only_if` M05 T8): releases an overdue booking under the lock, logged `bookings.release_overdue`; `$only_if` adds conditions checked under the same lock — `as_of` (overdue already at that time) and `unless_held` (409 `on_hold`) | Pro's automatic release (M05 T8) runs it with no user signed in (logged as system), a grace period and `unless_held`; an older free ignores the third argument |
 | `rtbp_report_definitions`, the `rtbp_export_formats` filter (CSV in free) (**live**, M10) | Pro adds reports, XLSX, schedules and archiving. A report: `name => { label, access, build( ReportRange, input ), export?( ReportRange, input ): tables, cache? }`; a format: `key => { label, extension, mime, write( tables ): bytes }` (`ExportWriter`). Pro `occupancy` live (M10 T6a) |
 | `rtbp_export_kinds`, the `stream` entry of `rtbp_export_formats` (`ExportStream`: `begin( path, columns )`, `write( row )`, `finish()`) (**live**, M11) | Pro adds streamed XLSX for exports (M11 T3a); a kind may declare `period => false` (the guest list) |
-| `rtbp.exports.panels` (**live**, M11) | Panels on the Exports screen between the form and the library: `{ key, Component( { kinds, formats } ) }`; Pro adds *Archive and remove* (T3b); invalidate `[ 'exports' ]` to refresh the library |
+| `rtbp.exports.panels` (**live**, M11) | Panels on the Exports screen between the form and the library: `{ key, Component( { kinds, formats } ) }`; Pro adds *Scheduled exports* (T4; *Archive and remove* dropped in R1); invalidate `[ 'exports' ]` to refresh the library |
 | `rtbp.user.menu` (**live**, M16) | Items of the account menu (the sidebar's user block, also in the mobile drawer), above *Sign out*: `{ key, label, icon, to }` — `to` is a dashboard route (the add-on registers it on `rtbp.admin.routes`, usually `hidden`); receives `{ user }`. Pro adds *My profile* (M16) |
 | `rtbp.staff.tabs` (**live**, M15 T4a — a **Pro** seam, in `StaffDetailScreen`) | The tabs of an employee file: `applyFilters( 'rtbp.staff.tabs', tabs, { employee, can } )`, a tab `{ key, label, render() }` (place it with `findIndex` on a known key; `?tab=<key>` deep-links). Entries without a key, label or render, and duplicate keys, are dropped; a non-list return keeps Pro's tabs. The client add-on adds *Pay* (M15 T4b); on an older Pro the filter never runs and the tab is simply absent |
 | `rtbp_block_sources` filter (**live**, M08 T5b): `key => { label, editable }`, default `manual` (Staff, editable). Blocks of a non-editable source are listed with its label but refused on update/delete (409 `block_read_only`). Also the action `rtbp_block_changed( $id, create\|update\|delete )` for staff blocks | Pro adds `ical` (not editable) and writes its blocks through the free `BlockRepository` with `source = ical`, `feed_id`, `external_uid`; it reconciles with **`BlockRepository::forFeed( $source, $feed_id )`** (**live**, M08 T6b) → UID => row. The JS status palette gained a generic `sync` domain (`ok`, `warning`, `error`, `never`) for `StatusBadge` |
@@ -336,6 +336,14 @@ The plugin does not build its own language layer.
 - Layouts still leave room for longer translations (no fixed-width buttons).
 - The client documents in `docs/requiremetnt/` promise French and English. This decision meets
   that through a translation plugin, not bundled French. Confirm with the client before handover.
+
+*Amended 2026-11-02 (client review R1-T6):* the account menu at the top right gets a **Language**
+item, as on the client's old dashboard. It is not a language layer: it saves the staff member's
+WordPress user language (`locale` user meta) and applies it to the dashboard page and the
+plugin's REST answers (`Services\Account\UserLanguage`); the strings still come from the site's
+translations. It lists English plus the languages installed on the site, and an add-on narrows
+the list with `rtbp_dashboard_languages` (Residence TATA: English 🇬🇧 and Français 🇫🇷, reading
+the old `hbfwc_dash_locale` through `rtbp_user_language`). Still no per-language fields.
 
 ## ADR-021: The free plugin seeds generic rate plans, not the client's — Accepted (2026-09-29, M07)
 

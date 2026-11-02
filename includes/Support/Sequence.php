@@ -99,6 +99,27 @@ class Sequence {
 	}
 
 	/**
+	 * Make sure the counter has handed out at least `$value`, so the next
+	 * number is above it (a booking restored with its original reference,
+	 * R1-T16). Never lowers the counter.
+	 *
+	 * @param string $name  Counter name.
+	 * @param int    $value Lowest value the counter may hold.
+	 * @return void
+	 */
+	public static function atLeast( string $name, int $value ): void {
+		global $wpdb;
+
+		self::assert_name( $name );
+		$table = self::table();
+		$now   = Dates::to_gmt_db( Dates::now() );
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- the table name is the plugin's own.
+		$wpdb->query( $wpdb->prepare( "INSERT IGNORE INTO {$table} (name, value, updated_at) VALUES (%s, %d, %s)", $name, max( 0, $value ), $now ) );
+		$wpdb->query( $wpdb->prepare( "UPDATE {$table} SET value = GREATEST( value, %d ), updated_at = %s WHERE name = %s", max( 0, $value ), $now, $name ) );
+		// phpcs:enable
+	}
+
+	/**
 	 * A formatted reference: `format( 'RT-2026-', 841 )` → `RT-2026-000841`.
 	 *
 	 * @param string $prefix Prefix.

@@ -1,0 +1,66 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Guests\/components\/AddGuestDialog.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Add a guest": [
+                "Ajouter un client"
+            ],
+            "Guest added.": [
+                "Client ajout\u00e9."
+            ],
+            "Phone": [
+                "T\u00e9l\u00e9phone"
+            ],
+            "First name": [
+                "Pr\u00e9nom"
+            ],
+            "Last name": [
+                "Nom"
+            ],
+            "Identity document": [
+                "Pi\u00e8ce d'identit\u00e9"
+            ],
+            "Document number": [
+                "Num\u00e9ro du document"
+            ],
+            "%1$s \u00b7 %2$s": [
+                "%1$s \u00b7 %2$s"
+            ],
+            "Cancel": [
+                "Annuler"
+            ],
+            "A phone number or an e-mail address is needed; the phone is best, since it finds the guest next time.": [
+                "Un num\u00e9ro de t\u00e9l\u00e9phone ou une adresse e-mail est n\u00e9cessaire ; le t\u00e9l\u00e9phone est pr\u00e9f\u00e9rable, car il permet de retrouver le client la fois suivante."
+            ],
+            "E-mail (optional)": [
+                "E-mail (facultatif)"
+            ],
+            "None": [
+                "Aucun"
+            ],
+            "This guest is already on file": [
+                "Ce client est d\u00e9j\u00e0 enregistr\u00e9"
+            ],
+            "same e-mail": [
+                "m\u00eame e-mail"
+            ],
+            "same phone": [
+                "m\u00eame t\u00e9l\u00e9phone"
+            ],
+            "Use this guest": [
+                "Utiliser ce client"
+            ],
+            "Add guest": [
+                "Ajouter un client"
+            ]
+        }
+    }
+}

@@ -20,6 +20,13 @@
  *                 in the sidebar while one of its pages is open (or the item
  *                 is clicked); they need the item's own capability and keys.
  * - `redirect`    Path to send the user to instead of rendering a screen.
+ * - `navOnly`     A sidebar (and search) entry only, never a router route: it
+ *                 links to another route's `path`, with `navSearch`
+ *                 (`{ tab: 'rooms' }`) added as the query. It is active while
+ *                 that query matches; the plain entry of the same path is
+ *                 not (R1-T5: report tabs as their own menu items). With
+ *                 `href` it links to another page instead (an add-on's other
+ *                 dashboard, R1-T18).
  * - `element`     Lazy component. Routes without one render the module
  *                 placeholder until their module (`module`) is built.
  *
@@ -42,6 +49,7 @@ import {
 	DoorOpen,
 	Download,
 	LayoutDashboard,
+	LayoutGrid,
 	Settings,
 	ShieldCheck,
 	Users,
@@ -54,13 +62,21 @@ import {
  * @type {Array<{key: string, label: string}>}
  */
 export const NAV_GROUPS = [
+	// Daily work first, then setup (R1-T5: the order hotels know from their old dashboard).
 	{ key: 'overview', label: __( 'Overview', 'radius-hotel-booking' ) },
 	{ key: 'frontDesk', label: __( 'Front desk', 'radius-hotel-booking' ) },
-	{ key: 'hotel', label: __( 'Hotel setup', 'radius-hotel-booking' ) },
+	// Empty in free; add-ons put each staff member's own pages here (My profile, My payroll).
+	{ key: 'me', label: __( 'My account', 'radius-hotel-booking' ) },
 	{ key: 'insights', label: __( 'Reports & data', 'radius-hotel-booking' ) },
 	// Permissions; add-ons put their staff pages here too (Staff, Access roles…).
 	{ key: 'team', label: __( 'Staff & access', 'radius-hotel-booking' ) },
+	{ key: 'hotel', label: __( 'Hotel setup', 'radius-hotel-booking' ) },
 	{ key: 'system', label: __( 'System', 'radius-hotel-booking' ) },
+	// Empty in free; add-ons link the other dashboards of the site here (R1-T18).
+	{
+		key: 'apps',
+		label: __( 'Other dashboards', 'radius-hotel-booking' ),
+	},
 ];
 
 const VIEW = 'rtbp_view_dashboard';
@@ -302,6 +318,34 @@ const baseRoutes = [
 		element: lazy( () => import( '@/modules/Reports' ) ),
 	},
 	{
+		path: '/reports',
+		navOnly: true,
+		navSearch: { tab: 'rooms' },
+		group: 'insights',
+		label: __( 'Rooms report', 'radius-hotel-booking' ),
+		description: __(
+			'Rented and empty rooms in a period, by floor',
+			'radius-hotel-booking'
+		),
+		icon: BedDouble,
+		capability: VIEW,
+		accessKey: 'page.reports_rooms',
+	},
+	{
+		path: '/reports',
+		navOnly: true,
+		navSearch: { tab: 'availability' },
+		group: 'insights',
+		label: __( 'Room availability', 'radius-hotel-booking' ),
+		description: __(
+			'Which rooms are free for each stay window',
+			'radius-hotel-booking'
+		),
+		icon: LayoutGrid,
+		capability: VIEW,
+		accessKey: 'page.reports_rooms',
+	},
+	{
 		path: '/exports',
 		group: 'insights',
 		label: __( 'Exports', 'radius-hotel-booking' ),
@@ -413,7 +457,7 @@ export function canSee( route ) {
  * @return {Object|undefined} Route.
  */
 export function matchRoute( pathname ) {
-	const routes = getRoutes();
+	const routes = getRoutes().filter( ( route ) => ! route.navOnly );
 	const exact = routes.find( ( route ) => route.path === pathname );
 	if ( exact ) {
 		return exact;
@@ -424,4 +468,30 @@ export function matchRoute( pathname ) {
 				route.path !== '/' && pathname.startsWith( route.path + '/' )
 		)
 		.sort( ( a, b ) => b.path.length - a.path.length )[ 0 ];
+}
+
+/**
+ * Where a menu entry links to: its path, plus `navSearch` as the query.
+ *
+ * @param {Object} route Route.
+ * @return {string} Link target.
+ */
+export function navTarget( route ) {
+	if ( route.href ) {
+		return route.href;
+	}
+	if ( ! route.navSearch ) {
+		return route.path;
+	}
+	return `${ route.path }?${ new URLSearchParams( route.navSearch ) }`;
+}
+
+/**
+ * A key unique among menu entries (several can share a path).
+ *
+ * @param {Object} route Route.
+ * @return {string} Key.
+ */
+export function navKey( route ) {
+	return navTarget( route );
 }

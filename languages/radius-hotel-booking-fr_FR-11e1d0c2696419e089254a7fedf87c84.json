@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-09-28 10:00+0000",
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/modules\/Dashboard\/index.jsx",
     "domain": "messages",
@@ -8,40 +8,53 @@
             "": {
                 "domain": "messages",
                 "lang": "fr_FR",
-                "plural-forms": "nplurals=2; plural=n > 1;"
+                "plural-forms": "nplurals=2; plural=(n > 1);"
             },
+            "Awaiting approval": [
+                "En attente de validation"
+            ],
             "New booking": [
                 "Nouvelle r\u00e9servation"
             ],
             "Try again": [
                 "R\u00e9essayer"
             ],
-            "Awaiting approval": [
-                "En attente de validation"
-            ],
-            "The dashboard could not be loaded.": [
-                "Le tableau de bord n'a pas pu \u00eatre charg\u00e9."
-            ],
-            "Bookings to accept or decline": [
-                "R\u00e9servations \u00e0 accepter ou refuser"
+            "Payment overdue": [
+                "Paiement en retard"
             ],
             "Arriving today": [
                 "Arriv\u00e9es du jour"
             ],
-            "Guests due to check in": [
-                "Clients attendus"
-            ],
             "Leaving today": [
                 "D\u00e9parts du jour"
+            ],
+            "In house": [
+                "En s\u00e9jour"
+            ],
+            "Bookings to accept or decline": [
+                "R\u00e9servations \u00e0 accepter ou refuser"
+            ],
+            "Guests due to check in": [
+                "Clients attendus"
             ],
             "Guests due to check out": [
                 "Clients sur le d\u00e9part"
             ],
+            "Rooms checked in now": [
+                "Chambres occup\u00e9es actuellement"
+            ],
             "Rooms free now": [
                 "Chambres libres"
             ],
-            "of %d rooms": [
+            "of %d room": [
+                "sur %d chambre",
                 "sur %d chambres"
+            ],
+            "Past their payment deadline": [
+                "D\u00e9lai de paiement d\u00e9pass\u00e9"
+            ],
+            "The dashboard could not be loaded.": [
+                "Le tableau de bord n'a pas pu \u00eatre charg\u00e9."
             ]
         }
     }

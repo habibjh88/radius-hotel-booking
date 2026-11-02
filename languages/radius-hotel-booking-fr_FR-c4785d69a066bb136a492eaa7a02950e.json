@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-09-28 10:00+0000",
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/api\/client.js",
     "domain": "messages",
@@ -8,10 +8,16 @@
             "": {
                 "domain": "messages",
                 "lang": "fr_FR",
-                "plural-forms": "nplurals=2; plural=n > 1;"
+                "plural-forms": "nplurals=2; plural=(n > 1);"
             },
             "Request failed.": [
                 "La requ\u00eate a \u00e9chou\u00e9."
+            ],
+            "You are probably offline.": [
+                "Vous \u00eates probablement hors ligne."
+            ],
+            "The response is not a valid JSON response.": [
+                "La r\u00e9ponse n'est pas une r\u00e9ponse JSON valide."
             ]
         }
     }

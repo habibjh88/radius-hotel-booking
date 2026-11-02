@@ -1,0 +1,36 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/components\/booking\/AccountBar.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Sign in": [
+                "Se connecter"
+            ],
+            "Signed in as %s. Your details are filled in for you.": [
+                "Connect\u00e9 en tant que %s. Vos informations sont pr\u00e9remplies."
+            ],
+            "Sign out": [
+                "Se d\u00e9connecter"
+            ],
+            "Booked with us before? Sign in and we will fill in your details.": [
+                "D\u00e9j\u00e0 venu chez nous ? Connectez-vous et nous remplirons vos informations."
+            ],
+            "Sign in to book": [
+                "Se connecter pour r\u00e9server"
+            ],
+            "Please sign in to your account to book a room. Your details are then filled in for you.": [
+                "Veuillez vous connecter \u00e0 votre compte pour r\u00e9server une chambre. Vos informations seront alors pr\u00e9remplies."
+            ],
+            "Create an account": [
+                "Cr\u00e9er un compte"
+            ]
+        }
+    }
+}

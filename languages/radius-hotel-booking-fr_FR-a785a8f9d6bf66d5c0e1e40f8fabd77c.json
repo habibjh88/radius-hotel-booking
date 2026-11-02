@@ -1,0 +1,81 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/components\/common\/NotesPanel.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Note added.": [
+                "Note ajout\u00e9e."
+            ],
+            "Note saved.": [
+                "Note enregistr\u00e9e."
+            ],
+            "Note removed.": [
+                "Note supprim\u00e9e."
+            ],
+            "Try again": [
+                "R\u00e9essayer"
+            ],
+            "%1$s \u00b7 %2$s": [
+                "%1$s \u00b7 %2$s"
+            ],
+            "Note": [
+                "Note"
+            ],
+            "Caution": [
+                "Attention"
+            ],
+            "Warning": [
+                "Avertissement"
+            ],
+            "Write the note first.": [
+                "\u00c9crivez d'abord la note."
+            ],
+            "Write a note for the team\u2026": [
+                "\u00c9crivez une note pour l'\u00e9quipe\u2026"
+            ],
+            "Kind of note": [
+                "Type de note"
+            ],
+            "Cancel": [
+                "Annuler"
+            ],
+            "Add note": [
+                "Ajouter la note"
+            ],
+            "Save": [
+                "Enregistrer"
+            ],
+            "%1$s \u00b7 %2$s \u00b7 edited": [
+                "%1$s \u00b7 %2$s \u00b7 modifi\u00e9e"
+            ],
+            "Someone": [
+                "Quelqu'un"
+            ],
+            "Edit note": [
+                "Modifier la note"
+            ],
+            "Remove note": [
+                "Supprimer la note"
+            ],
+            "No notes yet": [
+                "Aucune note pour le moment"
+            ],
+            "Notes help the team remember what matters: preferences, incidents, promises.": [
+                "Les notes aident l'\u00e9quipe \u00e0 retenir l'essentiel : pr\u00e9f\u00e9rences, incidents, promesses."
+            ],
+            "Remove this note?": [
+                "Supprimer cette note ?"
+            ],
+            "The note disappears for everyone. The activity log keeps a copy.": [
+                "La note dispara\u00eet pour tout le monde. Le journal d'activit\u00e9 en garde une copie."
+            ]
+        }
+    }
+}

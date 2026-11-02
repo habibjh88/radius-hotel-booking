@@ -18,9 +18,11 @@ import {
 	Ban,
 	CalendarSearch,
 	Check,
-	ExternalLink,
+	Eye,
+	FileText,
 	LogIn,
 	LogOut,
+	Pencil,
 	Plus,
 	Wallet,
 	X,
@@ -29,15 +31,22 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import DataTable from '@/components/common/DataTable';
-import DateRangePicker from '@/components/common/DateRangePicker';
 import EmptyState from '@/components/common/EmptyState';
 import FilterTabs from '@/components/common/FilterTabs';
+import GuestLink from '@/components/common/GuestLink';
+import PeriodFilter from '@/components/common/PeriodFilter';
 import Panel from '@/components/common/Panel';
 import StatusBadge from '@/components/common/StatusBadge';
 import { usePageActions } from '@/components/layout/PageActions';
 import { Button } from '@/components/ui/button';
 import { useAccess } from '@/lib/access';
-import { formatDateRange, formatMoney } from '@/lib/format';
+import {
+	formatDateAs,
+	formatDateTime,
+	formatMoney,
+	formatTime,
+	formatTimeAgo,
+} from '@/lib/format';
 import { toast, toastError } from '@/lib/toast';
 import {
 	useBookingLines,
@@ -59,9 +68,25 @@ const TABS = [
 ];
 
 /**
+ * The Bookings screen.
+ *
  * @return {JSX.Element} Screen.
  */
 export default function Bookings() {
+	return <BookingList />;
+}
+
+/**
+ * The booking list with its filters and row actions, on the Bookings screen
+ * and on the dashboard under the counters (R1-T10). Its filters live in the
+ * URL of whichever screen shows it.
+ *
+ * @param {Object}  props                 Props.
+ * @param {boolean} props.withPageActions Put "New booking" in the page header
+ *                                        (the dashboard has its own).
+ * @return {JSX.Element} List.
+ */
+export function BookingList( { withPageActions = true } ) {
 	const [ params, setParams ] = useSearchParams();
 	const navigate = useNavigate();
 	const canCreate = useAccess( 'bookings.create' ) !== 'locked';
@@ -95,6 +120,7 @@ export default function Bookings() {
 		check_in: useAccess( 'bookings.check_in' ),
 		check_out: useAccess( 'bookings.check_out' ),
 		record_payment: useAccess( 'payments.record' ),
+		line_edit: useAccess( 'bookings.line_edit' ),
 	};
 	const allowed = ( action ) =>
 		access[ action ] && access[ action ] !== 'locked';
@@ -138,7 +164,7 @@ export default function Bookings() {
 		);
 
 	usePageActions(
-		canCreate ? (
+		withPageActions && canCreate ? (
 			<Button asChild>
 				<Link to="/bookings/new">
 					<Plus aria-hidden="true" />
@@ -148,7 +174,7 @@ export default function Bookings() {
 				</Link>
 			</Button>
 		) : null,
-		[ canCreate ]
+		[ canCreate, withPageActions ]
 	);
 
 	const tabs = [
@@ -172,9 +198,31 @@ export default function Bookings() {
 		},
 	].map( ( item ) => ( { ...item, count: counts[ item.value ] } ) );
 
+	// Where the booking came from: the desk (with who took it) or the website (R1-T7).
+	const sourceLabel = ( line ) => {
+		if ( 'desk' === line.source ) {
+			return line.created_by
+				? sprintf(
+						/* translators: %s: staff member who took the booking. */
+						__( 'At the desk · %s', 'radius-hotel-booking' ),
+						line.created_by
+				  )
+				: __( 'At the desk', 'radius-hotel-booking' );
+		}
+		return (
+			{
+				web: __( 'Online', 'radius-hotel-booking' ),
+				import: __( 'Imported', 'radius-hotel-booking' ),
+				ical: __( 'Calendar sync', 'radius-hotel-booking' ),
+			}[ line.source ] || ''
+		);
+	};
+	// Made in the last hour: flagged NEW, as on the old dashboard.
+	const isNew = ( line ) =>
+		Date.now() - new Date( line.created_at ).getTime() < 60 * 60 * 1000;
+
 	const columns = [
 		{
-			// The reference with the guest under it: one column keeps the row on a laptop screen.
 			id: 'reference',
 			header: __( 'Booking', 'radius-hotel-booking' ),
 			mobile: 'title',
@@ -182,19 +230,23 @@ export default function Bookings() {
 			grouped: true,
 			cell: ( line, { size = 1 } = {} ) => (
 				<span className="block min-w-0">
-					<Link
-						to={ `/bookings/${ line.booking_id }` }
-						className="font-semibold text-heading no-underline hover:underline"
-						onClick={ ( e ) => e.stopPropagation() }
-					>
-						{ line.reference }
-					</Link>
-					<span className="block truncate text-[13px] text-heading">
-						{ line.guest.name || '—' }
+					<span className="flex flex-wrap items-center gap-1.5">
+						<Link
+							to={ `/bookings/${ line.booking_id }` }
+							className="font-semibold text-heading no-underline hover:underline"
+							onClick={ ( e ) => e.stopPropagation() }
+						>
+							{ line.reference }
+						</Link>
+						{ isNew( line ) ? (
+							<span className="rounded-full bg-success-soft px-1.5 py-px text-[10px] font-bold uppercase tracking-wide text-success">
+								{ __( 'New', 'radius-hotel-booking' ) }
+							</span>
+						) : null }
 					</span>
-					{ line.guest.phone ? (
-						<span className="block text-xs text-muted-foreground">
-							{ line.guest.phone }
+					{ sourceLabel( line ) ? (
+						<span className="block truncate text-xs text-muted-foreground">
+							{ sourceLabel( line ) }
 						</span>
 					) : null }
 					{ size > 1 ? (
@@ -215,8 +267,35 @@ export default function Bookings() {
 			),
 		},
 		{
+			// The guest, and when the booking was made ("2 hours ago").
+			id: 'guest',
+			header: __( 'Guest', 'radius-hotel-booking' ),
+			grouped: true,
+			cell: ( line ) => (
+				<span className="block min-w-0">
+					<GuestLink
+						id={ line.guest.id }
+						name={ line.guest.name }
+						className="block truncate text-[13px] font-medium text-heading"
+					/>
+					<span
+						className="block text-xs text-muted-foreground"
+						title={ formatDateTime( line.created_at ) }
+					>
+						{ formatTimeAgo( line.created_at ) }
+					</span>
+					{ line.guest.phone ? (
+						<span className="block text-xs text-muted-foreground">
+							{ line.guest.phone }
+						</span>
+					) : null }
+				</span>
+			),
+		},
+		{
 			id: 'room',
 			header: __( 'Room', 'radius-hotel-booking' ),
+			wrap: true,
 			cell: ( line ) => (
 				<span className="block">
 					<span className="block font-medium text-heading">
@@ -239,34 +318,63 @@ export default function Bookings() {
 			),
 		},
 		{
-			// Arrival and departure in one column: "1 October 2026 8:30 AM – 5:00 PM".
-			id: 'stay',
-			header: __( 'Stay', 'radius-hotel-booking' ),
-			wrap: true,
+			id: 'check_in',
+			header: __( 'Check-in', 'radius-hotel-booking' ),
 			cell: ( line ) => (
-				<span className="text-[13px]">
-					{ formatDateRange( line.start, line.end ) }
+				<span className="block whitespace-nowrap text-[13px]">
+					<span className="block text-heading">
+						{ formatDateAs( line.start, 'j M Y' ) }
+					</span>
+					<span className="block text-xs text-muted-foreground">
+						{ formatTime( line.start ) }
+					</span>
 				</span>
 			),
 		},
 		{
-			// The stay status, and the payment status under it: one column keeps
-			// the table inside a laptop screen.
-			id: 'status',
-			header: __( 'Status', 'radius-hotel-booking' ),
+			id: 'check_out',
+			header: __( 'Check-out', 'radius-hotel-booking' ),
+			cell: ( line ) => (
+				<span className="block whitespace-nowrap text-[13px]">
+					<span className="block text-heading">
+						{ formatDateAs( line.end, 'j M Y' ) }
+					</span>
+					<span className="block text-xs text-muted-foreground">
+						{ formatTime( line.end ) }
+					</span>
+				</span>
+			),
+		},
+		{
+			// The payment status, and how it was paid.
+			id: 'payment',
+			header: __( 'Payment', 'radius-hotel-booking' ),
 			cell: ( line ) => (
 				<span className="flex flex-col items-start gap-1">
-					<StatusBadge domain="stay" value={ line.status } />
 					<StatusBadge
 						domain="payment"
 						value={ line.overdue ? 'overdue' : line.payment_status }
 					/>
+					{ line.payment_method ? (
+						<span className="text-xs text-muted-foreground">
+							{ line.payment_method }
+						</span>
+					) : null }
 				</span>
+			),
+		},
+		{
+			id: 'status',
+			header: __( 'Status', 'radius-hotel-booking' ),
+			cell: ( line ) => (
+				<StatusBadge domain="stay" value={ line.status } />
 			),
 		},
 	];
 
-	// The row's next step as its button (approve, check in or check out); the rest in the ⋯ menu.
+	// One click on the row, as on the old dashboard (R1-T8): the next step
+	// (approve, check in or check out), View, Invoice, Edit and Cancel as icons;
+	// decline and record payment in the ⋯ menu.
 	const rowActions = ( line ) => {
 		const can = ( action ) =>
 			( line.actions || [] ).includes( action ) && allowed( action );
@@ -277,20 +385,56 @@ export default function Bookings() {
 			decline: X,
 			cancel: Ban,
 		};
+		const confirmFirst = [ 'decline', 'cancel', 'check_out' ];
+		const moveAction = ( action, extra = {} ) => ( {
+			label: actionLabel( action ),
+			icon: icons[ action ],
+			destructive: [ 'decline', 'cancel' ].includes( action ),
+			onSelect: () =>
+				confirmFirst.includes( action )
+					? setDialog( { action, line } )
+					: run( line, action ).catch( () => {} ),
+			...extra,
+		} );
 		const primary = [ 'approve', 'check_in', 'check_out' ].find( can );
 		return [
-			...[ 'approve', 'check_in', 'check_out', 'decline', 'cancel' ]
-				.filter( can )
-				.map( ( action ) => ( {
-					label: actionLabel( action ),
-					icon: icons[ action ],
-					primary: action === primary,
-					destructive: [ 'decline', 'cancel' ].includes( action ),
-					onSelect: () =>
-						[ 'decline', 'cancel', 'check_out' ].includes( action )
-							? setDialog( { action, line } )
-							: run( line, action ).catch( () => {} ),
-				} ) ),
+			primary
+				? moveAction( primary, { primary: true, inline: true } )
+				: null,
+			{
+				label: __( 'View booking', 'radius-hotel-booking' ),
+				icon: Eye,
+				inline: true,
+				onSelect: () => navigate( `/bookings/${ line.booking_id }` ),
+			},
+			line.invoice_url
+				? {
+						label: __( 'Invoice', 'radius-hotel-booking' ),
+						icon: FileText,
+						inline: true,
+						onSelect: () =>
+							window.open(
+								line.invoice_url,
+								'_blank',
+								'noopener'
+							),
+				  }
+				: null,
+			can( 'line_edit' )
+				? {
+						label: __( 'Edit', 'radius-hotel-booking' ),
+						icon: Pencil,
+						inline: true,
+						onSelect: () =>
+							navigate(
+								`/bookings/${ line.booking_id }?edit=${ line.id }`
+							),
+				  }
+				: null,
+			can( 'cancel' ) ? moveAction( 'cancel', { inline: true } ) : null,
+			...[ 'approve', 'check_in', 'check_out', 'decline' ]
+				.filter( ( action ) => action !== primary && can( action ) )
+				.map( ( action ) => moveAction( action ) ),
 			can( 'record_payment' )
 				? {
 						label: __( 'Record payment', 'radius-hotel-booking' ),
@@ -298,11 +442,6 @@ export default function Bookings() {
 						onSelect: () => setPaying( line ),
 				  }
 				: null,
-			{
-				label: __( 'Open booking', 'radius-hotel-booking' ),
-				icon: ExternalLink,
-				onSelect: () => navigate( `/bookings/${ line.booking_id }` ),
-			},
 		].filter( Boolean );
 	};
 
@@ -312,31 +451,15 @@ export default function Bookings() {
 		<>
 			<Panel>
 				<div className="space-y-4">
-					<div className="flex flex-col gap-3 2xl:flex-row 2xl:items-center 2xl:justify-between">
-						<FilterTabs
-							tabs={ tabs }
-							value={ tab }
-							onChange={ ( value ) => setView( { tab: value } ) }
-							label={ __(
-								'Booking list',
-								'radius-hotel-booking'
-							) }
-						/>
-						<DateRangePicker
-							value={ { from, to } }
-							onChange={ ( range ) =>
-								setView( {
-									from: range?.from || '',
-									to: range?.to || '',
-								} )
-							}
-							mode={ mode }
-							onModeChange={ ( next ) =>
-								setView( { mode: next } )
-							}
-							align="start"
-						/>
-					</div>
+					{ /* The date filter on top, then search and the quick filters above the table (R1-T9). */ }
+					<PeriodFilter
+						modes={ [ 'arrival', 'created' ] }
+						mode={ mode }
+						from={ from }
+						to={ to }
+						idPrefix="rtbp-booking-filter"
+						onApply={ ( next ) => setView( next ) }
+					/>
 					<DataTable
 						columns={ columns }
 						rows={ list.data?.lines || [] }
@@ -358,6 +481,19 @@ export default function Bookings() {
 								'radius-hotel-booking'
 							),
 						} }
+						toolbarEnd={
+							<FilterTabs
+								tabs={ tabs }
+								value={ tab }
+								onChange={ ( value ) =>
+									setView( { tab: value } )
+								}
+								label={ __(
+									'Booking list',
+									'radius-hotel-booking'
+								) }
+							/>
+						}
 						rowActions={ rowActions }
 						onRowClick={ ( line ) =>
 							navigate( `/bookings/${ line.booking_id }` )

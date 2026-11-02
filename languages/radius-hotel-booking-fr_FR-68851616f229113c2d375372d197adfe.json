@@ -1,0 +1,39 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Bookings\/components\/CheckInDialog.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Check in": [
+                "Enregistrer l'arriv\u00e9e"
+            ],
+            "Room": [
+                "Chambre"
+            ],
+            "Room %1$s \u00b7 %2$s": [
+                "Chambre %1$s \u00b7 %2$s"
+            ],
+            "Cancel": [
+                "Annuler"
+            ],
+            "Check in room %s": [
+                "Enregistrer l'arriv\u00e9e en chambre %s"
+            ],
+            "Move the guest to another free room of the same type if needed. The price stays the same.": [
+                "D\u00e9placez le client dans une autre chambre libre du m\u00eame type si besoin. Le prix reste le m\u00eame."
+            ],
+            "Keep room %s": [
+                "Garder la chambre %s"
+            ],
+            "No other room of this type is free for this stay.": [
+                "Aucune autre chambre de ce type n'est libre pour ce s\u00e9jour."
+            ]
+        }
+    }
+}

@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-09-28 10:00+0000",
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/modules\/Settings\/index.jsx",
     "domain": "messages",
@@ -8,28 +8,10 @@
             "": {
                 "domain": "messages",
                 "lang": "fr_FR",
-                "plural-forms": "nplurals=2; plural=n > 1;"
+                "plural-forms": "nplurals=2; plural=(n > 1);"
             },
-            "General": [
-                "G\u00e9n\u00e9ral"
-            ],
-            "Display": [
-                "Affichage"
-            ],
-            "Settings saved.": [
-                "R\u00e9glages enregistr\u00e9s."
-            ],
-            "Loading settings\u2026": [
-                "Chargement des r\u00e9glages\u2026"
-            ],
-            "Company name": [
-                "Nom de l'entreprise"
-            ],
-            "Contact email": [
-                "E-mail de contact"
-            ],
-            "Enable debug logging": [
-                "Activer le journal de d\u00e9bogage"
+            "Try again": [
+                "R\u00e9essayer"
             ],
             "Saving\u2026": [
                 "Enregistrement\u2026"
@@ -37,8 +19,32 @@
             "Save changes": [
                 "Enregistrer les modifications"
             ],
-            "Columns": [
-                "Colonnes"
+            "Discard": [
+                "Annuler"
+            ],
+            "Settings section": [
+                "Section des r\u00e9glages"
+            ],
+            "Settings sections": [
+                "Sections des r\u00e9glages"
+            ],
+            "Unsaved changes": [
+                "Modifications non enregistr\u00e9es"
+            ],
+            "You have unsaved changes.": [
+                "Vous avez des modifications non enregistr\u00e9es."
+            ],
+            "Reset to defaults": [
+                "R\u00e9tablir les valeurs par d\u00e9faut"
+            ],
+            "Reset %s to its defaults?": [
+                "R\u00e9tablir les valeurs par d\u00e9faut de %s ?"
+            ],
+            "Every setting on this tab goes back to its default value. Other tabs are not changed.": [
+                "Chaque r\u00e9glage de cet onglet reprend sa valeur par d\u00e9faut. Les autres onglets ne changent pas."
+            ],
+            "Reset": [
+                "R\u00e9tablir"
             ]
         }
     }

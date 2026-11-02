@@ -135,6 +135,9 @@ class Installer {
 			update_option( 'rtbp_files_renamed', 1, false );
 		}
 
+		// Once: every guest gets the stay count and last stay of their bookings (9.4).
+		\RadiusTheme\RadiusHotelBooking\Services\Guests\GuestStays::countAllOnce();
+
 		/**
 		 * Fires after the installer has finished.
 		 *

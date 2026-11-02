@@ -1,0 +1,66 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Settings\/sections\/Notifications.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "The browser blocked the sound. Click on the page and try again.": [
+                "Le navigateur a bloqu\u00e9 le son. Cliquez sur la page et r\u00e9essayez."
+            ],
+            "New bookings": [
+                "Nouvelles r\u00e9servations"
+            ],
+            "How staff are told about a new booking while a dashboard screen is open.": [
+                "Comment le personnel est inform\u00e9 d\u2019une nouvelle r\u00e9servation lorsqu\u2019un \u00e9cran du tableau de bord est ouvert."
+            ],
+            "Alert on new bookings": [
+                "Alerte de nouvelle r\u00e9servation"
+            ],
+            "Show an alert on every staff screen when a booking arrives.": [
+                "Afficher une alerte sur chaque \u00e9cran du personnel \u00e0 l\u2019arriv\u00e9e d\u2019une r\u00e9servation."
+            ],
+            "Play a sound": [
+                "Jouer un son"
+            ],
+            "Browsers play sound only after someone has clicked on the page.": [
+                "Les navigateurs ne jouent un son qu\u2019apr\u00e8s un clic sur la page."
+            ],
+            "Sound": [
+                "Son"
+            ],
+            "Built-in chime": [
+                "Sonnerie int\u00e9gr\u00e9e"
+            ],
+            "Your own sound": [
+                "Votre propre son"
+            ],
+            "Sound file": [
+                "Fichier son"
+            ],
+            "An MP3, WAV, OGG or M4A file from the media library. Keep it short.": [
+                "Un fichier MP3, WAV, OGG ou M4A de la m\u00e9diath\u00e8que. Gardez-le court."
+            ],
+            "Choose a notification sound": [
+                "Choisir un son de notification"
+            ],
+            "Play preview": [
+                "\u00c9couter l\u2019aper\u00e7u"
+            ],
+            "Check for new bookings every": [
+                "V\u00e9rifier les nouvelles r\u00e9servations toutes les"
+            ],
+            "Shorter is quicker to notice, longer puts less load on the server.": [
+                "Plus court, c\u2019est plus rapide \u00e0 remarquer ; plus long, cela charge moins le serveur."
+            ],
+            "seconds": [
+                "secondes"
+            ]
+        }
+    }
+}

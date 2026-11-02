@@ -1,0 +1,37 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Rooms\/components\/DeleteSectionDialog.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Go back": [
+                "Retour"
+            ],
+            "Delete the section %s?": [
+                "Supprimer la section %s ?"
+            ],
+            "Its %d amenity moves to the section you choose. Room types keep it.": [
+                "Son \u00e9quipement (%d) est d\u00e9plac\u00e9 vers la section que vous choisissez. Les types de chambre le conservent.",
+                "Ses %d \u00e9quipements sont d\u00e9plac\u00e9s vers la section que vous choisissez. Les types de chambre les conservent."
+            ],
+            "It has no amenities.": [
+                "Elle ne contient aucun \u00e9quipement."
+            ],
+            "Move them to": [
+                "Les d\u00e9placer vers"
+            ],
+            "This is the only section. Add another section first, so its amenities have somewhere to go.": [
+                "C'est la seule section. Ajoutez d'abord une autre section, pour que ses \u00e9quipements aient o\u00f9 aller."
+            ],
+            "Delete section": [
+                "Supprimer la section"
+            ]
+        }
+    }
+}

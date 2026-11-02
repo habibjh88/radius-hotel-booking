@@ -1,0 +1,76 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/components\/icons\/IconPicker.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Cancel": [
+                "Annuler"
+            ],
+            "Icon library": [
+                "Biblioth\u00e8que d'ic\u00f4nes"
+            ],
+            "%d Lucide icons": [
+                "%d ic\u00f4nes Lucide"
+            ],
+            "Icon categories": [
+                "Cat\u00e9gories d'ic\u00f4nes"
+            ],
+            "Recently used": [
+                "R\u00e9cemment utilis\u00e9es"
+            ],
+            "All icons": [
+                "Toutes les ic\u00f4nes"
+            ],
+            "Categories": [
+                "Cat\u00e9gories"
+            ],
+            "Recent": [
+                "R\u00e9centes"
+            ],
+            "All": [
+                "Toutes"
+            ],
+            "Search icons, e.g. wifi, bed, coffee": [
+                "Rechercher des ic\u00f4nes, ex. wifi, bed, coffee"
+            ],
+            "Search icons": [
+                "Rechercher des ic\u00f4nes"
+            ],
+            "Clear search": [
+                "Effacer la recherche"
+            ],
+            "%d icon": [
+                "%d ic\u00f4ne",
+                "%d ic\u00f4nes"
+            ],
+            "Icons": [
+                "Ic\u00f4nes"
+            ],
+            "No icon matches": [
+                "Aucune ic\u00f4ne correspondante"
+            ],
+            "Try another word, such as bed, pool or car.": [
+                "Essayez un autre mot, comme bed, pool ou car."
+            ],
+            "Double-click an icon to insert it at once.": [
+                "Double-cliquez sur une ic\u00f4ne pour l'ins\u00e9rer aussit\u00f4t."
+            ],
+            "Pick an icon.": [
+                "Choisissez une ic\u00f4ne."
+            ],
+            "Remove icon": [
+                "Retirer l'ic\u00f4ne"
+            ],
+            "Insert": [
+                "Ins\u00e9rer"
+            ]
+        }
+    }
+}

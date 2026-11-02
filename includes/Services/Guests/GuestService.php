@@ -297,6 +297,8 @@ class GuestService {
 				'total'          => (float) $row['total'],
 				'balance_due'    => (float) $row['balance_due'],
 				'source'         => (string) $row['source'],
+				// The invoice's print view, for the stay's Invoice link (R1-T15).
+				'invoice_url'    => ! empty( $row['has_invoice'] ) ? \RadiusTheme\RadiusHotelBooking\Documents\DocumentService::url( 'invoice', (int) $row['id'] ) : '',
 				'arrival'        => $row['arrival'] ? substr( (string) $row['arrival'], 0, 16 ) : null,
 				'departure'      => $row['departure'] ? substr( (string) $row['departure'], 0, 16 ) : null,
 				'lines'          => array_map(

@@ -22,6 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use RadiusTheme\RadiusHotelBooking\Controllers\AccessController;
 use RadiusTheme\RadiusHotelBooking\Controllers\DashboardController;
+use RadiusTheme\RadiusHotelBooking\Controllers\AccountController;
 use RadiusTheme\RadiusHotelBooking\Controllers\ExportController;
 use RadiusTheme\RadiusHotelBooking\Controllers\ReportController;
 use RadiusTheme\RadiusHotelBooking\Controllers\NotificationController;
@@ -49,10 +50,14 @@ $this->router->get( 'access/me', array( AccessController::class, 'me' ) );
 $this->router->get( 'access/registry', array( AccessController::class, 'registry' ) );
 
 $this->router->get( 'dashboard/summary', array( DashboardController::class, 'summary' ) );
+// The signed-in user's dashboard language (R1-T6).
+$this->router->post( 'me/language', array( AccountController::class, 'language' ) );
 
 // Exports and their file library (M11).
 $this->router->get( 'exports', array( ExportController::class, 'index' ) );
 $this->router->post( 'exports', array( ExportController::class, 'store' ) );
+// Restore bookings from an export file (R1-T16).
+$this->router->post( 'exports/restore', array( ExportController::class, 'restore' ) );
 $this->router->delete( 'exports/(?P<id>\d+)', array( ExportController::class, 'destroy' ) );
 
 // Reports (M10): every report of the `rtbp_report_definitions` registry.

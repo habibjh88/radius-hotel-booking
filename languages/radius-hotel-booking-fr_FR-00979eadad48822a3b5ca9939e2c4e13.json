@@ -1,0 +1,105 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/components\/booking\/GuestForm.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Please fill in your special requests.": [
+                "Veuillez renseigner vos demandes sp\u00e9ciales."
+            ],
+            "Enter your first name.": [
+                "Saisissez votre pr\u00e9nom."
+            ],
+            "Enter your last name.": [
+                "Saisissez votre nom."
+            ],
+            "Enter a phone number we can reach you on.": [
+                "Saisissez un num\u00e9ro de t\u00e9l\u00e9phone o\u00f9 nous pouvons vous joindre."
+            ],
+            "Choose your identity document type.": [
+                "Choisissez le type de votre pi\u00e8ce d'identit\u00e9."
+            ],
+            "Enter the number of your identity document.": [
+                "Saisissez le num\u00e9ro de votre pi\u00e8ce d'identit\u00e9."
+            ],
+            "Enter your e-mail address.": [
+                "Saisissez votre adresse e-mail."
+            ],
+            "Enter a valid e-mail address.": [
+                "Saisissez une adresse e-mail valide."
+            ],
+            "Enter a valid e-mail address, or leave it empty.": [
+                "Saisissez une adresse e-mail valide, ou laissez le champ vide."
+            ],
+            "Phone": [
+                "T\u00e9l\u00e9phone"
+            ],
+            "Booked with us before?": [
+                "D\u00e9j\u00e0 venu chez nous ?"
+            ],
+            "Use express checkout": [
+                "Utiliser la r\u00e9servation express"
+            ],
+            "Welcome back, %s!": [
+                "Bon retour, %s !"
+            ],
+            "Welcome back!": [
+                "Bon retour !"
+            ],
+            "Leave your name and e-mail empty to use the ones we have on file.": [
+                "Laissez votre nom et votre e-mail vides pour utiliser ceux que nous avons en dossier."
+            ],
+            "Your details on file": [
+                "Vos informations en dossier"
+            ],
+            "To change them, please contact the hotel.": [
+                "Pour les modifier, veuillez contacter l'h\u00f4tel."
+            ],
+            "Not you? Use other details": [
+                "Ce n'est pas vous ? Utiliser d'autres informations"
+            ],
+            "First name": [
+                "Pr\u00e9nom"
+            ],
+            "Last name": [
+                "Nom"
+            ],
+            "E-mail": [
+                "E-mail"
+            ],
+            "For your confirmation and invoice.": [
+                "Pour votre confirmation et votre facture."
+            ],
+            "Identity document on file": [
+                "Pi\u00e8ce d'identit\u00e9 en dossier"
+            ],
+            "Use another document": [
+                "Utiliser une autre pi\u00e8ce"
+            ],
+            "Identity document": [
+                "Pi\u00e8ce d'identit\u00e9"
+            ],
+            "Choose\u2026": [
+                "Choisir\u2026"
+            ],
+            "Document number": [
+                "Num\u00e9ro du document"
+            ],
+            "Special requests": [
+                "Demandes particuli\u00e8res"
+            ],
+            "Arrival time, a cot, anything the hotel should know.": [
+                "Heure d'arriv\u00e9e, un lit b\u00e9b\u00e9, tout ce que l'h\u00f4tel doit savoir."
+            ],
+            "Optional: arrival time, a cot, anything the hotel should know.": [
+                "Facultatif : heure d'arriv\u00e9e, un lit b\u00e9b\u00e9, tout ce que l'h\u00f4tel doit savoir."
+            ]
+        }
+    }
+}

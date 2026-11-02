@@ -1,0 +1,172 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Rooms\/AllRooms.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Room types": [
+                "Types de chambre"
+            ],
+            "Maintenance": [
+                "Maintenance"
+            ],
+            "Out of service": [
+                "Hors service"
+            ],
+            "Floor": [
+                "\u00c9tage"
+            ],
+            "No floor": [
+                "Aucun \u00e9tage"
+            ],
+            "Choose the room type to move the rooms to.": [
+                "Choisissez le type de chambre vers lequel d\u00e9placer les chambres."
+            ],
+            "Available": [
+                "Disponible"
+            ],
+            "All rooms": [
+                "Toutes les chambres"
+            ],
+            "Room": [
+                "Chambre"
+            ],
+            "Room type": [
+                "Type de chambre"
+            ],
+            "Try again": [
+                "R\u00e9essayer"
+            ],
+            "%d room selected": [
+                "%d chambre s\u00e9lectionn\u00e9e",
+                "%d chambres s\u00e9lectionn\u00e9es"
+            ],
+            "Reason": [
+                "Motif"
+            ],
+            "Remove": [
+                "Retirer"
+            ],
+            "Cancel": [
+                "Annuler"
+            ],
+            "Save": [
+                "Enregistrer"
+            ],
+            "All": [
+                "Toutes"
+            ],
+            "Choose a room type": [
+                "Choisir un type de chambre"
+            ],
+            "Add room": [
+                "Ajouter la chambre"
+            ],
+            "No rooms yet": [
+                "Aucune chambre pour le moment"
+            ],
+            "Bulk add": [
+                "Ajout en masse"
+            ],
+            "Unknown type": [
+                "Type inconnu"
+            ],
+            "State": [
+                "\u00c9tat"
+            ],
+            "The rooms could not be loaded": [
+                "Les chambres n'ont pas pu \u00eatre charg\u00e9es"
+            ],
+            "%d room in the hotel": [
+                "%d chambre dans l'h\u00f4tel",
+                "%d chambres dans l'h\u00f4tel"
+            ],
+            "Bulk actions": [
+                "Actions group\u00e9es"
+            ],
+            "Select rooms to change them together.": [
+                "S\u00e9lectionnez des chambres pour les modifier ensemble."
+            ],
+            "(%d hidden by the filters)": [
+                "(%d masqu\u00e9e par les filtres)",
+                "(%d masqu\u00e9es par les filtres)"
+            ],
+            "Set state": [
+                "D\u00e9finir l'\u00e9tat"
+            ],
+            "Move to type": [
+                "D\u00e9placer vers le type"
+            ],
+            "Clear selection": [
+                "Effacer la s\u00e9lection"
+            ],
+            "Search room number\u2026": [
+                "Rechercher un num\u00e9ro de chambre\u2026"
+            ],
+            "All room types": [
+                "Tous les types de chambre"
+            ],
+            "All floors": [
+                "Tous les \u00e9tages"
+            ],
+            "Clear filters": [
+                "Effacer les filtres"
+            ],
+            "No room matches": [
+                "Aucune chambre ne correspond"
+            ],
+            "Try another number, or clear the filters.": [
+                "Essayez un autre num\u00e9ro, ou effacez les filtres."
+            ],
+            "Add rooms with Add room or Bulk add.": [
+                "Ajoutez des chambres avec Ajouter une chambre ou Ajout en masse."
+            ],
+            "Remove %d room?": [
+                "Retirer %d chambre ?",
+                "Retirer %d chambres ?"
+            ],
+            "They are no longer sold, and past bookings keep them. Adding a number again brings its room back. Rooms with upcoming bookings are skipped.": [
+                "Elles ne sont plus vendues, et les r\u00e9servations pass\u00e9es les conservent. Ajouter de nouveau un num\u00e9ro ram\u00e8ne sa chambre. Les chambres ayant des r\u00e9servations \u00e0 venir sont ignor\u00e9es."
+            ],
+            "Remove rooms": [
+                "Retirer les chambres"
+            ],
+            "%d room was not changed. It is still selected.": [
+                "%d chambre n'a pas \u00e9t\u00e9 modifi\u00e9e. Elle reste s\u00e9lectionn\u00e9e.",
+                "%d chambres n'ont pas \u00e9t\u00e9 modifi\u00e9es. Elles restent s\u00e9lectionn\u00e9es."
+            ],
+            "Dismiss": [
+                "Fermer"
+            ],
+            "State of %d room": [
+                "\u00c9tat de %d chambre",
+                "\u00c9tat de %d chambres"
+            ],
+            "Only available rooms can be booked.": [
+                "Seules les chambres disponibles peuvent \u00eatre r\u00e9serv\u00e9es."
+            ],
+            "e.g. AC repair": [
+                "p. ex. R\u00e9paration de la climatisation"
+            ],
+            "Move %d room": [
+                "D\u00e9placer %d chambre",
+                "D\u00e9placer %d chambres"
+            ],
+            "Rooms with upcoming bookings or a guest in them are skipped: move those one by one from their room type.": [
+                "Les chambres ayant des r\u00e9servations \u00e0 venir ou un client \u00e0 l'int\u00e9rieur sont ignor\u00e9es : d\u00e9placez-les une par une depuis leur type de chambre."
+            ],
+            "Move to": [
+                "D\u00e9placer vers"
+            ],
+            "Move rooms": [
+                "D\u00e9placer les chambres"
+            ]
+        }
+    }
+}

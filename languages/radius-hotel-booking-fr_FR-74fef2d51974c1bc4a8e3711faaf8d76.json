@@ -1,0 +1,80 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/components\/booking\/GuestBookingOnePage.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Your stay": [
+                "Votre s\u00e9jour"
+            ],
+            "%d room": [
+                "%d chambre",
+                "%d chambres"
+            ],
+            "Your rooms are no longer held. Remove them and choose again.": [
+                "Vos chambres ne sont plus retenues. Retirez-les et choisissez \u00e0 nouveau."
+            ],
+            "Please choose your arrival and departure dates first, then select your room.": [
+                "Veuillez d'abord choisir vos dates d'arriv\u00e9e et de d\u00e9part, puis s\u00e9lectionner votre chambre."
+            ],
+            "Choose your room": [
+                "Choisissez votre chambre"
+            ],
+            "Showing %s only.": [
+                "Affichage de %s uniquement."
+            ],
+            "Showing one room type only.": [
+                "Affichage d'un seul type de chambre."
+            ],
+            "See all rooms": [
+                "Voir toutes les chambres"
+            ],
+            "Choose your room: %1$s, %2$s": [
+                "Choisissez votre chambre : %1$s, %2$s"
+            ],
+            "Back to other rates": [
+                "Retour aux autres tarifs"
+            ],
+            "This rate is no longer available.": [
+                "Ce tarif n'est plus disponible."
+            ],
+            "Holding a room for you\u2026": [
+                "Retenue de votre chambre\u2026"
+            ],
+            "To add another room, choose a rate below.": [
+                "Pour ajouter une autre chambre, choisissez un tarif ci-dessous."
+            ],
+            "Your details": [
+                "Vos informations"
+            ],
+            "Your room": [
+                "Votre chambre",
+                "Vos chambres"
+            ],
+            "A price changed since you chose it; the new total is shown. Confirm again to book at this price.": [
+                "Un prix a chang\u00e9 depuis votre choix ; le nouveau total est affich\u00e9. Confirmez \u00e0 nouveau pour r\u00e9server \u00e0 ce prix."
+            ],
+            "Your room is held while you book. Payment instructions and your invoice are on the next page and in your e-mail.": [
+                "Votre chambre est retenue pendant votre r\u00e9servation. Les instructions de paiement et votre facture figurent sur la page suivante et dans votre e-mail."
+            ],
+            "I agree that the hotel keeps my details for this booking": [
+                "J'accepte que l'h\u00f4tel conserve mes informations pour cette r\u00e9servation"
+            ],
+            "privacy policy": [
+                "politique de confidentialit\u00e9"
+            ],
+            "Booking\u2026": [
+                "R\u00e9servation en cours\u2026"
+            ],
+            "Confirm my booking": [
+                "Confirmer ma r\u00e9servation"
+            ]
+        }
+    }
+}

@@ -19,9 +19,23 @@ also be Excel (XLSX). Each file is listed in the **file library** with its size,
 and a SHA-256 checksum. Staff download and delete files there, if their access allows it.
 Every export, download and deletion is recorded in the activity log.
 
-**An export is a copy of your data, not a backup of the site.** It cannot be imported back to
-recreate bookings. Use it to keep records, to share with an accountant, or to check figures in
-a spreadsheet.
+**An export is a copy of your data, not a backup of the site.** Use it to keep records, to
+share with an accountant, or to check figures in a spreadsheet.
+
+**Restore bookings from an export.** Exports → **Restore bookings** takes a bookings export (CSV)
+and re-creates the bookings in it that are no longer on the site, for example after the site was
+put back to an older server backup. Choose the file and click **Preview** first (or pick **Restore** in a library file's ⋯ menu): each order is
+listed as *Will be restored*, *Already on the site* (matched on the order ID, never changed) or
+*Cannot be restored* (with the reason, such as a room that was removed or is now taken). Then
+click **Restore**. A large file (tens of thousands of bookings) is restored in short batches with a
+progress bar, so no request outlasts the host's time limit; keep the page open until it finishes.
+**Stop after this batch** ends the run safely: preview the same file again and restore to carry on,
+as bookings already back are skipped. The upload limit is the smaller of 50 MB and the host's own
+limit (an export of about 10 000 bookings is around 6 MB). A restored booking keeps its order ID, creation date, prices, amount paid and
+room statuses (checked out, cancelled with the reason). Guests are matched on phone or e-mail.
+Invoices are issued again under new numbers. The access key is **Restore bookings from an export file**,
+locked by default. It does not replace a server backup: payments history, notes and documents
+are not in the export.
 
 ## What the host must back up
 
@@ -69,15 +83,6 @@ responsibility: do not leave them on shared computers.
    the key file, if you use Pro.
 3. Sign in, open the dashboard and check a recent booking, its invoice and the file library.
 
-## Archive and remove (Pro)
-
-Radius Hotel Booking Pro can **archive and remove** old bookings. It writes the export file,
-checks its checksum, reads every row back from it, and only then deletes the finished stays of
-the period from the live database. A booking is removed only if all its rows are in the file.
-Future and in-house stays are never removed, and only an administrator can delete an archive
-file. Before you use it, **make sure a server backup exists**. The archive file is then the
-only copy of those bookings inside the plugin.
-
 ---
 
 # Sauvegarde et restauration
@@ -102,9 +107,25 @@ Hotel Booking Pro, ils peuvent aussi être au format Excel (XLSX). Chaque fichie
 personnel y télécharge et supprime les fichiers, si ses droits le permettent. Chaque export,
 téléchargement et suppression est noté dans le journal d'activité.
 
-**Un export est une copie de vos données, pas une sauvegarde du site.** On ne peut pas le
-réimporter pour recréer des réservations. Il sert à garder une trace, à transmettre des chiffres
-au comptable ou à vérifier des chiffres dans un tableur.
+**Un export est une copie de vos données, pas une sauvegarde du site.** Il sert à garder une
+trace, à transmettre des chiffres au comptable ou à vérifier des chiffres dans un tableur.
+
+**Restaurer des réservations depuis un export.** Exports → **Restaurer des réservations** prend un
+export des réservations (CSV) et recrée celles qui ne sont plus sur le site, par exemple après un
+retour à une ancienne sauvegarde du serveur. Choisissez le fichier et cliquez d'abord sur
+**Aperçu** (ou choisissez **Restaurer** dans le menu ⋯ d'un fichier de la bibliothèque) : chaque commande est notée *Sera restaurée*, *Déjà sur le site* (reconnue par son
+numéro, jamais modifiée) ou *Ne peut pas être restaurée* (avec la raison, par exemple une chambre
+supprimée ou déjà prise). Cliquez ensuite sur **Restaurer**. Un gros fichier (des dizaines de milliers de réservations) est restauré par petits
+lots avec une barre de progression, pour qu'aucune requête ne dépasse la limite de temps de
+l'hébergeur ; gardez la page ouverte jusqu'à la fin. **Arrêter après ce lot** interrompt sans risque :
+refaites l'aperçu du même fichier puis restaurez pour reprendre, les réservations déjà revenues étant
+ignorées. La taille maximale est la plus petite entre 50 Mo et la limite de l'hébergeur (un export
+d'environ 10 000 réservations pèse environ 6 Mo). Une réservation restaurée garde son
+numéro, sa date de création, ses prix, le montant payé et l'état de ses chambres (départ fait,
+annulée avec la raison). Les clients sont reconnus par téléphone ou e-mail. Les factures sont
+émises à nouveau sous de nouveaux numéros. La clé d'accès est **Restaurer des réservations depuis un
+fichier d'export**, verrouillée par défaut. Cela ne remplace pas une sauvegarde du serveur : l'historique
+des paiements, les notes et les documents ne sont pas dans l'export.
 
 ## Ce que l'hébergeur doit sauvegarder
 
@@ -154,12 +175,3 @@ sont sous votre responsabilité : ne les laissez pas sur des ordinateurs partag�
    le fichier de clé si vous utilisez Pro.
 3. Connectez-vous, ouvrez le tableau de bord et vérifiez une réservation récente, sa facture et la
    bibliothèque de fichiers.
-
-## Archiver et supprimer (Pro)
-
-Radius Hotel Booking Pro peut **archiver et supprimer** les anciennes réservations. Il écrit le
-fichier d'export, vérifie son empreinte, en relit chaque ligne, et seulement ensuite supprime de
-la base les séjours terminés de la période. Une réservation n'est supprimée que si toutes ses
-lignes figurent dans le fichier. Seul un administrateur peut supprimer un fichier d'archive. Les séjours à venir et en cours ne sont jamais supprimés. Avant de
-l'utiliser, **vérifiez qu'une sauvegarde du serveur existe**. Le fichier d'archive est alors la
-seule copie de ces réservations dans l'extension.

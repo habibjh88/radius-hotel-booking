@@ -126,4 +126,54 @@ class ExportController {
 			}
 		);
 	}
+
+	/**
+	 * POST exports/restore (`exports.restore`, R1-T16) — restore the bookings
+	 * of an export file that are not on the site, in batches:
+	 *
+	 * - `mode=preview` + `file` (a bookings export CSV) or `export_id` (one in
+	 *   the file library): keeps the file for a session and returns what would
+	 *   happen, with `session`;
+	 * - `mode=run` + `session`: restores the next orders (one batch, a few
+	 *   seconds; the session keeps its place) and returns `done` and `totals`;
+	 * - `mode=cancel` + `session`: stops, deletes the kept file.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function restore( WP_REST_Request $request ) {
+		return $this->guarded(
+			$request,
+			'exports.restore',
+			function ( $request ) {
+				$restore = new \RadiusTheme\RadiusHotelBooking\Services\Export\BookingRestore();
+				$mode    = sanitize_key( (string) $request->get_param( 'mode' ) );
+				$session = (string) $request->get_param( 'session' );
+				if ( 'run' === $mode ) {
+					return ApiResponse::success( $restore->runBatch( $session ) )->send();
+				}
+				if ( 'cancel' === $mode ) {
+					$restore->cancel( $session );
+					return ApiResponse::success( null, __( 'Restore stopped.', 'radius-hotel-booking' ) )->send();
+				}
+				// A bookings CSV already in the file library.
+				if ( absint( $request->get_param( 'export_id' ) ) ) {
+					return ApiResponse::success( $restore->startFromExport( absint( $request->get_param( 'export_id' ) ) ) )->send();
+				}
+				$files = (array) $request->get_file_params();
+				$file  = (array) ( $files['file'] ?? array() );
+				if ( in_array( (int) ( $file['error'] ?? 0 ), array( UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE ), true ) ) {
+					/* translators: %s: largest upload the server takes, e.g. 8 MB. */
+					return ApiResponse::validationError( array( 'file' => array( sprintf( __( 'The file is larger than this server accepts (%s): export a shorter period, or ask the host to raise the upload limit.', 'radius-hotel-booking' ), size_format( wp_max_upload_size() ) ) ) ) )->send();
+				}
+				if ( empty( $file['tmp_name'] ) || ! empty( $file['error'] ) || ! is_uploaded_file( (string) $file['tmp_name'] ) ) {
+					return ApiResponse::validationError( array( 'file' => array( __( 'Choose a bookings export file (CSV).', 'radius-hotel-booking' ) ) ) )->send();
+				}
+				if ( (int) ( $file['size'] ?? 0 ) > 50 * MB_IN_BYTES || ! preg_match( '/\.csv$/i', (string) ( $file['name'] ?? '' ) ) ) {
+					return ApiResponse::validationError( array( 'file' => array( __( 'Choose a CSV file of at most 50 MB, made by Exports → Bookings.', 'radius-hotel-booking' ) ) ) )->send();
+				}
+				return ApiResponse::success( $restore->start( (string) $file['tmp_name'], (string) $file['name'] ) )->send();
+			}
+		);
+	}
 }

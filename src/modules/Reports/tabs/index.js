@@ -37,6 +37,9 @@ export default function coreTabs() {
 			label: __( 'Room availability', 'radius-hotel-booking' ),
 			icon: LayoutGrid,
 			accessKey: 'page.reports_rooms',
+			// The grid has its own window times; a check-out filter means nothing for it (R1-T12).
+			time: false,
+			modes: [ 'arrival', 'created' ],
 			Component: lazy( () => import( './Availability' ) ),
 		},
 	];

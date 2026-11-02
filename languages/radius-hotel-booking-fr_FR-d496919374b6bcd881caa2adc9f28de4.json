@@ -1,0 +1,37 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/components\/booking\/RoomDrawer.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "This rate is no longer available.": [
+                "Ce tarif n'est plus disponible."
+            ],
+            "%1$s \u00b7 %2$s": [
+                "%1$s \u00b7 %2$s"
+            ],
+            "per room": [
+                "par chambre"
+            ],
+            "%1$d room in this booking (%2$d here)": [
+                "%1$d chambre dans cette r\u00e9servation (%2$d ici)",
+                "%1$d chambres dans cette r\u00e9servation (%2$d ici)"
+            ],
+            "Other rates": [
+                "Autres tarifs"
+            ],
+            "Done, continue": [
+                "Termin\u00e9, continuer"
+            ],
+            "Hold rooms to continue": [
+                "Retenir les chambres pour continuer"
+            ]
+        }
+    }
+}

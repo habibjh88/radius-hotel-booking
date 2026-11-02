@@ -55,9 +55,9 @@ class BookingService {
 	/**
 	 * Version of the import mode (`create( …, 'import' )`, M18) add-ons check
 	 * before using it: 1 = status, check-in, paid amount, price override;
-	 * 2 = also `paid_at`.
+	 * 2 = also `paid_at`; 3 = also `reference` (keep an order ID, R1-T16).
 	 */
-	public const IMPORT_MODE = 2;
+	public const IMPORT_MODE = 3;
 
 	/**
 	 * The locked write path.
@@ -208,7 +208,7 @@ class BookingService {
 				$user_id  = get_current_user_id();
 				$booking  = $this->bookings->create(
 					array(
-						'reference'        => Sequence::format( 'RT-' . $year . '-', Sequence::next( 'booking_' . $year ) ),
+						'reference'        => $import && '' !== $import['reference'] ? self::keptReference( $import['reference'] ) : Sequence::format( 'RT-' . $year . '-', Sequence::next( 'booking_' . $year ) ),
 						'guest_id'         => (int) $guest->id,
 						'source'           => $source,
 						'status'           => $status,
@@ -523,13 +523,14 @@ class BookingService {
 	 * `checked_in`; `confirmed` by default), when a stay under way was checked
 	 * in (site time, default now), the amount already paid (`paid_amount`,
 	 * recorded with `payment_method` / `payment_reference`, received at
-	 * `paid_at`, site time, default now), and each line's
-	 * `price_override` — the legacy price, frozen as is. Adds the overrides to
-	 * the requests.
+	 * `paid_at`, site time, default now), each line's
+	 * `price_override` — the legacy price, frozen as is — and the `reference`
+	 * to keep (an order ID that is free; a new one is given otherwise). Adds the
+	 * overrides to the requests.
 	 *
 	 * @param array $input Input.
 	 * @param array $data  Validated data (its `requests` gain `price_override`).
-	 * @return array `{ status, checked_in_at, paid_amount, paid_at }`.
+	 * @return array `{ status, checked_in_at, paid_amount, paid_at, reference }`.
 	 * @throws DomainException 422.
 	 */
 	private static function importFields( array $input, array &$data ): array {
@@ -545,6 +546,10 @@ class BookingService {
 		$paid_at = trim( (string) ( $input['paid_at'] ?? '' ) );
 		if ( '' !== $paid_at && ! preg_match( '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}(:\d{2})?$/', $paid_at ) ) {
 			$errors['paid_at'] = __( 'Enter a valid date and time.', 'radius-hotel-booking' );
+		}
+		$reference = trim( (string) ( $input['reference'] ?? '' ) );
+		if ( '' !== $reference && ! preg_match( '/^[A-Za-z0-9][A-Za-z0-9_-]{0,39}$/', $reference ) ) {
+			$errors['reference'] = __( 'Enter a valid order ID.', 'radius-hotel-booking' );
 		}
 		$paid = $input['paid_amount'] ?? 0;
 		if ( ! is_numeric( $paid ) || (float) $paid < 0 ) {
@@ -570,7 +575,30 @@ class BookingService {
 			'paid_amount'   => (float) Money::round( (float) $paid ),
 			// PaymentService::validate() reads `Y-m-d H:i`; empty means now.
 			'paid_at'       => substr( $paid_at, 0, 16 ),
+			'reference'     => $reference,
 		);
+	}
+
+	/**
+	 * An imported booking's own order ID: kept when free (the year's counter
+	 * moves past an `RT-YYYY-n` number so new bookings never take it), else a
+	 * new one. Runs inside the booking transaction.
+	 *
+	 * @param string $reference Order ID.
+	 * @return string
+	 */
+	private static function keptReference( string $reference ): string {
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- uniqueness check inside the write transaction.
+		$taken = (bool) $wpdb->get_var( $wpdb->prepare( 'SELECT 1 FROM %i WHERE reference = %s LIMIT 1', rtbp_table( 'bookings' ), $reference ) );
+		if ( preg_match( '/^RT-(\d{4})-(\d+)$/', $reference, $m ) ) {
+			Sequence::atLeast( 'booking_' . $m[1], (int) $m[2] );
+		}
+		if ( ! $taken ) {
+			return $reference;
+		}
+		$year = Dates::now()->setTimezone( Dates::timezone() )->format( 'Y' );
+		return Sequence::format( 'RT-' . $year . '-', Sequence::next( 'booking_' . $year ) );
 	}
 
 	/**

@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-09-28 10:00+0000",
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/modules\/Dashboard\/components\/RecentBookingsPanel.jsx",
     "domain": "messages",
@@ -8,28 +8,31 @@
             "": {
                 "domain": "messages",
                 "lang": "fr_FR",
-                "plural-forms": "nplurals=2; plural=n > 1;"
+                "plural-forms": "nplurals=2; plural=(n > 1);"
             },
             "Status": [
                 "Statut"
             ],
-            "New booking": [
-                "Nouvelle r\u00e9servation"
-            ],
-            "Reference": [
-                "R\u00e9f\u00e9rence"
+            "Room": [
+                "Chambre"
             ],
             "Guest": [
                 "Client"
             ],
-            "Room": [
-                "Chambre"
+            "Payment": [
+                "Paiement"
             ],
             "Stay": [
                 "S\u00e9jour"
             ],
-            "Payment": [
-                "Paiement"
+            "Reference": [
+                "R\u00e9f\u00e9rence"
+            ],
+            "New booking": [
+                "Nouvelle r\u00e9servation"
+            ],
+            "No bookings yet": [
+                "Aucune r\u00e9servation pour le moment"
             ],
             "Recent bookings": [
                 "R\u00e9servations r\u00e9centes"
@@ -39,9 +42,6 @@
             ],
             "View all": [
                 "Tout voir"
-            ],
-            "No bookings yet": [
-                "Aucune r\u00e9servation pour le moment"
             ],
             "Take a walk-in booking at the desk, or share your booking page with guests.": [
                 "Enregistrez un client de passage \u00e0 la r\u00e9ception, ou partagez votre page de r\u00e9servation avec vos clients."

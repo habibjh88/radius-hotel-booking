@@ -1,0 +1,47 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/components\/booking\/GuestParts.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Check-in": [
+                "Arriv\u00e9e"
+            ],
+            "Check-out": [
+                "D\u00e9part"
+            ],
+            "Your stay": [
+                "Votre s\u00e9jour"
+            ],
+            "%d child": [
+                "%d enfant",
+                "%d enfants"
+            ],
+            "%d adult": [
+                "%d adulte",
+                "%d adultes"
+            ],
+            "Change dates": [
+                "Modifier les dates"
+            ],
+            "Leave your booking?": [
+                "Quitter votre r\u00e9servation ?"
+            ],
+            "Your booking is not finished. If you leave now, the rooms held for you are released and you will start again from the beginning.": [
+                "Votre r\u00e9servation n'est pas termin\u00e9e. Si vous quittez maintenant, les chambres retenues pour vous seront lib\u00e9r\u00e9es et vous recommencerez depuis le d\u00e9but."
+            ],
+            "Leave and start again": [
+                "Quitter et recommencer"
+            ],
+            "Continue my booking": [
+                "Poursuivre ma r\u00e9servation"
+            ]
+        }
+    }
+}

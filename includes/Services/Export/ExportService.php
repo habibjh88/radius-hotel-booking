@@ -171,7 +171,9 @@ class ExportService {
 			throw DomainException::invalid( $errors );
 		}
 		$by_period = false !== ( $kinds[ $kind ]['period'] ?? true );
-		$range     = ReportRange::fromInput( $by_period ? $input : array() );
+		// No dates on a dated kind: every date (the first to the last booking).
+		$all_dates = $by_period && '' === trim( (string) ( $input['from'] ?? '' ) ) && '' === trim( (string) ( $input['to'] ?? '' ) );
+		$range     = $all_dates ? ReportRange::allDates( (string) ( $input['mode'] ?? 'arrival' ) ) : ReportRange::fromInput( $by_period ? $input : array() );
 
 		// A long export must not stop half way.
 		wp_raise_memory_limit( 'admin' );
@@ -193,7 +195,8 @@ class ExportService {
 			}
 			$writer->finish();
 
-			$name_parts = $by_period ? array( $kind, $range->from, $range->to ) : array( $kind, Dates::today() );
+			$name_parts = $by_period && ! $all_dates ? array( $kind, $range->from, $range->to ) : array( $kind, $all_dates ? 'all-dates' : '', Dates::today() );
+			$name_parts = array_values( array_filter( $name_parts, 'strlen' ) );
 			if ( $by_period && 'created' === $range->mode ) {
 				$name_parts[] = 'booked';
 			}
@@ -209,6 +212,9 @@ class ExportService {
 			'to'   => $range->to,
 			'mode' => $range->mode,
 		) : array();
+		if ( $all_dates ) {
+			$params['all'] = true;
+		}
 		if ( 'csv' === $format ) {
 			$params['separator'] = (string) rtbp_setting( 'exports', 'csvSeparator', ',' );
 		}

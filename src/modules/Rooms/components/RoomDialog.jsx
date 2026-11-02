@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import RecordHistory from '@/components/common/RecordHistory';
 import {
 	Select,
 	SelectContent,
@@ -253,6 +254,16 @@ export default function RoomDialog( {
 					</div>
 
 					<DialogFooter>
+						{ room ? (
+							<div className="sm:mr-auto">
+								<RecordHistory
+									type="room"
+									id={ room.id }
+									title={ room.number }
+									notes
+								/>
+							</div>
+						) : null }
 						<Button
 							type="button"
 							variant="ghost"

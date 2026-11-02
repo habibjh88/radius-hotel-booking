@@ -9,8 +9,8 @@
  * room) or check out as a button, the rest in a menu; each shown only when
  * the status allows it and the viewer holds the key.
  */
-import { useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { applyFilters } from '@wordpress/hooks';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import {
@@ -18,10 +18,13 @@ import {
 	BedDouble,
 	CalendarCheck,
 	Check,
+	FileText,
+	History,
 	LogIn,
 	LogOut,
 	Mail,
 	MoreHorizontal,
+	Pencil,
 	Plus,
 	BellRing,
 	Unlock,
@@ -114,9 +117,9 @@ function Line( { line, actions = [], onAction } ) {
 	const primary = [ 'check_in', 'check_out' ].find( ( a ) =>
 		actions.includes( a )
 	);
-	// In the menu: change first, remove last.
+	// Change the room is its own button (R1-T15); the rest in the menu, remove last.
+	const canEdit = actions.includes( 'line_edit' );
 	const others = [
-		...actions.filter( ( a ) => 'line_edit' === a ),
 		...actions.filter(
 			( a ) =>
 				a !== primary && ! [ 'line_edit', 'line_remove' ].includes( a )
@@ -210,8 +213,19 @@ function Line( { line, actions = [], onAction } ) {
 					</span>
 				) : null }
 			</p>
-			{ primary || others.length ? (
+			{ primary || others.length || canEdit ? (
 				<div className="flex flex-wrap justify-end gap-2 pl-8">
+					{ canEdit ? (
+						<Button
+							type="button"
+							variant="outline"
+							size="sm"
+							onClick={ () => onAction( 'line_edit', line ) }
+						>
+							<Pencil className="h-4 w-4" aria-hidden="true" />
+							{ __( 'Edit', 'radius-hotel-booking' ) }
+						</Button>
+					) : null }
 					{ others.length ? (
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
@@ -344,6 +358,29 @@ export default function BookingDetail() {
 	// The room editor: `{ line }` (line null = add a room).
 	const [ editor, setEditor ] = useState( null );
 	const lineChange = useLineChange( id );
+
+	// `?edit=<line id>` (the list's Edit button, R1-T8): open that room's editor once.
+	const [ params, setParams ] = useSearchParams();
+	const editParam = Number( params.get( 'edit' ) ) || 0;
+	useEffect( () => {
+		if ( ! editParam || ! booking ) {
+			return;
+		}
+		const line = ( booking.lines || [] ).find(
+			( item ) => item.id === editParam
+		);
+		if ( line && allowed( line.actions ).includes( 'line_edit' ) ) {
+			setEditor( { line } );
+		}
+		setParams(
+			( prev ) => {
+				const next = new URLSearchParams( prev );
+				next.delete( 'edit' );
+				return next;
+			},
+			{ replace: true }
+		);
+	}, [ editParam, booking ] );
 
 	const run = ( action, { line = null, reason = '', roomId = 0 } = {} ) =>
 		act
@@ -546,6 +583,25 @@ export default function BookingDetail() {
 					</div>
 					{ headerActions.length ? (
 						<div className="flex flex-wrap gap-2">
+							{ booking.invoice?.urls?.html ? (
+								// The invoice one click away (R1-T15), as on the list rows.
+								<Button asChild variant="outline">
+									<a
+										href={ booking.invoice.urls.html }
+										target="_blank"
+										rel="noopener noreferrer"
+									>
+										<FileText
+											className="h-4 w-4"
+											aria-hidden="true"
+										/>
+										{ __(
+											'Invoice',
+											'radius-hotel-booking'
+										) }
+									</a>
+								</Button>
+							) : null }
 							{ headerActions.includes( 'approve' ) ? (
 								<Button
 									type="button"
@@ -701,6 +757,28 @@ export default function BookingDetail() {
 									<p className="m-0 text-xs text-muted-foreground">
 										{ guest.reference }
 									</p>
+									{ canSeeGuest ? (
+										// Their other bookings, notes and edits, one click away (R1-T11).
+										<Link
+											to={ `/guests/${ guest.id }` }
+											className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary no-underline hover:underline"
+										>
+											<History
+												className="h-3.5 w-3.5"
+												aria-hidden="true"
+											/>
+											{ sprintf(
+												/* translators: %d: the guest's number of stays. */
+												_n(
+													'Stays and history (%d stay)',
+													'Stays and history (%d stays)',
+													guest.stays_count || 0,
+													'radius-hotel-booking'
+												),
+												guest.stays_count || 0
+											) }
+										</Link>
+									) : null }
 								</div>
 								<p className="m-0 flex items-center gap-2 text-sm text-heading">
 									<Phone

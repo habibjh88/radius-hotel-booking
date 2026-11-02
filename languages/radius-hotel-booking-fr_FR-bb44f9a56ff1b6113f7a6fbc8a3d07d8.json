@@ -1,0 +1,79 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Rooms\/components\/BulkAddDialog.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Choose a room type.": [
+                "Choisissez un type de chambre."
+            ],
+            "Floor": [
+                "\u00c9tage"
+            ],
+            "From": [
+                "\u00c0 partir de"
+            ],
+            "Cancel": [
+                "Annuler"
+            ],
+            "Choose a floor": [
+                "Choisir un \u00e9tage"
+            ],
+            "Add rooms": [
+                "Ajouter des chambres"
+            ],
+            "%1$d rooms added, %2$d skipped.": [
+                "%1$d chambres ajout\u00e9es, %2$d ignor\u00e9es."
+            ],
+            "Add rooms to %s": [
+                "Ajouter des chambres \u00e0 %s"
+            ],
+            "A range of numbers on one floor, e.g. A1 to A12. Numbers that already exist are skipped.": [
+                "Une plage de num\u00e9ros sur un m\u00eame \u00e9tage, p. ex. A1 \u00e0 A12. Les num\u00e9ros qui existent d\u00e9j\u00e0 sont ignor\u00e9s."
+            ],
+            "Prefix": [
+                "Pr\u00e9fixe"
+            ],
+            "e.g. A": [
+                "p. ex. A"
+            ],
+            "To": [
+                "\u00c0"
+            ],
+            "Pad with zeros (A01 \u2026 A12)": [
+                "Compl\u00e9ter par des z\u00e9ros (A01 \u2026 A12)"
+            ],
+            "%d room will be added": [
+                "%d chambre sera ajout\u00e9e",
+                "%d chambres seront ajout\u00e9es"
+            ],
+            "%d is a removed room and comes back": [
+                "%d est une chambre retir\u00e9e et revient",
+                "%d sont des chambres retir\u00e9es et reviennent"
+            ],
+            "%d already exists and is skipped": [
+                "%d existe d\u00e9j\u00e0 et est ignor\u00e9",
+                "%d existent d\u00e9j\u00e0 et sont ignor\u00e9s"
+            ],
+            "%1$s was a removed room of %2$s and comes back": [
+                "%1$s \u00e9tait une chambre retir\u00e9e de %2$s et revient"
+            ],
+            "%1$s already belongs to %2$s": [
+                "%1$s appartient d\u00e9j\u00e0 \u00e0 %2$s"
+            ],
+            "Add %d room": [
+                "Ajouter %d chambre",
+                "Ajouter %d chambres"
+            ],
+            "Preview": [
+                "Aper\u00e7u"
+            ]
+        }
+    }
+}

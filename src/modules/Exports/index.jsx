@@ -6,13 +6,19 @@
  *
  * Add-ons add panels between the form and the library with the
  * `rtbp.exports.panels` filter: `{ key, Component( { kinds, formats } ) }`
- * (Pro: archive and remove). The library refreshes on the `[ 'exports' ]`
+ * (Pro: scheduled exports). The library refreshes on the `[ 'exports' ]`
  * query key.
  */
 import { Suspense, useMemo, useState } from 'react';
 import { applyFilters } from '@wordpress/hooks';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import { Download, FileSpreadsheet, ShieldAlert, Trash2 } from 'lucide-react';
+import {
+	Download,
+	FileSpreadsheet,
+	RotateCcw,
+	ShieldAlert,
+	Trash2,
+} from 'lucide-react';
 
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import DataTable from '@/components/common/DataTable';
@@ -34,6 +40,7 @@ import { useAccess } from '@/lib/access';
 import { siteToday } from '@/lib/format';
 import { toast, toastError } from '@/lib/toast';
 import { useDeleteExport, useExports, useGenerateExport } from './api';
+import RestorePanel from './RestorePanel';
 
 /**
  * A file size in words.
@@ -61,11 +68,12 @@ const size = ( bytes ) => {
  */
 export default function Exports() {
 	const today = siteToday();
+	// The period the form opens with; the clear button goes back to it.
+	const defaultPeriod = { from: `${ today.slice( 0, 8 ) }01`, to: today };
 	const [ page, setPage ] = useState( 1 );
 	const [ form, setForm ] = useState( {
 		kind: 'bookings',
-		from: `${ today.slice( 0, 8 ) }01`,
-		to: today,
+		...defaultPeriod,
 		mode: 'arrival',
 		format: 'csv',
 	} );
@@ -73,10 +81,13 @@ export default function Exports() {
 	const generate = useGenerateExport();
 	const canGenerate = useAccess( 'exports.generate' ) !== 'locked';
 	const canDelete = useAccess( 'exports.delete' ) !== 'locked';
+	const canRestore = useAccess( 'exports.restore' ) !== 'locked';
 	const remove = useDeleteExport();
 	// The row waiting for the delete confirmation.
 	const [ deleting, setDeleting ] = useState( null );
-	// Add-on panels between the form and the library (Pro: archive and remove).
+	// A library file sent to the Restore panel: `{ id, name, key }`.
+	const [ restoreFrom, setRestoreFrom ] = useState( null );
+	// Add-on panels between the form and the library (Pro: scheduled exports).
 	const panels = useMemo(
 		() =>
 			( applyFilters( 'rtbp.exports.panels', [] ) || [] ).filter(
@@ -127,7 +138,17 @@ export default function Exports() {
 			id: 'period',
 			header: __( 'Period', 'radius-hotel-booking' ),
 			cell: ( row ) =>
-				row.params?.from
+				row.params?.all
+					? sprintf(
+							/* translators: 1: first day, 2: last day. */
+							__(
+								'All dates (%1$s → %2$s)',
+								'radius-hotel-booking'
+							),
+							row.params.from,
+							row.params.to
+					  )
+					: row.params?.from
 					? sprintf(
 							/* translators: 1: first day, 2: last day, 3: "by arrival" or "by booking date". */
 							__( '%1$s → %2$s, %3$s', 'radius-hotel-booking' ),
@@ -262,15 +283,22 @@ export default function Exports() {
 											to: form.to,
 										} }
 										onChange={ ( next ) =>
+											// No dates: every booking, whatever the date.
 											set( {
-												from: next?.from || form.from,
-												to: next?.to || form.to,
+												from: next?.from || '',
+												to:
+													next?.to ||
+													next?.from ||
+													'',
 											} )
 										}
 										mode={ form.mode }
 										onModeChange={ ( mode ) =>
 											set( { mode } )
 										}
+										anyDate
+										resetTo={ defaultPeriod }
+										hidePresets={ [ 'next7' ] }
 									/>
 								</div>
 							</Field>
@@ -320,6 +348,8 @@ export default function Exports() {
 				</Suspense>
 			) ) }
 
+			{ canRestore ? <RestorePanel from={ restoreFrom } /> : null }
+
 			<Panel
 				title={ __( 'File library', 'radius-hotel-booking' ) }
 				description={ __(
@@ -352,6 +382,25 @@ export default function Exports() {
 											window.location.assign(
 												row.download_url
 											),
+								  }
+								: null,
+							// Only a bookings CSV can be read back.
+							canRestore &&
+							row.download_url &&
+							'bookings' === row.kind &&
+							'csv' === row.format
+								? {
+										label: __(
+											'Restore',
+											'radius-hotel-booking'
+										),
+										icon: RotateCcw,
+										onSelect: () =>
+											setRestoreFrom( {
+												id: row.id,
+												name: row.file?.name || '',
+												key: Date.now(),
+											} ),
 								  }
 								: null,
 							canDelete

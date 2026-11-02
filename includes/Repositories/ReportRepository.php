@@ -57,9 +57,12 @@ class ReportRepository {
 		} elseif ( $slots ) {
 			$bucket = "TIMESTAMPDIFF( MINUTE, '1970-01-01 00:00:00', b.created_at_gmt ) DIV 15";
 		} else {
-			$bucket = 'month' === $unit ? "DATE_FORMAT( br.start_at, '%%Y-%%m' )" : "DATE_FORMAT( br.start_at, '%%Y-%%m-%%d' )";
+			// Departure groups by the line's local end, arrival by its local start (R1-T12).
+			$local  = 'departure' === $range->mode ? 'br.end_at' : 'br.start_at';
+			$bucket = 'month' === $unit ? "DATE_FORMAT( {$local}, '%%Y-%%m' )" : "DATE_FORMAT( {$local}, '%%Y-%%m-%%d' )";
 		}
-		$where  = 'created' === $range->mode ? 'b.created_at_gmt >= %s AND b.created_at_gmt < %s' : 'br.start_at_gmt >= %s AND br.start_at_gmt < %s';
+		$column = $range->column();
+		$where  = "{$column} >= %s AND {$column} < %s";
 
 		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $bucket and $where are fixed SQL fragments chosen above (two %s in $where); $sql is prepared; the report caches its result.
 		$sql = $wpdb->prepare(
@@ -132,9 +135,9 @@ class ReportRepository {
 	 */
 	public function soldPerBooking( ReportRange $range ): array {
 		global $wpdb;
-		$where = 'created' === $range->mode
-			? $wpdb->prepare( 'b.created_at_gmt >= %s AND b.created_at_gmt < %s', $range->from_gmt, $range->to_gmt )
-			: $wpdb->prepare( 'br.start_at_gmt >= %s AND br.start_at_gmt < %s', $range->from_gmt, $range->to_gmt );
+		$column = $range->column();
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $column is a fixed column name from ReportRange::column().
+		$where = $wpdb->prepare( "{$column} >= %s AND {$column} < %s", $range->from_gmt, $range->to_gmt );
 		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $where is prepared above; the report caches its result.
 		$totals = $wpdb->get_col(
 			$wpdb->prepare(
@@ -179,12 +182,14 @@ class ReportRepository {
 				ARRAY_A
 			);
 		} else {
+			$column = $range->column();
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $column is a fixed column name from ReportRange::column().
 			$rows = $wpdb->get_results(
 				$wpdb->prepare(
-					'SELECT p.method, SUM( p.amount ) AS amount FROM %i p
+					"SELECT p.method, SUM( p.amount ) AS amount FROM %i p
 					JOIN %i b ON b.id = p.booking_id AND b.deleted_at IS NULL
-					WHERE p.booking_id IN ( SELECT br.booking_id FROM %i br WHERE br.start_at_gmt >= %s AND br.start_at_gmt < %s )
-					GROUP BY p.method',
+					WHERE p.booking_id IN ( SELECT br.booking_id FROM %i br WHERE {$column} >= %s AND {$column} < %s )
+					GROUP BY p.method",
 					$payments,
 					rtbp_table( 'bookings' ),
 					rtbp_table( 'booking_rooms' ),
@@ -193,6 +198,7 @@ class ReportRepository {
 				),
 				ARRAY_A
 			);
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		}
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
@@ -229,6 +235,10 @@ class ReportRepository {
 		global $wpdb;
 		if ( 'created' === $range->mode ) {
 			return $wpdb->prepare( 'b.created_at_gmt >= %s AND b.created_at_gmt < %s', $range->from_gmt, $range->to_gmt );
+		}
+		if ( 'departure' === $range->mode ) {
+			// Stays ending in the period (R1-T12).
+			return $wpdb->prepare( 'br.end_at_gmt >= %s AND br.end_at_gmt < %s', $range->from_gmt, $range->to_gmt );
 		}
 		// `occupied_until_gmt` = the stay's end, or the moment of an early check-out.
 		return $wpdb->prepare( 'br.start_at_gmt < %s AND br.occupied_until_gmt > %s', $range->to_gmt, $range->from_gmt );
@@ -317,6 +327,8 @@ class ReportRepository {
 		global $wpdb;
 		$period = $this->periodCondition( $range );
 		$states = "'" . implode( "','", self::LIVE_STATUSES ) . "'";
+		// The plugin's own table name (prefix + fixed name), quoted like %i would.
+		$invoices = '`' . esc_sql( rtbp_table( 'invoices' ) ) . '`';
 		$from   = $wpdb->prepare(
 			'FROM %i br
 			JOIN %i b ON b.id = br.booking_id AND b.deleted_at IS NULL
@@ -331,8 +343,9 @@ class ReportRepository {
 		$total = (int) $wpdb->get_var( "SELECT COUNT(*) {$from} WHERE br.status IN ( {$states} ) AND {$period}" );
 		$rows  = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT br.id AS line_id, b.id AS booking_id, b.reference, b.created_at, COALESCE( t.name, '' ) AS room_type,
+				"SELECT br.id AS line_id, b.id AS booking_id, b.guest_id, b.reference, b.created_at, COALESCE( t.name, '' ) AS room_type,
 					br.room_number AS room, br.start_at, br.end_at, br.status, b.payment_status, br.total,
+					EXISTS ( SELECT 1 FROM {$invoices} i WHERE i.booking_id = b.id ) AS has_invoice,
 					TRIM( CONCAT( COALESCE( g.first_name, '' ), ' ', COALESCE( g.last_name, '' ) ) ) AS guest
 				{$from}
 				WHERE br.status IN ( {$states} ) AND {$period}
@@ -360,6 +373,8 @@ class ReportRepository {
 					'payment_status' => (string) $row['payment_status'],
 					'total'          => (float) $row['total'],
 					'guest'          => (string) $row['guest'],
+					'guest_id'       => (int) $row['guest_id'],
+					'invoice_url'    => ! empty( $row['has_invoice'] ) ? \RadiusTheme\RadiusHotelBooking\Documents\DocumentService::url( 'invoice', (int) $row['booking_id'] ) : '',
 				),
 				(array) $rows
 			),

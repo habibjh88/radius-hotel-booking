@@ -1,0 +1,107 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Rooms\/components\/RoomsTab.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "%d room": [
+                "%d chambre",
+                "%d chambres"
+            ],
+            "Try again": [
+                "R\u00e9essayer"
+            ],
+            "Reason": [
+                "Motif"
+            ],
+            "Cancel": [
+                "Annuler"
+            ],
+            "Save": [
+                "Enregistrer"
+            ],
+            "%1$s on %2$s": [
+                "%1$s le %2$s"
+            ],
+            "Add room": [
+                "Ajouter la chambre"
+            ],
+            "Remove room": [
+                "Retirer la chambre"
+            ],
+            "No rooms yet": [
+                "Aucune chambre pour le moment"
+            ],
+            "Bulk add": [
+                "Ajout en masse"
+            ],
+            "State": [
+                "\u00c9tat"
+            ],
+            "The rooms could not be loaded": [
+                "Les chambres n'ont pas pu \u00eatre charg\u00e9es"
+            ],
+            "Only available rooms can be booked.": [
+                "Seules les chambres disponibles peuvent \u00eatre r\u00e9serv\u00e9es."
+            ],
+            "e.g. AC repair": [
+                "p. ex. R\u00e9paration de la climatisation"
+            ],
+            "Add your floors first": [
+                "Ajoutez d\u2019abord vos \u00e9tages"
+            ],
+            "Every room sits on a floor. Create the floors, then add rooms here.": [
+                "Chaque chambre se trouve \u00e0 un \u00e9tage. Cr\u00e9ez les \u00e9tages, puis ajoutez les chambres ici."
+            ],
+            "Go to floors": [
+                "Aller aux \u00e9tages"
+            ],
+            "%d floor": [
+                "%d \u00e9tage",
+                "%d \u00e9tages"
+            ],
+            "%1$s (%2$d)": [
+                "%1$s (%2$d)"
+            ],
+            "Bulk add rooms on %s": [
+                "Ajouter plusieurs chambres \u00e0 %s"
+            ],
+            "Add the physical rooms of this type with their numbers, e.g. A1, A2, A3.": [
+                "Ajoutez les chambres physiques de ce type avec leurs num\u00e9ros, ex. A1, A2, A3."
+            ],
+            "Remove room %s?": [
+                "Supprimer la chambre %s ?"
+            ],
+            "It is no longer sold, and past bookings keep it. Adding its number again brings it back.": [
+                "Elle n\u2019est plus vendue, mais les r\u00e9servations pass\u00e9es la conservent. Ajouter \u00e0 nouveau son num\u00e9ro la r\u00e9tablit."
+            ],
+            "Room %s removed.": [
+                "Chambre %s supprim\u00e9e."
+            ],
+            "Actions for room %s": [
+                "Actions pour la chambre %s"
+            ],
+            "Change state": [
+                "Changer le statut"
+            ],
+            "Rename or change floor": [
+                "Renommer ou changer d\u2019\u00e9tage"
+            ],
+            "Move to another room type": [
+                "D\u00e9placer vers un autre type de chambre"
+            ],
+            "Room %1$s is now %2$s.": [
+                "La chambre %1$s est maintenant %2$s."
+            ],
+            "State of room %s": [
+                "Statut de la chambre %s"
+            ]
+        }
+    }
+}

@@ -1,0 +1,100 @@
+{
+    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Bookings\/index.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Bookings": [
+                "R\u00e9servations"
+            ],
+            "Status": [
+                "Statut"
+            ],
+            "Room": [
+                "Chambre"
+            ],
+            "Booking": [
+                "R\u00e9servation"
+            ],
+            "Awaiting approval": [
+                "En attente de validation"
+            ],
+            "Stay": [
+                "S\u00e9jour"
+            ],
+            "%d room": [
+                "%d chambre",
+                "%d chambres"
+            ],
+            "New booking": [
+                "Nouvelle r\u00e9servation"
+            ],
+            "%1$s \u00b7 %2$s": [
+                "%1$s \u00b7 %2$s"
+            ],
+            "Reason": [
+                "Motif"
+            ],
+            "All": [
+                "Toutes"
+            ],
+            "Payment overdue": [
+                "Paiement en retard"
+            ],
+            "Record payment": [
+                "Enregistrer un paiement"
+            ],
+            "This room is free again at once and no longer counts towards the total.": [
+                "Cette chambre est imm\u00e9diatement lib\u00e9r\u00e9e et n'est plus compt\u00e9e dans le total."
+            ],
+            "%s is still due on this booking. Check out anyway?": [
+                "%s reste d\u00fb sur cette r\u00e9servation. Enregistrer le d\u00e9part quand m\u00eame ?"
+            ],
+            "The room is free again once the guest has left.": [
+                "La chambre est lib\u00e9r\u00e9e d\u00e8s que le client est parti."
+            ],
+            "Arriving today": [
+                "Arriv\u00e9es du jour"
+            ],
+            "Leaving today": [
+                "D\u00e9parts du jour"
+            ],
+            "In house": [
+                "En s\u00e9jour"
+            ],
+            "Open booking": [
+                "Ouvrir la r\u00e9servation"
+            ],
+            "Booking list": [
+                "Liste des r\u00e9servations"
+            ],
+            "Reference, guest, phone or room": [
+                "R\u00e9f\u00e9rence, client, t\u00e9l\u00e9phone ou chambre"
+            ],
+            "No booking matches": [
+                "Aucune r\u00e9servation ne correspond"
+            ],
+            "No bookings yet": [
+                "Aucune r\u00e9servation pour le moment"
+            ],
+            "Try another tab, date range or search.": [
+                "Essayez un autre onglet, une autre p\u00e9riode ou une autre recherche."
+            ],
+            "Bookings taken at the desk or on the website appear here.": [
+                "Les r\u00e9servations prises \u00e0 la r\u00e9ception ou sur le site web apparaissent ici."
+            ],
+            "Decline room": [
+                "Refuser la chambre"
+            ],
+            "Cancel room": [
+                "Annuler la chambre"
+            ]
+        }
+    }
+}
