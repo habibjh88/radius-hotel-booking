@@ -142,7 +142,7 @@ export default function AppShell( { children } ) {
 								: 'min-w-0 flex-1 p-4 pb-24'
 						}
 					>
-						<div className="mx-auto w-full max-w-[1400px]">
+						<div className="w-full">
 							{ children }
 						</div>
 					</main>

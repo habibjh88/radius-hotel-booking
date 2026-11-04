@@ -15,6 +15,7 @@
  *       ] }
  *       rows={ data.items } total={ data.total }
  *       page={ page } perPage={ 20 } onPageChange={ setPage }
+ *       perPageOptions={ [ 20, 40, 60, 100 ] } onPerPageChange={ setPerPage }
  *       sort={ { by: 'created_at', dir: 'desc' } } onSortChange={ setSort }
  *       rowActions={ ( b ) => [ { label: __( 'Approve', … ), onSelect: …, primary: true }, … ] }
  *       loading={ isPending } error={ error } onRetry={ refetch }
@@ -61,6 +62,13 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
@@ -148,7 +156,10 @@ function RowActions( { actions, stretch = false } ) {
 						event.stopPropagation();
 						primary.onSelect();
 					} }
-					className={ cn( stretch && 'flex-1' ) }
+					className={ cn(
+						stretch && 'flex-1',
+						inline.length && 'mr-1.5'
+					) }
 				>
 					{ primary.icon ? (
 						<primary.icon aria-hidden="true" />
@@ -278,6 +289,8 @@ function HeaderCell( { column, sort, onSort } ) {
  * @param {number}   props.page         Current page (1-based).
  * @param {number}   props.perPage      Rows per page.
  * @param {Function} props.onPageChange Called with the new page.
+ * @param {number[]} props.perPageOptions Page sizes offered next to the pager (optional).
+ * @param {Function} props.onPerPageChange Called with the new page size.
  * @param {Object}   props.sort         `{ by, dir }`.
  * @param {Function} props.onSortChange Called with the new sort.
  * @param {Function} props.rowActions   Row → actions.
@@ -302,6 +315,8 @@ export default function DataTable( {
 	page = 1,
 	perPage = 20,
 	onPageChange,
+	perPageOptions,
+	onPerPageChange,
 	sort,
 	onSortChange,
 	rowActions,
@@ -736,18 +751,56 @@ export default function DataTable( {
 
 				{ ! error && total > 0 && onPageChange ? (
 					<div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-4 py-3">
-						<p className="m-0 text-[13px] text-muted-foreground">
-							{ sprintf(
-								/* translators: 1: first row number, 2: last row number, 3: total rows. */
-								__(
-									'Showing %1$d–%2$d of %3$d',
-									'radius-hotel-booking'
-								),
-								firstRow,
-								lastRow,
-								total
-							) }
-						</p>
+						<div className="flex flex-wrap items-center gap-3">
+							<p className="m-0 text-[13px] text-muted-foreground">
+								{ sprintf(
+									/* translators: 1: first row number, 2: last row number, 3: total rows. */
+									__(
+										'Showing %1$d–%2$d of %3$d',
+										'radius-hotel-booking'
+									),
+									firstRow,
+									lastRow,
+									total
+								) }
+							</p>
+							{ perPageOptions?.length && onPerPageChange ? (
+								<Select
+									value={ String( perPage ) }
+									onValueChange={ ( value ) =>
+										onPerPageChange( Number( value ) )
+									}
+									disabled={ loading }
+								>
+									<SelectTrigger
+										className="h-8 w-auto gap-2 text-[13px]"
+										aria-label={ __(
+											'Rows per page',
+											'radius-hotel-booking'
+										) }
+									>
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent className="rtbp-root">
+										{ perPageOptions.map( ( size ) => (
+											<SelectItem
+												key={ size }
+												value={ String( size ) }
+											>
+												{ sprintf(
+													/* translators: %d: rows shown per page. */
+													__(
+														'%d per page',
+														'radius-hotel-booking'
+													),
+													size
+												) }
+											</SelectItem>
+										) ) }
+									</SelectContent>
+								</Select>
+							) : null }
+						</div>
 						<div className="flex items-center gap-2">
 							<Button
 								variant="outline"

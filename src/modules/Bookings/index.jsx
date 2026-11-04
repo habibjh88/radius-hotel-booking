@@ -58,6 +58,8 @@ import RecordPaymentDialog from './components/RecordPaymentDialog';
 import { actionLabel, lineQuestion } from './moves';
 
 const PER_PAGE = 20;
+// Page sizes the desk can pick under the list; the server caps at 100.
+const PER_PAGE_OPTIONS = [ 20, 40, 60, 100 ];
 const TABS = [
 	'all',
 	'awaiting',
@@ -99,6 +101,11 @@ export function BookingList( { withPageActions = true } ) {
 	const mode = params.get( 'mode' ) === 'created' ? 'created' : 'arrival';
 	const q = params.get( 'q' ) || '';
 	const page = Math.max( 1, Number( params.get( 'page' ) ) || 1 );
+	const perPage = PER_PAGE_OPTIONS.includes(
+		Number( params.get( 'per_page' ) )
+	)
+		? Number( params.get( 'per_page' ) )
+		: PER_PAGE;
 
 	const list = useBookingLines( {
 		tab,
@@ -107,7 +114,7 @@ export function BookingList( { withPageActions = true } ) {
 		mode,
 		q,
 		page,
-		per_page: PER_PAGE,
+		per_page: perPage,
 	} );
 	const counts = list.data?.counts || {};
 
@@ -373,8 +380,8 @@ export function BookingList( { withPageActions = true } ) {
 	];
 
 	// One click on the row, as on the old dashboard (R1-T8): the next step
-	// (approve, check in or check out), View, Invoice, Edit and Cancel as icons;
-	// decline and record payment in the ⋯ menu.
+	// (Check in / Check out as a text button, approve as an icon), then View,
+	// Invoice, Edit and Cancel as icons; decline and record payment in the ⋯ menu.
 	const rowActions = ( line ) => {
 		const can = ( action ) =>
 			( line.actions || [] ).includes( action ) && allowed( action );
@@ -399,7 +406,10 @@ export function BookingList( { withPageActions = true } ) {
 		const primary = [ 'approve', 'check_in', 'check_out' ].find( can );
 		return [
 			primary
-				? moveAction( primary, { primary: true, inline: true } )
+				? moveAction( primary, {
+						primary: true,
+						inline: 'approve' === primary,
+				  } )
 				: null,
 			{
 				label: __( 'View booking', 'radius-hotel-booking' ),
@@ -466,9 +476,15 @@ export function BookingList( { withPageActions = true } ) {
 						groupBy={ ( line ) => line.booking_id }
 						total={ list.data?.total || 0 }
 						page={ page }
-						perPage={ PER_PAGE }
+						perPage={ perPage }
 						onPageChange={ ( next ) =>
 							setView( { page: next > 1 ? next : '' } )
+						}
+						perPageOptions={ PER_PAGE_OPTIONS }
+						onPerPageChange={ ( size ) =>
+							setView( {
+								per_page: size === PER_PAGE ? '' : size,
+							} )
 						}
 						loading={ list.isPending }
 						error={ list.error }

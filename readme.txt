@@ -357,6 +357,9 @@ Restore bookings from an export file: missing ones are re-created, existing ones
 Large restores run in batches with a progress bar and a Stop button.
 File library: a Restore action previews a bookings CSV for restoring, without re-uploading.
 Exports: "Any date" exports every booking; clearing the period restores this month.
+The bookings list has a rows-per-page choice: 20, 40, 60 or 100.
+Bookings list: Check in and Check out are labelled buttons instead of icons.
+Dashboard screens use the full screen width on wide monitors.
 
 = 1.0.0 =
 Initial release.
