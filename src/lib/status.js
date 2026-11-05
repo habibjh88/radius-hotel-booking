@@ -64,7 +64,7 @@ export const STATUS = {
 			outline: true,
 		},
 		overdue: {
-			label: __( 'Payment overdue', 'radius-hotel-booking' ),
+			label: __( 'Overdue', 'radius-hotel-booking' ),
 			tone: 'danger',
 		},
 	},

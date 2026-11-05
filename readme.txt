@@ -360,6 +360,7 @@ Exports: "Any date" exports every booking; clearing the period restores this mon
 The bookings list has a rows-per-page choice: 20, 40, 60 or 100.
 Bookings list: Check in and Check out are labelled buttons instead of icons.
 Dashboard screens use the full screen width on wide monitors.
+Payment badge now reads "Overdue" instead of "Payment overdue".
 
 = 1.0.0 =
 Initial release.
