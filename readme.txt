@@ -361,6 +361,8 @@ The bookings list has a rows-per-page choice: 20, 40, 60 or 100.
 Bookings list: Check in and Check out are labelled buttons instead of icons.
 Dashboard screens use the full screen width on wide monitors.
 Payment badge now reads "Overdue" instead of "Payment overdue".
+New hooks let add-ons add blocks to invoices, receipts, the guest booking page and top bar.
+The booking approved e-mail now runs the after-content hook like the other guest e-mails.
 
 = 1.0.0 =
 Initial release.

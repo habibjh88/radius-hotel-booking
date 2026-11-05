@@ -43,3 +43,5 @@ do_action( 'rtbp_email_before_content', $email, $data );
 	</tr>
 </table>
 <?php endif; ?>
+<?php
+do_action( 'rtbp_email_after_content', $email, $data );

@@ -1,8 +1,11 @@
 /**
  * Top bar: page title and description (from the route table), the page's own
- * actions, and today's date in the hotel's time zone.
+ * actions, and today's date in the hotel's time zone. Add-ons put buttons
+ * next to the bell on `rtbp.topbar.actions` (`{ key, Component }`; Pro's
+ * *Scan a booking*).
  */
 import { useLocation } from 'react-router-dom';
+import { applyFilters } from '@wordpress/hooks';
 import { __ } from '@wordpress/i18n';
 import { CalendarDays, Menu, Search } from 'lucide-react';
 
@@ -44,6 +47,9 @@ export default function Topbar( { onOpenMenu, onOpenSearch, isDesktop } ) {
 	const location = useLocation();
 	const route = matchRoute( location.pathname );
 	const actions = useCurrentPageActions();
+	const extras = (
+		applyFilters( 'rtbp.topbar.actions', [], { route } ) || []
+	).filter( ( item ) => item && item.key && item.Component );
 
 	const title =
 		route?.title ||
@@ -99,6 +105,9 @@ export default function Topbar( { onOpenMenu, onOpenSearch, isDesktop } ) {
 					/>
 					{ todayLabel() }
 				</span>
+				{ extras.map( ( { key, Component } ) => (
+					<Component key={ key } />
+				) ) }
 				<NotificationBell />
 				{ actions }
 				<UserMenu />

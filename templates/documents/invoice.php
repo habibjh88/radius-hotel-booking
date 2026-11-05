@@ -160,6 +160,16 @@ $rtbp_rate  = static fn( $rate ) => rtrim( rtrim( number_format( (float) $rate, 
 		<?php endif; ?>
 	</table>
 
+	<?php
+	/**
+	 * After the totals, before the footer: room for an add-on's block (Pro's booking QR code).
+	 *
+	 * @param string $type invoice|receipt.
+	 * @param array  $doc  The document data.
+	 */
+	do_action( 'rtbp_document_before_footer', 'invoice', $doc );
+	?>
+
 	<?php if ( ! empty( $doc['footer'] ) ) : ?>
 		<div class="footer"><?php echo esc_html( $doc['footer'] ); ?></div>
 	<?php endif; ?>

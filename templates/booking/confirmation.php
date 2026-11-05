@@ -97,6 +97,15 @@ $rtbp_due   = (float) $view['balance_due'];
 		<?php endif; ?>
 	</div>
 
+	<?php
+	/**
+	 * After the booking's status card: room for an add-on's card (Pro's booking QR code).
+	 *
+	 * @param array $view `GuestBookingView::data()`.
+	 */
+	do_action( 'rtbp_booking_confirmation_after_status', $view );
+	?>
+
 	<div class="card">
 		<h2><?php esc_html_e( 'Your stay', 'radius-hotel-booking' ); ?></h2>
 		<?php foreach ( $view['rooms'] as $rtbp_room ) : ?>
