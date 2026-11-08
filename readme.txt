@@ -382,6 +382,7 @@ New: Settings → Booking rules can renumber existing bookings to the saved refe
 Renumbered bookings are still found by their old reference in search.
 Invoices and receipts show the hotel name beside the logo; the legal name sits underneath.
 Settings → Payments: the merge tags ({amount}, {reference}…) are now highlighted.
+The account menu can show the user's photo (Pro sets it from the staff file).
 
 = 1.0.0 =
 Initial release.

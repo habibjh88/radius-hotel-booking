@@ -96,9 +96,17 @@ export default function UserMenu() {
 					className="flex h-10 min-w-0 items-center gap-2.5 rounded-lg border border-border bg-card py-1 pl-1 pr-2 text-left hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 					aria-label={ __( 'Account menu', 'radius-hotel-booking' ) }
 				>
-					<span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-soft text-xs font-semibold text-primary">
-						{ initials( user.name ) }
-					</span>
+					{ user.avatar_url ? (
+						<img
+							src={ user.avatar_url }
+							alt=""
+							className="h-8 w-8 shrink-0 rounded-full object-cover"
+						/>
+					) : (
+						<span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-soft text-xs font-semibold text-primary">
+							{ initials( user.name ) }
+						</span>
+					) }
 					<span className="hidden min-w-0 max-w-[160px] md:block">
 						<span className="block truncate text-[13px] font-semibold leading-tight text-heading">
 							{ user.name }

@@ -402,6 +402,13 @@ class LoadAssets {
 					'id'         => get_current_user_id(),
 					'name'       => wp_get_current_user()->display_name,
 					'email'      => wp_get_current_user()->user_email,
+					/**
+					 * The account menu's photo; empty shows initials. Pro fills in the staff photo.
+					 *
+					 * @param string $url     Image URL.
+					 * @param int    $user_id User id.
+					 */
+					'avatar_url' => (string) apply_filters( 'rtbp_user_avatar_url', '', get_current_user_id() ),
 					// Administrator-only tools (Settings → Booking rules: renumber bookings).
 					'is_admin'   => current_user_can( 'manage_options' ),
 					// The account menu's *Sign out* (the app adds where to come back to);
