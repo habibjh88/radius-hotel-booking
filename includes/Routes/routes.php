@@ -76,6 +76,9 @@ $this->router->put( 'settings', array( SettingsController::class, 'update' ) );
 $this->router->get( 'settings/schema', array( SettingsController::class, 'schema' ) );
 // Public booking (M04): create the booking page the search bar sends guests to.
 $this->router->post( 'settings/website/booking-page', array( SettingsController::class, 'bookingPage' ) );
+// Settings → Booking rules: give existing bookings the current reference format (preview, then apply).
+$this->router->get( 'settings/booking/renumber', array( SettingsController::class, 'renumberPreview' ) );
+$this->router->post( 'settings/booking/renumber', array( SettingsController::class, 'renumber' ) );
 $this->router->put( 'settings/reset', array( SettingsController::class, 'reset' ) );
 $this->router->put( 'settings/(?P<section>[a-zA-Z0-9_-]+)/reset', array( SettingsController::class, 'resetSection' ) ); // phpcs:ignore
 $this->router->get( 'settings/(?P<section>[a-zA-Z0-9_-]+)', array( SettingsController::class, 'show' ) ); // phpcs:ignore

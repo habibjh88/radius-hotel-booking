@@ -363,6 +363,25 @@ Dashboard screens use the full screen width on wide monitors.
 Payment badge now reads "Overdue" instead of "Payment overdue".
 New hooks let add-ons add blocks to invoices, receipts, the guest booking page and top bar.
 The booking approved e-mail now runs the after-content hook like the other guest e-mails.
+Admin screens such as Blocked dates, Rooms and Guests now use the full page width.
+Reports: the date filter now sits on a white card like the rest of the page.
+Date filters: picking a From date after Until now moves Until forward automatically.
+Date filters: the chosen period now shows inside the filter box, bottom left.
+Room availability report redesigned: calmer colours, more space, room states named on every tile.
+Rooms report: empty rooms by floor are clearer, with larger green tiles and each room type.
+The dashboard sidebar now shows the hotel name and logo from Settings → General.
+Room availability now matches the old dashboard: state badges and "booked N times" on each room.
+New: choose the booking reference format (prefix, year, digits) in Settings → Booking rules.
+Bookings list: shorter tab names and dates without the year when it is this year.
+The plugin now creates a "Book a room" page on activation and selects it as the booking page.
+Settings → Public booking: a View page link opens the chosen booking page.
+Payment methods can have a short name (OM, Cash) for the dashboard; guests see the full name.
+Sales report: every accepted payment method is listed, at zero when unused in the period.
+Summary cards now show their icon on a soft brand-coloured background.
+New: Settings → Booking rules can renumber existing bookings to the saved reference format.
+Renumbered bookings are still found by their old reference in search.
+Invoices and receipts show the hotel name beside the logo; the legal name sits underneath.
+Settings → Payments: the merge tags ({amount}, {reference}…) are now highlighted.
 
 = 1.0.0 =
 Initial release.

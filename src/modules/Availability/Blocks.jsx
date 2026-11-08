@@ -110,7 +110,7 @@ export default function Blocks() {
 	);
 
 	return (
-		<div className="mx-auto max-w-5xl space-y-4">
+		<div className="space-y-4">
 			<Panel
 				title={ __( 'Blocked dates', 'radius-hotel-booking' ) }
 				description={ __(

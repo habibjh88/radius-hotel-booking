@@ -9,12 +9,14 @@
  */
 import { useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
+import { Info } from 'lucide-react';
 
 import { DatePicker, DateTimePicker } from '@/components/common/DatePicker';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { formatDate, formatTime } from '@/lib/format';
+import { addDaysYmd, formatDate, formatTime } from '@/lib/format';
+import { cn } from '@/lib/utils';
 
 /**
  * The date modes a screen can offer, with their labels.
@@ -59,6 +61,8 @@ const toParam = ( value ) => {
  * @param {boolean}  props.clearable Show Clear while a period is set.
  * @param {Function} props.onApply   Called with `{ mode, from, to }` (Clear: empty dates).
  * @param {string}   props.idPrefix  Prefix of the fields' ids (two filters on a page).
+ * @param {boolean}  props.card      Standalone white card (on the page background), not a
+ *                                   tinted box inside a panel.
  * @return {JSX.Element} Filter.
  */
 export default function PeriodFilter( {
@@ -70,6 +74,7 @@ export default function PeriodFilter( {
 	clearable = true,
 	onApply,
 	idPrefix = 'rtbp-period',
+	card = false,
 } ) {
 	const [ draft, setDraft ] = useState( {
 		mode,
@@ -84,10 +89,35 @@ export default function PeriodFilter( {
 
 	const set = ( key, value ) =>
 		setDraft( ( prev ) => ( { ...prev, [ key ]: value } ) );
+
+	// As on the booking form: a From on or after Until moves Until forward,
+	// keeping the period's length in days (at least one) and Until's time.
+	const setFrom = ( value ) =>
+		setDraft( ( prev ) => {
+			const fromDay = ( value || '' ).slice( 0, 10 );
+			const toDay = prev.to.slice( 0, 10 );
+			if ( ! fromDay || ! toDay || toDay > fromDay ) {
+				return { ...prev, from: value };
+			}
+			const prevFromDay = prev.from.slice( 0, 10 );
+			const span =
+				prevFromDay && toDay > prevFromDay
+					? Math.round(
+							( Date.parse( toDay ) -
+								Date.parse( prevFromDay ) ) /
+								86400000
+					  )
+					: 1;
+			return {
+				...prev,
+				from: value,
+				to: addDaysYmd( fromDay, span ) + prev.to.slice( 10 ),
+			};
+		} );
 	const labels = periodModes();
 	const Picker = withTime ? DateTimePicker : DatePicker;
 
-	// The applied period in words, under the card, as on the old dashboard
+	// The applied period in words, at the foot of the card, as on the old dashboard
 	// ("2 November 2026 · 00:00 — 23:59 · Check-in"; the client's "I stand
 	// report", R1-T13). Only once a period is applied.
 	const day = ( value ) => ( value || '' ).slice( 0, 10 );
@@ -118,9 +148,14 @@ export default function PeriodFilter( {
 	const out = ( value ) => ( withTime ? toParam( value ) : value );
 
 	return (
-		<div className="space-y-2">
+		<div
+			className={ cn(
+				'rounded-xl border border-border',
+				card ? 'bg-card shadow-sm' : 'bg-muted/40'
+			) }
+		>
 			<form
-				className="flex flex-col gap-4 rounded-xl border border-border bg-muted/40 p-4 2xl:flex-row 2xl:items-end"
+				className="flex flex-col gap-4 p-4 2xl:flex-row 2xl:items-end"
 				onSubmit={ ( event ) => {
 					event.preventDefault();
 					onApply( {
@@ -168,7 +203,7 @@ export default function PeriodFilter( {
 									? draft.from
 									: draft.from.slice( 0, 10 )
 							}
-							onChange={ ( value ) => set( 'from', value ) }
+							onChange={ setFrom }
 							minuteStep={ withTime ? 30 : undefined }
 						/>
 					</div>
@@ -213,7 +248,11 @@ export default function PeriodFilter( {
 				</div>
 			</form>
 			{ summary.length ? (
-				<p className="m-0 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-heading">
+				<p className="m-0 flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-border px-4 py-2.5 text-sm text-heading">
+					<Info
+						className="h-4 w-4 shrink-0 text-muted-foreground"
+						aria-hidden="true"
+					/>
 					<span className="font-semibold">{ summary[ 0 ] }</span>
 					{ summary[ 1 ] ? (
 						<span className="text-muted-foreground">

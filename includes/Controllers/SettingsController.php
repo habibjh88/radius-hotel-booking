@@ -53,15 +53,17 @@ class SettingsController extends BaseController {
 		$this->middleware[] = new PermissionMiddleware( Capabilities::VIEW_DASHBOARD );
 		$this->middleware[] = new AccessMiddleware(
 			array(
-				'index'         => 'page.settings',
-				'schema'        => 'page.settings',
-				'show'          => 'page.settings',
-				'updateSection' => fn( WP_REST_Request $r ) => self::accessKey( (string) $r->get_param( 'section' ) ),
-				'bookingPage'   => fn() => self::accessKey( 'website' ),
-				'resetSection'  => fn( WP_REST_Request $r ) => self::accessKey( (string) $r->get_param( 'section' ) ),
+				'index'           => 'page.settings',
+				'schema'          => 'page.settings',
+				'show'            => 'page.settings',
+				'updateSection'   => fn( WP_REST_Request $r ) => self::accessKey( (string) $r->get_param( 'section' ) ),
+				'bookingPage'     => fn() => self::accessKey( 'website' ),
+				'renumberPreview' => fn() => self::accessKey( 'booking' ),
+				'renumber'        => fn() => self::accessKey( 'booking' ),
+				'resetSection'    => fn( WP_REST_Request $r ) => self::accessKey( (string) $r->get_param( 'section' ) ),
 				// Every section in the body (update) or being reset.
-				'update'        => fn( WP_REST_Request $r ) => array_map( array( self::class, 'accessKey' ), array_keys( (array) $r->get_json_params() ) ),
-				'reset'         => function ( WP_REST_Request $r ) {
+				'update'          => fn( WP_REST_Request $r ) => array_map( array( self::class, 'accessKey' ), array_keys( (array) $r->get_json_params() ) ),
+				'reset'           => function ( WP_REST_Request $r ) {
 					$sections = $r->get_param( 'sections' );
 					$sections = is_array( $sections ) && $sections ? $sections : array_keys( SettingsHelper::all() );
 					return array_map( array( self::class, 'accessKey' ), $sections );
@@ -239,6 +241,8 @@ class SettingsController extends BaseController {
 					}
 				}
 				$data = $this->settings->updateSection( 'website', array( 'resultsPageId' => (int) $page ) );
+				// One of the plugin's pages now: install and upgrade will not make another.
+				\RadiusTheme\RadiusHotelBooking\Setup\PageInstaller::remember( 'bookingPage', (int) $page );
 				return ApiResponse::success(
 					array(
 						'section' => 'website',
@@ -253,6 +257,61 @@ class SettingsController extends BaseController {
 				);
 			}
 		);
+	}
+
+	/**
+	 * GET /settings/booking/renumber: what giving existing bookings the
+	 * current reference format would change (nothing is written).
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function renumberPreview( WP_REST_Request $request ) {
+		return $this->respond(
+			$request,
+			function () {
+				self::assertCanRenumber();
+				return ApiResponse::success( ( new \RadiusTheme\RadiusHotelBooking\Services\Booking\ReferenceRenumber() )->preview() );
+			}
+		);
+	}
+
+	/**
+	 * POST /settings/booking/renumber: give existing bookings the current
+	 * reference format (ReferenceRenumber).
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function renumber( WP_REST_Request $request ) {
+		return $this->respond(
+			$request,
+			function () {
+				self::assertCanRenumber();
+				$result = ( new \RadiusTheme\RadiusHotelBooking\Services\Booking\ReferenceRenumber() )->apply();
+				return ApiResponse::success(
+					$result,
+					sprintf(
+						/* translators: %d: number of bookings. */
+						_n( '%d booking renumbered.', '%d bookings renumbered.', $result['changes'], 'radius-hotel-booking' ),
+						$result['changes']
+					)
+				);
+			}
+		);
+	}
+
+	/**
+	 * Renumbering rewrites every booking: administrators only.
+	 *
+	 * @return void
+	 * @throws DomainException 403.
+	 */
+	private static function assertCanRenumber(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw new DomainException( 'forbidden', __( 'Only an administrator can renumber bookings.', 'radius-hotel-booking' ), 403 );
+		}
 	}
 
 	/**

@@ -3,13 +3,21 @@
  * over between stays (features 17.7, 17.8, 17.9, 17.11, 8.9), and the payment
  * deadline of unpaid bookings (5.4, D6).
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 import { Field } from '@/components/common/Form';
 import SegmentedControl from '@/components/common/SegmentedControl';
+import { Input } from '@/components/ui/input';
 import SettingsSection from '@/components/common/SettingsSection';
 import { TimePicker } from '@/components/common/DatePicker';
 import { NumberInput, ToggleRow } from './fields';
+import RenumberBookings from './RenumberBookings';
+
+const REFERENCE_KEYS = [
+	'referencePrefix',
+	'referenceYear',
+	'referenceDigits',
+];
 
 /**
  * @param {Object}   props          Props.
@@ -17,9 +25,16 @@ import { NumberInput, ToggleRow } from './fields';
  * @param {Function} props.setField `setField( key )( value )`.
  * @param {Object}   props.errors   Key => server message.
  * @param {Object}   props.schema   Key => schema (limits).
+ * @param {Object}   props.saved    The values as saved.
  * @return {JSX.Element} Tab.
  */
-export default function Booking( { value, setField, errors, schema } ) {
+export default function Booking( {
+	value,
+	setField,
+	errors,
+	schema,
+	saved = {},
+} ) {
 	const minutes = __( 'minutes', 'radius-hotel-booking' );
 
 	return (
@@ -305,6 +320,129 @@ export default function Booking( { value, setField, errors, schema } ) {
 					</Field>
 				</div>
 			</SettingsSection>
+
+			<SettingsSection
+				title={ __( 'Booking reference', 'radius-hotel-booking' ) }
+				description={ __(
+					'How booking numbers look. Existing bookings keep theirs unless you renumber them below.',
+					'radius-hotel-booking'
+				) }
+			>
+				<div className="grid gap-4 sm:grid-cols-2">
+					<Field
+						label={ __( 'Prefix', 'radius-hotel-booking' ) }
+						description={ __(
+							'Letters, digits and - / _ . only.',
+							'radius-hotel-booking'
+						) }
+						error={ errors.referencePrefix }
+					>
+						<Input
+							value={ value.referencePrefix ?? '' }
+							maxLength={ schema.referencePrefix?.maxLength }
+							onChange={ ( event ) =>
+								setField( 'referencePrefix' )(
+									event.target.value.toUpperCase()
+								)
+							}
+						/>
+					</Field>
+					<Field
+						label={ __( 'Minimum digits', 'radius-hotel-booking' ) }
+						description={ __(
+							'Shorter numbers are padded with zeros.',
+							'radius-hotel-booking'
+						) }
+						error={ errors.referenceDigits }
+					>
+						<NumberInput
+							value={ value.referenceDigits }
+							onChange={ setField( 'referenceDigits' ) }
+							limits={ schema.referenceDigits }
+						/>
+					</Field>
+				</div>
+				<Field
+					label={ __( 'Year', 'radius-hotel-booking' ) }
+					error={ errors.referenceYear }
+				>
+					<div>
+						<SegmentedControl
+							label={ __( 'Year', 'radius-hotel-booking' ) }
+							value={ value.referenceYear }
+							onChange={ setField( 'referenceYear' ) }
+							options={ [
+								{
+									value: 'full',
+									label: __(
+										'Full year',
+										'radius-hotel-booking'
+									),
+								},
+								{
+									value: 'short',
+									label: __(
+										'Two digits',
+										'radius-hotel-booking'
+									),
+								},
+								{
+									value: 'none',
+									label: __(
+										'No year',
+										'radius-hotel-booking'
+									),
+								},
+							] }
+						/>
+					</div>
+				</Field>
+				<p className="m-0 text-sm text-muted-foreground">
+					{ value.referenceYear === 'none'
+						? __(
+								'The number keeps counting up and never restarts.',
+								'radius-hotel-booking'
+						  )
+						: __(
+								'The number restarts at 1 each year.',
+								'radius-hotel-booking'
+						  ) }{ ' ' }
+					{ sprintf(
+						/* translators: %s: example booking reference. */
+						__( 'Example: %s', 'radius-hotel-booking' ),
+						referenceExample( value )
+					) }
+				</p>
+				<RenumberBookings
+					dirty={ REFERENCE_KEYS.some(
+						// eslint-disable-next-line eqeqeq -- a number input may hold "3" for 3.
+						( key ) => value[ key ] != saved[ key ]
+					) }
+				/>
+			</SettingsSection>
 		</>
 	);
+}
+
+/**
+ * An example reference in the chosen format (as BookingService builds it):
+ * the 17th booking of this year.
+ *
+ * @param {Object} value Booking settings.
+ * @return {string} Example.
+ */
+function referenceExample( value ) {
+	const year = String( new Date().getFullYear() );
+	const digits = Math.min(
+		8,
+		Math.max( 1, Number( value.referenceDigits ) || 1 )
+	);
+	const number = String( 17 ).padStart( digits, '0' );
+	const prefix = value.referencePrefix ?? '';
+	if ( value.referenceYear === 'none' ) {
+		return prefix + number;
+	}
+	return `${ prefix }${
+		value.referenceYear === 'short' ? year.slice( -2 ) : year
+	}-${ number }`;
 }

@@ -50,10 +50,21 @@ $rtbp_rate  = static fn( $rate ) => rtrim( rtrim( number_format( (float) $rate, 
 	<table>
 		<tr>
 			<td style="width: 55%;">
-				<?php if ( ! empty( $doc['logo_url'] ) ) : ?>
-					<img class="logo" src="<?php echo esc_url( $doc['logo_url'] ); ?>" alt="" /><br />
+				<?php
+				// The hotel's name beside its logo; the legal name under it when it differs (Settings → General).
+				$rtbp_brand = '' !== (string) ( $rtbp_hotel['trade_name'] ?? '' ) ? (string) $rtbp_hotel['trade_name'] : (string) ( $rtbp_hotel['name'] ?? '' );
+				?>
+				<table class="brand">
+					<tr>
+						<?php if ( ! empty( $doc['logo_url'] ) ) : ?>
+							<td class="brand-logo"><img class="logo" src="<?php echo esc_url( $doc['logo_url'] ); ?>" alt="" /></td>
+						<?php endif; ?>
+						<td><p class="hotel-name"><?php echo esc_html( $rtbp_brand ); ?></p></td>
+					</tr>
+				</table>
+				<?php if ( '' !== (string) ( $rtbp_hotel['name'] ?? '' ) && $rtbp_hotel['name'] !== $rtbp_brand ) : ?>
+					<div class="legal-name"><?php echo esc_html( $rtbp_hotel['name'] ); ?></div>
 				<?php endif; ?>
-				<p class="hotel-name"><?php echo esc_html( $rtbp_hotel['name'] ?? '' ); ?></p>
 				<?php if ( ! empty( $rtbp_hotel['address'] ) ) : ?>
 					<div class="muted" style="white-space: pre-line;"><?php echo esc_html( $rtbp_hotel['address'] ); ?></div>
 				<?php endif; ?>

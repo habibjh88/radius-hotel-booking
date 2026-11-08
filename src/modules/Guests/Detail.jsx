@@ -93,7 +93,7 @@ export default function GuestDetail() {
 
 	if ( isPending ) {
 		return (
-			<div className="mx-auto max-w-6xl space-y-4">
+			<div className="space-y-4">
 				{ back }
 				<Skeleton className="h-28 w-full rounded-xl" />
 				<Skeleton className="h-64 w-full rounded-xl" />
@@ -103,7 +103,7 @@ export default function GuestDetail() {
 
 	if ( error || ! data?.guest ) {
 		return (
-			<div className="mx-auto max-w-6xl space-y-4">
+			<div className="space-y-4">
 				{ back }
 				<Panel>
 					<EmptyState
@@ -146,7 +146,7 @@ export default function GuestDetail() {
 	const banned = guest.standing === 'banned';
 
 	return (
-		<div className="mx-auto max-w-6xl space-y-4">
+		<div className="space-y-4">
 			{ back }
 
 			<Panel bodyClassName="space-y-3">

@@ -372,7 +372,7 @@ export default function Amenities() {
 	}
 
 	return (
-		<div className="mx-auto max-w-3xl space-y-4">
+		<div className="space-y-4">
 			{ back }
 			<Panel
 				title={ __( 'Amenities', 'radius-hotel-booking' ) }

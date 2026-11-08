@@ -153,7 +153,7 @@ export default function Guests() {
 	);
 
 	return (
-		<div className="mx-auto max-w-6xl space-y-4">
+		<div className="space-y-4">
 			<Panel
 				title={ __( 'Guests', 'radius-hotel-booking' ) }
 				description={

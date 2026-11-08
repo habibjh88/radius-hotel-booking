@@ -34,7 +34,7 @@ defined( 'ABSPATH' ) || exit;
  * (booking-engine §7.1): inside one transaction it locks the rooms and
  * re-checks every line (`BookingWriter::lockAndCheck()`), refuses a price
  * that moved unless accepted, then resolves the guest, writes the booking
- * (reference `RT-{year}-{000001}`), the lines (snapshots and the frozen
+ * (reference from Settings → Booking rules, `RT-{year}-{000001}` by default), the lines (snapshots and the frozen
  * price), consumes the holds and logs `bookings.create`. Any failure rolls
  * everything back: a multi-room booking never half-succeeds. The
  * `rtbp_booking_created` action fires after the commit.
@@ -208,7 +208,7 @@ class BookingService {
 				$user_id  = get_current_user_id();
 				$booking  = $this->bookings->create(
 					array(
-						'reference'        => $import && '' !== $import['reference'] ? self::keptReference( $import['reference'] ) : Sequence::format( 'RT-' . $year . '-', Sequence::next( 'booking_' . $year ) ),
+						'reference'        => $import && '' !== $import['reference'] ? self::keptReference( $import['reference'] ) : self::newReference( $year ),
 						'guest_id'         => (int) $guest->id,
 						'source'           => $source,
 						'status'           => $status,
@@ -597,8 +597,52 @@ class BookingService {
 		if ( ! $taken ) {
 			return $reference;
 		}
-		$year = Dates::now()->setTimezone( Dates::timezone() )->format( 'Y' );
-		return Sequence::format( 'RT-' . $year . '-', Sequence::next( 'booking_' . $year ) );
+		return self::newReference( Dates::now()->setTimezone( Dates::timezone() )->format( 'Y' ) );
+	}
+
+	/**
+	 * A new booking reference in the Settings → Booking rules format:
+	 * prefix, year (`2026`, `26` or none), `-`, the number padded to the
+	 * minimum digits — RT-2026-000016 by default, RT26-017 when shortened.
+	 * With a year the number restarts each year; without one it never does.
+	 * A reference already taken (an older format can produce the same text)
+	 * is skipped. Runs inside the booking transaction.
+	 *
+	 * @param string $year The site's current year, `Y`.
+	 * @return string
+	 */
+	private static function newReference( string $year ): string {
+		global $wpdb;
+		$format = self::referenceFormat( $year );
+
+		for ( $tries = 0; $tries < 20; $tries++ ) {
+			$reference = Sequence::format( $format['start'], Sequence::next( $format['counter'] ), $format['digits'] );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- uniqueness check inside the write transaction.
+			if ( ! $wpdb->get_var( $wpdb->prepare( 'SELECT 1 FROM %i WHERE reference = %s LIMIT 1', rtbp_table( 'bookings' ), $reference ) ) ) {
+				return $reference;
+			}
+		}
+		return $reference;
+	}
+
+	/**
+	 * The Settings → Booking rules reference format for a year: the text
+	 * before the number, the minimum digits, and the counter that numbers it
+	 * (per year as before, `booking_2026`, or one running `booking`). Shared
+	 * by new bookings and the renumbering of old ones (ReferenceRenumber).
+	 *
+	 * @param string $year Year, `Y`.
+	 * @return array `{ start, digits, counter }`.
+	 */
+	public static function referenceFormat( string $year ): array {
+		$mode   = (string) rtbp_setting( 'booking', 'referenceYear', 'full' );
+		$prefix = (string) rtbp_setting( 'booking', 'referencePrefix', 'RT-' );
+		$shown  = 'short' === $mode ? substr( $year, -2 ) : $year;
+		return array(
+			'start'   => 'none' === $mode ? $prefix : $prefix . $shown . '-',
+			'digits'  => max( 1, min( 8, (int) rtbp_setting( 'booking', 'referenceDigits', 6 ) ) ),
+			'counter' => 'none' === $mode ? 'booking' : 'booking_' . $year,
+		);
 	}
 
 	/**

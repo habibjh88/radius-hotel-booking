@@ -76,6 +76,7 @@ class Booking extends BaseModel {
 	 */
 	protected array $fillable = array(
 		'reference',
+		'former_reference',
 		'guest_id',
 		'source',
 		'status',

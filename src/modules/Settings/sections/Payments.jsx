@@ -50,20 +50,28 @@ export default function Payments( { value, setField, errors } ) {
 				'radius-hotel-booking'
 			) }
 		>
-			<p className="m-0 text-xs text-muted-foreground">
-				{ sprintf(
-					/* translators: %s: the merge tags, e.g. "{amount}, {reference}". */
-					__(
-						'In the instructions, these tags are replaced for each booking: %s.',
+			<div className="space-y-1.5">
+				<p className="m-0 flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
+					{ __(
+						'In the instructions, these tags are replaced for each booking:',
 						'radius-hotel-booking'
-					),
-					TAGS.join( ', ' )
-				) }{ ' ' }
-				{ __(
-					'The icon beside each name shows on the guest page; left empty, one is picked from the name.',
-					'radius-hotel-booking'
-				) }
-			</p>
+					) }
+					{ TAGS.map( ( tag ) => (
+						<code
+							key={ tag }
+							className="rounded-md bg-primary-soft px-1.5 py-0.5 font-mono text-xs font-semibold text-primary"
+						>
+							{ tag }
+						</code>
+					) ) }
+				</p>
+				<p className="m-0 text-xs text-muted-foreground">
+					{ __(
+						'The icon beside each name shows on the guest page; left empty, one is picked from the name.',
+						'radius-hotel-booking'
+					) }
+				</p>
+			</div>
 			{ errors.methods ? (
 				<p role="alert" className="m-0 text-sm text-destructive">
 					{ errors.methods }
@@ -186,7 +194,34 @@ export default function Payments( { value, setField, errors } ) {
 									}
 								/>
 							</Field>
+							<Field
+								label={ __(
+									'Short name',
+									'radius-hotel-booking'
+								) }
+								className="w-32 shrink-0"
+							>
+								<Input
+									value={ method.short ?? '' }
+									maxLength={ 12 }
+									placeholder={ __(
+										'e.g. OM',
+										'radius-hotel-booking'
+									) }
+									onChange={ ( e ) =>
+										change( index, {
+											short: e.target.value,
+										} )
+									}
+								/>
+							</Field>
 						</div>
+						<p className="m-0 -mt-2 text-xs text-muted-foreground">
+							{ __(
+								'The short name is used on the dashboard, where space is tight. Guests always see the full name.',
+								'radius-hotel-booking'
+							) }
+						</p>
 						<Field
 							label={ __(
 								'Instructions for the guest',
@@ -238,6 +273,7 @@ export default function Payments( { value, setField, errors } ) {
 						{
 							key: '',
 							label: '',
+							short: '',
 							icon: '',
 							instructions: '',
 							account: '',

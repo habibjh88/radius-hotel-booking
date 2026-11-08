@@ -211,6 +211,8 @@ class DocumentService {
 		return array(
 			'hotel'    => array(
 				'name'        => (string) ( '' !== (string) ( $general['legalName'] ?? '' ) ? $general['legalName'] : ( $general['companyName'] ?? '' ) ),
+				// Printed beside the logo; `name` (the legal name) goes under it when it differs.
+				'trade_name'  => (string) ( $general['companyName'] ?? '' ),
 				'address'     => (string) ( $general['address'] ?? '' ),
 				'phone'       => (string) ( $general['phone'] ?? '' ),
 				'email'       => (string) ( $general['contactEmail'] ?? '' ),

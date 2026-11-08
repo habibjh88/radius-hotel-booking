@@ -35,6 +35,8 @@ class BookingsTable extends Migration {
 			function ( Blueprint $table ) {
 				$table->id();
 				$table->string( 'reference', 32 );
+				// The reference before a renumbering (Settings → Booking rules): still found by search and scan.
+				$table->string( 'former_reference', 32 )->nullable();
 				$table->unsignedBigInteger( 'guest_id' )->nullable();
 				$table->string( 'source', 20 )->default( 'desk' );
 				$table->string( 'status', 20 )->default( 'pending' );
@@ -74,6 +76,7 @@ class BookingsTable extends Migration {
 				$table->index( 'created_at_gmt', 'created_gmt' );
 				$table->index( 'guest_id', 'guest' );
 				$table->index( 'public_token', 'public_token' );
+				$table->index( 'former_reference', 'former_reference' );
 			}
 		);
 	}

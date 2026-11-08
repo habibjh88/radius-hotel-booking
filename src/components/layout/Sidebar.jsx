@@ -11,6 +11,7 @@ import { __ } from '@wordpress/i18n';
 import { ChevronDown, ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 import Logo from '@/components/brand/Logo';
+import { useBrand } from '@/lib/brand';
 import {
 	NAV_GROUPS,
 	canSee,
@@ -29,6 +30,9 @@ import { cn } from '@/lib/utils';
  * @return {JSX.Element} Brand.
  */
 function Brand( { collapsed } ) {
+	// The hotel's own name and logo (Settings → General); the product's otherwise.
+	const brand = useBrand();
+	const name = brand.name || 'RadiusHotel';
 	return (
 		<div
 			className={ cn(
@@ -36,11 +40,22 @@ function Brand( { collapsed } ) {
 				collapsed ? 'justify-center px-0' : 'px-5'
 			) }
 		>
-			<Logo className="h-9 w-9 shrink-0" title="Radius Hotel Booking" />
+			{ brand.logo_url ? (
+				<img
+					src={ brand.logo_url }
+					alt={ name }
+					className="h-9 w-auto max-w-[7rem] shrink-0 object-contain"
+				/>
+			) : (
+				<Logo className="h-9 w-9 shrink-0" title={ name } />
+			) }
 			{ ! collapsed ? (
 				<div className="min-w-0">
-					<p className="m-0 truncate text-[17px] font-bold leading-5 tracking-tight text-heading">
-						RadiusHotel
+					<p
+						className="m-0 truncate text-[17px] font-bold leading-5 tracking-tight text-heading"
+						title={ name }
+					>
+						{ name }
 					</p>
 					<p className="m-0 mt-0.5 truncate text-[10px] font-semibold uppercase leading-3 tracking-[0.08em] text-muted-foreground">
 						{ __( 'Manage your hotel', 'radius-hotel-booking' ) }

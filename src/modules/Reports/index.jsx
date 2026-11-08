@@ -143,6 +143,7 @@ export default function Reports() {
 			</div>
 			{ false !== active.range ? (
 				<PeriodFilter
+					card
 					modes={ tabModes }
 					mode={ range.mode }
 					from={ range.from }

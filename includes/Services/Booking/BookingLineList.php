@@ -242,8 +242,10 @@ class BookingLineList {
 		$q = $filters['q'];
 		if ( '' !== $q ) {
 			$terms = GuestService::terms( $q );
-			$any   = array( 'b.reference LIKE %s', 'r.room_number = %s' );
-			$args  = array_merge( $args, array( '%' . $wpdb->esc_like( strtoupper( $q ) ) . '%', $q ) );
+			// A renumbered booking is still found by its former reference.
+			$any   = array( 'b.reference LIKE %s', 'b.former_reference LIKE %s', 'r.room_number = %s' );
+			$like  = '%' . $wpdb->esc_like( strtoupper( $q ) ) . '%';
+			$args  = array_merge( $args, array( $like, $like, $q ) );
 			if ( '' !== $terms['name'] ) {
 				// Every word must appear, as in the guest list.
 				$words = array();
@@ -362,7 +364,7 @@ class BookingLineList {
 			'source'         => (string) $row['source'],
 			// Who took it at the desk, and how it was last paid (R1-T7).
 			'created_by'     => (string) ( $row['created_by_name'] ?? '' ),
-			'payment_method' => ( $row['payment_method'] ?? '' ) ? \RadiusTheme\RadiusHotelBooking\Settings\PaymentSettings::method_label( (string) $row['payment_method'] ) : '',
+			'payment_method' => ( $row['payment_method'] ?? '' ) ? \RadiusTheme\RadiusHotelBooking\Settings\PaymentSettings::method_label( (string) $row['payment_method'], true ) : '',
 			// The invoice's print view, for the row's Invoice button (R1-T8).
 			'invoice_url'    => ! empty( $row['has_invoice'] ) ? \RadiusTheme\RadiusHotelBooking\Documents\DocumentService::url( 'invoice', (int) $row['booking_id'] ) : '',
 			'created_at'     => Dates::to_iso( Dates::from_gmt( (string) $row['created_at_gmt'] ) ),

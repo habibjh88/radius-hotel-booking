@@ -402,6 +402,8 @@ class LoadAssets {
 					'id'         => get_current_user_id(),
 					'name'       => wp_get_current_user()->display_name,
 					'email'      => wp_get_current_user()->user_email,
+					// Administrator-only tools (Settings → Booking rules: renumber bookings).
+					'is_admin'   => current_user_can( 'manage_options' ),
 					// The account menu's *Sign out* (the app adds where to come back to);
 					// decoded, wp_logout_url() escapes its `&` for HTML.
 					'logout_url' => wp_specialchars_decode( wp_logout_url() ),
@@ -449,10 +451,26 @@ class LoadAssets {
 				// The developer UI kit route (#/dev/ui): WP_DEBUG sites, admins only.
 				'dev_ui'           => defined( 'WP_DEBUG' ) && WP_DEBUG && current_user_can( 'manage_options' ),
 				'logo_url'         => RADIUS_HOTEL_BOOKING_ASSETS . '/images/logo.svg',
+				// The sidebar brand: Settings → General's hotel name and logo (empty = the product mark).
+				'brand'            => $this->brand_params(),
 				'date_format'      => get_option( 'date_format' ),
 				'time_format'      => get_option( 'time_format' ),
 				'start_of_week'    => (int) get_option( 'start_of_week' ),
 			)
+		);
+	}
+
+	/**
+	 * The hotel's name and logo for the sidebar brand. The logo is the medium
+	 * size, which keeps its proportions (the thumbnail is cropped square).
+	 *
+	 * @return array{name: string, logo_url: string}
+	 */
+	private function brand_params(): array {
+		$logo = (int) rtbp_setting( 'general', 'logo', 0 );
+		return array(
+			'name'     => (string) rtbp_setting( 'general', 'companyName', '' ),
+			'logo_url' => $logo ? (string) wp_get_attachment_image_url( $logo, 'medium' ) : '',
 		);
 	}
 

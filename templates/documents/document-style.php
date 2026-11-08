@@ -17,8 +17,12 @@ defined( 'ABSPATH' ) || exit;
 	.sheet { max-width: 800px; margin: 24px auto; padding: 32px; background: #fff; border: 1px solid #e5e7eb; position: relative; }
 	table { width: 100%; border-collapse: collapse; }
 	td, th { vertical-align: top; }
-	.logo { max-height: 60px; max-width: 200px; }
-	.hotel-name { font-size: 16px; font-weight: bold; margin: 0 0 4px; }
+	.brand { width: auto; margin-bottom: 8px; }
+	.brand td { vertical-align: middle; }
+	.brand-logo { padding-right: 12px; }
+	.logo { display: block; max-height: 60px; max-width: 200px; }
+	.hotel-name { font-size: 20px; font-weight: bold; line-height: 1.2; margin: 0; }
+	.legal-name { font-weight: bold; }
 	.muted { color: #6b7280; }
 	.doc-title { font-size: 22px; font-weight: bold; letter-spacing: 0.04em; text-align: right; margin: 0; }
 	.meta td { padding: 1px 0; }

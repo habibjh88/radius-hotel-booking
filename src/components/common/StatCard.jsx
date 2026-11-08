@@ -1,5 +1,5 @@
 /**
- * KPI card: a brand-coloured icon tile, a label, a big number and an optional
+ * KPI card: an icon on a soft brand-coloured tile, a label, a big number and an optional
  * hint. Clickable when `to` is given (it links to the filtered list).
  *
  * With `tone` it takes the hotel dashboard's look (R1, as on the old
@@ -124,7 +124,7 @@ export default function StatCard( {
 
 	const body = (
 		<>
-			<span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+			<span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
 				{ Icon ? (
 					<Icon className="h-6 w-6" aria-hidden="true" />
 				) : null }

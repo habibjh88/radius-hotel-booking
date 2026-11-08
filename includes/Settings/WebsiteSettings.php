@@ -320,6 +320,8 @@ class WebsiteSettings {
 			static fn( $page ) => array(
 				'id'    => (int) $page->ID,
 				'title' => '' !== $page->post_title ? $page->post_title : sprintf( '#%d', $page->ID ),
+				// Settings → Public booking's *View page* link.
+				'url'   => (string) get_permalink( $page ),
 			),
 			(array) $pages
 		);

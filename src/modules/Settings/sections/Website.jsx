@@ -5,7 +5,7 @@
  */
 import { useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { FilePlus2, Plus, Trash2 } from 'lucide-react';
+import { ExternalLink, FilePlus2, Plus, Trash2 } from 'lucide-react';
 
 import { post } from '@/api/client';
 import { Button } from '@/components/ui/button';
@@ -283,16 +283,21 @@ export default function Website( { value, setField, errors, schema, accept } ) {
 		} );
 	const [ pages, setPages ] = useState( params.site_pages || [] );
 	const [ creating, setCreating ] = useState( false );
-	const chosen = pages.some(
+	const chosenPage = pages.find(
 		( page ) => page.id === Number( value.resultsPageId )
 	);
+	const chosen = Boolean( chosenPage );
 
 	// Create *Book a room* with [rtbp_booking] and choose it (saved on the server at once).
 	const createPage = () => {
 		setCreating( true );
 		post( 'settings/website/booking-page' )
 			.then( ( { data, message } ) => {
-				const page = { id: data.page.id, title: data.page.title };
+				const page = {
+					id: data.page.id,
+					title: data.page.title,
+					url: data.page.url,
+				};
 				const next = [
 					...pages.filter( ( p ) => p.id !== page.id ),
 					page,
@@ -378,6 +383,26 @@ export default function Website( { value, setField, errors, schema, accept } ) {
 							) }
 						</Button>
 					</div>
+				) : null }
+				{ chosenPage?.url ? (
+					<a
+						href={ chosenPage.url }
+						target="_blank"
+						rel="noreferrer"
+						className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+					>
+						{ __( 'View page', 'radius-hotel-booking' ) }
+						<ExternalLink
+							className="h-3.5 w-3.5"
+							aria-hidden="true"
+						/>
+						<span className="sr-only">
+							{ __(
+								'(opens in a new tab)',
+								'radius-hotel-booking'
+							) }
+						</span>
+					</a>
 				) : null }
 
 				<Field

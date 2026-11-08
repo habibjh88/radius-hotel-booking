@@ -33,6 +33,9 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useReport } from '../api';
 
+// An empty room's border: the success colour, softened (as on Room availability).
+const SUCCESS_BORDER = 'color-mix(in srgb, var(--success) 45%, transparent)';
+
 const PER_PAGE = 25;
 
 /**
@@ -221,32 +224,55 @@ export default function Rooms( { range } ) {
 				{ loading ? (
 					<Skeleton className="h-20 w-full" />
 				) : floors.length ? (
-					<div className="space-y-4">
+					<div className="divide-y divide-border">
 						{ floors.map( ( floor ) => (
-							<div key={ floor.floor } className="space-y-2">
-								<p className="m-0 text-sm font-semibold text-heading">
-									{ floor.floor }
-									<span className="ml-2 font-normal text-muted-foreground">
+							<div
+								key={ floor.floor }
+								className="flex flex-col gap-3 py-5 first:pt-0 last:pb-0 md:flex-row md:gap-6"
+							>
+								<div className="shrink-0 md:w-48">
+									<p className="m-0 text-sm font-semibold text-heading">
+										{ floor.floor }
+									</p>
+									<span
+										className="mt-2 inline-flex items-center gap-1.5 rounded-full border bg-success-soft px-2 py-0.5 text-xs font-semibold tabular-nums text-success"
+										style={ {
+											borderColor: SUCCESS_BORDER,
+										} }
+									>
+										<span
+											className="h-1.5 w-1.5 rounded-full bg-success"
+											aria-hidden="true"
+										/>
 										{ sprintf(
-											/* translators: %d: number of rooms. */
+											/* translators: %d: number of empty rooms. */
 											_n(
-												'%d room',
-												'%d rooms',
+												'%d empty room',
+												'%d empty rooms',
 												floor.rooms.length,
 												'radius-hotel-booking'
 											),
 											floor.rooms.length
 										) }
 									</span>
-								</p>
-								<ul className="m-0 flex list-none flex-wrap gap-2 p-0">
+								</div>
+								<ul className="m-0 flex list-none flex-wrap gap-3 p-0">
 									{ floor.rooms.map( ( room ) => (
 										<li
 											key={ room.id }
-											title={ room.room_type }
-											className="rounded-md border border-border bg-muted px-2.5 py-1 text-sm font-medium tabular-nums text-heading"
+											className="flex h-[4.25rem] min-w-[5.5rem] flex-col items-center justify-center gap-0.5 rounded-lg border bg-success-soft px-3 text-success"
+											style={ {
+												borderColor: SUCCESS_BORDER,
+											} }
 										>
-											{ room.number }
+											<span className="text-base font-semibold leading-tight tabular-nums">
+												{ room.number }
+											</span>
+											{ room.room_type ? (
+												<span className="max-w-[7rem] truncate text-[11px] font-medium leading-tight opacity-80">
+													{ room.room_type }
+												</span>
+											) : null }
 										</li>
 									) ) }
 								</ul>

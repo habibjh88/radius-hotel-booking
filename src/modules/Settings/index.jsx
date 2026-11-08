@@ -313,6 +313,8 @@ export default function Settings( { only = '' } ) {
 		setField: state.setField( key ),
 		errors: state.errors[ key ] ?? {},
 		schema: state.schema[ key ] ?? {},
+		// The values as saved (a tab may act only on those, e.g. renumber bookings).
+		saved: state.saved?.[ key ] ?? {},
 		save: () => state.save( key ).then( after ),
 		saving: state.saving === key,
 		// Values the server already saved (an action such as *Create the booking page*): no unsaved bar.

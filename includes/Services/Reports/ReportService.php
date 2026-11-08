@@ -542,7 +542,9 @@ class ReportService {
 		}
 
 		$collected = $this->reports->collected( $range );
-		foreach ( array_keys( $collected ) as $method ) {
+		// Every method the hotel accepts is listed, at zero when unused in the period (R1 review).
+		$accepted = array_map( static fn( $method ) => (string) $method['key'], PaymentSettings::enabled_methods() );
+		foreach ( array_merge( array_keys( $collected ), $accepted ) as $method ) {
 			$methods[ $method ] = $methods[ $method ] ?? array(
 				'lines'    => 0,
 				'bookings' => 0,
@@ -817,7 +819,12 @@ class ReportService {
 	 * @return array `{ mode, series: [ { key, label } ], points: [ { key, values: { method: amount } } ] }`.
 	 */
 	private function chart( ReportRange $range, string $unit, array $by_bucket ): array {
+		// Every accepted method has its bar or legend entry, at zero when unused.
+		$accepted = array_map( static fn( $method ) => (string) $method['key'], PaymentSettings::enabled_methods() );
 		if ( 'method' === $unit ) {
+			foreach ( $accepted as $method ) {
+				$by_bucket[ $method ] = $by_bucket[ $method ] ?? array();
+			}
 			$points = array();
 			foreach ( $by_bucket as $method => $amounts ) {
 				$points[] = array(
@@ -838,7 +845,7 @@ class ReportService {
 			);
 		}
 
-		$series = array();
+		$series = array_fill_keys( $accepted, true );
 		foreach ( $by_bucket as $amounts ) {
 			foreach ( array_keys( $amounts ) as $method ) {
 				$series[ (string) $method ] = true;
@@ -878,6 +885,6 @@ class ReportService {
 	 * @return string
 	 */
 	public static function methodLabel( string $key ): string {
-		return '' === $key ? __( 'Not paid yet', 'radius-hotel-booking' ) : PaymentSettings::method_label( $key );
+		return '' === $key ? __( 'Not paid yet', 'radius-hotel-booking' ) : PaymentSettings::method_label( $key, true );
 	}
 }

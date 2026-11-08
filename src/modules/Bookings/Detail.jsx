@@ -457,7 +457,7 @@ export default function BookingDetail() {
 
 	if ( isPending ) {
 		return (
-			<div className="mx-auto max-w-6xl space-y-4">
+			<div className="space-y-4">
 				{ back }
 				<Skeleton className="h-28 w-full rounded-xl" />
 				<Skeleton className="h-64 w-full rounded-xl" />
@@ -466,7 +466,7 @@ export default function BookingDetail() {
 	}
 	if ( error || ! booking ) {
 		return (
-			<div className="mx-auto max-w-6xl space-y-4">
+			<div className="space-y-4">
 				{ back }
 				<Panel>
 					<EmptyState
@@ -511,7 +511,7 @@ export default function BookingDetail() {
 		: panels[ 0 ]?.key;
 
 	return (
-		<div className="mx-auto max-w-6xl space-y-4">
+		<div className="space-y-4">
 			{ back }
 
 			<Panel>

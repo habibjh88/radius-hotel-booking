@@ -9,7 +9,7 @@ import BookingFlow from '@/components/booking/BookingFlow';
  */
 export default function NewBooking() {
 	return (
-		<div className="mx-auto max-w-6xl">
+		<div>
 			<BookingFlow mode="desk" />
 		</div>
 	);

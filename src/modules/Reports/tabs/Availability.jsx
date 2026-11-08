@@ -21,7 +21,6 @@ import {
 
 import DateTime from '@/components/common/DateTime';
 import EmptyState from '@/components/common/EmptyState';
-import Panel from '@/components/common/Panel';
 import StatCard from '@/components/common/StatCard';
 import StatusBadge from '@/components/common/StatusBadge';
 import { Button } from '@/components/ui/button';
@@ -38,6 +37,15 @@ import { cn } from '@/lib/utils';
 import { useReport } from '../api';
 
 const LEGEND = [ 'free', 'booked', 'held', 'blocked' ];
+
+/**
+ * A tile's border: its tone, softened.
+ *
+ * @param {string} tone Tone.
+ * @return {string} CSS colour.
+ */
+const tileBorder = ( tone ) =>
+	`color-mix(in srgb, ${ TONE_COLOR[ tone ] } 45%, transparent)`;
 
 /**
  * A grid status's label and tone (room states come from the `room` domain).
@@ -102,43 +110,62 @@ export default function Availability( { range } ) {
 	const fieldErrors = report.error?.errors || {};
 
 	return (
-		<div className="space-y-5">
-			<div className="flex flex-wrap items-end gap-3">
-				<label className="space-y-1 text-sm">
-					<span className="block font-medium text-heading">
-						{ __( 'From time', 'radius-hotel-booking' ) }
-					</span>
-					<TimePicker
-						value={ fromTime }
-						onChange={ ( from_time ) => setTimes( { from_time } ) }
-						className="w-40"
-					/>
-				</label>
-				<label className="space-y-1 text-sm">
-					<span className="block font-medium text-heading">
-						{ __( 'To time', 'radius-hotel-booking' ) }
-					</span>
-					<TimePicker
-						value={ toTime }
-						onChange={ ( to_time ) => setTimes( { to_time } ) }
-						className="w-40"
-					/>
-				</label>
-				<Button type="button" variant="outline" onClick={ rightNow }>
-					<Clock aria-hidden="true" />
-					{ __( 'Right now', 'radius-hotel-booking' ) }
-				</Button>
-				{ fromTime || toTime ? (
+		<div className="space-y-6">
+			<div className="space-y-4 rounded-xl border border-border bg-card p-5 shadow-sm">
+				<div>
+					<p className="m-0 text-sm font-semibold text-heading">
+						{ __( 'Time of day', 'radius-hotel-booking' ) }
+					</p>
+					<p className="m-0 mt-1 text-sm text-muted-foreground">
+						{ __(
+							'Optional. Leave empty to look at whole days, or use Right now for this minute.',
+							'radius-hotel-booking'
+						) }
+					</p>
+				</div>
+				<div className="flex flex-wrap items-end gap-4">
+					<label className="space-y-1.5 text-sm">
+						<span className="block font-medium text-heading">
+							{ __( 'From time', 'radius-hotel-booking' ) }
+						</span>
+						<TimePicker
+							value={ fromTime }
+							onChange={ ( from_time ) =>
+								setTimes( { from_time } )
+							}
+							className="w-40"
+						/>
+					</label>
+					<label className="space-y-1.5 text-sm">
+						<span className="block font-medium text-heading">
+							{ __( 'To time', 'radius-hotel-booking' ) }
+						</span>
+						<TimePicker
+							value={ toTime }
+							onChange={ ( to_time ) => setTimes( { to_time } ) }
+							className="w-40"
+						/>
+					</label>
 					<Button
 						type="button"
-						variant="ghost"
-						onClick={ () =>
-							setTimes( { from_time: '', to_time: '' } )
-						}
+						variant="outline"
+						onClick={ rightNow }
 					>
-						{ __( 'Whole days', 'radius-hotel-booking' ) }
+						<Clock aria-hidden="true" />
+						{ __( 'Right now', 'radius-hotel-booking' ) }
 					</Button>
-				) : null }
+					{ fromTime || toTime ? (
+						<Button
+							type="button"
+							variant="ghost"
+							onClick={ () =>
+								setTimes( { from_time: '', to_time: '' } )
+							}
+						>
+							{ __( 'Whole days', 'radius-hotel-booking' ) }
+						</Button>
+					) : null }
+				</div>
 			</div>
 
 			{ report.isError ? (
@@ -156,6 +183,7 @@ export default function Availability( { range } ) {
 			<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
 				<StatCard
 					icon={ BedDouble }
+					tone="purple"
 					label={ __( 'Rooms', 'radius-hotel-booking' ) }
 					value={ counters.rooms ?? 0 }
 					hint={ __(
@@ -166,6 +194,7 @@ export default function Availability( { range } ) {
 				/>
 				<StatCard
 					icon={ KeyRound }
+					tone="red"
 					label={ __( 'Occupied', 'radius-hotel-booking' ) }
 					value={ counters.occupied ?? 0 }
 					hint={ __(
@@ -176,6 +205,7 @@ export default function Availability( { range } ) {
 				/>
 				<StatCard
 					icon={ DoorOpen }
+					tone="green"
 					label={ __( 'Available', 'radius-hotel-booking' ) }
 					value={ counters.available ?? 0 }
 					hint={ __(
@@ -186,6 +216,7 @@ export default function Availability( { range } ) {
 				/>
 				<StatCard
 					icon={ CalendarCheck }
+					tone="orange"
 					label={ __( 'Bookings', 'radius-hotel-booking' ) }
 					value={ counters.bookings ?? 0 }
 					hint={
@@ -203,65 +234,31 @@ export default function Availability( { range } ) {
 				/>
 			</div>
 
-			<ul
-				className="m-0 flex list-none flex-wrap gap-3 p-0 text-sm"
-				aria-label={ __( 'Legend', 'radius-hotel-booking' ) }
-			>
-				{ [ ...LEGEND, 'maintenance', 'out_of_service' ].map(
-					( status ) => {
-						const { label, tone } = statusOf( status );
-						return (
-							<li
-								key={ status }
-								className="flex items-center gap-2 text-muted-foreground"
-							>
-								<span
-									className={ cn(
-										'h-3.5 w-3.5 rounded border',
-										TONE_CLASSES[ tone ]?.[ 0 ]
-									) }
-									style={ {
-										borderColor: TONE_COLOR[ tone ],
-									} }
-									aria-hidden="true"
-								/>
-								{ label }
-							</li>
-						);
-					}
-				) }
-			</ul>
-
 			{ loading ? (
 				<Skeleton className="h-64 w-full" />
 			) : data?.room_types?.length ? (
 				data.room_types.map( ( type ) => (
-					<Panel
+					<section
 						key={ type.id }
-						title={ type.name }
-						description={ sprintf(
-							/* translators: 1: occupied rooms, 2: rooms. */
-							_n(
-								'%1$d of %2$d room occupied',
-								'%1$d of %2$d rooms occupied',
-								type.rooms,
-								'radius-hotel-booking'
-							),
-							type.occupied,
-							type.rooms
-						) }
+						className="rounded-xl border border-border bg-card p-5 shadow-sm"
 					>
+						<TypeHeader type={ type } />
 						{ type.floors.length ? (
-							<div className="space-y-4">
+							<div className="divide-y divide-dashed divide-border">
 								{ type.floors.map( ( floor ) => (
 									<div
 										key={ floor.floor }
-										className="space-y-2"
+										className="space-y-5 py-8 last:pb-0"
 									>
-										<p className="m-0 text-sm font-semibold text-heading">
-											{ floor.floor }
-										</p>
-										<ul className="m-0 flex list-none flex-wrap gap-2 p-0">
+										<div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+											<h4 className="m-0 text-base font-semibold text-heading">
+												{ floor.floor }
+											</h4>
+											<FloorCounts
+												rooms={ floor.rooms }
+											/>
+										</div>
+										<ul className="m-0 flex list-none flex-wrap gap-x-3 gap-y-4 p-0">
 											{ floor.rooms.map( ( room ) => (
 												<li key={ room.id }>
 													<RoomTile room={ room } />
@@ -272,14 +269,14 @@ export default function Availability( { range } ) {
 								) ) }
 							</div>
 						) : (
-							<p className="m-0 text-sm text-muted-foreground">
+							<p className="m-0 pt-5 text-sm text-muted-foreground">
 								{ __(
 									'This room type has no rooms.',
 									'radius-hotel-booking'
 								) }
 							</p>
 						) }
-					</Panel>
+					</section>
 				) )
 			) : (
 				<EmptyState
@@ -296,7 +293,162 @@ export default function Availability( { range } ) {
 }
 
 /**
- * One room: its number in its status colour; opens its bookings.
+ * A floor's free and booked rooms, as chips in the tiles' colours.
+ *
+ * @param {Object}   props       Props.
+ * @param {Object[]} props.rooms The floor's rooms.
+ * @return {JSX.Element} Chips.
+ */
+function FloorCounts( { rooms } ) {
+	const chips = [
+		{
+			status: 'free',
+			/* translators: %d: number of free rooms. */
+			text: __( '%d free', 'radius-hotel-booking' ),
+		},
+		{
+			status: 'booked',
+			/* translators: %d: number of booked rooms. */
+			text: __( '%d booked', 'radius-hotel-booking' ),
+		},
+	];
+	return (
+		<div className="flex flex-wrap gap-1.5">
+			{ chips.map( ( { status, text } ) => {
+				const { tone } = statusOf( status );
+				return (
+					<span
+						key={ status }
+						className={ cn(
+							'inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-semibold tabular-nums',
+							TONE_CLASSES[ tone ]?.[ 0 ]
+						) }
+						style={ { borderColor: tileBorder( tone ) } }
+					>
+						<span
+							className="h-1.5 w-1.5 rounded-full"
+							style={ { background: TONE_COLOR[ tone ] } }
+							aria-hidden="true"
+						/>
+						{ sprintf(
+							text,
+							rooms.filter( ( room ) => room.status === status )
+								.length
+						) }
+					</span>
+				);
+			} ) }
+		</div>
+	);
+}
+
+/**
+ * A tile's look per grid status, as on the old dashboard: a free room is
+ * plain white; booked is red; held amber; a room that cannot be used
+ * (maintenance, out of service, blocked) grey with a faded number.
+ */
+const TILE = {
+	free: { tile: 'bg-card border-border', number: 'text-heading' },
+	booked: {
+		tile: 'bg-destructive-soft',
+		number: 'text-heading',
+		border: TONE_COLOR.danger,
+	},
+	held: {
+		tile: 'bg-warning-soft',
+		number: 'text-heading',
+		border: TONE_COLOR.warning,
+	},
+	unusable: {
+		tile: 'bg-muted border-border',
+		number: 'text-muted-foreground',
+	},
+};
+
+/**
+ * The look of one status.
+ *
+ * @param {string} status Grid status.
+ * @return {Object} `{ tile, number, border? }`.
+ */
+const tileOf = ( status ) => TILE[ status ] || TILE.unusable;
+
+/**
+ * The badge on a tile's top edge: none for a free room.
+ *
+ * @param {string} status Grid status.
+ * @return {string} Label, or ''.
+ */
+const badgeOf = ( status ) =>
+	'free' === status
+		? ''
+		: 'booked' === status
+		? __( 'Occupied', 'radius-hotel-booking' )
+		: statusOf( status ).label;
+
+/**
+ * "not booked", "booked 1 time", "booked 3 times".
+ *
+ * @param {number} count Bookings of the room in the window.
+ * @return {string} Line.
+ */
+const bookedTimes = ( count ) =>
+	count
+		? sprintf(
+				/* translators: %d: how many times the room was booked in the window. */
+				_n(
+					'booked %d time',
+					'booked %d times',
+					count,
+					'radius-hotel-booking'
+				),
+				count
+		  )
+		: __( 'not booked', 'radius-hotel-booking' );
+
+/**
+ * A room type's header, as on the old dashboard: its name, rooms, occupied
+ * rooms and bookings as small labelled figures.
+ *
+ * @param {Object} props      Props.
+ * @param {Object} props.type Room type of the report.
+ * @return {JSX.Element} Header.
+ */
+function TypeHeader( { type } ) {
+	// A booking with several rooms of the type counts once.
+	const bookings = new Set();
+	type.floors.forEach( ( floor ) =>
+		floor.rooms.forEach( ( room ) =>
+			room.bookings.forEach( ( booking ) =>
+				bookings.add( booking.booking_id )
+			)
+		)
+	);
+	const figures = [
+		[ __( 'Name', 'radius-hotel-booking' ), type.name ],
+		[ __( 'Rooms', 'radius-hotel-booking' ), type.rooms ],
+		[ __( 'Occupied', 'radius-hotel-booking' ), type.occupied ],
+		[ __( 'Bookings', 'radius-hotel-booking' ), bookings.size ],
+	];
+	return (
+		<dl className="m-0 flex flex-wrap gap-x-8 gap-y-3 border-b border-border pb-5">
+			{ figures.map( ( [ label, value ] ) => (
+				<div key={ label } className="min-w-0">
+					<dt className="text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+						{ label }
+					</dt>
+					<dd className="m-0 mt-1 text-lg font-semibold leading-tight tabular-nums text-heading">
+						{ value }
+					</dd>
+				</div>
+			) ) }
+		</dl>
+	);
+}
+
+/**
+ * One room: its number, how often it was booked in the window, and a badge
+ * for any state but free; opens its bookings.
  *
  * @param {Object} props      Props.
  * @param {Object} props.room `{ number, status, bookings }`.
@@ -305,31 +457,59 @@ export default function Availability( { range } ) {
 function RoomTile( { room } ) {
 	const { label, tone } = statusOf( room.status );
 	const count = room.bookings.length;
+	const look = tileOf( room.status );
+	const badge = badgeOf( room.status );
 	return (
 		<Popover>
 			<PopoverTrigger asChild>
 				<button
 					type="button"
 					className={ cn(
-						'relative flex h-12 min-w-[3.5rem] flex-col items-center justify-center rounded-lg border px-2 text-sm font-semibold tabular-nums',
-						TONE_CLASSES[ tone ]?.[ 0 ]
+						'relative flex h-[5.5rem] w-[7.5rem] flex-col items-center justify-center gap-1.5 rounded-lg border px-3 transition-shadow hover:shadow-md',
+						look.tile
 					) }
-					style={ {
-						borderColor: `color-mix(in srgb, ${ TONE_COLOR[ tone ] } 45%, transparent)`,
-					} }
+					style={
+						look.border
+							? {
+									borderColor: `color-mix(in srgb, ${ look.border } 45%, transparent)`,
+							  }
+							: undefined
+					}
 					aria-label={ sprintf(
-						/* translators: 1: room number, 2: status, e.g. Booked. */
-						__( 'Room %1$s: %2$s', 'radius-hotel-booking' ),
+						/* translators: 1: room number, 2: status, e.g. Booked, 3: e.g. "booked 2 times". */
+						__( 'Room %1$s: %2$s, %3$s', 'radius-hotel-booking' ),
 						room.number,
-						label
+						label,
+						bookedTimes( count )
 					) }
 				>
-					{ room.number }
-					{ count ? (
-						<span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-primary px-1 text-[11px] font-bold text-primary-foreground">
-							{ count }
+					{ badge ? (
+						<span
+							className="absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-bold uppercase leading-3 tracking-wide text-white"
+							style={ {
+								background:
+									TONE_COLOR[
+										'booked' === room.status ||
+										'held' === room.status
+											? tone
+											: 'neutral'
+									],
+							} }
+						>
+							{ badge }
 						</span>
 					) : null }
+					<span
+						className={ cn(
+							'text-2xl font-bold leading-none tabular-nums',
+							look.number
+						) }
+					>
+						{ room.number }
+					</span>
+					<span className="text-xs text-muted-foreground">
+						{ bookedTimes( count ) }
+					</span>
 				</button>
 			</PopoverTrigger>
 			<PopoverContent className="rtbp-root w-80 max-w-[calc(100vw-24px)] p-0">

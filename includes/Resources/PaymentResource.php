@@ -59,7 +59,7 @@ class PaymentResource {
 				'type'             => (string) $row->type,
 				'amount'           => (float) $row->amount,
 				'method'           => (string) $row->method,
-				'method_label'     => PaymentSettings::method_label( (string) $row->method ),
+				'method_label'     => PaymentSettings::method_label( (string) $row->method, true ),
 				'reference'        => (string) $row->reference,
 				'note'             => (string) $row->note,
 				'received_at'      => Dates::to_iso( Dates::from_gmt( (string) $row->received_at_gmt ) ),

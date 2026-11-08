@@ -73,6 +73,22 @@ final class CoreSettings {
 	}
 
 	/**
+	 * A booking reference prefix: upper-case letters, digits, `-`, `/`, `_`
+	 * and `.` only. Upper case because a typed or scanned reference is looked
+	 * up in upper case.
+	 *
+	 * @param mixed $value Raw prefix.
+	 * @return string|\WP_Error
+	 */
+	public static function reference_prefix( $value ) {
+		$value = strtoupper( trim( (string) $value ) );
+		if ( mb_strlen( $value ) > 12 || ! preg_match( '#^[A-Z0-9/_.\-]*$#', $value ) ) {
+			return new \WP_Error( 'rtbp_invalid_setting', __( 'Use up to 12 letters, digits and - / _ . only.', 'radius-hotel-booking' ) );
+		}
+		return $value;
+	}
+
+	/**
 	 * General: hotel identity, date/time and currency formats. Shared with
 	 * e-mails, invoices (M05) and payslips (M15).
 	 *
@@ -235,6 +251,26 @@ final class CoreSettings {
 				'default' => 10,
 				'min'     => 1,
 				'max'     => 100,
+			),
+			// New booking references: prefix, then the year, then the number. Defaults give RT-2026-000016.
+			'referencePrefix'   => array(
+				'type'      => 'string',
+				'default'   => 'RT-',
+				'maxLength' => 12,
+				'sanitize'  => array( self::class, 'reference_prefix' ),
+			),
+			// Year in the reference: 'full' (2026), 'short' (26) or 'none' (one running number).
+			'referenceYear'     => array(
+				'type'    => 'enum',
+				'options' => array( 'full', 'short', 'none' ),
+				'default' => 'full',
+			),
+			// Minimum digits of the number, padded with zeros: 6 gives 000016, 3 gives 016.
+			'referenceDigits'   => array(
+				'type'    => 'int',
+				'default' => 6,
+				'min'     => 1,
+				'max'     => 8,
 			),
 			// Cleaning time (minutes) after a stay before the room can be sold again (D4).
 			'bufferMinutes'     => array(

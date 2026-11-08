@@ -46,6 +46,7 @@ import {
 	formatMoney,
 	formatTime,
 	formatTimeAgo,
+	siteToday,
 } from '@/lib/format';
 import { toast, toastError } from '@/lib/toast';
 import {
@@ -68,6 +69,21 @@ const TABS = [
 	'in_house',
 	'overdue',
 ];
+
+/**
+ * A stay date in the list: without the year when it is this year
+ * ("5 Nov"), with it otherwise ("2 Jan 2027"); the full date is the tooltip.
+ *
+ * @param {string} value Date-time (`Y-m-d …`).
+ * @return {string} Date.
+ */
+const listDate = ( value ) =>
+	formatDateAs(
+		value,
+		String( value || '' ).slice( 0, 4 ) === siteToday().slice( 0, 4 )
+			? 'j M'
+			: 'j M Y'
+	);
 
 /**
  * The Bookings screen.
@@ -188,20 +204,21 @@ export function BookingList( { withPageActions = true } ) {
 		{ value: 'all', label: __( 'All', 'radius-hotel-booking' ) },
 		{
 			value: 'awaiting',
-			label: __( 'Awaiting approval', 'radius-hotel-booking' ),
+			// Short tab names, so the row fits (client review).
+			label: __( 'Pending', 'radius-hotel-booking' ),
 		},
 		{
 			value: 'arriving',
-			label: __( 'Arriving today', 'radius-hotel-booking' ),
+			label: __( 'Arrivals', 'radius-hotel-booking' ),
 		},
 		{
 			value: 'leaving',
-			label: __( 'Leaving today', 'radius-hotel-booking' ),
+			label: __( 'Departures', 'radius-hotel-booking' ),
 		},
 		{ value: 'in_house', label: __( 'In house', 'radius-hotel-booking' ) },
 		{
 			value: 'overdue',
-			label: __( 'Payment overdue', 'radius-hotel-booking' ),
+			label: __( 'Overdue', 'radius-hotel-booking' ),
 		},
 	].map( ( item ) => ( { ...item, count: counts[ item.value ] } ) );
 
@@ -329,8 +346,11 @@ export function BookingList( { withPageActions = true } ) {
 			header: __( 'Check-in', 'radius-hotel-booking' ),
 			cell: ( line ) => (
 				<span className="block whitespace-nowrap text-[13px]">
-					<span className="block text-heading">
-						{ formatDateAs( line.start, 'j M Y' ) }
+					<span
+						className="block text-heading"
+						title={ formatDateAs( line.start, 'j M Y' ) }
+					>
+						{ listDate( line.start ) }
 					</span>
 					<span className="block text-xs text-muted-foreground">
 						{ formatTime( line.start ) }
@@ -343,8 +363,11 @@ export function BookingList( { withPageActions = true } ) {
 			header: __( 'Check-out', 'radius-hotel-booking' ),
 			cell: ( line ) => (
 				<span className="block whitespace-nowrap text-[13px]">
-					<span className="block text-heading">
-						{ formatDateAs( line.end, 'j M Y' ) }
+					<span
+						className="block text-heading"
+						title={ formatDateAs( line.end, 'j M Y' ) }
+					>
+						{ listDate( line.end ) }
 					</span>
 					<span className="block text-xs text-muted-foreground">
 						{ formatTime( line.end ) }

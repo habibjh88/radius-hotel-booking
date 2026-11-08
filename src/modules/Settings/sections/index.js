@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 
 import { refreshAccess } from '@/lib/access';
+import { setBrandFromSettings } from '@/lib/brand';
 import { setFormatConfig } from '@/lib/format';
 import { setPhoneConfig } from '@/lib/phone';
 
@@ -45,8 +46,10 @@ export default function coreSections() {
 			),
 			icon: Building2,
 			Component: lazy( () => import( './General' ) ),
-			// Amounts and dates on other screens follow the new formats at once.
-			onSaved: ( general ) =>
+			// Amounts and dates on other screens follow the new formats at
+			// once, and the sidebar shows the new hotel name and logo.
+			onSaved: ( general ) => {
+				setBrandFromSettings( general );
 				setFormatConfig( {
 					currency: {
 						code: general.currencyCode,
@@ -60,7 +63,8 @@ export default function coreSections() {
 						? { dateFormat: general.dateFormat }
 						: {} ),
 					timeFormat: general.timeSystem === '24h' ? 'H:i' : 'g:i A',
-				} ),
+				} );
+			},
 		},
 		{
 			key: 'booking',

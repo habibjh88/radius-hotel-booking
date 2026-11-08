@@ -25,6 +25,11 @@ class PaymentSettings {
 	public const MAX_METHODS = 20;
 
 	/**
+	 * Longest short name (the dashboard's abbreviation of a method).
+	 */
+	public const SHORT_LENGTH = 12;
+
+	/**
 	 * Merge tags the instructions may use, replaced per booking.
 	 */
 	public const MERGE_TAGS = array( '{amount}', '{reference}', '{deadline}', '{hotel_name}' );
@@ -36,7 +41,8 @@ class PaymentSettings {
 	 */
 	public static function payments(): array {
 		return array(
-			// The methods guests may pay with, in display order: `{ key, label, instructions, account, enabled }` (17.12).
+			// The methods guests may pay with, in display order: `{ key, label, short, instructions, account, enabled }` (17.12);
+			// `short` is the dashboard's abbreviation (OM, Cash), the full label is what guests see.
 			'methods' => array(
 				'type'     => 'array',
 				'default'  => array( self::class, 'default_methods' ),
@@ -99,6 +105,7 @@ class PaymentSettings {
 				'key'          => 'cash',
 				'icon'         => 'banknote',
 				'label'        => __( 'Cash at the desk', 'radius-hotel-booking' ),
+				'short'        => __( 'Cash', 'radius-hotel-booking' ),
 				/* translators: Keep the {…} merge tags as they are. */
 				'instructions' => __( 'Pay {amount} in cash at reception, quoting booking {reference}.', 'radius-hotel-booking' ),
 				'account'      => '',
@@ -108,6 +115,7 @@ class PaymentSettings {
 				'key'          => 'card',
 				'icon'         => 'credit-card',
 				'label'        => __( 'Card at the desk', 'radius-hotel-booking' ),
+				'short'        => __( 'Card', 'radius-hotel-booking' ),
 				/* translators: Keep the {…} merge tags as they are. */
 				'instructions' => __( 'Pay {amount} by card at reception, quoting booking {reference}.', 'radius-hotel-booking' ),
 				'account'      => '',
@@ -169,6 +177,7 @@ class PaymentSettings {
 			$clean[]      = array(
 				'key'          => $key,
 				'label'        => $label,
+				'short'        => mb_substr( sanitize_text_field( (string) ( $method['short'] ?? '' ) ), 0, self::SHORT_LENGTH ),
 				'icon'         => Icons::clean( $method['icon'] ?? '' ),
 				'instructions' => mb_substr( sanitize_textarea_field( (string) ( $method['instructions'] ?? '' ) ), 0, 2000 ),
 				'account'      => mb_substr( sanitize_textarea_field( (string) ( $method['account'] ?? '' ) ), 0, 500 ),
@@ -231,13 +240,14 @@ class PaymentSettings {
 	/**
 	 * A method's name from its key; the key itself when the method was removed since.
 	 *
-	 * @param string $key Method key.
+	 * @param string $key   Method key.
+	 * @param bool   $short The short name when it has one (the dashboard); guests get the full name.
 	 * @return string
 	 */
-	public static function method_label( string $key ): string {
+	public static function method_label( string $key, bool $short = false ): string {
 		foreach ( (array) rtbp_setting( 'payments', 'methods', array() ) as $method ) {
 			if ( ( $method['key'] ?? '' ) === $key ) {
-				return (string) $method['label'];
+				return $short && '' !== (string) ( $method['short'] ?? '' ) ? (string) $method['short'] : (string) $method['label'];
 			}
 		}
 		return $key;

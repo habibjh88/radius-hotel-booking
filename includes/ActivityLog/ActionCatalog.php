@@ -74,6 +74,7 @@ final class ActionCatalog {
 			// Settings and the log itself.
 			'settings.updated'           => array( self::SYSTEM, __( 'Changed settings', 'radius-hotel-booking' ) ),
 			'settings.pro_features'      => array( self::SYSTEM, __( 'Switched Pro features', 'radius-hotel-booking' ) ),
+			'settings.renumbered'        => array( self::SYSTEM, __( 'Renumbered existing bookings', 'radius-hotel-booking' ) ),
 			'activity.archived'          => array( self::SYSTEM, __( 'Archived the activity log', 'radius-hotel-booking' ) ),
 			'activity.purged'            => array( self::SYSTEM, __( 'Removed archived log entries', 'radius-hotel-booking' ) ),
 
