@@ -140,7 +140,7 @@ export function Field( {
 			{ label ? (
 				<Label
 					htmlFor={ id }
-					className="text-sm font-semibold text-heading"
+					className="block text-sm font-semibold text-heading"
 				>
 					{ label }
 					{ required ? (

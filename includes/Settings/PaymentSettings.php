@@ -30,6 +30,11 @@ class PaymentSettings {
 	public const SHORT_LENGTH = 12;
 
 	/**
+	 * Whether a method asks for a reference (the transaction number) when a payment is recorded.
+	 */
+	public const REFERENCE_RULES = array( 'none', 'optional', 'required' );
+
+	/**
 	 * Merge tags the instructions may use, replaced per booking.
 	 */
 	public const MERGE_TAGS = array( '{amount}', '{reference}', '{deadline}', '{hotel_name}' );
@@ -41,8 +46,9 @@ class PaymentSettings {
 	 */
 	public static function payments(): array {
 		return array(
-			// The methods guests may pay with, in display order: `{ key, label, short, instructions, account, enabled }` (17.12);
-			// `short` is the dashboard's abbreviation (OM, Cash), the full label is what guests see.
+			// The methods guests may pay with, in display order: `{ key, label, short, instructions, account, reference,
+			// reference_label, enabled }` (17.12); `short` is the dashboard's abbreviation (OM, Cash), the full label is what
+			// guests see; `reference` is whether staff are asked for the transaction number (R3-T3).
 			'methods' => array(
 				'type'     => 'array',
 				'default'  => array( self::class, 'default_methods' ),
@@ -109,6 +115,7 @@ class PaymentSettings {
 				/* translators: Keep the {…} merge tags as they are. */
 				'instructions' => __( 'Pay {amount} in cash at reception, quoting booking {reference}.', 'radius-hotel-booking' ),
 				'account'      => '',
+				'reference'    => 'none',
 				'enabled'      => true,
 			),
 			array(
@@ -181,6 +188,8 @@ class PaymentSettings {
 				'icon'         => Icons::clean( $method['icon'] ?? '' ),
 				'instructions' => mb_substr( sanitize_textarea_field( (string) ( $method['instructions'] ?? '' ) ), 0, 2000 ),
 				'account'      => mb_substr( sanitize_textarea_field( (string) ( $method['account'] ?? '' ) ), 0, 500 ),
+				'reference'    => in_array( $method['reference'] ?? '', self::REFERENCE_RULES, true ) ? (string) $method['reference'] : 'optional',
+				'reference_label' => mb_substr( sanitize_text_field( (string) ( $method['reference_label'] ?? '' ) ), 0, 40 ),
 				'enabled'      => ! empty( $method['enabled'] ) && 'false' !== $method['enabled'],
 			);
 		}
@@ -235,6 +244,46 @@ class PaymentSettings {
 	public static function enabled_methods(): array {
 		$methods = rtbp_setting( 'payments', 'methods', array() );
 		return array_values( array_filter( is_array( $methods ) ? $methods : array(), static fn( $method ) => ! empty( $method['enabled'] ) ) );
+	}
+
+	/**
+	 * Whether a method asks staff for a reference, and under what name (R3-T3).
+	 * A method saved before the rule existed asks for an optional one.
+	 *
+	 * @param string $key Method key.
+	 * @return array{rule: string, label: string} `rule`: none|optional|required.
+	 */
+	public static function reference_rule( string $key ): array {
+		foreach ( (array) rtbp_setting( 'payments', 'methods', array() ) as $method ) {
+			if ( ( $method['key'] ?? '' ) === $key ) {
+				$rule  = (string) ( $method['reference'] ?? '' );
+				$label = trim( (string) ( $method['reference_label'] ?? '' ) );
+				return array(
+					'rule'  => in_array( $rule, self::REFERENCE_RULES, true ) ? $rule : 'optional',
+					'label' => '' !== $label ? $label : __( 'Reference', 'radius-hotel-booking' ),
+				);
+			}
+		}
+		return array(
+			'rule'  => 'optional',
+			'label' => __( 'Reference', 'radius-hotel-booking' ),
+		);
+	}
+
+	/**
+	 * A method as the record dialogs need it: key, name and its reference rule.
+	 *
+	 * @param array $method Method.
+	 * @return array{key: string, label: string, reference: string, reference_label: string}
+	 */
+	public static function method_for_desk( array $method ): array {
+		$rule = self::reference_rule( (string) $method['key'] );
+		return array(
+			'key'             => (string) $method['key'],
+			'label'           => (string) $method['label'],
+			'reference'       => $rule['rule'],
+			'reference_label' => $rule['label'],
+		);
 	}
 
 	/**

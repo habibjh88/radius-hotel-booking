@@ -402,9 +402,8 @@ export function BookingList( { withPageActions = true } ) {
 		},
 	];
 
-	// One click on the row, as on the old dashboard (R1-T8): the next step
-	// (Check in / Check out as a text button, approve as an icon), then View,
-	// Invoice, Edit and Cancel as icons; decline and record payment in the ⋯ menu.
+	// Only the next stay step (Check in / Check out) is a button on the row;
+	// everything else sits in the ⋯ menu with its icon and label.
 	const rowActions = ( line ) => {
 		const can = ( action ) =>
 			( line.actions || [] ).includes( action ) && allowed( action );
@@ -426,25 +425,19 @@ export function BookingList( { withPageActions = true } ) {
 					: run( line, action ).catch( () => {} ),
 			...extra,
 		} );
-		const primary = [ 'approve', 'check_in', 'check_out' ].find( can );
+		const primary = [ 'check_in', 'check_out' ].find( can );
 		return [
-			primary
-				? moveAction( primary, {
-						primary: true,
-						inline: 'approve' === primary,
-				  } )
-				: null,
+			primary ? moveAction( primary, { primary: true } ) : null,
+			can( 'approve' ) ? moveAction( 'approve' ) : null,
 			{
 				label: __( 'View booking', 'radius-hotel-booking' ),
 				icon: Eye,
-				inline: true,
 				onSelect: () => navigate( `/bookings/${ line.booking_id }` ),
 			},
 			line.invoice_url
 				? {
 						label: __( 'Invoice', 'radius-hotel-booking' ),
 						icon: FileText,
-						inline: true,
 						onSelect: () =>
 							window.open(
 								line.invoice_url,
@@ -457,15 +450,13 @@ export function BookingList( { withPageActions = true } ) {
 				? {
 						label: __( 'Edit', 'radius-hotel-booking' ),
 						icon: Pencil,
-						inline: true,
 						onSelect: () =>
 							navigate(
 								`/bookings/${ line.booking_id }?edit=${ line.id }`
 							),
 				  }
 				: null,
-			can( 'cancel' ) ? moveAction( 'cancel', { inline: true } ) : null,
-			...[ 'approve', 'check_in', 'check_out', 'decline' ]
+			...[ 'check_in', 'check_out' ]
 				.filter( ( action ) => action !== primary && can( action ) )
 				.map( ( action ) => moveAction( action ) ),
 			can( 'record_payment' )
@@ -475,6 +466,8 @@ export function BookingList( { withPageActions = true } ) {
 						onSelect: () => setPaying( line ),
 				  }
 				: null,
+			can( 'decline' ) ? moveAction( 'decline' ) : null,
+			can( 'cancel' ) ? moveAction( 'cancel' ) : null,
 		].filter( Boolean );
 	};
 

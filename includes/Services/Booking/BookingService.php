@@ -165,7 +165,9 @@ class BookingService {
 					// An import keeps the day the old desk took the money: reports bucket on it.
 					'received_at' => $import ? $import['paid_at'] : '',
 				),
-				$now
+				$now,
+				// An old payment brought over keeps what it had, even without a now-required reference.
+				! $import
 			);
 		}
 		// Staff need the key to add a guest; a web booking brings its own guest (M04, public rules).

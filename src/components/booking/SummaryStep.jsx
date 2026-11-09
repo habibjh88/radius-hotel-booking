@@ -54,6 +54,9 @@ export default function SummaryStep( {
 	// The methods offered (Settings → Payments); the first is the default.
 	const methods = window.radius_hotel_booking_param?.payment_methods || [];
 	const method = paidWith.method || methods[ 0 ]?.key || '';
+	// The method's reference rule (R3-T3): none | optional | required, and its name.
+	const chosen = methods.find( ( item ) => item.key === method );
+	const referenceRule = chosen?.reference || 'optional';
 	return (
 		<div className="space-y-4">
 			<div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-border pb-3">
@@ -122,23 +125,38 @@ export default function SummaryStep( {
 								</SelectContent>
 							</Select>
 						</Field>
-						<Field
-							label={ __( 'Reference', 'radius-hotel-booking' ) }
-							description={ __(
-								'Optional: the transaction number.',
-								'radius-hotel-booking'
-							) }
-						>
-							<Input
-								value={ paidWith.reference }
-								maxLength={ 100 }
-								onChange={ ( e ) =>
-									onChange( {
-										paidWith: { reference: e.target.value },
-									} )
+						{ 'none' !== referenceRule ? (
+							<Field
+								label={
+									chosen?.reference_label ||
+									__( 'Reference', 'radius-hotel-booking' )
 								}
-							/>
-						</Field>
+								description={
+									'required' === referenceRule
+										? __(
+												'The transaction number.',
+												'radius-hotel-booking'
+										  )
+										: __(
+												'Optional: the transaction number.',
+												'radius-hotel-booking'
+										  )
+								}
+								required={ 'required' === referenceRule }
+							>
+								<Input
+									value={ paidWith.reference }
+									maxLength={ 100 }
+									onChange={ ( e ) =>
+										onChange( {
+											paidWith: {
+												reference: e.target.value,
+											},
+										} )
+									}
+								/>
+							</Field>
+						) : null }
 					</div>
 				) : null }
 			</div>

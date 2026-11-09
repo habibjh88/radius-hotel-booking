@@ -12,6 +12,9 @@
  *       onConfirm={ ( reason ) => cancel.mutateAsync( { reason } ) }
  *   />
  *
+ * `confirmText` (e.g. "DELETE") makes the person type that word before the
+ * confirm button works — for removing something that is hard to put back.
+ *
  * `onConfirm` may return a promise: the dialog shows a busy state, closes on
  * success, and stays open showing the error on failure.
  */
@@ -28,6 +31,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
@@ -44,6 +48,7 @@ import { cn } from '@/lib/utils';
  * @param {boolean}  props.requireReason  Ask for a reason before confirming.
  * @param {string}   props.reasonLabel    Label of the reason field.
  * @param {number}   props.reasonMinLength Minimum reason length.
+ * @param {string}   props.confirmText    Word to type before confirming ('' = none).
  * @param {Function} props.onConfirm      Called with the reason ('' when not asked).
  * @return {JSX.Element} Dialog.
  */
@@ -58,10 +63,13 @@ export default function ConfirmDialog( {
 	requireReason = false,
 	reasonLabel = __( 'Reason', 'radius-hotel-booking' ),
 	reasonMinLength = 3,
+	confirmText = '',
 	onConfirm,
 } ) {
 	const reasonId = useId();
+	const typedId = useId();
 	const [ reason, setReason ] = useState( '' );
+	const [ typed, setTyped ] = useState( '' );
 	const [ busy, setBusy ] = useState( false );
 	const [ error, setError ] = useState( '' );
 
@@ -69,12 +77,15 @@ export default function ConfirmDialog( {
 	useEffect( () => {
 		if ( open ) {
 			setReason( '' );
+			setTyped( '' );
 			setError( '' );
 			setBusy( false );
 		}
 	}, [ open ] );
 
-	const reasonOk = ! requireReason || reason.trim().length >= reasonMinLength;
+	const reasonOk =
+		( ! requireReason || reason.trim().length >= reasonMinLength ) &&
+		( ! confirmText || typed.trim() === confirmText );
 
 	const confirm = async () => {
 		if ( ! reasonOk || busy ) {
@@ -152,6 +163,41 @@ export default function ConfirmDialog( {
 								reasonMinLength
 							) }
 						</p>
+					</div>
+				) : null }
+
+				{ confirmText ? (
+					<div className="space-y-1.5">
+						<Label
+							htmlFor={ typedId }
+							className="text-sm font-semibold text-heading"
+						>
+							{ sprintf(
+								/* translators: %s: the word to type, e.g. DELETE. */
+								__(
+									'Type %s to confirm',
+									'radius-hotel-booking'
+								),
+								confirmText
+							) }
+						</Label>
+						<Input
+							id={ typedId }
+							value={ typed }
+							autoComplete="off"
+							spellCheck={ false }
+							placeholder={ confirmText }
+							onChange={ ( event ) =>
+								setTyped( event.target.value )
+							}
+							onKeyDown={ ( event ) => {
+								if ( 'Enter' === event.key ) {
+									event.preventDefault();
+									confirm();
+								}
+							} }
+							disabled={ busy }
+						/>
 					</div>
 				) : null }
 

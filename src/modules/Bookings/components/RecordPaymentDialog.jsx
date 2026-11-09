@@ -2,7 +2,8 @@
  * Record a payment or a refund (5.9, 5.11): the amount starts at what is
  * due (or, for a refund, what is owed back), the method comes from Settings
  * → Payments, the reference is the card, transfer or mobile money transaction number
- * or anything the desk wants to find it by, and the time the money came in
+ * or anything the desk wants to find it by — each method says whether it is
+ * asked, optional or required and what it is called (R3-T3) — and the time the money came in
  * defaults to now. The server checks everything again; its field errors are
  * shown on the fields.
  */
@@ -118,9 +119,30 @@ export default function RecordPaymentDialog( {
 
 	const set = ( key ) => ( value ) =>
 		setValues( ( prev ) => ( { ...prev, [ key ]: value } ) );
+	// The chosen method's reference rule: none | optional | required, and its name.
+	const chosen = methods.find( ( method ) => method.key === values.method );
+	const referenceRule = chosen?.reference || 'optional';
 
 	const submit = async ( event ) => {
 		event.preventDefault();
+		// A method that requires its reference (the server checks again).
+		if (
+			'refund' !== values.type &&
+			'required' === chosen?.reference &&
+			! String( values.reference || '' ).trim()
+		) {
+			setErrors( {
+				reference: sprintf(
+					/* translators: %s: name of the reference, e.g. "Transaction ID". */
+					__(
+						'Enter the %s of this payment.',
+						'radius-hotel-booking'
+					),
+					chosen.reference_label
+				),
+			} );
+			return;
+		}
 		setBusy( true );
 		setErrors( {} );
 		try {
@@ -242,22 +264,30 @@ export default function RecordPaymentDialog( {
 								</SelectContent>
 							</Select>
 						</Field>
-						<Field
-							label={ __( 'Reference', 'radius-hotel-booking' ) }
-							description={ __(
-								'The transaction number, or anything to find it by.',
-								'radius-hotel-booking'
-							) }
-							error={ errors.reference }
-						>
-							<Input
-								value={ values.reference ?? '' }
-								maxLength={ 100 }
-								onChange={ ( e ) =>
-									set( 'reference' )( e.target.value )
+						{ 'none' !== referenceRule || values.reference ? (
+							<Field
+								label={
+									chosen?.reference_label ||
+									__( 'Reference', 'radius-hotel-booking' )
 								}
-							/>
-						</Field>
+								description={ __(
+									'The transaction number, or anything to find it by.',
+									'radius-hotel-booking'
+								) }
+								error={ errors.reference }
+								required={
+									'required' === referenceRule && ! refund
+								}
+							>
+								<Input
+									value={ values.reference ?? '' }
+									maxLength={ 100 }
+									onChange={ ( e ) =>
+										set( 'reference' )( e.target.value )
+									}
+								/>
+							</Field>
+						) : null }
 						<Field
 							label={ __( 'Received', 'radius-hotel-booking' ) }
 							error={ errors.received_at }

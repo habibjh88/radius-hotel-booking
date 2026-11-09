@@ -383,6 +383,16 @@ Renumbered bookings are still found by their old reference in search.
 Invoices and receipts show the hotel name beside the logo; the legal name sits underneath.
 Settings → Payments: the merge tags ({amount}, {reference}…) are now highlighted.
 The account menu can show the user's photo (Pro sets it from the staff file).
+Tables now show an "Action" heading above the row action buttons.
+Booking rows show only Check in / Check out; other actions moved to the ⋯ menu.
+Fixed: a switch field’s label touching its options; the label now sits above them.
+The guest booking page lists each payment with its method, reference and receipt.
+The guest booking page shows the guest's phone and e-mail; receipts show the guest's e-mail.
+Each payment method can ask for a reference: not asked, optional or required.
+Bookings search finds a booking by a payment's reference, e.g. a transaction ID.
+A booking link ending in ?pay=1 opens Record payment straight away.
+Developers: new rtbp_payment_validated action lets add-ons refuse a payment before it is saved.
+Confirmation dialogs can require typing a word, such as DELETE, before confirming.
 
 = 1.0.0 =
 Initial release.

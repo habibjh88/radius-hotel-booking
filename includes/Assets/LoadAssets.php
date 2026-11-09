@@ -432,10 +432,7 @@ class LoadAssets {
 				'max_rooms'        => \RadiusTheme\RadiusHotelBooking\Services\Booking\BookingService::maxRooms( 'staff' ),
 				// *Paid now* at the desk picks one of these (M05); the instructions stay on the server.
 				'payment_methods'  => array_map(
-					static fn( $method ) => array(
-						'key'   => (string) $method['key'],
-						'label' => (string) $method['label'],
-					),
+					array( \RadiusTheme\RadiusHotelBooking\Settings\PaymentSettings::class, 'method_for_desk' ),
 					\RadiusTheme\RadiusHotelBooking\Settings\PaymentSettings::enabled_methods()
 				),
 				// Settings → Public booking (M04): the booking page to choose, and whether a privacy page exists.

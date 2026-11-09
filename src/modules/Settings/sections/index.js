@@ -123,7 +123,14 @@ export default function coreSections() {
 				if ( params ) {
 					params.payment_methods = ( payments.methods || [] )
 						.filter( ( method ) => method.enabled )
-						.map( ( { key, label } ) => ( { key, label } ) );
+						.map( ( method ) => ( {
+							key: method.key,
+							label: method.label,
+							reference: method.reference || 'optional',
+							reference_label:
+								method.reference_label ||
+								__( 'Reference', 'radius-hotel-booking' ),
+						} ) );
 				}
 			},
 		},

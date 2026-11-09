@@ -572,6 +572,30 @@ export default function BookingFlow( {
 	};
 
 	const confirm = async () => {
+		// *Paid now* with a method that requires its reference (R3-T3; the server checks again).
+		if ( 'paid' === payment ) {
+			const offered =
+				window.radius_hotel_booking_param?.payment_methods || [];
+			const paidBy =
+				offered.find( ( m ) => m.key === paidWith.method ) ||
+				offered[ 0 ];
+			if (
+				'required' === paidBy?.reference &&
+				! String( paidWith.reference || '' ).trim()
+			) {
+				toast.error(
+					sprintf(
+						/* translators: %s: name of the reference, e.g. "Transaction ID". */
+						__(
+							'Enter the %s of this payment.',
+							'radius-hotel-booking'
+						),
+						paidBy.reference_label
+					)
+				);
+				return;
+			}
+		}
 		setSubmitting( true );
 		setGuestErrors( {} );
 		setGuestMatch( null );

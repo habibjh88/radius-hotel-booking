@@ -10,6 +10,7 @@ import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
 
 import { Field } from '@/components/common/Form';
 import IconField from '@/components/icons/IconField';
+import SegmentedControl from '@/components/common/SegmentedControl';
 import SettingsSection from '@/components/common/SettingsSection';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -260,6 +261,79 @@ export default function Payments( { value, setField, errors } ) {
 								}
 							/>
 						</Field>
+						{ /* The transaction number staff type when they record a payment (R3-T3). */ }
+						<div className="grid gap-4 sm:grid-cols-2">
+							<Field
+								label={ __(
+									'Payment reference',
+									'radius-hotel-booking'
+								) }
+								description={ __(
+									'Required: a payment by this method cannot be saved without its reference, so it can be checked later.',
+									'radius-hotel-booking'
+								) }
+							>
+								<SegmentedControl
+									label={ __(
+										'Payment reference',
+										'radius-hotel-booking'
+									) }
+									value={ method.reference || 'optional' }
+									onChange={ ( reference ) =>
+										change( index, { reference } )
+									}
+									options={ [
+										{
+											value: 'none',
+											label: __(
+												'Not asked',
+												'radius-hotel-booking'
+											),
+										},
+										{
+											value: 'optional',
+											label: __(
+												'Optional',
+												'radius-hotel-booking'
+											),
+										},
+										{
+											value: 'required',
+											label: __(
+												'Required',
+												'radius-hotel-booking'
+											),
+										},
+									] }
+								/>
+							</Field>
+							{ 'none' !== ( method.reference || 'optional' ) ? (
+								<Field
+									label={ __(
+										'Name of the reference',
+										'radius-hotel-booking'
+									) }
+									description={ __(
+										'What staff are asked for, e.g. Transaction ID.',
+										'radius-hotel-booking'
+									) }
+								>
+									<Input
+										maxLength={ 40 }
+										placeholder={ __(
+											'Reference',
+											'radius-hotel-booking'
+										) }
+										value={ method.reference_label ?? '' }
+										onChange={ ( e ) =>
+											change( index, {
+												reference_label: e.target.value,
+											} )
+										}
+									/>
+								</Field>
+							) : null }
+						</div>
 					</li>
 				) ) }
 			</ol>
@@ -277,6 +351,8 @@ export default function Payments( { value, setField, errors } ) {
 							icon: '',
 							instructions: '',
 							account: '',
+							reference: 'optional',
+							reference_label: '',
 							enabled: true,
 						},
 					] )

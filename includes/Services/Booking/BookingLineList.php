@@ -263,6 +263,11 @@ class BookingLineList {
 				$any[]  = 'g.phone_e164 LIKE %s';
 				$args[] = '%' . $wpdb->esc_like( $terms['digits'] ) . '%';
 			}
+			// A payment's reference, e.g. a mobile money transaction number (R3-T3): exact, to find the booking it paid.
+			if ( mb_strlen( trim( $q ) ) >= 4 ) {
+				$any[] = 'b.id IN ( SELECT pp.booking_id FROM %i pp WHERE pp.reference = %s )';
+				array_push( $args, rtbp_table( 'payments' ), trim( $q ) );
+			}
 			$where[] = '( ' . implode( ' OR ', $any ) . ' )';
 		}
 		return array( implode( ' AND ', $where ), $args );

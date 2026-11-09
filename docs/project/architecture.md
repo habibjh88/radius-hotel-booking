@@ -191,6 +191,7 @@ in each module doc.
 | `rtbp_booking_status_changed` | `BookingStatusService`, after the commit | booking, action, changes (line id → `{ room, from, to }`), reason, line id (0 = whole booking) |
 | `rtbp_booking_changed` | `BookingLineService` (a room added, edited or removed), after the commit | booking, action (`line_add` / `line_edit` / `line_remove`), line id, before, after |
 | `rtbp_payment_recorded` | `PaymentService` (a payment, refund or void; *Paid now* too), after the commit | payment row, booking as it is now |
+| `rtbp_payment_validated` | `PaymentService::validate()` for a payment or refund staff take now (not imports), before anything is written; throw a `DomainException` to refuse it | `{ type, amount, method, reference, note, received_at }` |
 | `rtbp_document_renderers` (filter) | `DocumentService` | format => `callable( type, data ) → { body, content_type, filename }`; free `html`, Pro `pdf` |
 | `rtbp_payment_recorded` | PaymentService | payment, booking |
 | `rtbp_settings_updated` | SettingsService | section, before, after |

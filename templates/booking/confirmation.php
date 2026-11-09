@@ -95,6 +95,10 @@ $rtbp_due   = (float) $view['balance_due'];
 			?>
 			</p>
 		<?php endif; ?>
+		<?php $rtbp_contact = array_filter( array( $view['guest_phone'] ?? '', $view['guest_email'] ?? '' ) ); ?>
+		<?php if ( $rtbp_contact ) : ?>
+			<p class="muted"><?php echo esc_html( implode( ' · ', $rtbp_contact ) ); ?></p>
+		<?php endif; ?>
 	</div>
 
 	<?php
@@ -134,6 +138,46 @@ $rtbp_due   = (float) $view['balance_due'];
 			<div class="row"><span class="strong"><?php esc_html_e( 'To pay', 'radius-hotel-booking' ); ?></span><span class="strong due"><?php echo esc_html( Money::format( $rtbp_due ) ); ?></span></div>
 		<?php elseif ( 'paid' === $view['payment_status'] ) : ?>
 			<div class="row"><span class="strong ok"><?php esc_html_e( 'Paid in full. Thank you!', 'radius-hotel-booking' ); ?></span></div>
+		<?php endif; ?>
+
+		<?php if ( ! empty( $view['payments'] ) ) : ?>
+			<div class="payments">
+				<div class="muted strong" style="margin: 12px 0 4px;"><?php esc_html_e( 'Payments', 'radius-hotel-booking' ); ?></div>
+				<?php foreach ( $view['payments'] as $rtbp_payment ) : ?>
+					<div class="row">
+						<div>
+							<div class="strong">
+							<?php
+							echo esc_html(
+								'refund' === $rtbp_payment['type']
+									/* translators: %s: payment method, e.g. Wave. */
+									? sprintf( __( 'Refund · %s', 'radius-hotel-booking' ), $rtbp_payment['method'] )
+									: $rtbp_payment['method']
+							);
+							?>
+							</div>
+							<div class="muted">
+							<?php
+							echo esc_html( $rtbp_fmt( $rtbp_payment['received_at'] ) );
+							if ( '' !== $rtbp_payment['reference'] ) {
+								/* translators: %s: payment reference, e.g. a transaction number. */
+								echo ' · ' . esc_html( sprintf( __( 'Ref. %s', 'radius-hotel-booking' ), $rtbp_payment['reference'] ) );
+							}
+							?>
+							</div>
+							<?php if ( '' !== $rtbp_payment['url'] ) : ?>
+								<a class="muted" href="<?php echo esc_url( $rtbp_payment['url'] ); ?>" target="_blank" rel="noopener">
+								<?php
+								/* translators: %s: receipt number. */
+								echo esc_html( sprintf( __( 'Receipt %s', 'radius-hotel-booking' ), $rtbp_payment['receipt_no'] ) );
+								?>
+								</a>
+							<?php endif; ?>
+						</div>
+						<div class="strong"><?php echo esc_html( ( 'refund' === $rtbp_payment['type'] ? '−' : '' ) . Money::format( $rtbp_payment['amount'] ) ); ?></div>
+					</div>
+				<?php endforeach; ?>
+			</div>
 		<?php endif; ?>
 
 		<?php if ( $view['instructions'] && $view['payment_due_at'] ) : ?>
@@ -179,7 +223,7 @@ $rtbp_due   = (float) $view['balance_due'];
 		<?php endif; ?>
 	</div>
 
-	<?php if ( $view['invoice'] || $view['receipts'] ) : ?>
+	<?php if ( $view['invoice'] || ( $view['receipts'] && ! isset( $view['payments'] ) ) ) : ?>
 	<div class="card links">
 		<h2><?php esc_html_e( 'Documents', 'radius-hotel-booking' ); ?></h2>
 		<?php if ( $view['invoice'] ) : ?>
@@ -190,7 +234,7 @@ $rtbp_due   = (float) $view['balance_due'];
 			?>
 			</a></p>
 		<?php endif; ?>
-		<?php foreach ( $view['receipts'] as $rtbp_receipt ) : ?>
+		<?php foreach ( isset( $view['payments'] ) ? array() : $view['receipts'] as $rtbp_receipt ) : ?>
 			<p style="margin: 4px 0;"><a href="<?php echo esc_url( $rtbp_receipt['url'] ); ?>" target="_blank" rel="noopener">
 			<?php
 			/* translators: 1: receipt number, 2: amount. */

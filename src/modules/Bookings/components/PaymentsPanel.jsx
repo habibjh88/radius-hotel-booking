@@ -6,7 +6,8 @@
  * recorded by mistake. The status itself comes from the ledger; there is no
  * button that marks a booking paid (ADR-010).
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { __, sprintf } from '@wordpress/i18n';
 import { FileText, Percent, Printer, Plus, Undo2 } from 'lucide-react';
 
@@ -212,6 +213,26 @@ export default function PaymentsPanel( { booking } ) {
 	const [ recording, setRecording ] = useState( false );
 	const [ discounting, setDiscounting ] = useState( false );
 	const [ voiding, setVoiding ] = useState( null );
+
+	// `?pay=1` (a scan's quick card, R3-T4): open *Record payment* once the ledger is in.
+	const [ params, setParams ] = useSearchParams();
+	const payParam = '1' === params.get( 'pay' );
+	useEffect( () => {
+		if ( ! payParam || ! ledger.data ) {
+			return;
+		}
+		if ( canRecord ) {
+			setRecording( true );
+		}
+		setParams(
+			( prev ) => {
+				const next = new URLSearchParams( prev );
+				next.delete( 'pay' );
+				return next;
+			},
+			{ replace: true }
+		);
+	}, [ payParam, ledger.data ] );
 
 	const run = ( kind, extra ) =>
 		act

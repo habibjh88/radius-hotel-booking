@@ -142,13 +142,34 @@ class GuestBookingView {
 			);
 		}
 		$receipts = array();
-		foreach ( ( new PaymentRepository() )->forBooking( (int) $booking->id ) as $row ) {
-			if ( '' !== (string) $row->receipt_no ) {
+		$payments = array();
+		$ledger   = ( new PaymentRepository() )->forBooking( (int) $booking->id );
+		$voided   = array();
+		foreach ( $ledger as $row ) {
+			if ( 'void' === (string) $row->type ) {
+				$voided[ (int) $row->voids_payment_id ] = true;
+			}
+		}
+		foreach ( $ledger as $row ) {
+			$url = '' !== (string) $row->receipt_no ? self::documentUrl( $booking, 'receipt', (int) $row->id ) : '';
+			if ( $url ) {
 				$receipts[] = array(
 					'number'      => (string) $row->receipt_no,
 					'amount'      => Money::round( (float) $row->amount ),
 					'received_at' => Dates::to_iso( Dates::from_gmt( (string) $row->received_at_gmt ) ),
-					'url'         => self::documentUrl( $booking, 'receipt', (int) $row->id ),
+					'url'         => $url,
+				);
+			}
+			// What the guest paid and got back, with how (R3-T1); voided entries and internal adjustments left out.
+			if ( in_array( (string) $row->type, array( 'payment', 'refund' ), true ) && ! isset( $voided[ (int) $row->id ] ) ) {
+				$payments[] = array(
+					'type'        => (string) $row->type,
+					'amount'      => Money::round( abs( (float) $row->amount ) ),
+					'method'      => PaymentSettings::method_label( (string) $row->method ),
+					'reference'   => (string) $row->reference,
+					'received_at' => Dates::to_iso( Dates::from_gmt( (string) $row->received_at_gmt ) ),
+					'receipt_no'  => (string) $row->receipt_no,
+					'url'         => $url,
 				);
 			}
 		}
@@ -158,6 +179,9 @@ class GuestBookingView {
 			'status'         => (string) $booking->status,
 			'payment_status' => (string) $booking->payment_status,
 			'guest_name'     => $guest ? $guest->fullName() : '',
+			// How the hotel reaches them (R3-T2); a placeholder e-mail is not theirs.
+			'guest_phone'    => $guest ? (string) $guest->phone : '',
+			'guest_email'    => $guest && ! $guest->email_is_placeholder ? (string) $guest->email : '',
 			'rooms'          => $rooms,
 			'total'          => Money::round( (float) $booking->total ),
 			'paid_total'     => Money::round( (float) $booking->paid_total ),
@@ -173,6 +197,7 @@ class GuestBookingView {
 				'url'    => self::documentUrl( $booking, 'invoice' ),
 			) : null,
 			'receipts'       => $receipts,
+			'payments'       => $payments,
 			'page_url'       => self::pageUrl( $booking ),
 			'hotel'          => array(
 				'name'    => (string) ( $general['companyName'] ?? get_bloginfo( 'name' ) ),

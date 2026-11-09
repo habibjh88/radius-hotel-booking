@@ -577,12 +577,13 @@ class PaymentService {
 	/**
 	 * Validate a payment or refund.
 	 *
-	 * @param array             $input Input.
-	 * @param DateTimeImmutable $now   Now.
+	 * @param array             $input  Input.
+	 * @param DateTimeImmutable $now    Now.
+	 * @param bool              $strict Apply the method's required reference (R3-T3); off for imports of old payments.
 	 * @return array `{ type, amount, method, reference, note, received_at: DateTimeImmutable }`.
 	 * @throws DomainException 422.
 	 */
-	public function validate( array $input, DateTimeImmutable $now ): array {
+	public function validate( array $input, DateTimeImmutable $now, bool $strict = true ): array {
 		$errors = array();
 		$type   = sanitize_key( (string) ( $input['type'] ?? 'payment' ) );
 		if ( ! in_array( $type, array( 'payment', 'refund' ), true ) ) {
@@ -600,6 +601,13 @@ class PaymentService {
 		$reference = sanitize_text_field( (string) ( $input['reference'] ?? '' ) );
 		if ( mb_strlen( $reference ) > self::MAX_REFERENCE ) {
 			$errors['reference'] = __( 'This is too long.', 'radius-hotel-booking' );
+		} elseif ( $strict && '' === trim( $reference ) && ! isset( $errors['method'] ) && 'refund' !== ( $input['type'] ?? 'payment' ) ) {
+			// A method set to "required" (a mobile money transaction number, R3-T3): every payment carries it.
+			$rule = PaymentSettings::reference_rule( $method );
+			if ( 'required' === $rule['rule'] ) {
+				/* translators: %s: name of the reference, e.g. "Transaction ID". */
+				$errors['reference'] = sprintf( __( 'Enter the %s of this payment.', 'radius-hotel-booking' ), $rule['label'] );
+			}
 		}
 		$note = sanitize_textarea_field( (string) ( $input['note'] ?? '' ) );
 		if ( mb_strlen( $note ) > self::MAX_NOTE ) {
@@ -621,7 +629,7 @@ class PaymentService {
 			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 			throw DomainException::invalid( $errors );
 		}
-		return array(
+		$data = array(
 			'type'        => $type,
 			'amount'      => $amount,
 			'method'      => $method,
@@ -629,6 +637,17 @@ class PaymentService {
 			'note'        => $note,
 			'received_at' => $received,
 		);
+		if ( $strict ) {
+			/**
+			 * A payment or refund staff are taking now passed the checks; a
+			 * listener may still refuse it by throwing a DomainException (Pro's
+			 * cash register: none open, R3-T7). Not fired for imports.
+			 *
+			 * @param array $data `{ type, amount, method, reference, note, received_at }`.
+			 */
+			do_action( 'rtbp_payment_validated', $data );
+		}
+		return $data;
 	}
 
 	/**

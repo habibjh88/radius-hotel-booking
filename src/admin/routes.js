@@ -451,7 +451,8 @@ export function canSee( route ) {
 
 /**
  * The route that best matches a pathname: exact first, then the longest
- * matching prefix (so `/bookings/42` resolves to `/bookings`).
+ * matching prefix (so `/bookings/42` resolves to `/bookings`), then a route
+ * with `:params` and no parent (an add-on's `/scan/:id`).
  *
  * @param {string} pathname Current pathname.
  * @return {Object|undefined} Route.
@@ -462,12 +463,26 @@ export function matchRoute( pathname ) {
 	if ( exact ) {
 		return exact;
 	}
-	return routes
+	const prefix = routes
 		.filter(
 			( route ) =>
 				route.path !== '/' && pathname.startsWith( route.path + '/' )
 		)
 		.sort( ( a, b ) => b.path.length - a.path.length )[ 0 ];
+	if ( prefix ) {
+		return prefix;
+	}
+	const parts = pathname.split( '/' );
+	return routes.find( ( route ) => {
+		const pattern = String( route.path || '' ).split( '/' );
+		return (
+			route.path.includes( ':' ) &&
+			pattern.length === parts.length &&
+			pattern.every( ( part, i ) =>
+				part.startsWith( ':' ) ? '' !== parts[ i ] : part === parts[ i ]
+			)
+		);
+	} );
 }
 
 /**

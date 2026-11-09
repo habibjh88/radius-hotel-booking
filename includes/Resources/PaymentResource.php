@@ -81,14 +81,8 @@ class PaymentResource {
 				'payment_status' => (string) $booking->payment_status,
 				'on_hold'        => (bool) (int) $booking->on_hold,
 			),
-			// What the record dialog offers: the enabled methods, in order.
-			'methods'  => array_map(
-				static fn( $method ) => array(
-					'key'   => (string) $method['key'],
-					'label' => (string) $method['label'],
-				),
-				PaymentSettings::enabled_methods()
-			),
+			// What the record dialog offers: the enabled methods, in order, with their reference rule.
+			'methods'  => array_map( array( PaymentSettings::class, 'method_for_desk' ), PaymentSettings::enabled_methods() ),
 		);
 	}
 }

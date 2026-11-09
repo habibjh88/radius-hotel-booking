@@ -494,7 +494,7 @@ export default function DataTable( {
 						) }
 					>
 						{ /* Wide screens: a real table. `relative` keeps absolutely positioned
-							   children (the sr-only "Actions" label) inside the scroller;
+							   children inside the scroller;
 							   otherwise they escape it and widen the whole page. */ }
 						<div className="relative hidden overflow-x-auto md:block">
 							<table className="w-full border-collapse text-sm">
@@ -541,14 +541,12 @@ export default function DataTable( {
 										{ rowActions ? (
 											<th
 												scope="col"
-												className="sticky right-0 bg-muted px-4 py-3"
+												className="sticky right-0 whitespace-nowrap bg-muted px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground"
 											>
-												<span className="sr-only">
-													{ __(
-														'Actions',
-														'radius-hotel-booking'
-													) }
-												</span>
+												{ __(
+													'Action',
+													'radius-hotel-booking'
+												) }
 											</th>
 										) : null }
 									</tr>

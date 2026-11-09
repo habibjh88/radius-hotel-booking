@@ -88,7 +88,7 @@ $rtbp_when  = ! empty( $doc['received_at'] ) ? Dates::format( Dates::from_iso( (
 	<div class="box">
 		<p class="box-title"><?php esc_html_e( 'Received from', 'radius-hotel-booking' ); ?></p>
 		<strong><?php echo esc_html( $rtbp_guest['name'] ?? '' ); ?></strong>
-		<div class="muted"><?php echo esc_html( $rtbp_guest['phone'] ?? '' ); ?></div>
+		<div class="muted"><?php echo esc_html( implode( ' · ', array_filter( array( $rtbp_guest['phone'] ?? '', $rtbp_guest['email'] ?? '' ) ) ) ); ?></div>
 	</div>
 	<?php endif; ?>
 

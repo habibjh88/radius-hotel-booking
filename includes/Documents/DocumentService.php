@@ -193,6 +193,8 @@ class DocumentService {
 			'guest'          => $guest ? array(
 				'name'  => $guest->fullName(),
 				'phone' => (string) $guest->phone,
+				// As on the invoice (R3-T2); a placeholder e-mail is not theirs.
+				'email' => $guest->email_is_placeholder ? '' : (string) $guest->email,
 			) : null,
 			'footer'         => (string) rtbp_setting( 'invoices', 'footerText', '' ),
 		) + self::business();
