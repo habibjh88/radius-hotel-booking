@@ -5,8 +5,15 @@
  * the figures are zero and the setup checklist leads the way; each module
  * fills its part of the summary on the server as it is built (M01 bookings,
  * M05 payments, M06 rooms …), with no change needed here.
+ *
+ * Add-ons add widgets on `rtbp.dashboard.widgets` (ADR-015):
+ * `{ key, Component, area?: 'top' | 'side', order?, accessKey? }`. `top` sits
+ * under the counters, `side` under the side panels; a widget whose access key
+ * is locked is left out, and the server still guards its data.
  */
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { applyFilters } from '@wordpress/hooks';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import {
 	AlarmClock,
@@ -23,11 +30,24 @@ import SiteChecks from '@/components/common/SiteChecks';
 import StatCard from '@/components/common/StatCard';
 import { usePageActions } from '@/components/layout/PageActions';
 import { Button } from '@/components/ui/button';
+import { canAccess, useAccessMap } from '@/lib/access';
 import { BookingList } from '@/modules/Bookings';
 import { useDashboardSummary } from './api';
 import RoomStatusPanel from './components/RoomStatusPanel';
 import SetupPanel from './components/SetupPanel';
 import TodayPanel from './components/TodayPanel';
+
+/**
+ * Add-on widgets for one area, in order.
+ *
+ * @param {Array}  widgets Widgets from the filter.
+ * @param {string} area    'top' | 'side'.
+ * @return {JSX.Element[]} Rendered widgets.
+ */
+const renderArea = ( widgets, area ) =>
+	widgets
+		.filter( ( widget ) => ( widget.area || 'top' ) === area )
+		.map( ( { key, Component } ) => <Component key={ key } /> );
 
 /**
  * @return {JSX.Element} Screen.
@@ -40,6 +60,20 @@ export default function Dashboard() {
 		refetch: reload,
 	} = useDashboardSummary();
 	const stats = data?.stats || {};
+	// Re-read when the access map refreshes, so widgets follow a permission change.
+	const { data: levels } = useAccessMap();
+	const widgets = useMemo( () => {
+		const filtered = applyFilters( 'rtbp.dashboard.widgets', [] );
+		return ( Array.isArray( filtered ) ? filtered : [] )
+			.filter(
+				( widget ) =>
+					widget &&
+					widget.key &&
+					widget.Component &&
+					canAccess( widget.accessKey )
+			)
+			.sort( ( a, b ) => ( a.order ?? 50 ) - ( b.order ?? 50 ) );
+	}, [ levels ] );
 
 	// Each counter opens its tab of the booking list (1.1–1.4, M01 T1).
 	const counters = [
@@ -161,6 +195,8 @@ export default function Dashboard() {
 				) ) }
 			</div>
 
+			{ renderArea( widgets, 'top' ) }
+
 			{ /* The booking list under the counters, as on the old dashboard (R1-T10). */ }
 			<BookingList withPageActions={ false } />
 
@@ -175,6 +211,7 @@ export default function Dashboard() {
 						counts={ data?.rooms_by_state }
 						loading={ loading }
 					/>
+					{ renderArea( widgets, 'side' ) }
 				</div>
 			</div>
 		</div>

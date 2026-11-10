@@ -393,6 +393,8 @@ Bookings search finds a booking by a payment's reference, e.g. a transaction ID.
 A booking link ending in ?pay=1 opens Record payment straight away.
 Developers: new rtbp_payment_validated action lets add-ons refuse a payment before it is saved.
 Confirmation dialogs can require typing a word, such as DELETE, before confirming.
+Add-ons can now add their own cards to the Dashboard.
+User roles now end in "- RHB" (Staff - RHB) so they stand apart from other plugins.
 
 = 1.0.0 =
 Initial release.

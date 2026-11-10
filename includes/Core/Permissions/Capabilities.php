@@ -166,6 +166,19 @@ class Capabilities {
 	}
 
 	/**
+	 * The name WordPress stores for one of our roles (Users → Role). The
+	 * suffix tells it apart from other plugins' "Staff" or "Manager"; inside
+	 * the hotel dashboard roleLabels() stays short.
+	 *
+	 * @param string $label Short label, e.g. "Staff".
+	 * @return string E.g. "Staff - RHB".
+	 */
+	public static function wpRoleName( string $label ): string {
+		/* translators: %s: role name, e.g. Staff. RHB stands for Radius Hotel Booking. */
+		return sprintf( __( '%s - RHB', 'radius-hotel-booking' ), $label );
+	}
+
+	/**
 	 * Whether the current user holds a plugin capability. Administrators
 	 * (manage_options) implicitly hold every capability, so a plugin cap can
 	 * never lock a site admin out.

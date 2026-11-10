@@ -240,7 +240,7 @@ add-on script has registered its filters. Filters:
 | Tailwind `safelist` in free (**live**, M13 T6) | Add-on bundles are not scanned by the free Tailwind build: a class an add-on needs that free stops using disappears. Responsive row classes add-ons rely on are safelisted in `tailwind.config.js`; check new add-on classes against `build/*.css` |
 | `rtbp.access.levels` (**live**, M13 T5b) | The level options of the free permission matrix; the PHP twin `rtbp_access_role_levels` is the server allow-list |
 | `rtbp.api.error` (**live**) | `( handled, error, { path, options, retry } )`: return a Promise to take over the request (e.g. Pro turns `passcode_required` into its PIN dialog, then `retry( { headers } )`), or pass `handled` through to let the error throw. A retried request does not run the filter again |
-| `rtbp.dashboard.widgets`, `rtbp.reports.tabs` (reports **live**, M10) | Add dashboard widgets and report tabs. A tab: `{ key, label, icon, accessKey, Component( { range } ), range?, mode?, export?, report? }`; the chart is `window.rtbp.ui.ReportChart` (recharts stays in free's chunk) |
+| `rtbp.dashboard.widgets`, `rtbp.reports.tabs` (**live**: reports M10, widgets R3) | Add dashboard widgets and report tabs. A widget: `{ key, Component, area?: 'top' (under the counters, default) \| 'side', order?, accessKey? }`, left out when its key is locked (Pro: cash register). A tab: `{ key, label, icon, accessKey, Component( { range } ), range?, mode?, export?, report? }`; the chart is `window.rtbp.ui.ReportChart` (recharts stays in free's chunk) |
 
 The add-on scripts declare `radius-hotel-booking-admin` as a dependency, so they load after the
 runtime.

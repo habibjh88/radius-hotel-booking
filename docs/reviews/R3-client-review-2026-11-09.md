@@ -135,3 +135,15 @@ in Settings, and FCFA is the site currency.
   (`created_at`); a void of an older payment counts against the register of whoever voids it.
   Not done: a Dashboard card for the register (follow-up). Supervisor and Accountant templates
   get `register.manage` on new sites only (existing roles keep the key default, locked).
+- 2026-11-10: Dashboard card done. Free implements the `rtbp.dashboard.widgets` seam from ADR-015
+  (`{ key, Component, area: 'top'|'side', order, accessKey }`, hidden when the key is locked);
+  Pro's `CashRegisterCard` (area `top`, `register.use`) shows Open (with opening cash) or the live
+  per-method totals with Close, and the closed shift's summary and slip. It reuses the screen's
+  `OpenForm`, `CloseDialog`, `ClosedSummary` and `printSlip`.
+- 2026-11-10: fix (user, staff test): a maintenance user saw Cash register (menu and card).
+  `register.use` defaulted to `open`, so every role saved before the key existed got it. Now
+  `locked` by default; the Receptionist and Night receptionist templates open it, and a one-time
+  step on `rtbp_pro_installed` (Pro DB 1.7.3, option `rtbp_pro_register_use_granted`) adds it to
+  existing ones that set neither the key nor `*`. *Require an open register* now skips users
+  without `register.use` (they have no register to open). Staff on the built-in Staff role get the
+  register only when Settings → Permissions, an access role or an override opens it.

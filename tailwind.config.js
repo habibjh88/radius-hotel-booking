@@ -9,7 +9,12 @@ module.exports = {
 	// Classes add-on screens (Pro, client) rely on although the free app may
 	// stop using them: add-on bundles are not scanned, so only what free
 	// compiles exists (ADR-015). Keep this list small.
-	safelist: [ 'md:flex-row', 'md:items-center', 'md:gap-4' ],
+	safelist: [
+		'md:flex-row',
+		'md:items-center',
+		'md:gap-4',
+		'xl:grid-cols-5',
+	],
 	theme: {
 		extend: {
 			colors: {
