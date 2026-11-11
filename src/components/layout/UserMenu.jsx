@@ -123,15 +123,54 @@ export default function UserMenu() {
 					/>
 				</button>
 			</DropdownMenuTrigger>
-			<DropdownMenuContent className="rtbp-root w-60" align="end">
-				<DropdownMenuLabel className="font-normal">
-					<span className="block truncate text-sm font-semibold text-heading">
-						{ user.name }
+			<DropdownMenuContent className="rtbp-root w-72" align="end">
+				<DropdownMenuLabel className="flex items-start gap-3 px-3 py-3 font-normal">
+					<span className="relative shrink-0">
+						{ user.avatar_url ? (
+							<img
+								src={ user.avatar_url }
+								alt=""
+								className="h-12 w-12 rounded-full object-cover ring-2 ring-primary-soft"
+							/>
+						) : (
+							<span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-soft text-base font-semibold text-primary ring-2 ring-primary-soft">
+								{ initials( user.name ) }
+							</span>
+						) }
+						<span
+							className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-popover"
+							aria-hidden="true"
+						/>
 					</span>
-					<span className="block truncate text-xs text-muted-foreground">
-						{ [ user.role, user.email ]
-							.filter( Boolean )
-							.join( ' · ' ) }
+					<span className="min-w-0 flex-1">
+						<span className="block truncate text-[15px] font-semibold leading-tight text-heading">
+							{ user.name }
+						</span>
+						{ user.email ? (
+							<span
+								className="mt-0.5 block truncate text-xs text-muted-foreground"
+								title={ user.email }
+							>
+								{ user.email }
+							</span>
+						) : null }
+						{ user.role ? (
+							<span
+								className="mt-1.5 inline-flex max-w-full items-center truncate rounded-md border bg-primary-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary"
+								// Tailwind 3 can't fade a var() colour (`border-primary/30`).
+								style={ {
+									borderColor:
+										'color-mix(in srgb, var(--primary) 35%, transparent)',
+								} }
+							>
+								{ user.role }
+							</span>
+						) : null }
+						{ user.subtitle ? (
+							<span className="mt-1.5 block truncate text-xs font-medium text-muted-foreground">
+								{ user.subtitle }
+							</span>
+						) : null }
 					</span>
 				</DropdownMenuLabel>
 				{ items.length ? <DropdownMenuSeparator /> : null }

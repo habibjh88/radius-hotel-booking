@@ -409,6 +409,14 @@ class LoadAssets {
 					 * @param int    $user_id User id.
 					 */
 					'avatar_url' => (string) apply_filters( 'rtbp_user_avatar_url', '', get_current_user_id() ),
+					/**
+					 * The account menu header's last line (e.g. "Job title · Department"); empty hides it.
+					 * Pro fills it in from the staff record.
+					 *
+					 * @param string $subtitle Text.
+					 * @param int    $user_id  User id.
+					 */
+					'subtitle'   => (string) apply_filters( 'rtbp_user_menu_subtitle', '', get_current_user_id() ),
 					// Administrator-only tools (Settings → Booking rules: renumber bookings).
 					'is_admin'   => current_user_can( 'manage_options' ),
 					// The account menu's *Sign out* (the app adds where to come back to);
