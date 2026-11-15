@@ -19,7 +19,7 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 import { AlertTriangle, CalendarDays } from 'lucide-react';
 
 import Money from '@/components/common/Money';
-import DatesBar from '@/components/booking/DatesBar';
+import DatesBar, { ArrivalTimeField } from '@/components/booking/DatesBar';
 import RateList from '@/components/booking/RateList';
 import RoomPicker from '@/components/booking/RoomPicker';
 import { searchIsValid, useAvailability } from '@/components/booking/api';
@@ -455,11 +455,7 @@ export default function LineEditor( { booking, line, open, onClose } ) {
 						</>
 					) : (
 						<>
-							<DatesBar
-								search={ search }
-								onChange={ onDates }
-								checkin={ checkin }
-							/>
+							<DatesBar search={ search } onChange={ onDates } />
 							<section className="space-y-2">
 								<h3 className="m-0 text-sm font-semibold text-heading">
 									{ __( 'Rate', 'radius-hotel-booking' ) }
@@ -481,6 +477,18 @@ export default function LineEditor( { booking, line, open, onClose } ) {
 									chosen.rate.name
 								) }
 							</h3>
+							{ chosen.rate.checkin &&
+							! ( sameStay && source ) ? (
+								<ArrivalTimeField
+									checkin={ chosen.rate.checkin }
+									rateName={ chosen.rate.name }
+									value={ search.checkin_time }
+									onChange={ ( checkin_time ) => {
+										onDates( { checkin_time } );
+										setPriceChange( null );
+									} }
+								/>
+							) : null }
 							{ chosen.rate.available ? (
 								<RoomPicker
 									type={ chosen.type }

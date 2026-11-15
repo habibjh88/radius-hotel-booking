@@ -68,7 +68,6 @@ export default function SearchBar() {
 				onChange={ ( changes ) =>
 					setSearch( ( prev ) => ( { ...prev, ...changes } ) )
 				}
-				checkin={ null }
 			/>
 			<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 				{ rules.showRoomsField ? (

@@ -843,11 +843,7 @@ export default function BookingFlow( {
 	return (
 		<div className="space-y-4" data-mode={ mode }>
 			<Panel title={ __( 'Dates and guests', 'radius-hotel-booking' ) }>
-				<DatesBar
-					search={ search }
-					onChange={ change }
-					checkin={ checkin }
-				/>
+				<DatesBar search={ search } onChange={ change } />
 			</Panel>
 			<Panel
 				title={ __( 'Rates', 'radius-hotel-booking' ) }
@@ -880,6 +876,10 @@ export default function BookingFlow( {
 						onHold={ holdRooms }
 						lines={ lines }
 						holds={ holds }
+						checkinTime={ search.checkin_time }
+						onCheckinTime={ ( checkin_time ) =>
+							change( { checkin_time } )
+						}
 						onClose={ () => setChoice( null ) }
 						onDone={ () => {
 							setChoice( null );

@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/sheet';
 import { formatDateRange } from '@/lib/format';
 
+import { ArrivalTimeField } from './DatesBar';
 import HoldChip from './HoldChip';
 import RoomSelection from './RoomSelection';
 
@@ -33,6 +34,8 @@ import RoomSelection from './RoomSelection';
  * @param {Function} props.onHold  Holds the ticked rooms (see RoomSelection).
  * @param {Object[]} props.lines   The booking's rooms so far.
  * @param {Object}   props.holds   The holds (`expiresAt`, `expired`).
+ * @param {string}   props.checkinTime   The flexible rate's arrival time (`HH:MM`).
+ * @param {Function} props.onCheckinTime Called with a new arrival time (the rooms re-search).
  * @param {Function} props.onClose Closes the drawer (back to the rates).
  * @param {Function} props.onDone  Closes it and goes on to the guest.
  * @return {JSX.Element} Drawer.
@@ -45,6 +48,8 @@ export default function RoomDrawer( {
 	onHold,
 	lines,
 	holds,
+	checkinTime,
+	onCheckinTime,
 	onClose,
 	onDone,
 } ) {
@@ -145,6 +150,15 @@ export default function RoomDrawer( {
 										expired={ holds.expired }
 									/>
 								</div>
+							) : null }
+
+							{ rate.checkin ? (
+								<ArrivalTimeField
+									checkin={ rate.checkin }
+									rateName={ rate.name }
+									value={ checkinTime }
+									onChange={ onCheckinTime }
+								/>
 							) : null }
 
 							{ rate.available ? (

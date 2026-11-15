@@ -24,6 +24,9 @@ import AddGuestDialog from './components/AddGuestDialog';
 
 const PER_PAGE = 20;
 
+// Page sizes offered under the table (as on Bookings); the server caps at 100.
+const PER_PAGE_OPTIONS = [ 20, 40, 60, 100 ];
+
 export default function Guests() {
 	const [ params, setParams ] = useSearchParams();
 	const canCreate = useAccess( 'guests.create' ) !== 'locked';
@@ -33,7 +36,12 @@ export default function Guests() {
 	const q = params.get( 'q' ) || '';
 	const standing = params.get( 'standing' ) === 'banned' ? 'banned' : '';
 	const page = Math.max( 1, Number( params.get( 'page' ) ) || 1 );
-	const list = useGuests( { q, standing, page, per_page: PER_PAGE } );
+	const perPage = PER_PAGE_OPTIONS.includes(
+		Number( params.get( 'per_page' ) )
+	)
+		? Number( params.get( 'per_page' ) )
+		: PER_PAGE;
+	const list = useGuests( { q, standing, page, per_page: perPage } );
 
 	const setView = ( changes ) =>
 		setParams(
@@ -200,8 +208,15 @@ export default function Guests() {
 						rows={ list.data?.guests || [] }
 						total={ list.data?.total || 0 }
 						page={ page }
-						perPage={ PER_PAGE }
+						perPage={ perPage }
 						onPageChange={ ( next ) => setView( { page: next } ) }
+						perPageOptions={ PER_PAGE_OPTIONS }
+						onPerPageChange={ ( size ) =>
+							setView( {
+								per_page: size === PER_PAGE ? '' : size,
+								page: '',
+							} )
+						}
 						loading={ list.isPending }
 						error={ list.error }
 						onRetry={ () => list.refetch() }

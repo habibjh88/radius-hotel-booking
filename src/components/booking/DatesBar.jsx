@@ -1,7 +1,8 @@
 /**
  * The booking flow's search bar (2.1, 2.6): arrival, departure (the same day
- * for day stays), adults, children, and — when flexible rates are offered —
- * the check-in time, within the plan's allowed range.
+ * for day stays), adults and children. The arrival time of a flexible rate
+ * is asked where the rate is chosen (ArrivalTimeField, in the room step), so
+ * it does not read as a limit on which days can be booked.
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { Minus, Plus } from 'lucide-react';
@@ -81,11 +82,10 @@ export function Stepper( { label, value, min, max, onChange } ) {
  * @param {Object}      props          Props.
  * @param {Object}      props.search   `{ arrival, departure, adults, children, checkin_time }`.
  * @param {Function}    props.onChange Called with the changed fields.
- * @param {Object|null} props.checkin  The flexible rates' `{ from, until }` (null: no time field).
  * @param {Object}      props.limits   Optional `{ min, max }` arrivals (`Y-m-d`; the website's rules, M04).
  * @return {JSX.Element} Bar.
  */
-export default function DatesBar( { search, onChange, checkin, limits } ) {
+export default function DatesBar( { search, onChange, limits } ) {
 	const today = siteToday();
 	const first = limits?.min && limits.min > today ? limits.min : today;
 	const last = limits?.max || undefined;
@@ -158,27 +158,73 @@ export default function DatesBar( { search, onChange, checkin, limits } ) {
 				max={ 10 }
 				onChange={ ( children ) => onChange( { children } ) }
 			/>
-			{ checkin ? (
-				<Field
-					label={ __( 'Check-in time', 'radius-hotel-booking' ) }
-					description={ sprintf(
-						/* translators: 1: earliest check-in time, 2: latest check-in time. */
-						__( 'Between %1$s and %2$s.', 'radius-hotel-booking' ),
-						checkin.from,
-						checkin.until
-					) }
-				>
-					<TimePicker
-						minuteStep={ 30 }
-						min={ checkin.from }
-						max={ checkin.until }
-						value={ search.checkin_time }
-						onChange={ ( checkin_time ) =>
-							onChange( { checkin_time } )
-						}
-					/>
-				</Field>
-			) : null }
 		</div>
+	);
+}
+
+/**
+ * The time field's help: the stay is counted from the arrival time, plus the
+ * allowed range when the plan restricts it.
+ *
+ * @param {Object} checkin  `{ from, until }`.
+ * @param {string} rateName The chosen rate's name, or ''.
+ * @return {string} Help text.
+ */
+function checkinHelp( checkin, rateName ) {
+	const counted = rateName
+		? sprintf(
+				/* translators: %s: rate plan name, e.g. 24 h. */
+				__(
+					'The %s stay is counted from this time.',
+					'radius-hotel-booking'
+				),
+				rateName
+		  )
+		: __(
+				'The flexible stay is counted from this time.',
+				'radius-hotel-booking'
+		  );
+	if ( '00:00' === checkin.from && '23:30' === checkin.until ) {
+		return counted;
+	}
+	return sprintf(
+		/* translators: 1: sentence about the stay, 2: earliest arrival time, 3: latest arrival time. */
+		__( '%1$s Arrival between %2$s and %3$s.', 'radius-hotel-booking' ),
+		counted,
+		checkin.from,
+		checkin.until
+	);
+}
+
+/**
+ * A flexible rate's arrival time: the stay is counted from it. Shown in the
+ * room step once such a rate is chosen (desk drawer, room dialog).
+ *
+ * @param {Object}   props          Props.
+ * @param {Object}   props.checkin  The rate's `{ from, until }`.
+ * @param {string}   props.rateName The rate's name, for the help.
+ * @param {string}   props.value    `HH:MM`.
+ * @param {Function} props.onChange Called with the new `HH:MM`.
+ * @return {JSX.Element} Field.
+ */
+export function ArrivalTimeField( {
+	checkin,
+	rateName = '',
+	value,
+	onChange,
+} ) {
+	return (
+		<Field
+			label={ __( 'Arrival time', 'radius-hotel-booking' ) }
+			description={ checkinHelp( checkin, rateName ) }
+		>
+			<TimePicker
+				minuteStep={ 30 }
+				min={ checkin.from }
+				max={ checkin.until }
+				value={ value }
+				onChange={ onChange }
+			/>
+		</Field>
 	);
 }

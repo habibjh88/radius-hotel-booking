@@ -396,6 +396,8 @@ Confirmation dialogs can require typing a word, such as DELETE, before confirmin
 Add-ons can now add their own cards to the Dashboard.
 User roles now end in "- RHB" (Staff - RHB) so they stand apart from other plugins.
 Redesigned the account menu header: larger photo, online dot, email, role badge and job line.
+New booking: a flexible rate's arrival time is now asked in the room selection panel.
+Guests list: choose how many guests to show per page.
 
 = 1.0.0 =
 Initial release.
