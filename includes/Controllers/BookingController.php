@@ -23,6 +23,7 @@ use RadiusTheme\RadiusHotelBooking\Services\Booking\BookingLineService;
 use RadiusTheme\RadiusHotelBooking\Services\Booking\BookingQuery;
 use RadiusTheme\RadiusHotelBooking\Services\Booking\BookingService;
 use RadiusTheme\RadiusHotelBooking\Services\Booking\BookingStatusService;
+use RadiusTheme\RadiusHotelBooking\Services\Booking\StayExtension;
 use WP_REST_Request;
 
 defined( 'ABSPATH' ) || exit;
@@ -60,6 +61,10 @@ class BookingController extends BaseController {
 				'cancel'   => 'bookings.cancel',
 				'checkIn'  => 'bookings.check_in',
 				'checkOut' => 'bookings.check_out',
+				'undoCheckIn' => array( 'bookings.check_in', 'bookings.undo_check_in' ),
+				// A guest in the room stays on for another slot (the options, then the extension).
+				'extendOptions' => array( 'bookings.check_in', 'bookings.extend_stay' ),
+				'extendStay'    => array( 'bookings.check_in', 'bookings.extend_stay' ),
 				'noShow'   => 'bookings.no_show',
 				// The rooms offered for a check-in, or for a move during the stay (`?for=move`).
 				'freeRooms' => static fn( $request ) => 'move' === $request->get_param( 'for' ) ? array( 'bookings.check_in', 'bookings.move_room' ) : array( 'bookings.check_in' ),
@@ -308,6 +313,57 @@ class BookingController extends BaseController {
 					return ApiResponse::fromThrowable( $e )->send();
 				}
 			}
+		);
+	}
+
+	/**
+	 * POST booking-lines/{id}/undo-check-in: a check-in made by mistake, with a reason.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function undoCheckIn( WP_REST_Request $request ) {
+		return $this->transition(
+			$request,
+			static fn( $service, $body, $id ) => $service->undoCheckIn( $id, (string) ( $body['reason'] ?? '' ) ),
+			__( 'Check-in undone: the room waits for its guest again.', 'radius-hotel-booking' )
+		);
+	}
+
+	/**
+	 * GET booking-lines/{id}/extend: the slots the stay can be extended with.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function extendOptions( WP_REST_Request $request ) {
+		return $this->applyMiddleware(
+			$request,
+			static function ( $request ) {
+				try {
+					return ApiResponse::success( array( 'options' => ( new StayExtension() )->options( (int) $request->get_param( 'id' ) ) ) )->send();
+				} catch ( \Throwable $e ) {
+					return ApiResponse::fromThrowable( $e )->send();
+				}
+			}
+		);
+	}
+
+	/**
+	 * POST booking-lines/{id}/extend `{ rate_plan_id, expected_total? }`: extend the stay in the same room.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function extendStay( WP_REST_Request $request ) {
+		return $this->transition(
+			$request,
+			static fn( $service, $body, $id ) => ( new StayExtension() )->extend(
+				$id,
+				(int) ( $body['rate_plan_id'] ?? 0 ),
+				isset( $body['expected_total'] ) && is_numeric( $body['expected_total'] ) ? (float) $body['expected_total'] : null
+			),
+			__( 'Stay extended.', 'radius-hotel-booking' )
 		);
 	}
 

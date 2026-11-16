@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "translation-revision-date": "2026-11-16T08:26:51+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/modules\/Settings\/sections\/Payments.jsx",
     "domain": "messages",
@@ -13,14 +13,17 @@
             "Payment methods": [
                 "Modes de paiement"
             ],
+            "Reference": [
+                "R\u00e9f\u00e9rence"
+            ],
             "Name": [
                 "Nom"
             ],
             "How guests can pay you, in the order they see them. Guests get these instructions on the confirmation page and e-mail; staff pick the method when recording a payment.": [
                 "Comment les clients peuvent vous payer, dans l\u2019ordre o\u00f9 ils les voient. Les clients re\u00e7oivent ces instructions sur la page de confirmation et par e-mail ; le personnel choisit le mode lors de l\u2019enregistrement d\u2019un paiement."
             ],
-            "In the instructions, these tags are replaced for each booking: %s.": [
-                "Dans les instructions, ces balises sont remplac\u00e9es pour chaque r\u00e9servation : %s."
+            "In the instructions, these tags are replaced for each booking:": [
+                "Dans les instructions, ces balises sont remplac\u00e9es pour chaque r\u00e9servation :"
             ],
             "The icon beside each name shows on the guest page; left empty, one is picked from the name.": [
                 "L\u2019ic\u00f4ne \u00e0 c\u00f4t\u00e9 de chaque nom s\u2019affiche sur la page du client ; si elle est vide, une ic\u00f4ne est choisie d\u2019apr\u00e8s le nom."
@@ -46,6 +49,15 @@
             "Remove this method": [
                 "Supprimer ce mode"
             ],
+            "Short name": [
+                "Nom court"
+            ],
+            "e.g. OM": [
+                "par ex. OM"
+            ],
+            "The short name is used on the dashboard, where space is tight. Guests always see the full name.": [
+                "Le nom court est utilis\u00e9 sur le tableau de bord, o\u00f9 la place est limit\u00e9e. Les clients voient toujours le nom complet."
+            ],
             "Instructions for the guest": [
                 "Instructions pour le client"
             ],
@@ -54,6 +66,27 @@
             ],
             "The number or account to pay into, shown under the instructions. Optional.": [
                 "Le num\u00e9ro ou le compte sur lequel payer, affich\u00e9 sous les instructions. Facultatif."
+            ],
+            "Payment reference": [
+                "R\u00e9f\u00e9rence de paiement"
+            ],
+            "Required: a payment by this method cannot be saved without its reference, so it can be checked later.": [
+                "Obligatoire : un paiement par ce mode ne peut pas \u00eatre enregistr\u00e9 sans sa r\u00e9f\u00e9rence, afin de pouvoir le v\u00e9rifier plus tard."
+            ],
+            "Not asked": [
+                "Non demand\u00e9e"
+            ],
+            "Optional": [
+                "Facultatif"
+            ],
+            "Required": [
+                "Obligatoire"
+            ],
+            "Name of the reference": [
+                "Nom de la r\u00e9f\u00e9rence"
+            ],
+            "What staff are asked for, e.g. Transaction ID.": [
+                "Ce qui est demand\u00e9 au personnel, par ex. ID de transaction."
             ],
             "Add a method": [
                 "Ajouter un mode"

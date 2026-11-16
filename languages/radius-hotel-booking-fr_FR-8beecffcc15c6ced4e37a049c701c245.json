@@ -1,0 +1,54 @@
+{
+    "translation-revision-date": "2026-11-16T08:26:51+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Settings\/sections\/RenumberBookings.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Close": [
+                "Fermer"
+            ],
+            "Go back": [
+                "Retour"
+            ],
+            "Existing bookings": [
+                "R\u00e9servations existantes"
+            ],
+            "Save the new format first, then renumber the existing bookings to match it.": [
+                "Enregistrez d'abord le nouveau format, puis renum\u00e9rotez les r\u00e9servations existantes pour qu'elles le suivent."
+            ],
+            "They keep their reference until you renumber them to the saved format. Each keeps its number.": [
+                "Elles gardent leur r\u00e9f\u00e9rence jusqu'\u00e0 ce que vous les renum\u00e9rotiez au format enregistr\u00e9. Chacune garde son num\u00e9ro."
+            ],
+            "Renumber existing bookings": [
+                "Renum\u00e9roter les r\u00e9servations existantes"
+            ],
+            "Renumber existing bookings?": [
+                "Renum\u00e9roter les r\u00e9servations existantes ?"
+            ],
+            "%1$d of %2$d booking gets the new format.": [
+                "%1$d r\u00e9servation sur %2$d re\u00e7oit le nouveau format.",
+                "%1$d r\u00e9servations sur %2$d re\u00e7oivent le nouveau format."
+            ],
+            "Every booking already has the saved format.": [
+                "Toutes les r\u00e9servations ont d\u00e9j\u00e0 le format enregistr\u00e9."
+            ],
+            "%d booking keeps its reference: another booking would get the same one.": [
+                "%d r\u00e9servation garde sa r\u00e9f\u00e9rence : une autre r\u00e9servation obtiendrait la m\u00eame.",
+                "%d r\u00e9servations gardent leur r\u00e9f\u00e9rence : d'autres r\u00e9servations obtiendraient les m\u00eames."
+            ],
+            "The old reference stays searchable, so guests quoting it from an e-mail or a payment message are still found. Invoices already issued keep the reference printed on them.": [
+                "L'ancienne r\u00e9f\u00e9rence reste consultable dans la recherche : les clients qui la citent depuis un e-mail ou un message de paiement sont toujours retrouv\u00e9s. Les factures d\u00e9j\u00e0 \u00e9mises gardent la r\u00e9f\u00e9rence imprim\u00e9e."
+            ],
+            "Renumber %d booking": [
+                "Renum\u00e9roter %d r\u00e9servation",
+                "Renum\u00e9roter %d r\u00e9servations"
+            ]
+        }
+    }
+}

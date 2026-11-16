@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "translation-revision-date": "2026-11-16T08:26:51+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/modules\/Availability\/components\/BulkEditor.jsx",
     "domain": "messages",
@@ -37,6 +37,9 @@
             "Cancel": [
                 "Annuler"
             ],
+            "Open": [
+                "Ouvert"
+            ],
             "Choose the dates.": [
                 "Choisissez les dates."
             ],
@@ -60,9 +63,6 @@
             "(%1$d date matches, %2$d entries in all).": [
                 "(%1$d date correspond, %2$d entr\u00e9es au total).",
                 "(%1$d dates correspondent, %2$d entr\u00e9es au total)."
-            ],
-            "Open": [
-                "Ouvert"
             ],
             "Set a price": [
                 "D\u00e9finir un prix"

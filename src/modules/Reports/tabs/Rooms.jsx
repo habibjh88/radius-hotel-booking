@@ -1,7 +1,9 @@
 /**
  * Rooms report (M10, 10.8–10.11): the rooms by state, how many available
  * rooms were rented or stayed empty in the period, which ones were empty
- * floor by floor, and the period's booked rooms (`GET reports/rooms`).
+ * floor by floor, the rooms still taken floor by floor (waiting for their
+ * guest, or the guest in the room; a departed room is ready again, so it
+ * leaves the tiles), and the period's booked rooms in detail (`GET reports/rooms`).
  *
  * "Rented" means a stay occupied the room at some moment of the period —
  * a multi-night stay that started earlier counts (the legacy report only
@@ -37,6 +39,55 @@ import { useReport } from '../api';
 const SUCCESS_BORDER = 'color-mix(in srgb, var(--success) 45%, transparent)';
 
 const PER_PAGE = 25;
+
+/**
+ * The booked-room tile colours: waiting for the guest (info) or the guest in
+ * the room (warning), border softened like the empty rooms'.
+ */
+const TAKEN = {
+	waiting: {
+		tile: 'bg-info-soft text-info',
+		dot: 'bg-info',
+		border: 'color-mix(in srgb, var(--info) 45%, transparent)',
+	},
+	in: {
+		tile: 'bg-warning-soft text-warning',
+		dot: 'bg-warning',
+		border: 'color-mix(in srgb, var(--warning) 45%, transparent)',
+	},
+};
+
+/**
+ * Whether the guest is in the room.
+ *
+ * @param {Object} room Tile.
+ * @return {string} `in` or `waiting`.
+ */
+const takenKind = ( room ) =>
+	'checked_in' === room.status ? 'in' : 'waiting';
+
+/**
+ * One booked-rooms legend chip.
+ *
+ * @param {Object} props       Props.
+ * @param {string} props.kind  `in` or `waiting`.
+ * @param {string} props.label Text.
+ * @return {JSX.Element} Chip.
+ */
+function TakenChip( { kind, label } ) {
+	return (
+		<span
+			className={ `inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-semibold tabular-nums ${ TAKEN[ kind ].tile }` }
+			style={ { borderColor: TAKEN[ kind ].border } }
+		>
+			<span
+				className={ `h-1.5 w-1.5 rounded-full ${ TAKEN[ kind ].dot }` }
+				aria-hidden="true"
+			/>
+			{ label }
+		</span>
+	);
+}
 
 /**
  * @param {Object} props       Props.
@@ -151,11 +202,40 @@ export default function Rooms( { range } ) {
 	];
 
 	const floors = data?.empty_floors || [];
+	const bookedFloors = data?.booked_floors || [];
+	const bookedRooms = bookedFloors.flatMap( ( floor ) => floor.rooms );
+	const countIn = bookedRooms.filter(
+		( room ) => 'in' === takenKind( room )
+	).length;
+	const countWaiting = bookedRooms.length - countIn;
+	const waitingLabel = ( n ) =>
+		sprintf(
+			/* translators: %d: number of rooms. */
+			_n(
+				'%d waiting for the guest',
+				'%d waiting for the guest',
+				n,
+				'radius-hotel-booking'
+			),
+			n
+		);
+	const inLabel = ( n ) =>
+		sprintf(
+			/* translators: %d: number of rooms. */
+			_n(
+				'%d guest in the room',
+				'%d guests in the room',
+				n,
+				'radius-hotel-booking'
+			),
+			n
+		);
 
 	return (
 		<div className="space-y-5">
-			<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
+			<div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
 				<StatCard
+					tone="blue"
 					icon={ BedDouble }
 					label={ __( 'Available', 'radius-hotel-booking' ) }
 					value={ cards.available ?? 0 }
@@ -172,44 +252,45 @@ export default function Rooms( { range } ) {
 					loading={ loading }
 				/>
 				<StatCard
+					tone="orange"
 					icon={ KeyRound }
 					label={ __( 'Rented', 'radius-hotel-booking' ) }
 					value={ cards.rented ?? 0 }
-					hint={ sprintf(
-						/* translators: %s: "at any moment of the period" or "by bookings taken in the period". */
-						__( 'Occupied %s', 'radius-hotel-booking' ),
-						inPeriod
-					) }
+					hint={
+						'created' === range.mode
+							? __(
+									'Booked in the period',
+									'radius-hotel-booking'
+							  )
+							: __(
+									'Occupied in the period',
+									'radius-hotel-booking'
+							  )
+					}
 					loading={ loading }
 				/>
 				<StatCard
+					tone="green"
 					icon={ DoorOpen }
 					label={ __( 'Empty', 'radius-hotel-booking' ) }
 					value={ cards.empty ?? 0 }
-					hint={ __(
-						'Available rooms nobody stayed in',
-						'radius-hotel-booking'
-					) }
+					hint={ __( 'Nobody stayed in', 'radius-hotel-booking' ) }
 					loading={ loading }
 				/>
 				<StatCard
+					tone="amber"
 					icon={ Wrench }
 					label={ __( 'Maintenance', 'radius-hotel-booking' ) }
 					value={ cards.maintenance ?? 0 }
-					hint={ __(
-						'Rooms in this state now',
-						'radius-hotel-booking'
-					) }
+					hint={ __( 'Right now', 'radius-hotel-booking' ) }
 					loading={ loading }
 				/>
 				<StatCard
+					tone="red"
 					icon={ PowerOff }
 					label={ __( 'Out of service', 'radius-hotel-booking' ) }
 					value={ cards.out_of_service ?? 0 }
-					hint={ __(
-						'Rooms in this state now',
-						'radius-hotel-booking'
-					) }
+					hint={ __( 'Right now', 'radius-hotel-booking' ) }
 					loading={ loading }
 				/>
 			</div>
@@ -290,7 +371,129 @@ export default function Rooms( { range } ) {
 			</Panel>
 
 			<Panel
-				title={ __( 'Booked rooms', 'radius-hotel-booking' ) }
+				title={ __( 'Booked rooms by floor', 'radius-hotel-booking' ) }
+				description={ __(
+					'Rooms taken in the period: waiting for their guest, or the guest is in the room. A room leaves the list once its guest has checked out.',
+					'radius-hotel-booking'
+				) }
+			>
+				{ loading ? (
+					<Skeleton className="h-20 w-full" />
+				) : bookedFloors.length ? (
+					<div className="space-y-5">
+						<div className="flex flex-wrap gap-2">
+							<TakenChip
+								kind="waiting"
+								label={ waitingLabel( countWaiting ) }
+							/>
+							<TakenChip kind="in" label={ inLabel( countIn ) } />
+						</div>
+						<div className="divide-y divide-border border-t border-border">
+							{ bookedFloors.map( ( floor ) => (
+								<div
+									key={ floor.floor }
+									className="flex flex-col gap-3 py-5 last:pb-0 md:flex-row md:gap-6"
+								>
+									<div className="shrink-0 md:w-48">
+										<p className="m-0 text-sm font-semibold text-heading">
+											{ floor.floor }
+										</p>
+										<span className="mt-2 inline-flex items-center rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-semibold tabular-nums text-heading">
+											{ sprintf(
+												/* translators: %d: number of booked rooms. */
+												_n(
+													'%d booked room',
+													'%d booked rooms',
+													floor.rooms.length,
+													'radius-hotel-booking'
+												),
+												floor.rooms.length
+											) }
+										</span>
+									</div>
+									<ul className="m-0 flex list-none flex-wrap gap-3 p-0">
+										{ floor.rooms.map( ( room ) => {
+											const kind = takenKind( room );
+											return (
+												<li
+													key={ `${ room.id }-${ room.number }` }
+												>
+													<button
+														type="button"
+														onClick={ () =>
+															navigate(
+																`/bookings/${ room.booking_id }`
+															)
+														}
+														title={ sprintf(
+															/* translators: 1: booking reference, 2: guest name. */
+															__(
+																'%1$s · %2$s',
+																'radius-hotel-booking'
+															),
+															room.reference,
+															room.guest || '—'
+														) }
+														className={ `relative flex h-[4.25rem] min-w-[5.5rem] flex-col items-center justify-center gap-0.5 rounded-lg border px-3 hover:shadow-sm ${ TAKEN[ kind ].tile }` }
+														style={ {
+															borderColor:
+																TAKEN[ kind ]
+																	.border,
+														} }
+													>
+														<span className="text-base font-semibold leading-tight tabular-nums">
+															{ room.number }
+														</span>
+														{ room.room_type ? (
+															<span className="max-w-[7rem] truncate text-[11px] font-medium leading-tight opacity-80">
+																{
+																	room.room_type
+																}
+															</span>
+														) : null }
+														{ room.guest ? (
+															<span className="max-w-[7rem] truncate text-[11px] leading-tight opacity-80">
+																{ room.guest }
+															</span>
+														) : null }
+														{ room.more > 0 ? (
+															<span
+																className="absolute -right-1.5 -top-1.5 rounded-full border border-border bg-card px-1.5 text-[10px] font-semibold text-heading"
+																title={ sprintf(
+																	/* translators: %d: number of other stays. */
+																	_n(
+																		'%d more stay in this room in the period',
+																		'%d more stays in this room in the period',
+																		room.more,
+																		'radius-hotel-booking'
+																	),
+																	room.more
+																) }
+															>
+																+{ room.more }
+															</span>
+														) : null }
+													</button>
+												</li>
+											);
+										} ) }
+									</ul>
+								</div>
+							) ) }
+						</div>
+					</div>
+				) : (
+					<p className="m-0 text-sm text-muted-foreground">
+						{ __(
+							'No room is booked in this period.',
+							'radius-hotel-booking'
+						) }
+					</p>
+				) }
+			</Panel>
+
+			<Panel
+				title={ __( 'Booked rooms (details)', 'radius-hotel-booking' ) }
 				description={ sprintf(
 					/* translators: %s: "at any moment of the period" or "by bookings taken in the period". */
 					__(

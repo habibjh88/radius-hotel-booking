@@ -541,7 +541,7 @@ export default function DataTable( {
 										{ rowActions ? (
 											<th
 												scope="col"
-												className="sticky right-0 whitespace-nowrap bg-muted px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+												className="sticky right-0 whitespace-nowrap bg-muted px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground"
 											>
 												{ __(
 													'Action',

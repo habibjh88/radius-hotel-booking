@@ -204,9 +204,14 @@ class BookingStatusService {
 				);
 				$extra  = array();
 				if ( $early ) {
-					// The stay starts now; the price stays as sold (3.16).
+					// The stay starts now; the price stays as sold (3.16). The booked start is
+					// kept (once) so an undone check-in gets it back.
 					$fields['start_at_gmt'] = $from;
 					$fields['start_at']     = Dates::to_db( $now );
+					if ( empty( $line->booked_start_at_gmt ) ) {
+						$fields['booked_start_at']     = (string) $line->start_at;
+						$fields['booked_start_at_gmt'] = (string) $line->start_at_gmt;
+					}
 					$extra                  = array(
 						'before' => array( 'start' => (string) $line->start_at ),
 						'after'  => array( 'start' => Dates::to_db( $now ) ),
@@ -254,6 +259,60 @@ class BookingStatusService {
 					}
 				}
 				return array( $fields, $extra );
+			}
+		);
+	}
+
+	/**
+	 * Take back a check-in made by mistake: the room goes back to confirmed,
+	 * waiting for its guest. An early check-in's booked start comes back
+	 * (the window only shrinks, so nothing needs checking); a room chosen at
+	 * check-in is kept — it was checked free for the stay. Refused for a
+	 * stay that carries on after a room move (the move is history), or once
+	 * the stay has ended (check the guest out instead). Logged with the reason.
+	 *
+	 * @param int                    $line_id Line id (checked in).
+	 * @param string                 $reason  Why (3–191 characters).
+	 * @param DateTimeImmutable|null $now     Now.
+	 * @return int Booking id.
+	 * @throws DomainException 404, 409 `illegal_transition` / `moved` / `stay_over`, 422.
+	 */
+	public function undoCheckIn( int $line_id, string $reason, ?DateTimeImmutable $now = null ): int {
+		$now    = $now ?? Dates::now();
+		$reason = self::reason( $reason );
+		return $this->lineMove(
+			'undo_check_in',
+			$line_id,
+			function ( BookingRoom $line ) use ( $reason, $now ) {
+				if ( (int) $line->moved_from > 0 ) {
+					// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+					throw DomainException::conflict( 'moved', __( 'This guest was moved here from another room during the stay. The check-in cannot be undone.', 'radius-hotel-booking' ), array( 'line_id' => (int) $line->id ) );
+				}
+				if ( strtotime( (string) $line->occupied_until_gmt . ' UTC' ) <= $now->getTimestamp() ) {
+					// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+					throw DomainException::conflict( 'stay_over', __( 'This stay has already ended. Check the guest out instead.', 'radius-hotel-booking' ), array( 'line_id' => (int) $line->id ) );
+				}
+				$fields = array(
+					'checked_in_at' => null,
+					'checked_in_by' => null,
+				);
+				$before = array( 'checked_in_at' => (string) $line->checked_in_at );
+				$after  = array( 'reason' => $reason );
+				if ( ! empty( $line->booked_start_at_gmt ) ) {
+					$fields['start_at']            = (string) $line->booked_start_at;
+					$fields['start_at_gmt']        = (string) $line->booked_start_at_gmt;
+					$fields['booked_start_at']     = null;
+					$fields['booked_start_at_gmt'] = null;
+					$before['start']               = (string) $line->start_at;
+					$after['start']                = (string) $line->booked_start_at;
+				}
+				return array(
+					$fields,
+					array(
+						'before' => $before,
+						'after'  => $after,
+					),
+				);
 			}
 		);
 	}
@@ -1001,6 +1060,7 @@ class BookingStatusService {
 			'cancel'    => __( 'Cancelled', 'radius-hotel-booking' ),
 			'check_in'  => __( 'Checked in', 'radius-hotel-booking' ),
 			'check_out' => __( 'Checked out', 'radius-hotel-booking' ),
+			'undo_check_in' => __( 'Undid the check-in of', 'radius-hotel-booking' ),
 			'no_show'   => __( 'No-show for', 'radius-hotel-booking' ),
 			'move_room' => __( 'Moved the guest of', 'radius-hotel-booking' ),
 			'release_overdue' => __( 'Released (unpaid)', 'radius-hotel-booking' ),

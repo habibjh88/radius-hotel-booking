@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "translation-revision-date": "2026-11-16T08:26:51+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/components\/booking\/DatesBar.jsx",
     "domain": "messages",
@@ -34,11 +34,17 @@
             "Same day: day stays.": [
                 "M\u00eame jour : s\u00e9jours \u00e0 la journ\u00e9e."
             ],
-            "Check-in time": [
-                "Heure d'arriv\u00e9e"
+            "The %s stay is counted from this time.": [
+                "Le s\u00e9jour %s est compt\u00e9 \u00e0 partir de cette heure."
             ],
-            "Between %1$s and %2$s.": [
-                "Entre %1$s et %2$s."
+            "The flexible stay is counted from this time.": [
+                "Le s\u00e9jour flexible est compt\u00e9 \u00e0 partir de cette heure."
+            ],
+            "%1$s Arrival between %2$s and %3$s.": [
+                "%1$s Arriv\u00e9e entre %2$s et %3$s."
+            ],
+            "Arrival time": [
+                "Heure d'arriv\u00e9e"
             ]
         }
     }

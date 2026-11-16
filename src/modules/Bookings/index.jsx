@@ -17,6 +17,7 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 import {
 	ArrowRightLeft,
 	Ban,
+	CalendarPlus,
 	CalendarSearch,
 	Check,
 	Eye,
@@ -25,6 +26,7 @@ import {
 	LogOut,
 	Pencil,
 	Plus,
+	Undo2,
 	Wallet,
 	X,
 } from 'lucide-react';
@@ -56,6 +58,7 @@ import {
 	usePaymentAction,
 	usePayments,
 } from './api';
+import ExtendStayDialog from './components/ExtendStayDialog';
 import MoveGuestDialog from './components/MoveGuestDialog';
 import RecordPaymentDialog from './components/RecordPaymentDialog';
 import { actionLabel, lineQuestion } from './moves';
@@ -147,6 +150,8 @@ export function BookingList( { withPageActions = true } ) {
 		record_payment: useAccess( 'payments.record' ),
 		line_edit: useAccess( 'bookings.line_edit' ),
 		move_room: useAccess( 'bookings.move_room' ),
+		undo_check_in: useAccess( 'bookings.undo_check_in' ),
+		extend_stay: useAccess( 'bookings.extend_stay' ),
 	};
 	const allowed = ( action ) =>
 		access[ action ] && access[ action ] !== 'locked';
@@ -416,8 +421,14 @@ export function BookingList( { withPageActions = true } ) {
 			check_out: LogOut,
 			decline: X,
 			cancel: Ban,
+			undo_check_in: Undo2,
 		};
-		const confirmFirst = [ 'decline', 'cancel', 'check_out' ];
+		const confirmFirst = [
+			'decline',
+			'cancel',
+			'check_out',
+			'undo_check_in',
+		];
 		const moveAction = ( action, extra = {} ) => ( {
 			label: actionLabel( action ),
 			icon: icons[ action ],
@@ -432,6 +443,15 @@ export function BookingList( { withPageActions = true } ) {
 		return [
 			primary ? moveAction( primary, { primary: true } ) : null,
 			can( 'approve' ) ? moveAction( 'approve' ) : null,
+			// A guest in the room stays on for another slot, in the same room.
+			can( 'extend_stay' )
+				? {
+						label: actionLabel( 'extend_stay' ),
+						icon: CalendarPlus,
+						onSelect: () =>
+							setDialog( { action: 'extend_stay', line } ),
+				  }
+				: null,
 			// A guest in the room: move them to another one (a fault in the room).
 			can( 'move_room' )
 				? {
@@ -478,6 +498,8 @@ export function BookingList( { withPageActions = true } ) {
 						onSelect: () => setPaying( line ),
 				  }
 				: null,
+			// A check-in made by mistake (asks for a reason).
+			can( 'undo_check_in' ) ? moveAction( 'undo_check_in' ) : null,
 			can( 'decline' ) ? moveAction( 'decline' ) : null,
 			can( 'cancel' ) ? moveAction( 'cancel' ) : null,
 		].filter( Boolean );
@@ -581,6 +603,32 @@ export function BookingList( { withPageActions = true } ) {
 				</div>
 			</Panel>
 
+			<ExtendStayDialog
+				line={
+					'extend_stay' === dialog?.action
+						? { ...dialog.line, room_number: dialog.line.room }
+						: null
+				}
+				onClose={ () => setDialog( null ) }
+				onConfirm={ ( { ratePlanId, expectedTotal } ) =>
+					move
+						.mutateAsync( {
+							bookingId: dialog.line.booking_id,
+							lineId: dialog.line.id,
+							action: 'extend_stay',
+							ratePlanId,
+							expectedTotal,
+						} )
+						.then( ( result ) => {
+							toast.success( result.message );
+							return result;
+						} )
+						.catch( ( err ) => {
+							toastError( err );
+							throw err;
+						} )
+				}
+			/>
 			<MoveGuestDialog
 				line={
 					'move_room' === dialog?.action
@@ -626,6 +674,27 @@ export function BookingList( { withPageActions = true } ) {
 						: __( 'Cancel room', 'radius-hotel-booking' )
 				}
 				destructive
+				requireReason
+				reasonLabel={ __( 'Reason', 'radius-hotel-booking' ) }
+				onConfirm={ ( reason ) =>
+					run( dialog.line, dialog.action, reason ).then( () =>
+						setDialog( null )
+					)
+				}
+			/>
+			<ConfirmDialog
+				open={ 'undo_check_in' === dialog?.action }
+				onOpenChange={ ( open ) => ! open && setDialog( null ) }
+				title={
+					dialog
+						? lineQuestion( dialog.action, dialog.line.room )
+						: ''
+				}
+				description={ __(
+					'For a check-in made by mistake: the room waits for its guest again, from the booked start time. The reason is kept in the history.',
+					'radius-hotel-booking'
+				) }
+				confirmLabel={ actionLabel( 'undo_check_in' ) }
 				requireReason
 				reasonLabel={ __( 'Reason', 'radius-hotel-booking' ) }
 				onConfirm={ ( reason ) =>

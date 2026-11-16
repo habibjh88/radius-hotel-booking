@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "translation-revision-date": "2026-11-16T08:26:51+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/modules\/Bookings\/components\/RecordPaymentDialog.jsx",
     "domain": "messages",
@@ -16,20 +16,23 @@
             "Nothing is due on this booking.": [
                 "Rien n'est d\u00fb sur cette r\u00e9servation."
             ],
+            "Enter the %s of this payment.": [
+                "Saisissez le %s de ce paiement."
+            ],
             "Method": [
                 "Mode"
             ],
             "Payment": [
                 "Paiement"
             ],
+            "Reference": [
+                "R\u00e9f\u00e9rence"
+            ],
             "Amount": [
                 "Montant"
             ],
             "Received": [
                 "Re\u00e7u le"
-            ],
-            "Reference": [
-                "R\u00e9f\u00e9rence"
             ],
             "Choose": [
                 "Choisir"

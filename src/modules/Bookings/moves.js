@@ -19,6 +19,8 @@ export const actionLabel = ( action ) =>
 		check_out: __( 'Check out', 'radius-hotel-booking' ),
 		no_show: __( 'No-show', 'radius-hotel-booking' ),
 		move_room: __( 'Move to another room', 'radius-hotel-booking' ),
+		undo_check_in: __( 'Undo check-in', 'radius-hotel-booking' ),
+		extend_stay: __( 'Extend stay', 'radius-hotel-booking' ),
 	} )[ action ] || action;
 
 /**
@@ -39,6 +41,11 @@ export const lineQuestion = ( action, room ) =>
 			check_out: __( 'Check out room %s?', 'radius-hotel-booking' ),
 			/* translators: %s: room number. */
 			no_show: __( 'Mark room %s as a no-show?', 'radius-hotel-booking' ),
+			/* translators: %s: room number. */
+			undo_check_in: __(
+				'Undo the check-in of room %s?',
+				'radius-hotel-booking'
+			),
 		}[ action ] || '%s',
 		room
 	);

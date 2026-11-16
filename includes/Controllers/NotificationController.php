@@ -15,6 +15,7 @@ use RadiusTheme\RadiusHotelBooking\Core\Api\Middleware\AuthMiddleware;
 use RadiusTheme\RadiusHotelBooking\Core\Api\Middleware\PermissionMiddleware;
 use RadiusTheme\RadiusHotelBooking\Core\Permissions\Capabilities;
 use RadiusTheme\RadiusHotelBooking\Services\Dashboard\DashboardCounters;
+use RadiusTheme\RadiusHotelBooking\Services\Dashboard\LateStays;
 use RadiusTheme\RadiusHotelBooking\Support\Dates;
 use WP_REST_Request;
 
@@ -27,7 +28,8 @@ use WP_REST_Request;
  * missed or repeated whatever the clocks say. A poll without a cursor only
  * returns the current one — opening a screen never replays old bookings.
  * At most 10 bookings per answer, newest first. Three light queries (the
- * highest id, the new bookings, and the counters — cached 15 s).
+ * highest id, the new bookings, and the counters — cached 15 s), plus the
+ * rooms not checked in or out on time (`late`, LateStays; two queries).
  */
 class NotificationController {
 
@@ -70,7 +72,7 @@ class NotificationController {
 	 *
 	 * @param int $since   Highest booking id already seen (0 = first poll).
 	 * @param int $user_id The viewer (their own bookings are not announced).
-	 * @return array{cursor: int, bookings: array[], awaiting: int}
+	 * @return array{cursor: int, bookings: array[], awaiting: int, late: array}
 	 */
 	public function build( int $since, int $user_id ): array {
 		global $wpdb;
@@ -121,6 +123,8 @@ class NotificationController {
 				$rows
 			),
 			'awaiting' => (int) ( ( new DashboardCounters() )->get()['awaiting_approval'] ?? 0 ),
+			// Rooms the desk forgot to check in or out (reminders).
+			'late'     => ( new LateStays() )->get(),
 		);
 	}
 }

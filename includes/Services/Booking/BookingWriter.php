@@ -178,6 +178,13 @@ class BookingWriter {
 			}
 			$window = StayWindow::for( $plan, $arrival, $units, $checkin );
 			$kept   = self::keeps( $options['keep'] ?? null, $room_id, $plan_id, $window );
+			if ( $kept ) {
+				// A line sold after its slot started keeps its own start.
+				$window = $window->from( Dates::from_gmt( (string) $options['keep']['start_at_gmt'] ) );
+			} elseif ( ! $importing ) {
+				// A started slot the desk sells runs from now (§10 #49).
+				$window = AvailabilityService::soldFrom( $window, $audience, $now );
+			}
 			if ( $importing && isset( $request['price_override'] ) ) {
 				$quote = self::importedQuote( $quote, (float) $request['price_override'], $window->units() );
 			} elseif ( $quote_error ) {
@@ -191,8 +198,7 @@ class BookingWriter {
 				$this->unavailable( $index, $room_id, (string) $room['number'], (string) $room['state'], null, $audience );
 			}
 
-			$grace = AvailabilityService::STAFF === $audience ? AvailabilityService::STAFF_GRACE_MINUTES * MINUTE_IN_SECONDS : 0;
-			if ( ! $importing && $window->startGmt()->getTimestamp() < $now->getTimestamp() - $grace ) {
+			if ( ! $importing && AvailabilityService::tooLate( StayWindow::for( $plan, $arrival, $units, $checkin ), $audience, $now ) ) {
 				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 				throw DomainException::conflict( 'past', __( 'This time has already passed.', 'radius-hotel-booking' ), array( 'index' => $index ) );
 			}
@@ -401,10 +407,13 @@ class BookingWriter {
 	 * @return bool
 	 */
 	private static function keeps( ?array $keep, int $room_id, int $plan_id, StayWindow $window ): bool {
+		// The kept line may start later than its slot (sold after the slot started, §10 #49).
+		$start = (string) ( $keep['start_at_gmt'] ?? '' );
 		return $keep
 			&& (int) ( $keep['room_id'] ?? 0 ) === $room_id
 			&& (int) ( $keep['rate_plan_id'] ?? 0 ) === $plan_id
-			&& (string) ( $keep['start_at_gmt'] ?? '' ) === Dates::to_gmt_db( $window->startGmt() )
+			&& $start >= Dates::to_gmt_db( $window->startGmt() )
+			&& $start < Dates::to_gmt_db( $window->endGmt() )
 			&& (string) ( $keep['end_at_gmt'] ?? '' ) === Dates::to_gmt_db( $window->endGmt() );
 	}
 

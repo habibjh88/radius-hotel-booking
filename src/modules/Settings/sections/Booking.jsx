@@ -208,6 +208,28 @@ export default function Booking( {
 			</SettingsSection>
 
 			<SettingsSection
+				title={ __( 'At the front desk', 'radius-hotel-booking' ) }
+				description={ __(
+					'What staff can sell. Online bookings never offer a slot that has already started.',
+					'radius-hotel-booking'
+				) }
+			>
+				<ToggleRow
+					label={ __(
+						'Sell slots that have already started',
+						'radius-hotel-booking'
+					) }
+					description={ __(
+						'A walk-in at 14:00 can still take a Half Day 08:30–17:00, at its full price, until the slot ends, when a room is free now. Off: only within 30 minutes of the start.',
+						'radius-hotel-booking'
+					) }
+					checked={ value.deskStartedSlots }
+					onChange={ setField( 'deskStartedSlots' ) }
+					error={ errors.deskStartedSlots }
+				/>
+			</SettingsSection>
+
+			<SettingsSection
 				title={ __( 'Rooms per booking', 'radius-hotel-booking' ) }
 				description={ __(
 					'The most rooms one booking can take, for groups. Rooms can be ticked and held together.',

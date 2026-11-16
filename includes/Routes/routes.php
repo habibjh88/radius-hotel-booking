@@ -137,6 +137,9 @@ $this->router->post( 'booking-lines/(?P<id>\d+)/check-out', array( BookingContro
 $this->router->post( 'booking-lines/(?P<id>\d+)/no-show', array( BookingController::class, 'noShow' ) );
 $this->router->get( 'booking-lines/(?P<id>\d+)/rooms', array( BookingController::class, 'freeRooms' ) );
 $this->router->post( 'booking-lines/(?P<id>\d+)/move', array( BookingController::class, 'moveRoom' ) );
+$this->router->post( 'booking-lines/(?P<id>\d+)/undo-check-in', array( BookingController::class, 'undoCheckIn' ) );
+$this->router->get( 'booking-lines/(?P<id>\d+)/extend', array( BookingController::class, 'extendOptions' ) );
+$this->router->post( 'booking-lines/(?P<id>\d+)/extend', array( BookingController::class, 'extendStay' ) );
 $this->router->post( 'bookings/(?P<id>\d+)/lines', array( BookingController::class, 'addLine' ) );
 $this->router->put( 'booking-lines/(?P<id>\d+)', array( BookingController::class, 'editLine' ) );
 $this->router->delete( 'booking-lines/(?P<id>\d+)', array( BookingController::class, 'removeLine' ) );

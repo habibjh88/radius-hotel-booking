@@ -594,11 +594,65 @@ class ReportService {
 	}
 
 	/**
+	 * The rooms still taken in the period, one tile per room, floor by
+	 * floor: the stay shown is the guest in the room, else the next one to
+	 * arrive; `more` counts the room's other stays in the period.
+	 *
+	 * @param ReportRange $range Period.
+	 * @param callable    $local Local DB time → ISO (null when empty).
+	 * @return array[] `[ { floor, rooms: [ { id, number, room_type, status, booking_id, reference, guest, start_at, end_at, more } ] } ]`.
+	 */
+	private function bookedFloors( ReportRange $range, callable $local ): array {
+		$floors = array();
+		foreach ( $this->reports->takenRooms( $range ) as $row ) {
+			$key = (string) $row['floor_id'];
+			if ( ! isset( $floors[ $key ] ) ) {
+				$floors[ $key ] = array(
+					'floor' => '' !== $row['floor'] ? $row['floor'] : __( 'No floor', 'radius-hotel-booking' ),
+					'rooms' => array(),
+				);
+			}
+			$room = $row['room_id'] > 0 ? 'r' . $row['room_id'] : 'n' . $row['number'];
+			$tile = array(
+				'id'         => $row['room_id'],
+				'number'     => $row['number'],
+				'room_type'  => $row['room_type'],
+				'status'     => $row['status'],
+				'booking_id' => $row['booking_id'],
+				'reference'  => $row['reference'],
+				'guest'      => $row['guest'],
+				'start_at'   => $local( $row['start_at'] ),
+				'end_at'     => $local( $row['end_at'] ),
+				'more'       => 0,
+			);
+			if ( ! isset( $floors[ $key ]['rooms'][ $room ] ) ) {
+				$floors[ $key ]['rooms'][ $room ] = $tile;
+				continue;
+			}
+			// Several stays in one room: the guest in the room wins, else the first arrival (rows come in arrival order).
+			$more = $floors[ $key ]['rooms'][ $room ]['more'] + 1;
+			if ( 'checked_in' === $row['status'] && 'checked_in' !== $floors[ $key ]['rooms'][ $room ]['status'] ) {
+				$floors[ $key ]['rooms'][ $room ] = $tile;
+			}
+			$floors[ $key ]['rooms'][ $room ]['more'] = $more;
+		}
+		return array_values(
+			array_map(
+				static function ( $floor ) {
+					$floor['rooms'] = array_values( $floor['rooms'] );
+					return $floor;
+				},
+				$floors
+			)
+		);
+	}
+
+	/**
 	 * The rooms report.
 	 *
 	 * @param ReportRange $range Period.
 	 * @param array       $input `page`, `per_page` (the bookings table).
-	 * @return array `{ cards, empty_floors, bookings: { total, page, per_page, rows } }`.
+	 * @return array `{ cards, empty_floors, booked_floors, bookings: { total, page, per_page, rows } }`.
 	 */
 	public function rooms( ReportRange $range, array $input = array() ): array {
 		$states    = $this->reports->roomStates();
@@ -639,7 +693,8 @@ class ReportService {
 				'maintenance'    => (int) ( $states['maintenance'] ?? 0 ),
 				'out_of_service' => (int) ( $states['out_of_service'] ?? 0 ),
 			),
-			'empty_floors' => array_values( $floors ),
+			'empty_floors'  => array_values( $floors ),
+			'booked_floors' => $this->bookedFloors( $range, $local ),
 			'bookings'     => array(
 				'total'    => $booked['total'],
 				'page'     => $page,

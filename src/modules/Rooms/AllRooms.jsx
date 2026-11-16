@@ -2,7 +2,7 @@
  * All rooms (`#/rooms/all`): every physical room of the hotel in one list,
  * whatever its room type, filtered by type, floor, state or number. Tick
  * rooms to set their state, move them to another room type or remove them in
- * one go. Each room goes through the same checks as on its own; the ones the
+ * one go, or use a room's own actions (set its state, edit it). Each room goes through the same checks as on its own; the ones the
  * server refuses (an upcoming booking) are listed and stay ticked.
  */
 import { useMemo, useState } from 'react';
@@ -14,6 +14,7 @@ import {
 	ArrowRightLeft,
 	DoorOpen,
 	ListPlus,
+	Pencil,
 	Plus,
 	Trash2,
 	Wrench,
@@ -80,6 +81,8 @@ export default function AllRooms() {
 	const [ selected, setSelected ] = useState( [] );
 	// 'add' | 'bulkAdd' | 'state' | 'move' | 'remove'
 	const [ dialog, setDialog ] = useState( null );
+	// One room's own action: `{ kind: 'state' | 'edit', room }`.
+	const [ one, setOne ] = useState( null );
 	// Rooms the last bulk action could not change: `{ id, number, message }`.
 	const [ failed, setFailed ] = useState( [] );
 
@@ -208,6 +211,23 @@ export default function AllRooms() {
 	];
 
 	const filtered = q || type !== ANY || floor !== ANY || state !== ANY;
+
+	// A room's own actions: its state (the common one), then edit.
+	const rowActions = canManage
+		? ( room ) => [
+				{
+					label: __( 'Set state', 'radius-hotel-booking' ),
+					icon: Wrench,
+					primary: true,
+					onSelect: () => setOne( { kind: 'state', room } ),
+				},
+				{
+					label: __( 'Edit', 'radius-hotel-booking' ),
+					icon: Pencil,
+					onSelect: () => setOne( { kind: 'edit', room } ),
+				},
+		  ]
+		: undefined;
 
 	if ( error ) {
 		return (
@@ -418,6 +438,7 @@ export default function AllRooms() {
 						total={ shown.length }
 						loading={ isPending }
 						caption={ __( 'All rooms', 'radius-hotel-booking' ) }
+						rowActions={ rowActions }
 						search={ {
 							value: q,
 							onChange: setQ,
@@ -529,6 +550,40 @@ export default function AllRooms() {
 					floors={ floors }
 					floorId={ floor === ANY ? undefined : Number( floor ) }
 					onClose={ () => setDialog( null ) }
+				/>
+			) : null }
+			{ 'edit' === one?.kind ? (
+				<RoomDialog
+					type={ types.find(
+						( option ) => option.id === one.room.room_type_id
+					) }
+					floors={ floors }
+					room={ one.room }
+					onClose={ () => setOne( null ) }
+				/>
+			) : null }
+			{ 'state' === one?.kind ? (
+				<BulkStateDialog
+					count={ 1 }
+					room={ one.room }
+					busy={ bulk.isPending }
+					onClose={ () => setOne( null ) }
+					onSave={ ( values ) =>
+						bulk
+							.mutateAsync( {
+								action: 'state',
+								ids: [ one.room.id ],
+								...values,
+							} )
+							.then( ( result ) => {
+								if ( result.done.length ) {
+									toast.success( result.message );
+								}
+								setFailed( result.failed );
+								setOne( null );
+							} )
+							.catch( toastError )
+					}
 				/>
 			) : null }
 			{ dialog === 'state' ? (
@@ -679,18 +734,20 @@ function FailedList( { failed, onDismiss } ) {
 }
 
 /**
- * Set the state (and reason) of the ticked rooms.
+ * Set the state (and reason) of the ticked rooms, or of one room (`room`:
+ * its number in the title, its current state and reason to start from).
  *
  * @param {Object}   props         Props.
  * @param {number}   props.count   Ticked rooms.
+ * @param {Object}   props.room    One room (optional).
  * @param {boolean}  props.busy    Saving.
  * @param {Function} props.onClose Close.
  * @param {Function} props.onSave  Called with `{ state, note }`.
  * @return {JSX.Element} Dialog.
  */
-function BulkStateDialog( { count, busy, onClose, onSave } ) {
-	const [ state, setState ] = useState( 'maintenance' );
-	const [ note, setNote ] = useState( '' );
+function BulkStateDialog( { count, room, busy, onClose, onSave } ) {
+	const [ state, setState ] = useState( room?.state || 'maintenance' );
+	const [ note, setNote ] = useState( room?.state_note || '' );
 
 	return (
 		<Dialog open onOpenChange={ ( open ) => ! open && onClose() }>
@@ -704,16 +761,25 @@ function BulkStateDialog( { count, busy, onClose, onSave } ) {
 				>
 					<DialogHeader>
 						<DialogTitle>
-							{ sprintf(
-								/* translators: %d: number of rooms. */
-								_n(
-									'State of %d room',
-									'State of %d rooms',
-									count,
-									'radius-hotel-booking'
-								),
-								count
-							) }
+							{ room
+								? sprintf(
+										/* translators: %s: room number. */
+										__(
+											'State of room %s',
+											'radius-hotel-booking'
+										),
+										room.number
+								  )
+								: sprintf(
+										/* translators: %d: number of rooms. */
+										_n(
+											'State of %d room',
+											'State of %d rooms',
+											count,
+											'radius-hotel-booking'
+										),
+										count
+								  ) }
 						</DialogTitle>
 						<DialogDescription>
 							{ __(

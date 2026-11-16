@@ -88,114 +88,171 @@ export default function Notifications( { value, setField, errors, schema } ) {
 	};
 
 	return (
-		<SettingsSection
-			title={ __( 'New bookings', 'radius-hotel-booking' ) }
-			description={ __(
-				'How staff are told about a new booking while a dashboard screen is open.',
-				'radius-hotel-booking'
-			) }
-		>
-			<ToggleRow
-				label={ __( 'Alert on new bookings', 'radius-hotel-booking' ) }
+		<>
+			<SettingsSection
+				title={ __( 'New bookings', 'radius-hotel-booking' ) }
 				description={ __(
-					'Show an alert on every staff screen when a booking arrives.',
+					'How staff are told about a new booking while a dashboard screen is open.',
 					'radius-hotel-booking'
 				) }
-				checked={ value.newBookingAlert }
-				onChange={ setField( 'newBookingAlert' ) }
-				error={ errors.newBookingAlert }
 			>
-				<div className="space-y-5">
-					<ToggleRow
-						label={ __( 'Play a sound', 'radius-hotel-booking' ) }
-						description={ __(
-							'Browsers play sound only after someone has clicked on the page.',
-							'radius-hotel-booking'
-						) }
-						checked={ value.playSound }
-						onChange={ setField( 'playSound' ) }
-						error={ errors.playSound }
-					>
-						<div className="space-y-3">
-							<SegmentedControl
-								label={ __( 'Sound', 'radius-hotel-booking' ) }
-								value={ mode }
-								onChange={ chooseMode }
-								options={ [
-									{
-										value: 'chime',
-										label: __(
-											'Built-in chime',
-											'radius-hotel-booking'
-										),
-									},
-									{
-										value: 'custom',
-										label: __(
-											'Your own sound',
-											'radius-hotel-booking'
-										),
-									},
-								] }
-							/>
-							{ mode === 'custom' ? (
-								<Field
+				<ToggleRow
+					label={ __(
+						'Alert on new bookings',
+						'radius-hotel-booking'
+					) }
+					description={ __(
+						'Show an alert on every staff screen when a booking arrives.',
+						'radius-hotel-booking'
+					) }
+					checked={ value.newBookingAlert }
+					onChange={ setField( 'newBookingAlert' ) }
+					error={ errors.newBookingAlert }
+				>
+					<div className="space-y-5">
+						<ToggleRow
+							label={ __(
+								'Play a sound',
+								'radius-hotel-booking'
+							) }
+							description={ __(
+								'Browsers play sound only after someone has clicked on the page.',
+								'radius-hotel-booking'
+							) }
+							checked={ value.playSound }
+							onChange={ setField( 'playSound' ) }
+							error={ errors.playSound }
+						>
+							<div className="space-y-3">
+								<SegmentedControl
 									label={ __(
-										'Sound file',
+										'Sound',
 										'radius-hotel-booking'
 									) }
-									description={ __(
-										'An MP3, WAV, OGG or M4A file from the media library. Keep it short.',
-										'radius-hotel-booking'
-									) }
-									error={ errors.soundId }
-								>
-									<MediaField
-										value={ soundId }
-										onChange={ setField( 'soundId' ) }
-										accept={
-											schema.soundId?.mime || [ 'audio/' ]
-										}
-										title={ __(
-											'Choose a notification sound',
+									value={ mode }
+									onChange={ chooseMode }
+									options={ [
+										{
+											value: 'chime',
+											label: __(
+												'Built-in chime',
+												'radius-hotel-booking'
+											),
+										},
+										{
+											value: 'custom',
+											label: __(
+												'Your own sound',
+												'radius-hotel-booking'
+											),
+										},
+									] }
+								/>
+								{ mode === 'custom' ? (
+									<Field
+										label={ __(
+											'Sound file',
 											'radius-hotel-booking'
 										) }
-									/>
-								</Field>
-							) : null }
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								onClick={ preview }
-								disabled={ mode === 'custom' && ! url }
-							>
-								<Play aria-hidden="true" />
-								{ __( 'Play preview', 'radius-hotel-booking' ) }
-							</Button>
-						</div>
-					</ToggleRow>
+										description={ __(
+											'An MP3, WAV, OGG or M4A file from the media library. Keep it short.',
+											'radius-hotel-booking'
+										) }
+										error={ errors.soundId }
+									>
+										<MediaField
+											value={ soundId }
+											onChange={ setField( 'soundId' ) }
+											accept={
+												schema.soundId?.mime || [
+													'audio/',
+												]
+											}
+											title={ __(
+												'Choose a notification sound',
+												'radius-hotel-booking'
+											) }
+										/>
+									</Field>
+								) : null }
+								<Button
+									type="button"
+									variant="outline"
+									size="sm"
+									onClick={ preview }
+									disabled={ mode === 'custom' && ! url }
+								>
+									<Play aria-hidden="true" />
+									{ __(
+										'Play preview',
+										'radius-hotel-booking'
+									) }
+								</Button>
+							</div>
+						</ToggleRow>
 
+						<Field
+							label={ __(
+								'Check for new bookings every',
+								'radius-hotel-booking'
+							) }
+							description={ __(
+								'Shorter is quicker to notice, longer puts less load on the server.',
+								'radius-hotel-booking'
+							) }
+							error={ errors.pollSeconds }
+						>
+							<NumberInput
+								value={ value.pollSeconds }
+								onChange={ setField( 'pollSeconds' ) }
+								unit={ __( 'seconds', 'radius-hotel-booking' ) }
+								limits={ schema.pollSeconds }
+							/>
+						</Field>
+					</div>
+				</ToggleRow>
+			</SettingsSection>
+
+			<SettingsSection
+				title={ __(
+					'Check-in and check-out reminders',
+					'radius-hotel-booking'
+				) }
+				description={ __(
+					'For rooms the desk forgot: a guest who should be checked in, or a guest still in house after the stay ended.',
+					'radius-hotel-booking'
+				) }
+			>
+				<ToggleRow
+					label={ __(
+						'Remind staff of late check-ins and check-outs',
+						'radius-hotel-booking'
+					) }
+					description={ __(
+						'The bell lists them on every staff screen, and an alert shows when a room becomes late, again every 30 minutes until it is done.',
+						'radius-hotel-booking'
+					) }
+					checked={ value.lateReminders }
+					onChange={ setField( 'lateReminders' ) }
+					error={ errors.lateReminders }
+				>
 					<Field
-						label={ __(
-							'Check for new bookings every',
-							'radius-hotel-booking'
-						) }
+						label={ __( 'Remind after', 'radius-hotel-booking' ) }
 						description={ __(
-							'Shorter is quicker to notice, longer puts less load on the server.',
+							'How long after the stay starts (not checked in) or ends (not checked out).',
 							'radius-hotel-booking'
 						) }
-						error={ errors.pollSeconds }
+						error={ errors.lateMinutes }
 					>
 						<NumberInput
-							value={ value.pollSeconds }
-							onChange={ setField( 'pollSeconds' ) }
-							unit={ __( 'seconds', 'radius-hotel-booking' ) }
-							limits={ schema.pollSeconds }
+							value={ value.lateMinutes }
+							onChange={ setField( 'lateMinutes' ) }
+							unit={ __( 'minutes', 'radius-hotel-booking' ) }
+							limits={ schema.lateMinutes }
 						/>
 					</Field>
-				</div>
-			</ToggleRow>
-		</SettingsSection>
+				</ToggleRow>
+			</SettingsSection>
+		</>
 	);
 }

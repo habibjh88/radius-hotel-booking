@@ -27,6 +27,7 @@ import {
 	Pencil,
 	Plus,
 	BellRing,
+	CalendarPlus,
 	Unlock,
 	Phone,
 	X,
@@ -55,6 +56,7 @@ import { toast, toastError } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import { useBooking, useBookingAction, useLineChange } from './api';
 import CheckInDialog from './components/CheckInDialog';
+import ExtendStayDialog from './components/ExtendStayDialog';
 import MoveGuestDialog from './components/MoveGuestDialog';
 import EditBookingGuest from './components/EditBookingGuest';
 import PaymentDue from '@/components/booking/PaymentDue';
@@ -127,9 +129,10 @@ function Line( { line, actions = [], onAction } ) {
 		),
 		...actions.filter( ( a ) => 'line_remove' === a ),
 	];
-	const ended = [ 'cancelled', 'declined', 'no_show' ].includes(
-		line.status
-	);
+	// The part of a stay before a room move is history too: shown dimmed.
+	const ended =
+		[ 'cancelled', 'declined', 'no_show' ].includes( line.status ) ||
+		Boolean( line.moved_to_room );
 	return (
 		<li
 			className={ cn(
@@ -261,6 +264,57 @@ function Line( { line, actions = [], onAction } ) {
 					</span>
 				) : null }
 			</p>
+			{ line.extensions?.length ? (
+				// Each Extend stay on this room: the slot, its time, what it added, who and when.
+				<ul className="m-0 ml-8 list-none space-y-2 p-0">
+					{ line.extensions.map( ( extension, index ) => (
+						<li
+							key={ `${ extension.start }-${ index }` }
+							className="m-0 flex items-start gap-3 rounded-lg border border-primary-soft bg-primary-softer px-3 py-2"
+						>
+							<span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary">
+								<CalendarPlus className="size-4" aria-hidden />
+							</span>
+							<span className="min-w-0 flex-1">
+								<span className="flex flex-wrap items-baseline justify-between gap-x-3">
+									<span className="text-sm font-semibold text-heading">
+										{ sprintf(
+											/* translators: %s: rate plan name. */
+											__(
+												'Extended with %s',
+												'radius-hotel-booking'
+											),
+											extension.plan
+										) }
+									</span>
+									<span className="text-sm font-semibold text-primary">
+										+<Money value={ extension.total } />
+									</span>
+								</span>
+								<span className="block text-xs text-heading">
+									{ formatDateRange(
+										extension.start,
+										extension.end
+									) }
+								</span>
+								{ extension.at ? (
+									<span className="block text-[11px] text-muted-foreground">
+										{ sprintf(
+											/* translators: 1: date and time, 2: staff name. */
+											__(
+												'Added %1$s by %2$s',
+												'radius-hotel-booking'
+											),
+											formatDateTime( extension.at ),
+											extension.by || '—'
+										) }
+									</span>
+								) : null }
+							</span>
+						</li>
+					) ) }
+				</ul>
+			) : null }
 			{ primary || others.length || canEdit ? (
 				<div className="flex flex-wrap justify-end gap-2 pl-8">
 					{ canEdit ? (
@@ -394,6 +448,8 @@ export default function BookingDetail() {
 		check_out: useAccess( 'bookings.check_out' ),
 		no_show: useAccess( 'bookings.no_show' ),
 		move_room: useAccess( 'bookings.move_room' ),
+		undo_check_in: useAccess( 'bookings.undo_check_in' ),
+		extend_stay: useAccess( 'bookings.extend_stay' ),
 		line_add: useAccess( 'bookings.line_add' ),
 		line_edit: useAccess( 'bookings.line_edit' ),
 		line_remove: useAccess( 'bookings.line_remove' ),
@@ -433,7 +489,14 @@ export default function BookingDetail() {
 
 	const run = (
 		action,
-		{ line = null, reason = '', roomId = 0, maintenance } = {}
+		{
+			line = null,
+			reason = '',
+			roomId = 0,
+			maintenance,
+			ratePlanId,
+			expectedTotal,
+		} = {}
 	) =>
 		act
 			.mutateAsync( {
@@ -442,6 +505,8 @@ export default function BookingDetail() {
 				reason,
 				roomId,
 				maintenance,
+				ratePlanId,
+				expectedTotal,
 			} )
 			.then( ( result ) => {
 				toast.success( result.message );
@@ -992,6 +1057,17 @@ export default function BookingDetail() {
 						} )
 				}
 			/>
+			<ExtendStayDialog
+				line={ 'extend_stay' === dialog?.action ? dialog.line : null }
+				onClose={ () => setDialog( null ) }
+				onConfirm={ ( { ratePlanId, expectedTotal } ) =>
+					run( 'extend_stay', {
+						line: dialog.line,
+						ratePlanId,
+						expectedTotal,
+					} )
+				}
+			/>
 			<MoveGuestDialog
 				line={ 'move_room' === dialog?.action ? dialog.line : null }
 				onClose={ () => setDialog( null ) }
@@ -1042,6 +1118,27 @@ export default function BookingDetail() {
 				reasonLabel={ __( 'Reason', 'radius-hotel-booking' ) }
 				onConfirm={ ( reason ) =>
 					run( dialog.action, { line: dialog.line, reason } ).then(
+						() => setDialog( null )
+					)
+				}
+			/>
+			<ConfirmDialog
+				open={ 'undo_check_in' === dialog?.action }
+				onOpenChange={ ( open ) => ! open && setDialog( null ) }
+				title={
+					dialog?.line
+						? lineQuestion( dialog.action, dialog.line.room_number )
+						: ''
+				}
+				description={ __(
+					'For a check-in made by mistake: the room waits for its guest again, from the booked start time. The reason is kept in the history.',
+					'radius-hotel-booking'
+				) }
+				confirmLabel={ actionLabel( 'undo_check_in' ) }
+				requireReason
+				reasonLabel={ __( 'Reason', 'radius-hotel-booking' ) }
+				onConfirm={ ( reason ) =>
+					run( 'undo_check_in', { line: dialog.line, reason } ).then(
 						() => setDialog( null )
 					)
 				}

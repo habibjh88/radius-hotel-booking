@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "translation-revision-date": "2026-11-16T08:26:51+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/components\/layout\/NotificationBell.jsx",
     "domain": "messages",
@@ -10,9 +10,32 @@
                 "lang": "fr_FR",
                 "plural-forms": "nplurals=2; plural=(n > 1);"
             },
+            "Room %1$s \u00b7 %2$s": [
+                "Chambre %1$s \u00b7 %2$s"
+            ],
             "%d room": [
                 "%d chambre",
                 "%d chambres"
+            ],
+            "Still in house: check-out was due %1$s (%2$s)": [
+                "Toujours en s\u00e9jour : d\u00e9part pr\u00e9vu %1$s (%2$s)"
+            ],
+            "Not checked in: arrival was due %1$s (%2$s)": [
+                "Pas encore arriv\u00e9 : arriv\u00e9e pr\u00e9vue %1$s (%2$s)"
+            ],
+            "%d day ago": [
+                "il y a %d jour",
+                "il y a %d jours"
+            ],
+            "Open": [
+                "Ouvert"
+            ],
+            "%d more room not checked in or out on time": [
+                "%d autre chambre sans arriv\u00e9e ou d\u00e9part \u00e0 l'heure",
+                "%d autres chambres sans arriv\u00e9e ou d\u00e9part \u00e0 l'heure"
+            ],
+            "Open the bell to see them all.": [
+                "Ouvrez la cloche pour tout voir."
             ],
             "New booking %s": [
                 "Nouvelle r\u00e9servation %s"
@@ -20,12 +43,26 @@
             "View": [
                 "Voir"
             ],
+            "%d thing needs attention": [
+                "%d point demande votre attention",
+                "%d points demandent votre attention"
+            ],
+            "Nothing needs attention": [
+                "Rien \u00e0 traiter"
+            ],
+            "Needs attention": [
+                "\u00c0 traiter"
+            ],
             "%d booking awaiting approval": [
                 "%d r\u00e9servation en attente d'approbation",
                 "%d r\u00e9servations en attente d'approbation"
             ],
-            "No booking awaiting approval": [
-                "Aucune r\u00e9servation en attente d'approbation"
+            "%d more late room not listed.": [
+                "%d autre chambre en retard non list\u00e9e.",
+                "%d autres chambres en retard non list\u00e9es."
+            ],
+            "Nothing needs attention.": [
+                "Rien \u00e0 traiter."
             ]
         }
     }

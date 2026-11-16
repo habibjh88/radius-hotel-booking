@@ -1,0 +1,72 @@
+{
+    "translation-revision-date": "2026-11-16T08:26:51+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Bookings\/components\/MoveGuestDialog.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Room %s": [
+                "Chambre %s"
+            ],
+            "Choose the room the guest moves to.": [
+                "Choisissez la chambre o\u00f9 le client est d\u00e9plac\u00e9."
+            ],
+            "Give a reason (3 to 191 characters).": [
+                "Indiquez un motif (3 \u00e0 191 caract\u00e8res)."
+            ],
+            "Room %1$s \u00b7 %2$s": [
+                "Chambre %1$s \u00b7 %2$s"
+            ],
+            "Reason": [
+                "Motif"
+            ],
+            "Cancel": [
+                "Annuler"
+            ],
+            "Choose a room": [
+                "Choisir une chambre"
+            ],
+            "Room %1$s is now in maintenance and has bookings to come: %2$s. Give them another room, or set it back to available once repaired.": [
+                "La chambre %1$s est maintenant en maintenance et a des r\u00e9servations \u00e0 venir : %2$s. Attribuez-leur une autre chambre, ou remettez-la en disponible une fois r\u00e9par\u00e9e."
+            ],
+            "Move the guest out of room %s": [
+                "D\u00e9placer le client hors de la chambre %s"
+            ],
+            "%s \u00b7 the booking total and payments stay the same; the price is shared between the two rooms by time.": [
+                "%s \u00b7 le total de la r\u00e9servation et les paiements restent inchang\u00e9s ; le prix est r\u00e9parti entre les deux chambres selon le temps pass\u00e9."
+            ],
+            "New room": [
+                "Nouvelle chambre"
+            ],
+            "Free rooms of the same type, from now to the end of the stay.": [
+                "Chambres libres du m\u00eame type, de maintenant \u00e0 la fin du s\u00e9jour."
+            ],
+            "Loading free rooms\u2026": [
+                "Chargement des chambres libres\u2026"
+            ],
+            "No other room of this type is free until the end of this stay.": [
+                "Aucune autre chambre de ce type n'est libre jusqu'\u00e0 la fin de ce s\u00e9jour."
+            ],
+            "For example: air conditioning not working. Kept in the history.": [
+                "Par exemple : climatisation en panne. Conserv\u00e9 dans l'historique."
+            ],
+            "Put room %s in maintenance, with this reason": [
+                "Mettre la chambre %s en maintenance, avec ce motif"
+            ],
+            "Ask a manager to put room %s in maintenance: room states are locked for you.": [
+                "Demandez \u00e0 un g\u00e9rant de mettre la chambre %s en maintenance : les \u00e9tats des chambres sont verrouill\u00e9s pour vous."
+            ],
+            "Moving\u2026": [
+                "D\u00e9placement\u2026"
+            ],
+            "Move the guest": [
+                "D\u00e9placer le client"
+            ]
+        }
+    }
+}

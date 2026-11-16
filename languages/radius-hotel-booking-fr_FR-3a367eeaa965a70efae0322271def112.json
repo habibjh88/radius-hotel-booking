@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "translation-revision-date": "2026-11-16T08:26:51+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/modules\/Bookings\/Detail.jsx",
     "domain": "messages",
@@ -22,12 +22,18 @@
             "Room %s": [
                 "Chambre %s"
             ],
+            "Extended with %s": [
+                "Prolong\u00e9 avec %s"
+            ],
             "Guest": [
                 "Client"
             ],
             "%d child": [
                 "%d enfant",
                 "%d enfants"
+            ],
+            "Invoice": [
+                "Facture"
             ],
             "%d adult": [
                 "%d adulte",
@@ -42,6 +48,9 @@
             ],
             "Reason": [
                 "Motif"
+            ],
+            "Edit": [
+                "Modifier"
             ],
             "Add a room": [
                 "Ajouter une chambre"
@@ -58,17 +67,32 @@
             "From a calendar feed": [
                 "Depuis un flux de calendrier"
             ],
+            "Moved to room %s": [
+                "D\u00e9plac\u00e9 en chambre %s"
+            ],
+            "From room %s": [
+                "Depuis la chambre %s"
+            ],
             "(room since removed)": [
                 "(chambre supprim\u00e9e depuis)"
             ],
             "Price details": [
                 "D\u00e9tail du prix"
             ],
+            "Moved in %1$s by %2$s": [
+                "Entr\u00e9 %1$s par %2$s"
+            ],
             "In %1$s by %2$s": [
                 "Arriv\u00e9e %1$s par %2$s"
             ],
+            "Moved out %1$s by %2$s": [
+                "Sorti %1$s par %2$s"
+            ],
             "Out %1$s by %2$s": [
                 "D\u00e9part %1$s par %2$s"
+            ],
+            "Added %1$s by %2$s": [
+                "Ajout\u00e9 le %1$s par %2$s"
             ],
             "More for room %s": [
                 "Plus d'actions pour la chambre %s"
@@ -121,6 +145,10 @@
             "Release": [
                 "Lib\u00e9rer"
             ],
+            "Stays and history (%d stay)": [
+                "S\u00e9jours et historique (%d s\u00e9jour)",
+                "S\u00e9jours et historique (%d s\u00e9jours)"
+            ],
             "None given": [
                 "Aucun motif indiqu\u00e9"
             ],
@@ -159,6 +187,9 @@
             ],
             "The rooms are free again at once. A guest with an e-mail address is sent the reason.": [
                 "Les chambres sont imm\u00e9diatement lib\u00e9r\u00e9es. Un client ayant une adresse e-mail re\u00e7oit le motif."
+            ],
+            "For a check-in made by mistake: the room waits for its guest again, from the booked start time. The reason is kept in the history.": [
+                "Pour une arriv\u00e9e enregistr\u00e9e par erreur : la chambre attend de nouveau son client, \u00e0 partir de l'heure de d\u00e9but r\u00e9serv\u00e9e. Le motif est conserv\u00e9 dans l'historique."
             ],
             "The guest did not come. The room is free again from now.": [
                 "Le client ne s'est pas pr\u00e9sent\u00e9. La chambre est lib\u00e9r\u00e9e d\u00e8s maintenant."

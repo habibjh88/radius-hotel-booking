@@ -42,6 +42,8 @@ final class StatusMachine {
 		),
 		'check_in'  => array( self::CONFIRMED => self::CHECKED_IN ),
 		'check_out' => array( self::CHECKED_IN => self::CHECKED_OUT ),
+		// A check-in made by mistake, taken back (`BookingStatusService::undoCheckIn()`).
+		'undo_check_in' => array( self::CHECKED_IN => self::CONFIRMED ),
 		'no_show'   => array( self::CONFIRMED => self::NO_SHOW ),
 	);
 

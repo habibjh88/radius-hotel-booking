@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "translation-revision-date": "2026-11-16T08:26:51+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/modules\/Rooms\/AllRooms.jsx",
     "domain": "messages",
@@ -65,6 +65,9 @@
             "Choose a room type": [
                 "Choisir un type de chambre"
             ],
+            "Edit": [
+                "Modifier"
+            ],
             "Add room": [
                 "Ajouter la chambre"
             ],
@@ -79,6 +82,9 @@
             ],
             "State": [
                 "\u00c9tat"
+            ],
+            "Set state": [
+                "D\u00e9finir l'\u00e9tat"
             ],
             "The rooms could not be loaded": [
                 "Les chambres n'ont pas pu \u00eatre charg\u00e9es"
@@ -96,9 +102,6 @@
             "(%d hidden by the filters)": [
                 "(%d masqu\u00e9e par les filtres)",
                 "(%d masqu\u00e9es par les filtres)"
-            ],
-            "Set state": [
-                "D\u00e9finir l'\u00e9tat"
             ],
             "Move to type": [
                 "D\u00e9placer vers le type"
@@ -143,6 +146,9 @@
             ],
             "Dismiss": [
                 "Fermer"
+            ],
+            "State of room %s": [
+                "Statut de la chambre %s"
             ],
             "State of %d room": [
                 "\u00c9tat de %d chambre",

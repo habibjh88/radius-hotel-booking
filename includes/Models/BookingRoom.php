@@ -37,6 +37,8 @@ defined( 'ABSPATH' ) || exit;
  * @property string|null $price_breakdown
  * @property int         $moved_from Line this one carries on from after a room move (0 = none).
  * @property int         $moved_to   Line that carries on in the new room after a move (0 = none).
+ * @property string|null $booked_start_at     Booked start (local) before an early check-in moved it.
+ * @property string|null $booked_start_at_gmt Booked start (GMT) before an early check-in moved it.
  */
 class BookingRoom extends BaseModel {
 
@@ -78,6 +80,8 @@ class BookingRoom extends BaseModel {
 		'checked_out_by',
 		'moved_from',
 		'moved_to',
+		'booked_start_at',
+		'booked_start_at_gmt',
 	);
 
 	/**

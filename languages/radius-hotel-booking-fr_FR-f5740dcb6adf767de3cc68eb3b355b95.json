@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "translation-revision-date": "2026-11-16T08:26:51+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/admin\/routes.js",
     "domain": "messages",
@@ -84,6 +84,9 @@
             ],
             "Hotel setup": [
                 "Configuration de l'h\u00f4tel"
+            ],
+            "Other dashboards": [
+                "Autres tableaux de bord"
             ],
             "phone tab bar: keep it short\u0004Dashboard": [
                 "Accueil"

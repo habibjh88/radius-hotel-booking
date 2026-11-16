@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "translation-revision-date": "2026-11-16T08:26:51+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/modules\/Bookings\/moves.js",
     "domain": "messages",
@@ -22,11 +22,20 @@
             "Cancel": [
                 "Annuler"
             ],
+            "Extend stay": [
+                "Prolonger le s\u00e9jour"
+            ],
             "Approve": [
                 "Approuver"
             ],
             "Decline": [
                 "Refuser"
+            ],
+            "Move to another room": [
+                "Changer de chambre"
+            ],
+            "Undo check-in": [
+                "Annuler l'arriv\u00e9e"
             ],
             "Decline room %s?": [
                 "Refuser la chambre %s ?"
@@ -39,6 +48,9 @@
             ],
             "Mark room %s as a no-show?": [
                 "Marquer la chambre %s comme non pr\u00e9sent\u00e9e ?"
+            ],
+            "Undo the check-in of room %s?": [
+                "Annuler l'arriv\u00e9e de la chambre %s ?"
             ]
         }
     }

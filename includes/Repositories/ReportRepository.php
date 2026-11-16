@@ -316,6 +316,62 @@ class ReportRepository {
 	}
 
 	/**
+	 * The rooms still taken in the period, for the "Booked rooms by floor"
+	 * tiles: their pending, confirmed and checked-in stays (a departed room
+	 * is ready for its next guest, so it is left out), floor then natural
+	 * number then arrival order. Every row (one per stay), not a page.
+	 *
+	 * @param ReportRange $range Period.
+	 * @return array[] `{ line_id, booking_id, reference, room_id, number, floor_id, floor, room_type, status, start_at, end_at, guest }`.
+	 */
+	public function takenRooms( ReportRange $range ): array {
+		global $wpdb;
+		$period = $this->periodCondition( $range );
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $period is prepared above; the report caches its result.
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT br.id AS line_id, b.id AS booking_id, b.reference, r.id AS room_id, COALESCE( r.number, br.room_number ) AS number,
+					COALESCE( r.floor_id, 0 ) AS floor_id, COALESCE( f.name, '' ) AS floor, COALESCE( t.name, '' ) AS room_type,
+					br.status, br.start_at, br.end_at,
+					TRIM( CONCAT( COALESCE( g.first_name, '' ), ' ', COALESCE( g.last_name, '' ) ) ) AS guest
+				FROM %i br
+				JOIN %i b ON b.id = br.booking_id AND b.deleted_at IS NULL
+				LEFT JOIN %i r ON r.id = br.room_id
+				LEFT JOIN %i f ON f.id = r.floor_id
+				LEFT JOIN %i t ON t.id = br.room_type_id
+				LEFT JOIN %i g ON g.id = b.guest_id
+				WHERE br.status IN ( 'pending', 'confirmed', 'checked_in' ) AND {$period}
+				ORDER BY f.sort_order IS NULL, f.sort_order, r.floor_id, r.number_sort, r.id, br.start_at_gmt, br.id",
+				rtbp_table( 'booking_rooms' ),
+				rtbp_table( 'bookings' ),
+				rtbp_table( 'rooms' ),
+				rtbp_table( 'floors' ),
+				rtbp_table( 'room_types' ),
+				rtbp_table( 'guests' )
+			),
+			ARRAY_A
+		);
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		return array_map(
+			static fn( $row ) => array(
+				'line_id'    => (int) $row['line_id'],
+				'booking_id' => (int) $row['booking_id'],
+				'reference'  => (string) $row['reference'],
+				'room_id'    => (int) $row['room_id'],
+				'number'     => (string) $row['number'],
+				'floor_id'   => (int) $row['floor_id'],
+				'floor'      => (string) $row['floor'],
+				'room_type'  => (string) $row['room_type'],
+				'status'     => (string) $row['status'],
+				'start_at'   => (string) $row['start_at'],
+				'end_at'     => (string) $row['end_at'],
+				'guest'      => (string) $row['guest'],
+			),
+			(array) $rows
+		);
+	}
+
+	/**
 	 * The period's booked rooms (live statuses), arrival order, one page.
 	 *
 	 * @param ReportRange $range    Period.

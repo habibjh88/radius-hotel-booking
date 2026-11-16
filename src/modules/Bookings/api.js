@@ -46,10 +46,24 @@ export function useBookingAction( id ) {
  * (`upcoming`).
  *
  * @param {number} id        Booking id.
- * @param {Object} variables `{ action, lineId?, reason?, roomId?, maintenance? }`.
+ * `extend_stay` adds a slot to a checked-in stay (`ratePlanId`, `expectedTotal`).
+ *
+ * @param {Object} variables `{ action, lineId?, reason?, roomId?, maintenance?, ratePlanId?, expectedTotal? }`.
  * @return {Promise<Object>} `{ booking, message, upcoming? }`.
  */
-function moveRequest( id, { action, lineId, reason, roomId, maintenance } ) {
+function moveRequest(
+	id,
+	{ action, lineId, reason, roomId, maintenance, ratePlanId, expectedTotal }
+) {
+	if ( 'extend_stay' === action ) {
+		return post( `booking-lines/${ lineId }/extend`, {
+			rate_plan_id: ratePlanId,
+			expected_total: expectedTotal,
+		} ).then( ( { data, message } ) => ( {
+			booking: data.booking,
+			message,
+		} ) );
+	}
 	if ( 'move_room' === action ) {
 		return post( `booking-lines/${ lineId }/move`, {
 			room_id: roomId,
@@ -65,10 +79,12 @@ function moveRequest( id, { action, lineId, reason, roomId, maintenance } ) {
 		check_in: 'check-in',
 		check_out: 'check-out',
 		no_show: 'no-show',
+		undo_check_in: 'undo-check-in',
 	};
 	const request = lineActions[ action ]
 		? post( `booking-lines/${ lineId }/${ lineActions[ action ] }`, {
 				...( roomId ? { room_id: roomId } : {} ),
+				...( reason ? { reason } : {} ),
 		  } )
 		: post( `bookings/${ id }/${ action }`, {
 				...( lineId ? { line_id: lineId } : {} ),
@@ -87,6 +103,7 @@ const MOVED_TO = {
 	cancel: 'cancelled',
 	check_in: 'checked_in',
 	check_out: 'checked_out',
+	undo_check_in: 'confirmed',
 };
 
 /**
@@ -199,6 +216,26 @@ export function useFreeRoomsFor( line, purpose = 'check_in' ) {
 				`booking-lines/${ line.id }/rooms`,
 				'move' === purpose ? { for: 'move' } : undefined
 			).then( ( { data } ) => data.rooms ),
+		enabled: Boolean( line ),
+		staleTime: 0,
+	} );
+}
+
+/**
+ * The slots a checked-in stay can be extended with, in the same room
+ * (`{ rate_plan_id, name, start, end, gap_minutes, total, free, blocked_by }`).
+ * Always fresh: the server checks again when extending.
+ *
+ * @param {Object|null} line The checked-in line (null = no query).
+ * @return {Object} React Query result.
+ */
+export function useExtendOptions( line ) {
+	return useQuery( {
+		queryKey: [ 'availability', 'extend', line?.id ],
+		queryFn: () =>
+			get( `booking-lines/${ line.id }/extend` ).then(
+				( { data } ) => data.options
+			),
 		enabled: Boolean( line ),
 		staleTime: 0,
 	} );

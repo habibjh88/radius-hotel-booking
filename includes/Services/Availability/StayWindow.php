@@ -223,6 +223,17 @@ final class StayWindow {
 	}
 
 	/**
+	 * The same window, starting later (a slot sold after it started: the
+	 * stay runs from that moment to the slot's end, same units).
+	 *
+	 * @param DateTimeImmutable $moment New start (before the end).
+	 * @return self
+	 */
+	public function from( DateTimeImmutable $moment ): self {
+		return new self( $moment->setTimezone( $this->start->getTimezone() ), $this->end, $this->units );
+	}
+
+	/**
 	 * Start in GMT.
 	 *
 	 * @return DateTimeImmutable

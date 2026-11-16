@@ -227,6 +227,8 @@ final class AccessRegistry {
 			'bookings.check_out'     => array( $open, __( 'Check out', 'radius-hotel-booking' ), 'check-out' ),
 			'bookings.no_show'       => array( $open, __( 'Mark as no-show', 'radius-hotel-booking' ), '' ),
 			'bookings.move_room'     => array( $open, __( 'Move a guest to another room', 'radius-hotel-booking' ), '' ),
+			'bookings.undo_check_in' => array( $open, __( 'Undo a check-in', 'radius-hotel-booking' ), '' ),
+			'bookings.extend_stay'   => array( $open, __( 'Extend a guest\'s stay', 'radius-hotel-booking' ), '' ),
 			'bookings.line_add'      => array( $open, __( 'Add a room to a booking', 'radius-hotel-booking' ), 'add-booking-item' ),
 			'bookings.line_edit'     => array( $open, __( 'Edit a room on a booking', 'radius-hotel-booking' ), 'edit-booking-item' ),
 			'bookings.line_remove'   => array( $open, __( 'Remove a room from a booking', 'radius-hotel-booking' ), 'remove-booking-item' ),

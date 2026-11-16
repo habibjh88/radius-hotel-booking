@@ -238,6 +238,11 @@ final class CoreSettings {
 				'min'     => 5,
 				'max'     => 120,
 			),
+			// The front desk may sell a slot that has already started, until it ends (day-use hotels).
+			'deskStartedSlots'  => array(
+				'type'    => 'bool',
+				'default' => false,
+			),
 			// Most rooms one booking may take at the front desk (held and booked).
 			'maxRoomsDesk'      => array(
 				'type'    => 'int',
@@ -342,6 +347,18 @@ final class CoreSettings {
 				'type'    => 'media',
 				'default' => 0,
 				'mime'    => array( 'audio/' ),
+			),
+			// Remind every staff screen of rooms not checked in / out on time.
+			'lateReminders'   => array(
+				'type'    => 'bool',
+				'default' => true,
+			),
+			// Minutes after a stay's start / end before the room counts as late.
+			'lateMinutes'     => array(
+				'type'    => 'int',
+				'default' => 30,
+				'min'     => 5,
+				'max'     => 240,
 			),
 			// Seconds between checks for new bookings while a staff screen is open.
 			'pollSeconds'     => array(

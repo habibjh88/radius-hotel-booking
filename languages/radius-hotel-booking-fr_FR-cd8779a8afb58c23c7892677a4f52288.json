@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "translation-revision-date": "2026-11-16T08:26:51+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/components\/booking\/SummaryStep.jsx",
     "domain": "messages",
@@ -16,11 +16,11 @@
             "Unpaid": [
                 "Non pay\u00e9"
             ],
-            "Total": [
-                "Total"
-            ],
             "Reference": [
                 "R\u00e9f\u00e9rence"
+            ],
+            "Total": [
+                "Total"
             ],
             "Paid by": [
                 "Pay\u00e9 par"
@@ -33,6 +33,9 @@
             ],
             "Choose": [
                 "Choisir"
+            ],
+            "The transaction number.": [
+                "Le num\u00e9ro de transaction."
             ],
             "Optional: the transaction number.": [
                 "Facultatif : le num\u00e9ro de transaction."

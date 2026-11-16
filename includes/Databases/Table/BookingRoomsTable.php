@@ -63,6 +63,10 @@ class BookingRoomsTable extends Migration {
 				// that carries on in the new room, and that one back to it (0 = not moved).
 				$table->unsignedBigInteger( 'moved_from' )->default( 0 );
 				$table->unsignedBigInteger( 'moved_to' )->default( 0 );
+				// The booked start, kept when an early check-in moved the start to the arrival
+				// time, so an undone check-in gets it back (NULL = the start was not moved).
+				$table->dateTime( 'booked_start_at' )->nullable();
+				$table->dateTime( 'booked_start_at_gmt' )->nullable();
 				$table->timestamps();
 
 				$table->index( array( 'room_id', 'start_at_gmt', 'occupied_until_gmt' ), 'room_window' );

@@ -110,6 +110,8 @@ final class BookingResource {
 		// A guest in the room can be moved to another one (a fault in the room).
 		if ( StatusMachine::CHECKED_IN === $status ) {
 			$actions[] = 'move_room';
+			// …or stay on for another slot in the same room.
+			$actions[] = 'extend_stay';
 		}
 		return $actions;
 	}
@@ -143,6 +145,10 @@ final class BookingResource {
 			$item['checked_in_by']  = $line->checked_in_by ? ( $users[ (int) $line->checked_in_by ] ?? '' ) : '';
 			$item['checked_out_by'] = $line->checked_out_by ? ( $users[ (int) $line->checked_out_by ] ?? '' ) : '';
 			$actions                = self::lineActions( (string) $line->status, (string) $line->start_at_gmt, $now, $today );
+			if ( (int) $line->moved_from > 0 ) {
+				// A stay carrying on after a room move: its check-in is not undone.
+				$actions = array_values( array_diff( $actions, array( 'undo_check_in' ) ) );
+			}
 			// A room can be changed or removed while not yet in use (the booking's only room is cancelled, not removed).
 			if ( in_array( (string) $line->status, BookingLineService::EDITABLE, true ) ) {
 				$actions[] = 'line_edit';
@@ -256,9 +262,35 @@ final class BookingResource {
 			'unit_price'     => (float) $line->unit_price,
 			'total'          => (float) $line->total,
 			'price_steps'    => is_array( $breakdown ) ? ( $breakdown['steps'] ?? array() ) : array(),
+			// The slots the stay was extended with (Extend stay), oldest first.
+			'extensions'     => self::extensions( is_array( $breakdown ) ? (array) ( $breakdown['extensions'] ?? array() ) : array() ),
 			// A room move during the stay split it: the line it carries on from / in (0 = none).
 			'moved_from'     => (int) $line->moved_from,
 			'moved_to'       => (int) $line->moved_to,
 		);
+	}
+
+	/**
+	 * A line's extensions for the booking screen.
+	 *
+	 * @param array[] $list Stored `{ plan, start, end, total, at?, by? }` (GMT).
+	 * @return array[] `{ plan, start, end, total, at, by }` (ISO times; `at` null when not stored).
+	 */
+	private static function extensions( array $list ): array {
+		$out = array();
+		foreach ( $list as $item ) {
+			if ( ! is_array( $item ) || empty( $item['start'] ) || empty( $item['end'] ) ) {
+				continue;
+			}
+			$out[] = array(
+				'plan'  => (string) ( $item['plan'] ?? '' ),
+				'start' => Dates::to_iso( Dates::from_gmt( (string) $item['start'] ) ),
+				'end'   => Dates::to_iso( Dates::from_gmt( (string) $item['end'] ) ),
+				'total' => (float) ( $item['total'] ?? 0 ),
+				'at'    => empty( $item['at'] ) ? null : Dates::to_iso( Dates::from_gmt( (string) $item['at'] ) ),
+				'by'    => (string) ( $item['by'] ?? '' ),
+			);
+		}
+		return $out;
 	}
 }

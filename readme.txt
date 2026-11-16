@@ -405,6 +405,19 @@ Dashboard on phones: compact top bar and counters, search moved into the menu dr
 Move a checked-in guest to another room; the stay and its price are split between both rooms.
 Fixed a room still occupied past its check-out time being sold, or a guest moved into it.
 Check-in into a room in maintenance is refused; choose another room instead.
+All rooms list: each room has its own Set state and Edit actions.
+Lists: the Action column heading now lines up with its buttons.
+Undo check-in: a room checked in by mistake goes back to confirmed, with a reason.
+Extend stay: a checked-in guest takes the next slot in the same room, price added.
+Booking page: each room shows its extensions, with slot, time, price added, who and when.
+Booking page: the room a guest moved out of is shown dimmed.
+New setting: the front desk can sell a slot that has already started, until it ends.
+Rooms report: booked rooms shown as tiles by floor; departed rooms drop off.
+Rooms report: clearer summary cards, one colour each, all on one row.
+Reminders: the bell and an alert flag rooms not checked in or out on time.
+French translation completed; wrong French labels such as "Overdue" fixed.
+Day and month names on documents follow the staff language, even without WordPress language files.
+Booking pages keep the brand colour on Bootstrap themes that forced links blue.
 
 = 1.0.0 =
 Initial release.

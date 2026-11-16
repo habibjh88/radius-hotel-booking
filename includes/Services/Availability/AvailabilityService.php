@@ -45,6 +45,53 @@ class AvailabilityService {
 	public const STAFF_GRACE_MINUTES = 30;
 
 	/**
+	 * Whether the front desk may sell a slot that has already started, until
+	 * it ends (Settings → Booking rules, `deskStartedSlots`; §10 #49).
+	 *
+	 * @param string $audience Audience.
+	 * @return bool
+	 */
+	public static function sellsStarted( string $audience ): bool {
+		return self::STAFF === $audience && (bool) rtbp_setting( 'booking', 'deskStartedSlots', false );
+	}
+
+	/**
+	 * Whether a window can no longer be sold (`past`): it started (staff:
+	 * more than the grace ago) or, when the desk sells started slots, it
+	 * has ended.
+	 *
+	 * @param StayWindow        $window   Window.
+	 * @param string            $audience Audience.
+	 * @param DateTimeImmutable $now      Now.
+	 * @return bool
+	 */
+	public static function tooLate( StayWindow $window, string $audience, DateTimeImmutable $now ): bool {
+		if ( self::sellsStarted( $audience ) ) {
+			return $window->endGmt()->getTimestamp() <= $now->getTimestamp();
+		}
+		$grace = self::STAFF === $audience ? self::STAFF_GRACE_MINUTES * MINUTE_IN_SECONDS : 0;
+		return $window->startGmt()->getTimestamp() < $now->getTimestamp() - $grace;
+	}
+
+	/**
+	 * The window as sold now: a started slot the desk sells runs from now
+	 * (to the minute), so the room only has to be free from now on and the
+	 * stay never overlaps the guest who left this morning. Else unchanged.
+	 *
+	 * @param StayWindow        $window   Window.
+	 * @param string            $audience Audience.
+	 * @param DateTimeImmutable $now      Now.
+	 * @return StayWindow
+	 */
+	public static function soldFrom( StayWindow $window, string $audience, DateTimeImmutable $now ): StayWindow {
+		$minute = $now->setTimestamp( $now->getTimestamp() - $now->getTimestamp() % MINUTE_IN_SECONDS );
+		if ( self::sellsStarted( $audience ) && $window->startGmt()->getTimestamp() < $minute->getTimestamp() && $minute->getTimestamp() < $window->endGmt()->getTimestamp() ) {
+			return $window->from( $minute );
+		}
+		return $window;
+	}
+
+	/**
 	 * Busy intervals, catalogue and rooms.
 	 *
 	 * @var AvailabilityRepository
@@ -203,7 +250,8 @@ class AvailabilityService {
 
 				// Room by room (only the type's own rooms).
 				if ( ! $reason && $window ) {
-					$start = $window->startGmt()->getTimestamp();
+					// A started slot the desk sells: the room must be free from now.
+					$start = self::soldFrom( $window, $audience, $now )->startGmt()->getTimestamp();
 					$end   = $window->endGmt()->getTimestamp();
 					foreach ( $rooms as $room ) {
 						$room_id  = (int) $room['id'];
@@ -548,10 +596,7 @@ class AvailabilityService {
 	 */
 	private function ruleReason( int $type_id, int $plan_id, array $type, array $rate, array $candidate, array $request, string $audience, DateTimeImmutable $now, int $sellable ): ?array {
 		$window = $candidate['window'];
-		$start  = $window->startGmt()->getTimestamp();
-		$now_ts = $now->getTimestamp();
-		$grace  = self::STAFF === $audience ? self::STAFF_GRACE_MINUTES * MINUTE_IN_SECONDS : 0;
-		if ( $start < $now_ts - $grace ) {
+		if ( self::tooLate( $window, $audience, $now ) ) {
 			return self::reason( 'past' );
 		}
 

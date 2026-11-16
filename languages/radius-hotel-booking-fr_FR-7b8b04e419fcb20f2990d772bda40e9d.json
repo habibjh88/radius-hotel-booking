@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "translation-revision-date": "2026-11-16T08:26:51+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/modules\/Settings\/sections\/Notifications.jsx",
     "domain": "messages",
@@ -10,6 +10,9 @@
                 "lang": "fr_FR",
                 "plural-forms": "nplurals=2; plural=(n > 1);"
             },
+            "minutes": [
+                "minutes"
+            ],
             "The browser blocked the sound. Click on the page and try again.": [
                 "Le navigateur a bloqu\u00e9 le son. Cliquez sur la page et r\u00e9essayez."
             ],
@@ -60,6 +63,24 @@
             ],
             "seconds": [
                 "secondes"
+            ],
+            "Check-in and check-out reminders": [
+                "Rappels d'arriv\u00e9e et de d\u00e9part"
+            ],
+            "For rooms the desk forgot: a guest who should be checked in, or a guest still in house after the stay ended.": [
+                "Pour les chambres oubli\u00e9es par la r\u00e9ception : un client qui devrait \u00eatre arriv\u00e9, ou un client encore en s\u00e9jour apr\u00e8s la fin du s\u00e9jour."
+            ],
+            "Remind staff of late check-ins and check-outs": [
+                "Rappeler au personnel les arriv\u00e9es et d\u00e9parts en retard"
+            ],
+            "The bell lists them on every staff screen, and an alert shows when a room becomes late, again every 30 minutes until it is done.": [
+                "La cloche les liste sur chaque \u00e9cran du personnel, et une alerte s'affiche quand une chambre passe en retard, puis toutes les 30 minutes jusqu'\u00e0 traitement."
+            ],
+            "Remind after": [
+                "Rappeler apr\u00e8s"
+            ],
+            "How long after the stay starts (not checked in) or ends (not checked out).": [
+                "D\u00e9lai apr\u00e8s le d\u00e9but du s\u00e9jour (arriv\u00e9e non enregistr\u00e9e) ou sa fin (d\u00e9part non enregistr\u00e9)."
             ]
         }
     }

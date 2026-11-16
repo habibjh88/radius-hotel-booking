@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "translation-revision-date": "2026-11-16T08:26:51+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/lib\/status.js",
     "domain": "messages",
@@ -88,8 +88,8 @@
             "On hold": [
                 "En attente"
             ],
-            "Payment overdue": [
-                "Paiement en retard"
+            "Overdue": [
+                "En retard"
             ],
             "Ready to sell": [
                 "Pr\u00eat \u00e0 la vente"

@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "translation-revision-date": "2026-11-16T08:26:51+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/modules\/Settings\/sections\/Website.jsx",
     "domain": "messages",
@@ -34,11 +34,20 @@
             "Special requests": [
                 "Demandes particuli\u00e8res"
             ],
+            "(opens in a new tab)": [
+                "(s'ouvre dans un nouvel onglet)"
+            ],
             "Remove %s": [
                 "Retirer %s"
             ],
             "None": [
                 "Aucun"
+            ],
+            "Optional": [
+                "Facultatif"
+            ],
+            "Required": [
+                "Obligatoire"
             ],
             "Express checkout needs it: hiding it turns Express checkout off.": [
                 "Requis par la r\u00e9servation express : le masquer d\u00e9sactive la r\u00e9servation express."
@@ -94,6 +103,9 @@
             "Create the booking page": [
                 "Cr\u00e9er la page de r\u00e9servation"
             ],
+            "View page": [
+                "Voir la page"
+            ],
             "Adults preselected": [
                 "Adultes pr\u00e9s\u00e9lectionn\u00e9s"
             ],
@@ -132,12 +144,6 @@
             ],
             "Which fields the booking form asks for, and which ones guests must fill in. The first name is always required.": [
                 "Les champs demand\u00e9s par le formulaire de r\u00e9servation, et ceux que les clients doivent remplir. Le pr\u00e9nom est toujours obligatoire."
-            ],
-            "Required": [
-                "Obligatoire"
-            ],
-            "Optional": [
-                "Facultatif"
             ],
             "Hidden": [
                 "Masqu\u00e9"

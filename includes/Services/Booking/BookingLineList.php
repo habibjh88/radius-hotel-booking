@@ -58,7 +58,7 @@ class BookingLineList {
 	/**
 	 * Status moves offered on a row (the booking screen has the rest).
 	 */
-	public const ROW_MOVES = array( 'approve', 'decline', 'cancel', 'check_in', 'check_out', 'move_room' );
+	public const ROW_MOVES = array( 'approve', 'decline', 'cancel', 'check_in', 'check_out', 'move_room', 'undo_check_in', 'extend_stay' );
 	public const MAX_PER_PAGE = 100;
 
 	/**
@@ -101,7 +101,7 @@ class BookingLineList {
 		if ( $total > 0 ) {
 			$rows = (array) $wpdb->get_results(
 				$wpdb->prepare(
-					"SELECT r.id, r.booking_id, r.status, r.room_number, r.floor_name, r.rate_plan_name, r.start_at_gmt, r.end_at_gmt,
+					"SELECT r.id, r.booking_id, r.status, r.room_number, r.floor_name, r.rate_plan_name, r.start_at_gmt, r.end_at_gmt, r.moved_from,
 						r.units, r.adults, r.children, r.total,
 						b.reference, b.guest_id, b.status AS booking_status, b.payment_status, b.balance_due, b.payment_due_at_gmt, b.on_hold, b.source, b.created_at_gmt,
 						COALESCE( t.name, '' ) AS room_type,
@@ -334,6 +334,10 @@ class BookingLineList {
 	public static function row( array $row, DateTimeImmutable $now ): array {
 		$moves   = BookingResource::lineActions( (string) $row['status'], (string) $row['start_at_gmt'], $now->getTimestamp(), $now->setTimezone( Dates::timezone() )->format( 'Y-m-d' ) );
 		$actions = array_values( array_intersect( $moves, self::ROW_MOVES ) );
+		if ( (int) ( $row['moved_from'] ?? 0 ) > 0 ) {
+			// A stay carrying on after a room move: its check-in is not undone.
+			$actions = array_values( array_diff( $actions, array( 'undo_check_in' ) ) );
+		}
 		if ( (float) $row['balance_due'] > 0 && ! in_array( (string) $row['booking_status'], array( 'cancelled', 'declined', 'no_show' ), true ) ) {
 			$actions[] = 'record_payment';
 		}

@@ -1,0 +1,89 @@
+{
+    "translation-revision-date": "2026-11-16T08:26:51+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Exports\/RestorePanel.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "A restore is running: stop it first.": [
+                "Une restauration est en cours : arr\u00eatez-la d'abord."
+            ],
+            "%s booking restored.": [
+                "%s r\u00e9servation restaur\u00e9e.",
+                "%s r\u00e9servations restaur\u00e9es."
+            ],
+            "Will be restored": [
+                "Sera restaur\u00e9e"
+            ],
+            "Already on the site": [
+                "D\u00e9j\u00e0 sur le site"
+            ],
+            "Cannot be restored": [
+                "Non restaurable"
+            ],
+            "Restore bookings": [
+                "Restaurer des r\u00e9servations"
+            ],
+            "Upload a bookings export (CSV) to re-create the bookings it holds that are no longer on the site. Bookings already here are never changed.": [
+                "Envoyez un export de r\u00e9servations (CSV) pour recr\u00e9er les r\u00e9servations qu'il contient et qui ne sont plus sur le site. Les r\u00e9servations d\u00e9j\u00e0 pr\u00e9sentes ne sont jamais modifi\u00e9es."
+            ],
+            "Choose a CSV file": [
+                "Choisir un fichier CSV"
+            ],
+            "Reading\u2026": [
+                "Lecture\u2026"
+            ],
+            "Preview": [
+                "Aper\u00e7u"
+            ],
+            "%1$s to restore \u00b7 %2$s already on the site \u00b7 %3$s cannot be restored": [
+                "%1$s \u00e0 restaurer \u00b7 %2$s d\u00e9j\u00e0 sur le site \u00b7 %3$s non restaurables"
+            ],
+            "Listing %1$s of %2$s orders, those that cannot be restored first.": [
+                "Affichage de %1$s commandes sur %2$s, les non restaurables en premier."
+            ],
+            "Restore %s booking": [
+                "Restaurer %s r\u00e9servation",
+                "Restaurer %s r\u00e9servations"
+            ],
+            "Restoring\u2026": [
+                "Restauration\u2026"
+            ],
+            "Paused: the server did not answer.": [
+                "En pause : le serveur n'a pas r\u00e9pondu."
+            ],
+            "Stopped.": [
+                "Arr\u00eat\u00e9e."
+            ],
+            "Restore finished.": [
+                "Restauration termin\u00e9e."
+            ],
+            "%1$s of %2$s orders": [
+                "%1$s commandes sur %2$s"
+            ],
+            "Restore progress": [
+                "Progression de la restauration"
+            ],
+            "%1$s restored \u00b7 %2$s already on the site \u00b7 %3$s failed": [
+                "%1$s restaur\u00e9es \u00b7 %2$s d\u00e9j\u00e0 sur le site \u00b7 %3$s en \u00e9chec"
+            ],
+            "Bookings restored so far stay. To carry on, preview the same file again and restore: what is already back is skipped.": [
+                "Les r\u00e9servations d\u00e9j\u00e0 restaur\u00e9es sont conserv\u00e9es. Pour continuer, pr\u00e9visualisez \u00e0 nouveau le m\u00eame fichier et restaurez : ce qui est d\u00e9j\u00e0 r\u00e9tabli est ignor\u00e9."
+            ],
+            "Stop after this batch": [
+                "Arr\u00eater apr\u00e8s ce lot"
+            ],
+            "Carry on": [
+                "Continuer"
+            ],
+            "Listing the first %1$s of %2$s that failed.": [
+                "Affichage des %1$s premi\u00e8res sur %2$s en \u00e9chec."
+            ]
+        }
+    }
+}

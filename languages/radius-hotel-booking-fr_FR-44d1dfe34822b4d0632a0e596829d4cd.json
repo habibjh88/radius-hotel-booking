@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "translation-revision-date": "2026-11-16T08:26:51+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/modules\/Reports\/tabs\/Rooms.jsx",
     "domain": "messages",
@@ -52,16 +52,24 @@
             "Subtotal": [
                 "Sous-total"
             ],
-            "%d room": [
-                "%d chambre",
-                "%d chambres"
+            "Invoice": [
+                "Facture"
             ],
             "Try again": [
                 "R\u00e9essayer"
             ],
+            "%1$s \u00b7 %2$s": [
+                "%1$s \u00b7 %2$s"
+            ],
+            "Edit": [
+                "Modifier"
+            ],
             "of %d room": [
                 "sur %d chambre",
                 "sur %d chambres"
+            ],
+            "Right now": [
+                "Maintenant"
             ],
             "The report could not be loaded.": [
                 "Le rapport n'a pas pu \u00eatre charg\u00e9."
@@ -75,14 +83,22 @@
             "Arrival \u2013 departure": [
                 "Arriv\u00e9e \u2013 d\u00e9part"
             ],
-            "Occupied %s": [
-                "Occupation %s"
+            "%d waiting for the guest": [
+                "%d en attente du client",
+                "%d en attente du client"
             ],
-            "Available rooms nobody stayed in": [
-                "Chambres disponibles sans aucun s\u00e9jour"
+            "%d guest in the room": [
+                "%d client dans la chambre",
+                "%d clients dans la chambre"
             ],
-            "Rooms in this state now": [
-                "Chambres dans cet \u00e9tat actuellement"
+            "Booked in the period": [
+                "R\u00e9serv\u00e9es sur la p\u00e9riode"
+            ],
+            "Occupied in the period": [
+                "Occup\u00e9es sur la p\u00e9riode"
+            ],
+            "Nobody stayed in": [
+                "Personne n'a s\u00e9journ\u00e9"
             ],
             "Empty rooms by floor": [
                 "Chambres vides par \u00e9tage"
@@ -90,8 +106,32 @@
             "Available rooms that no stay occupied in the period.": [
                 "Chambres disponibles qu'aucun s\u00e9jour n'a occup\u00e9es pendant la p\u00e9riode."
             ],
+            "%d empty room": [
+                "%d chambre vide",
+                "%d chambres vides"
+            ],
             "Every available room was rented in this period.": [
                 "Toutes les chambres disponibles ont \u00e9t\u00e9 lou\u00e9es pendant cette p\u00e9riode."
+            ],
+            "Booked rooms by floor": [
+                "Chambres r\u00e9serv\u00e9es par \u00e9tage"
+            ],
+            "Rooms taken in the period: waiting for their guest, or the guest is in the room. A room leaves the list once its guest has checked out.": [
+                "Chambres prises sur la p\u00e9riode : en attente de leur client, ou client dans la chambre. Une chambre quitte la liste d\u00e8s le d\u00e9part de son client."
+            ],
+            "%d booked room": [
+                "%d chambre r\u00e9serv\u00e9e",
+                "%d chambres r\u00e9serv\u00e9es"
+            ],
+            "%d more stay in this room in the period": [
+                "%d autre s\u00e9jour dans cette chambre sur la p\u00e9riode",
+                "%d autres s\u00e9jours dans cette chambre sur la p\u00e9riode"
+            ],
+            "No room is booked in this period.": [
+                "Aucune chambre n'est r\u00e9serv\u00e9e sur cette p\u00e9riode."
+            ],
+            "Booked rooms (details)": [
+                "Chambres r\u00e9serv\u00e9es (d\u00e9tails)"
             ],
             "Pending, confirmed, in-house and departed rooms, %s.": [
                 "Chambres en attente, confirm\u00e9es, en s\u00e9jour et parties, %s."

@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "translation-revision-date": "2026-11-16T08:26:51+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/modules\/Rooms\/components\/RoomsTab.jsx",
     "domain": "messages",
@@ -46,6 +46,9 @@
             ],
             "The rooms could not be loaded": [
                 "Les chambres n'ont pas pu \u00eatre charg\u00e9es"
+            ],
+            "State of room %s": [
+                "Statut de la chambre %s"
             ],
             "Only available rooms can be booked.": [
                 "Seules les chambres disponibles peuvent \u00eatre r\u00e9serv\u00e9es."
@@ -98,9 +101,6 @@
             ],
             "Room %1$s is now %2$s.": [
                 "La chambre %1$s est maintenant %2$s."
-            ],
-            "State of room %s": [
-                "Statut de la chambre %s"
             ]
         }
     }

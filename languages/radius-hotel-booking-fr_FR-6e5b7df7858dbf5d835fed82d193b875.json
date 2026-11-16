@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-02T07:06:41+00:00",
+    "translation-revision-date": "2026-11-16T08:26:51+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/modules\/Bookings\/index.jsx",
     "domain": "messages",
@@ -16,17 +16,26 @@
             "Status": [
                 "Statut"
             ],
+            "Check-in": [
+                "Arriv\u00e9e"
+            ],
+            "Check-out": [
+                "D\u00e9part"
+            ],
             "Room": [
                 "Chambre"
             ],
             "Booking": [
                 "R\u00e9servation"
             ],
-            "Awaiting approval": [
-                "En attente de validation"
+            "Guest": [
+                "Client"
             ],
-            "Stay": [
-                "S\u00e9jour"
+            "Payment": [
+                "Paiement"
+            ],
+            "Invoice": [
+                "Facture"
             ],
             "%d room": [
                 "%d chambre",
@@ -44,14 +53,26 @@
             "All": [
                 "Toutes"
             ],
-            "Payment overdue": [
-                "Paiement en retard"
+            "Overdue": [
+                "En retard"
+            ],
+            "Edit": [
+                "Modifier"
             ],
             "Record payment": [
                 "Enregistrer un paiement"
             ],
+            "At the desk": [
+                "\u00c0 la r\u00e9ception"
+            ],
+            "Imported": [
+                "Import\u00e9e"
+            ],
             "This room is free again at once and no longer counts towards the total.": [
                 "Cette chambre est imm\u00e9diatement lib\u00e9r\u00e9e et n'est plus compt\u00e9e dans le total."
+            ],
+            "For a check-in made by mistake: the room waits for its guest again, from the booked start time. The reason is kept in the history.": [
+                "Pour une arriv\u00e9e enregistr\u00e9e par erreur : la chambre attend de nouveau son client, \u00e0 partir de l'heure de d\u00e9but r\u00e9serv\u00e9e. Le motif est conserv\u00e9 dans l'historique."
             ],
             "%s is still due on this booking. Check out anyway?": [
                 "%s reste d\u00fb sur cette r\u00e9servation. Enregistrer le d\u00e9part quand m\u00eame ?"
@@ -59,23 +80,38 @@
             "The room is free again once the guest has left.": [
                 "La chambre est lib\u00e9r\u00e9e d\u00e8s que le client est parti."
             ],
-            "Arriving today": [
-                "Arriv\u00e9es du jour"
+            "Pending": [
+                "En attente"
             ],
-            "Leaving today": [
-                "D\u00e9parts du jour"
+            "Arrivals": [
+                "Arriv\u00e9es"
+            ],
+            "Departures": [
+                "D\u00e9parts"
             ],
             "In house": [
                 "En s\u00e9jour"
             ],
-            "Open booking": [
-                "Ouvrir la r\u00e9servation"
+            "At the desk \u00b7 %s": [
+                "\u00c0 la r\u00e9ception \u00b7 %s"
             ],
-            "Booking list": [
-                "Liste des r\u00e9servations"
+            "Online": [
+                "En ligne"
+            ],
+            "Calendar sync": [
+                "Synchro calendrier"
+            ],
+            "New": [
+                "Nouvelle"
+            ],
+            "View booking": [
+                "Voir la r\u00e9servation"
             ],
             "Reference, guest, phone or room": [
                 "R\u00e9f\u00e9rence, client, t\u00e9l\u00e9phone ou chambre"
+            ],
+            "Booking list": [
+                "Liste des r\u00e9servations"
             ],
             "No booking matches": [
                 "Aucune r\u00e9servation ne correspond"
