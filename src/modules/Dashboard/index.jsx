@@ -176,11 +176,11 @@ export default function Dashboard() {
 		<div className="space-y-6">
 			<SiteChecks />
 			{ /* A strip that scrolls sideways on a phone (M01); a grid from sm up. */ }
-			<div className="-mx-4 flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3 min-[1600px]:grid-cols-6">
+			<div className="-mx-4 flex snap-x scroll-px-4 gap-2.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3 min-[1600px]:grid-cols-6">
 				{ counters.map( ( counter ) => (
 					<div
 						key={ counter.key }
-						className="w-[15rem] shrink-0 snap-start sm:w-auto"
+						className="w-[11.5rem] shrink-0 snap-start sm:w-auto"
 					>
 						<StatCard
 							icon={ counter.icon }
@@ -190,6 +190,7 @@ export default function Dashboard() {
 							to={ counter.to }
 							tone={ counter.tone }
 							loading={ loading }
+							compact
 						/>
 					</div>
 				) ) }

@@ -55,13 +55,14 @@ class BookingLineService {
 
 	/**
 	 * How many of the lines are still rooms of the booking (for the last-room
-	 * rule and the room limit).
+	 * rule and the room limit). The part of a stay before a room move is not
+	 * a room of its own (`moved_to`): the stay carries on in the next line.
 	 *
 	 * @param BookingRoom[] $lines Lines.
 	 * @return int
 	 */
 	public static function liveCount( array $lines ): int {
-		return count( array_filter( $lines, static fn( $line ) => ! in_array( (string) $line->status, self::ENDED, true ) ) );
+		return count( array_filter( $lines, static fn( $line ) => ! in_array( (string) $line->status, self::ENDED, true ) && (int) $line->moved_to <= 0 ) );
 	}
 
 	/**

@@ -18,6 +18,7 @@ export const actionLabel = ( action ) =>
 		check_in: __( 'Check in', 'radius-hotel-booking' ),
 		check_out: __( 'Check out', 'radius-hotel-booking' ),
 		no_show: __( 'No-show', 'radius-hotel-booking' ),
+		move_room: __( 'Move to another room', 'radius-hotel-booking' ),
 	} )[ action ] || action;
 
 /**

@@ -93,7 +93,7 @@ export default function UserMenu() {
 			<DropdownMenuTrigger asChild>
 				<button
 					type="button"
-					className="flex h-10 min-w-0 items-center gap-2.5 rounded-lg border border-border bg-card py-1 pl-1 pr-2 text-left hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+					className="flex h-9 min-w-0 items-center gap-2.5 rounded-lg border border-border bg-card p-0.5 text-left sm:h-10 sm:py-1 sm:pl-1 sm:pr-2 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 					aria-label={ __( 'Account menu', 'radius-hotel-booking' ) }
 				>
 					{ user.avatar_url ? (

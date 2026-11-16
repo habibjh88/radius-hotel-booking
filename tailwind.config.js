@@ -105,7 +105,35 @@ module.exports = {
 			},
 			screens: { xs: '500px' },
 		},
-		container: { center: true, padding: '2rem', screens: { '2xl': '1400px' } },
+		container: {
+			center: true,
+			padding: '2rem',
+			screens: { '2xl': '1400px' },
+		},
 	},
-	plugins: [ require( 'tailwindcss-animate' ) ],
+	plugins: [
+		require( 'tailwindcss-animate' ),
+		// Themes often size bare headings with !important (e.g. Customizer CSS
+		// `h2 { font-size: 32px !important }` in a media query), which beats a
+		// plain `text-lg`. On an h1–h6 the size utilities re-apply their size
+		// with !important; `.rtbp-root .text-lg:is(h2)` also out-specifies `h2`.
+		// Registered on the same class, so `sm:text-xl` etc. get it too.
+		( { addUtilities, theme } ) => {
+			const headings = ':is(h1, h2, h3, h4, h5, h6)';
+			addUtilities(
+				Object.fromEntries(
+					Object.entries( theme( 'fontSize' ) ).map(
+						( [ key, value ] ) => [
+							`.text-${ key }${ headings }`,
+							{
+								fontSize: `${
+									Array.isArray( value ) ? value[ 0 ] : value
+								} !important`,
+							},
+						]
+					)
+				)
+			);
+		},
+	],
 };

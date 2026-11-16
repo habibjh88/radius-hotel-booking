@@ -145,6 +145,7 @@ final class ActionCatalog {
 			'bookings.check_in'          => array( self::DATA, __( 'Checked a guest in', 'radius-hotel-booking' ) ),
 			'bookings.check_out'         => array( self::DATA, __( 'Checked a guest out', 'radius-hotel-booking' ) ),
 			'bookings.no_show'           => array( self::DATA, __( 'Marked a no-show', 'radius-hotel-booking' ) ),
+			'bookings.move_room'         => array( self::DATA, __( 'Moved a guest to another room', 'radius-hotel-booking' ) ),
 			'bookings.edit'              => array( self::DATA, __( 'Edited a booking', 'radius-hotel-booking' ) ),
 			'bookings.line_add'          => array( self::DATA, __( 'Added a room to a booking', 'radius-hotel-booking' ) ),
 			'bookings.line_edit'         => array( self::DATA, __( 'Changed a room on a booking', 'radius-hotel-booking' ) ),

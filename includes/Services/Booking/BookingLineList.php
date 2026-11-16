@@ -58,7 +58,7 @@ class BookingLineList {
 	/**
 	 * Status moves offered on a row (the booking screen has the rest).
 	 */
-	public const ROW_MOVES = array( 'approve', 'decline', 'cancel', 'check_in', 'check_out' );
+	public const ROW_MOVES = array( 'approve', 'decline', 'cancel', 'check_in', 'check_out', 'move_room' );
 	public const MAX_PER_PAGE = 100;
 
 	/**

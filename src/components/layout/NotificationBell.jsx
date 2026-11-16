@@ -149,7 +149,7 @@ export default function NotificationBell() {
 		<button
 			type="button"
 			onClick={ () => navigate( '/bookings?tab=awaiting' ) }
-			className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-card text-heading transition-colors hover:border-primary"
+			className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border sm:h-10 sm:w-10 border-border bg-card text-heading transition-colors hover:border-primary"
 			aria-label={ label }
 			title={ label }
 		>

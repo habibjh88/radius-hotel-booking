@@ -50,6 +50,10 @@ class BookingTotals {
 				continue;
 			}
 			$charged[] = (float) $line->total;
+			if ( (int) $line->moved_to > 0 ) {
+				// The part of a stay before a room move: its guests carry on in the next line.
+				continue;
+			}
 			$adults   += (int) $line->adults;
 			$children += (int) $line->children;
 		}

@@ -45,10 +45,10 @@ function Part( { number, title, aside = null, boxRef, children } ) {
 			ref={ boxRef }
 			// A very soft tint (a trace of the brand colour fading to near
 			// white), so the white cards inside each part still stand out.
-			className="scroll-mt-24 space-y-4 rounded-2xl border border-border/70 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--primary)_2.5%,#ffffff)_0%,#fafbfd_12rem,#fafbfd_100%)] p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)] sm:p-6"
+			className="scroll-mt-24 space-y-4 rounded-2xl border border-border/70 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--primary)_2.5%,#ffffff)_0%,#fafbfd_12rem,#fafbfd_100%)] p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)] max-sm:p-3 sm:p-6"
 		>
 			<div className="flex flex-wrap items-center justify-between gap-3">
-				<h2 className="m-0 flex items-center gap-3 text-lg font-bold text-heading">
+				<h2 className="m-0 flex min-w-0 items-center gap-3 text-base font-bold text-heading sm:text-lg">
 					<span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
 						{ number }
 					</span>

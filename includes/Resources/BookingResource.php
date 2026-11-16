@@ -107,6 +107,10 @@ final class BookingResource {
 		if ( Dates::from_gmt( $start_gmt )->setTimezone( Dates::timezone() )->format( 'Y-m-d' ) > $today ) {
 			$actions = array_values( array_diff( $actions, array( 'check_in' ) ) );
 		}
+		// A guest in the room can be moved to another one (a fault in the room).
+		if ( StatusMachine::CHECKED_IN === $status ) {
+			$actions[] = 'move_room';
+		}
 		return $actions;
 	}
 
@@ -125,6 +129,10 @@ final class BookingResource {
 		$today   = Dates::now()->setTimezone( Dates::timezone() )->format( 'Y-m-d' );
 		$lines   = array();
 		$statuses = array();
+		$numbers  = array();
+		foreach ( $loaded['lines'] as $line ) {
+			$numbers[ (int) $line->id ] = (string) $line->room_number;
+		}
 		foreach ( $loaded['lines'] as $line ) {
 			$item               = self::line( $line );
 			$room               = $loaded['rooms'][ (int) $line->room_id ] ?? null;
@@ -143,6 +151,9 @@ final class BookingResource {
 				}
 			}
 			$item['actions'] = $actions;
+			// The rooms on each side of a move, for "Moved to room …" on the booking screen.
+			$item['moved_from_room'] = (string) ( $numbers[ (int) $line->moved_from ] ?? '' );
+			$item['moved_to_room']   = (string) ( $numbers[ (int) $line->moved_to ] ?? '' );
 			$lines[]         = $item;
 			$statuses[]      = (string) $line->status;
 		}
@@ -153,7 +164,8 @@ final class BookingResource {
 			array(
 				'lines'          => $lines,
 				'guest'          => $loaded['guest'] ? GuestResource::summary( $loaded['guest'] ) : null,
-				'rooms_count'    => count( $lines ),
+				// A stay split by a room move is one room.
+				'rooms_count'    => count( array_filter( $lines, static fn( $item ) => $item['moved_to'] <= 0 ) ),
 				'created_by'     => $booking->created_by ? ( $users[ (int) $booking->created_by ] ?? '' ) : '',
 				'money'          => array(
 					'subtotal'       => (float) $booking->subtotal,
@@ -244,6 +256,9 @@ final class BookingResource {
 			'unit_price'     => (float) $line->unit_price,
 			'total'          => (float) $line->total,
 			'price_steps'    => is_array( $breakdown ) ? ( $breakdown['steps'] ?? array() ) : array(),
+			// A room move during the stay split it: the line it carries on from / in (0 = none).
+			'moved_from'     => (int) $line->moved_from,
+			'moved_to'       => (int) $line->moved_to,
 		);
 	}
 }

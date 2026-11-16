@@ -9,7 +9,7 @@
  */
 import { useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Info } from 'lucide-react';
+import { CalendarRange, ChevronDown, Info } from 'lucide-react';
 
 import { DatePicker, DateTimePicker } from '@/components/common/DatePicker';
 import { Button } from '@/components/ui/button';
@@ -63,6 +63,7 @@ const toParam = ( value ) => {
  * @param {string}   props.idPrefix  Prefix of the fields' ids (two filters on a page).
  * @param {boolean}  props.card      Standalone white card (on the page background), not a
  *                                   tinted box inside a panel.
+ * @param {string}   props.className Extra classes for the box.
  * @return {JSX.Element} Filter.
  */
 export default function PeriodFilter( {
@@ -75,7 +76,11 @@ export default function PeriodFilter( {
 	onApply,
 	idPrefix = 'rtbp-period',
 	card = false,
+	className,
 } ) {
+	// Phones: the form folds away behind one row, so the list starts on the
+	// first screen. Always open from md up.
+	const [ open, setOpen ] = useState( false );
 	const [ draft, setDraft ] = useState( {
 		mode,
 		from: toPicker( from ),
@@ -151,13 +156,39 @@ export default function PeriodFilter( {
 		<div
 			className={ cn(
 				'rounded-xl border border-border',
-				card ? 'bg-card shadow-sm' : 'bg-muted/40'
+				card ? 'bg-card shadow-sm' : 'bg-muted/40',
+				className
 			) }
 		>
+			<button
+				type="button"
+				className="flex min-h-[44px] w-full items-center gap-2 border-0 bg-transparent px-4 py-2.5 text-left text-sm font-semibold normal-case tracking-normal text-heading shadow-none hover:bg-transparent hover:text-heading focus:bg-transparent focus:text-heading md:hidden"
+				aria-expanded={ open }
+				onClick={ () => setOpen( ( value ) => ! value ) }
+			>
+				<CalendarRange
+					className="h-4 w-4 shrink-0 text-primary"
+					aria-hidden="true"
+				/>
+				<span className="min-w-0 flex-1 truncate">
+					{ __( 'Filter by date', 'radius-hotel-booking' ) }
+				</span>
+				<ChevronDown
+					className={ cn(
+						'h-4 w-4 shrink-0 text-muted-foreground transition-transform',
+						open && 'rotate-180'
+					) }
+					aria-hidden="true"
+				/>
+			</button>
 			<form
-				className="flex flex-col gap-4 p-4 2xl:flex-row 2xl:items-end"
+				className={ cn(
+					'flex-col gap-4 p-4 max-md:border-t max-md:border-border md:flex 2xl:flex-row 2xl:items-end',
+					open ? 'flex' : 'hidden'
+				) }
 				onSubmit={ ( event ) => {
 					event.preventDefault();
+					setOpen( false );
 					onApply( {
 						mode: draft.mode,
 						from: out( draft.from ),

@@ -398,6 +398,13 @@ User roles now end in "- RHB" (Staff - RHB) so they stand apart from other plugi
 Redesigned the account menu header: larger photo, online dot, email, role badge and job line.
 New booking: a flexible rate's arrival time is now asked in the room selection panel.
 Guests list: choose how many guests to show per page.
+Booking page: "Choose your room" now fits phones and tablets without cramped or oversized room cards.
+Fixed booking page headings growing huge when the theme forces heading sizes with !important.
+Bookings list on phones: date filter folds away, wider booking cards, page title no longer cut.
+Dashboard on phones: compact top bar and counters, search moved into the menu drawer.
+Move a checked-in guest to another room; the stay and its price are split between both rooms.
+Fixed a room still occupied past its check-out time being sold, or a guest moved into it.
+Check-in into a room in maintenance is refused; choose another room instead.
 
 = 1.0.0 =
 Initial release.

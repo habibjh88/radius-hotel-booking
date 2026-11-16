@@ -527,7 +527,12 @@ class RoomService {
 		 * @param string $old    Previous state.
 		 * @param string $state  New state.
 		 */
-		do_action( 'rtbp_room_state_changed', $room, $before['state'], $state );
+		// After the commit when a booking write (a room move) set the state inside its transaction.
+		Transaction::afterCommit(
+			static function () use ( $room, $before, $state ) {
+				do_action( 'rtbp_room_state_changed', $room, $before['state'], $state );
+			}
+		);
 
 		return $room;
 	}

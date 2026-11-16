@@ -17,8 +17,10 @@ use RadiusTheme\RadiusHotelBooking\Repositories\AvailabilityRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\BookingRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\BookingRoomRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\FloorRepository;
+use RadiusTheme\RadiusHotelBooking\Services\Inventory\RoomService;
 use RadiusTheme\RadiusHotelBooking\Services\Payments\PaymentDeadline;
 use RadiusTheme\RadiusHotelBooking\Support\Dates;
+use RadiusTheme\RadiusHotelBooking\Support\Money;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -33,7 +35,9 @@ defined( 'ABSPATH' ) || exit;
  * - check-in / check-out / no-show are per line. Check-in can move the guest
  *   to another room of the same type: both rooms are locked (ascending id)
  *   and the new one is checked against the line's own window with the
- *   engine's predicate. An early check-out frees the room from now on
+ *   engine's predicate. A guest already in the room can be moved during
+ *   the stay (`moveRoom()`, an AC or power fault): same rule, checked from
+ *   now. An early check-out frees the room from now on
  *   (`occupied_until_gmt`). A no-show is possible once the window started.
  *
  * Each change locks the booking row first, re-reads the lines under that
@@ -227,9 +231,303 @@ class BookingStatusService {
 					);
 				} elseif ( $early ) {
 					$this->moveTo( $line, (int) $line->room_id, $now, $from );
+				} else {
+					// The booked room must still be on sale: a room put in maintenance after the
+					// booking (a guest moved out of it, a fault) is not checked into silently.
+					$kept = $this->availability->lockRooms( array( (int) $line->room_id ) )[ (int) $line->room_id ] ?? null;
+					if ( $kept && Room::AVAILABLE !== (string) $kept['state'] ) {
+						// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+						throw DomainException::conflict(
+							'room_unavailable',
+							sprintf(
+								/* translators: %s: room number. */
+								__( 'Room %s is in maintenance or out of service. Choose another room for this check-in, or set the room back to available.', 'radius-hotel-booking' ),
+								(string) $line->room_number
+							),
+							array(
+								'room_id' => (int) $line->room_id,
+								'room'    => (string) $line->room_number,
+								'reason'  => (string) $kept['state'],
+							)
+						);
+						// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
+					}
 				}
 				return array( $fields, $extra );
 			}
+		);
+	}
+
+	/**
+	 * Move a checked-in guest to another room of the same type during the
+	 * stay (a fault in the room: AC, power…). The stay is **split** at "now"
+	 * (booking-engine §7.1): the line in the old room ends now, as checked
+	 * out (its room keeps the cleaning buffer), and a new checked-in line
+	 * carries on in the new room until the end of the stay. The price is
+	 * shared between the two by the time spent in each room, so the
+	 * booking's total and payments do not change; `moved_to` / `moved_from`
+	 * link the two lines, so each room's history, the reports and a backup
+	 * stay exact. The new room is locked with the old one (ascending id) and
+	 * must be free from now to the end of the stay (`moveTo()`). The old room
+	 * can be put in maintenance with the reason, in the same transaction
+	 * (its row is already locked), unless it is already out of order.
+	 *
+	 * @param int                    $line_id     Line id (checked in).
+	 * @param int                    $room_id     New room.
+	 * @param string                 $reason      Why (3–191 characters; logged, and the room's note).
+	 * @param bool                   $maintenance Put the old room in maintenance.
+	 * @param DateTimeImmutable|null $now         Now.
+	 * @return int Booking id.
+	 * @throws DomainException 404, 409 `illegal_transition` / `stay_over` / `room_unavailable`, 422.
+	 */
+	public function moveRoom( int $line_id, int $room_id, string $reason, bool $maintenance = true, ?DateTimeImmutable $now = null ): int {
+		$now    = $now ?? Dates::now();
+		$reason = self::reason( $reason );
+		if ( $room_id <= 0 ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw DomainException::invalid( array( 'room_id' => __( 'Choose the room the guest moves to.', 'radius-hotel-booking' ) ) );
+		}
+		$first = $line_id > 0 ? $this->lines->find( $line_id ) : null;
+		if ( ! $first instanceof BookingRoom ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw DomainException::notFound( __( 'This room is not on a booking.', 'radius-hotel-booking' ) );
+		}
+		$booking_id = (int) $first->booking_id;
+
+		$moved = Transaction::run(
+			function () use ( $line_id, $booking_id, $room_id, $reason, $maintenance, $now ) {
+				// Locking reads before the room lock (booking-engine §7.1).
+				$booking = $this->bookings->lockedFind( $booking_id );
+				if ( ! $booking instanceof Booking ) {
+					// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+					throw DomainException::notFound( __( 'This booking does not exist.', 'radius-hotel-booking' ) );
+				}
+				$line = $this->lines->lockedFind( $line_id );
+				if ( ! $line instanceof BookingRoom ) {
+					// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+					throw DomainException::notFound( __( 'This room is not on a booking.', 'radius-hotel-booking' ) );
+				}
+				if ( StatusMachine::CHECKED_IN !== (string) $line->status ) {
+					// Before check-in the room is changed with Edit (or at check-in).
+					self::illegal( 'move_room', (string) $line->status, $line_id );
+				}
+				if ( strtotime( (string) $line->occupied_until_gmt . ' UTC' ) <= $now->getTimestamp() ) {
+					// An overstay: the guest is due out, not moved (there is no stay left to split).
+					// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+					throw DomainException::conflict( 'stay_over', __( 'This stay has already ended. Check the guest out instead.', 'radius-hotel-booking' ), array( 'line_id' => $line_id ) );
+				}
+				if ( $room_id === (int) $line->room_id ) {
+					// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+					throw DomainException::invalid( array( 'room_id' => __( 'The guest is already in this room. Choose another one.', 'radius-hotel-booking' ) ) );
+				}
+				$old_room_id = (int) $line->room_id;
+				$now_gmt     = Dates::to_gmt_db( $now );
+				$now_local   = Dates::to_db( $now );
+				$user        = get_current_user_id() ? get_current_user_id() : null;
+				// Locks both rooms; the new one must be available and free from now on.
+				$locked = array();
+				$room   = $this->moveTo( $line, $room_id, $now, $now_gmt, $locked );
+
+				// The price, shared by the time spent in each room (the booking total stays).
+				$start = strtotime( (string) $line->start_at_gmt . ' UTC' );
+				$end   = strtotime( (string) $line->end_at_gmt . ' UTC' );
+				$share = $end > $start ? min( 1, max( 0, ( $now->getTimestamp() - $start ) / ( $end - $start ) ) ) : 0;
+				$total = (float) $line->total;
+				$spent = (float) Money::round( $total * $share );
+				$rest  = (float) Money::round( $total - $spent );
+				$units = max( 1, (int) $line->units );
+				$used  = max( 1, (int) round( $units * $share ) );
+				$left  = max( 1, $units - $used );
+
+				$new = $this->lines->create(
+					array(
+						'booking_id'         => (int) $line->booking_id,
+						'room_id'            => (int) $room['id'],
+						'room_type_id'       => (int) $line->room_type_id,
+						'rate_plan_id'       => (int) $line->rate_plan_id,
+						'rate_plan_name'     => (string) $line->rate_plan_name,
+						'room_number'        => (string) $room['number'],
+						'floor_name'         => (string) ( $room['floor_name'] ?? '' ),
+						'start_at'           => $now_local,
+						'end_at'             => (string) $line->end_at,
+						'start_at_gmt'       => $now_gmt,
+						'end_at_gmt'         => (string) $line->end_at_gmt,
+						'occupied_until_gmt' => (string) $line->occupied_until_gmt,
+						'units'              => $left,
+						'adults'             => (int) $line->adults,
+						'children'           => (int) $line->children,
+						'status'             => StatusMachine::CHECKED_IN,
+						'unit_price'         => Money::round( $rest / $left ),
+						'total'              => $rest,
+						'price_breakdown'    => self::movedBreakdown( $line, $rest, $left, $now, (string) $room['number'], false ),
+						'checked_in_at'      => $now_local,
+						'checked_in_by'      => $user,
+						'moved_from'         => $line_id,
+					)
+				);
+				if ( ! $new->id ) {
+					throw new \RuntimeException( 'The booking line could not be saved.' );
+				}
+				// The line left ends now, checked out: its room keeps the cleaning buffer.
+				$this->lines->update(
+					$line_id,
+					array(
+						'end_at'             => $now_local,
+						'end_at_gmt'         => $now_gmt,
+						'occupied_until_gmt' => $now_gmt,
+						'status'             => StatusMachine::CHECKED_OUT,
+						'checked_out_at'     => $now_local,
+						'checked_out_by'     => $user,
+						'units'              => $used,
+						'unit_price'         => Money::round( $spent / $used ),
+						'total'              => $spent,
+						'price_breakdown'    => self::movedBreakdown( $line, $spent, $used, $now, (string) $line->room_number, true ),
+						'moved_to'           => (int) $new->id,
+					)
+				);
+
+				$from = array(
+					'id'     => $old_room_id,
+					'number' => (string) $line->room_number,
+				);
+				$to   = array(
+					'id'     => (int) $room['id'],
+					'number' => (string) $room['number'],
+				);
+				$this->log(
+					'move_room',
+					$booking,
+					array(),
+					$reason,
+					array(
+						'before' => array( 'room' => $from['number'] ),
+						'after'  => array( 'room' => $to['number'] ),
+						'rooms'  => $from['number'] . ' → ' . $to['number'],
+					)
+				);
+				// Only a room still on sale goes to maintenance: one already out of order
+				// keeps its state and its note (the room row is locked: no other writer).
+				$put = $maintenance && $old_room_id && Room::AVAILABLE === (string) ( $locked[ $old_room_id ]['state'] ?? '' );
+				if ( $put ) {
+					// Logged as `rooms.state` by the room service; its hook runs after the commit.
+					( new RoomService() )->setState(
+						$old_room_id,
+						array(
+							'state' => Room::MAINTENANCE,
+							'note'  => $reason,
+						)
+					);
+				}
+				return array( $from, $to, (int) $new->id );
+			}
+		);
+
+		Transaction::afterCommit(
+			function () use ( $booking_id, $line_id, $moved, $reason ) {
+				$booking = $this->booking( $booking_id );
+				// The booking's rooms changed: the invoice is re-issued with both rooms,
+				// and the dashboard, report and guest caches refresh — as after a line edit.
+				do_action( 'rtbp_booking_changed', $booking, 'move_room', $line_id, array( 'room' => $moved[0]['number'] ), array( 'room' => $moved[1]['number'] ) );
+				/**
+				 * A checked-in guest was moved to another room: the stay was split at the move.
+				 *
+				 * @param Booking $booking     The booking, as stored now.
+				 * @param int     $line_id     The line left (now checked out).
+				 * @param array   $from        `{ id, number }` of the room left.
+				 * @param array   $to          `{ id, number }` of the new room.
+				 * @param string  $reason      Why.
+				 * @param int     $new_line_id The line that carries on in the new room.
+				 */
+				do_action( 'rtbp_booking_room_moved', $booking, $line_id, $moved[0], $moved[1], $reason, $moved[2] );
+			}
+		);
+		return $booking_id;
+	}
+
+	/**
+	 * The price breakdown of one side of a split stay: the whole stay's
+	 * price, then this room's share of it. The breakdown from before the move
+	 * is kept under `before_move`.
+	 *
+	 * @param BookingRoom       $line   The line as it was before the move.
+	 * @param float             $amount This side's share.
+	 * @param int               $units  This side's units.
+	 * @param DateTimeImmutable $now    The move.
+	 * @param string            $room   This side's room number.
+	 * @param bool              $before The side before the move (the room left).
+	 * @return string JSON.
+	 */
+	private static function movedBreakdown( BookingRoom $line, float $amount, int $units, DateTimeImmutable $now, string $room, bool $before ): string {
+		$each        = (float) Money::round( $amount / $units );
+		$unit_prices = array_fill( 0, $units, $each );
+		// The rounding remainder on the last unit, so the units add up to the share.
+		$unit_prices[ $units - 1 ] = (float) Money::round( $amount - $each * ( $units - 1 ) );
+		$original                  = json_decode( (string) $line->price_breakdown, true );
+		return (string) wp_json_encode(
+			array(
+				'unit_prices' => $unit_prices,
+				'steps'       => array(
+					array(
+						'date'  => $now->setTimezone( Dates::timezone() )->format( 'Y-m-d' ),
+						'steps' => array(
+							array(
+								'step'    => 'stay',
+								'rule_id' => null,
+								'label'   => __( 'Price of the whole stay', 'radius-hotel-booking' ),
+								'before'  => null,
+								'after'   => (float) $line->total,
+							),
+							array(
+								'step'    => 'room_move',
+								'rule_id' => null,
+								'label'   => $before
+									/* translators: %s: room number. */
+									? sprintf( __( 'Share for the time in room %s, until the move', 'radius-hotel-booking' ), $room )
+									/* translators: %s: room number. */
+									: sprintf( __( 'Share for the rest of the stay, in room %s', 'radius-hotel-booking' ), $room ),
+								'before'  => (float) $line->total,
+								'after'   => $amount,
+							),
+						),
+					),
+				),
+				'before_move' => is_array( $original ) ? $original : null,
+			)
+		);
+	}
+
+	/**
+	 * A room's bookings still to come (pending or confirmed, not started),
+	 * other than one booking: the warning when that room goes out of order.
+	 *
+	 * @param int $room_id    Room id.
+	 * @param int $booking_id Booking left out (the guest moved out of it).
+	 * @return array[] `{ id, reference, start }`, by start; at most 20.
+	 */
+	public function upcomingOn( int $room_id, int $booking_id = 0 ): array {
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- live bookings, never cached.
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT b.id, b.reference, MIN( br.start_at_gmt ) AS start
+				FROM %i br INNER JOIN %i b ON b.id = br.booking_id AND b.deleted_at IS NULL
+				WHERE br.room_id = %d AND br.booking_id <> %d AND br.status IN ( 'pending', 'confirmed' ) AND br.start_at_gmt > %s
+				GROUP BY b.id, b.reference ORDER BY start LIMIT 20",
+				rtbp_table( 'booking_rooms' ),
+				rtbp_table( 'bookings' ),
+				$room_id,
+				$booking_id,
+				Dates::to_gmt_db( Dates::now() )
+			),
+			ARRAY_A
+		);
+		return array_map(
+			static fn( $row ) => array(
+				'id'        => (int) $row['id'],
+				'reference' => (string) $row['reference'],
+				'start'     => Dates::to_iso( Dates::from_gmt( (string) $row['start'] ) ),
+			),
+			(array) $rows
 		);
 	}
 
@@ -490,11 +788,13 @@ class BookingStatusService {
 	 * @param int               $room_id New room (or the line's own).
 	 * @param DateTimeImmutable $now     Now.
 	 * @param string            $from    GMT start the room must be free from (the line's start, or now when early).
+	 * @param array|null        $locked  Set to both locked rooms (room id => `{ id, state, … }`).
 	 * @return array The room (`{ id, room_type_id, number, state, floor_name }`).
 	 * @throws DomainException 409 `room_unavailable`.
 	 */
-	private function moveTo( BookingRoom $line, int $room_id, DateTimeImmutable $now, string $from ): array {
-		$rooms = $this->availability->lockRooms( array_values( array_unique( array( (int) $line->room_id, $room_id ) ) ) );
+	private function moveTo( BookingRoom $line, int $room_id, DateTimeImmutable $now, string $from, ?array &$locked = null ): array {
+		$rooms  = $this->availability->lockRooms( array_values( array_unique( array( (int) $line->room_id, $room_id ) ) ) );
+		$locked = $rooms;
 		$room  = $rooms[ $room_id ] ?? null;
 		$fail  = static function ( string $reason, string $number, ?string $ref = null ) use ( $room_id ) {
 			$context = array(
@@ -583,7 +883,7 @@ class BookingStatusService {
 		if ( '' !== $reason ) {
 			$after['reason'] = $reason;
 		}
-		$rooms = implode( ', ', array_column( $changes, 'room' ) );
+		$rooms = $extra['rooms'] ?? implode( ', ', array_column( $changes, 'room' ) );
 		rtbp_activity(
 			'bookings.' . $action,
 			array(
@@ -702,6 +1002,7 @@ class BookingStatusService {
 			'check_in'  => __( 'Checked in', 'radius-hotel-booking' ),
 			'check_out' => __( 'Checked out', 'radius-hotel-booking' ),
 			'no_show'   => __( 'No-show for', 'radius-hotel-booking' ),
+			'move_room' => __( 'Moved the guest of', 'radius-hotel-booking' ),
 			'release_overdue' => __( 'Released (unpaid)', 'radius-hotel-booking' ),
 		);
 		return $verbs[ $action ] ?? $action;

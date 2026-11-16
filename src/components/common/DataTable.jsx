@@ -653,14 +653,16 @@ export default function DataTable( {
 										key={ rowKey( row ) }
 										className={ cn(
 											'm-0',
+											// A booking's next room: a coloured edge, not
+											// an indent that costs a phone its width.
 											! group.first &&
-												'ml-4 border-l-2 border-primary/30'
+												'border-l-2 border-primary/30'
 										) }
 									>
 										<div
 											{ ...extra }
 											className={ cn(
-												'space-y-2 p-4',
+												'space-y-2 p-3.5 sm:p-4',
 												selection &&
 													selectedKeys.has(
 														rowKey( row )
@@ -731,7 +733,7 @@ export default function DataTable( {
 											) : null }
 										</div>
 										{ rowActions ? (
-											<div className="px-4 pb-4">
+											<div className="px-3.5 pb-3.5 sm:px-4 sm:pb-4">
 												<RowActions
 													actions={ rowActions(
 														row

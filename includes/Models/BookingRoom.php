@@ -35,6 +35,8 @@ defined( 'ABSPATH' ) || exit;
  * @property float       $unit_price
  * @property float       $total
  * @property string|null $price_breakdown
+ * @property int         $moved_from Line this one carries on from after a room move (0 = none).
+ * @property int         $moved_to   Line that carries on in the new room after a move (0 = none).
  */
 class BookingRoom extends BaseModel {
 
@@ -74,6 +76,8 @@ class BookingRoom extends BaseModel {
 		'checked_out_at',
 		'checked_in_by',
 		'checked_out_by',
+		'moved_from',
+		'moved_to',
 	);
 
 	/**
@@ -92,5 +96,7 @@ class BookingRoom extends BaseModel {
 		'children'     => 'int',
 		'unit_price'   => 'float',
 		'total'        => 'float',
+		'moved_from'   => 'int',
+		'moved_to'     => 'int',
 	);
 }

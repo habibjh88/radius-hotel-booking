@@ -103,7 +103,7 @@ function RateSummary( { rate, large = false, added = [] } ) {
 		<div className="min-w-0 flex-1 space-y-1">
 			<p
 				className={ cn(
-					'm-0 flex flex-wrap items-center gap-2 font-semibold text-heading',
+					'm-0 flex flex-wrap items-center gap-2 font-semibold text-heading [overflow-wrap:anywhere]',
 					large ? 'text-base' : 'text-sm'
 				) }
 			>
@@ -432,7 +432,7 @@ function RoomTypeCard( {
 	) : null;
 	const fromPrice =
 		null !== from ? (
-			<div className="shrink-0 whitespace-nowrap text-right">
+			<div className="shrink-0 whitespace-nowrap sm:text-right">
 				<span className="block text-xs text-muted-foreground">
 					{ __( 'From', 'radius-hotel-booking' ) }
 				</span>
@@ -478,12 +478,13 @@ function RoomTypeCard( {
 
 	if ( 'split' === card ) {
 		return (
-			<article className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-6">
+			<article className="rounded-2xl border border-border bg-card p-3.5 shadow-sm sm:p-6">
 				{ /* The price keeps its place on the right; a long name or
-				   description wraps beside it. */ }
-				<div className="mb-5 flex items-start justify-between gap-4 sm:gap-6">
+				   description wraps beside it. On a phone the price goes
+				   under the name, so neither is squeezed. */ }
+				<div className="mb-4 flex flex-col gap-2 sm:mb-5 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
 					<div className="min-w-0 flex-1 space-y-1">
-						<h3 className="m-0 flex flex-wrap items-center gap-x-3 gap-y-1 text-xl font-bold leading-snug text-heading sm:text-2xl">
+						<h3 className="m-0 flex flex-wrap items-center gap-x-3 gap-y-1 text-lg font-bold leading-snug text-heading [overflow-wrap:anywhere] sm:text-2xl">
 							{ type.name }
 							{ inBooking }
 						</h3>
@@ -496,54 +497,59 @@ function RoomTypeCard( {
 					{ fromPrice }
 				</div>
 
-				<div className="grid gap-6 lg:grid-cols-[minmax(0,19rem)_minmax(0,1fr)]">
+				<div className="grid gap-5 sm:gap-6 lg:grid-cols-[minmax(0,19rem)_minmax(0,1fr)]">
 					{ /* Stays in view while the guest scrolls a long list of rates.
 					   Below a theme's sticky header: `--rtbp-sticky-top` (6rem by
 					   default; 1rem inside the booking popup). */ }
-					<aside className="min-w-0 space-y-4 lg:sticky lg:top-[var(--rtbp-sticky-top,6rem)] lg:self-start">
+					{ /* Tablet (sm to lg): photo and facts side by side, so the
+					   photo is not a full-width block above the rates. */ }
+					<aside className="min-w-0 space-y-4 sm:grid sm:grid-cols-2 sm:items-start sm:gap-5 sm:space-y-0 lg:sticky lg:top-[var(--rtbp-sticky-top,6rem)] lg:block lg:space-y-4 lg:self-start">
 						<RoomPhoto
 							type={ type }
 							free={ free }
 							className="aspect-[4/3] rounded-xl"
 						/>
-						<RoomFacts type={ type } guests={ guests } />
-						{ amenities.length ? (
-							<ul className="m-0 grid list-none grid-cols-2 gap-x-3 gap-y-2 border-t border-border p-0 pt-4">
-								{ sideAmenities.map( ( amenity ) => (
-									<li
-										key={ amenity }
-										className="flex min-w-0 items-center gap-2 text-[13px] text-muted-foreground"
-									>
-										<LucideIcon
-											name={ icons[ amenity ] }
-											className="h-3.5 w-3.5"
-										/>
-										<span className="truncate">
-											{ amenity }
-										</span>
-									</li>
-								) ) }
-								{ amenities.length > sideAmenities.length ? (
-									<li className="col-span-2 text-xs font-semibold text-muted-foreground">
-										{ sprintf(
-											/* translators: %d: number of other amenities. */
-											__(
-												'+%d more',
-												'radius-hotel-booking'
-											),
-											amenities.length -
-												sideAmenities.length
-										) }
-									</li>
-								) : null }
-							</ul>
-						) : null }
-						<RoomDetailsLink
-							type={ type }
-							roomDetails={ roomDetails }
-							onOpen={ () => setShowDetails( true ) }
-							className="text-sm"
-						/>
+						<div className="min-w-0 space-y-4">
+							<RoomFacts type={ type } guests={ guests } />
+							{ amenities.length ? (
+								<ul className="m-0 grid list-none grid-cols-2 gap-x-3 gap-y-2 border-t border-border p-0 pt-4">
+									{ sideAmenities.map( ( amenity ) => (
+										<li
+											key={ amenity }
+											className="flex min-w-0 items-center gap-2 text-[13px] text-muted-foreground"
+										>
+											<LucideIcon
+												name={ icons[ amenity ] }
+												className="h-3.5 w-3.5"
+											/>
+											<span className="truncate">
+												{ amenity }
+											</span>
+										</li>
+									) ) }
+									{ amenities.length >
+									sideAmenities.length ? (
+										<li className="col-span-2 text-xs font-semibold text-muted-foreground">
+											{ sprintf(
+												/* translators: %d: number of other amenities. */
+												__(
+													'+%d more',
+													'radius-hotel-booking'
+												),
+												amenities.length -
+													sideAmenities.length
+											) }
+										</li>
+									) : null }
+								</ul>
+							) : null }
+							<RoomDetailsLink
+								type={ type }
+								roomDetails={ roomDetails }
+								onOpen={ () => setShowDetails( true ) }
+								className="text-sm"
+							/>
+						</div>
 					</aside>
 
 					<div className="min-w-0 space-y-3">
@@ -600,9 +606,9 @@ function RoomTypeCard( {
 				/>
 
 				<div className="flex min-w-0 flex-1 flex-col gap-3 p-4 sm:p-5">
-					<div className="flex items-start justify-between gap-4">
+					<div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
 						<div className="min-w-0 flex-1">
-							<h3 className="m-0 flex flex-wrap items-center gap-x-3 gap-y-1 text-lg font-bold leading-snug text-heading">
+							<h3 className="m-0 flex flex-wrap items-center gap-x-3 gap-y-1 text-lg font-bold leading-snug text-heading [overflow-wrap:anywhere]">
 								{ type.name }
 								{ inBooking }
 							</h3>
@@ -826,14 +832,14 @@ export default function RoomTypeResults( {
 	return (
 		<section className="space-y-4">
 			<div className="flex flex-wrap items-end justify-between gap-2">
-				<div>
-					<h2 className="m-0 text-xl font-bold text-heading">
+				<div className="min-w-0">
+					<h2 className="m-0 text-lg font-bold text-heading sm:text-xl">
 						{ __( 'Available rooms', 'radius-hotel-booking' ) }
 					</h2>
 					{ needsDates && types.length ? (
-						<p className="m-0 flex items-center gap-1.5 text-sm text-muted-foreground">
+						<p className="m-0 mt-1 flex items-start gap-1.5 text-sm text-muted-foreground">
 							<CalendarDays
-								className="h-4 w-4 shrink-0 text-primary"
+								className="mt-0.5 h-4 w-4 shrink-0 text-primary"
 								aria-hidden="true"
 							/>
 							{ __(

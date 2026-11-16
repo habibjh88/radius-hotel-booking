@@ -40,13 +40,27 @@ export function useBookingAction( id ) {
 
 /**
  * One status move: check in / out and no-show on the room, the rest on the
- * booking (`line_id` narrows it to one room).
+ * booking (`line_id` narrows it to one room). `move_room` moves a
+ * checked-in guest (`roomId`, `reason`, `maintenance`); its answer also
+ * lists the bookings still to come in the room put in maintenance
+ * (`upcoming`).
  *
  * @param {number} id        Booking id.
- * @param {Object} variables `{ action, lineId?, reason?, roomId? }`.
- * @return {Promise<Object>} `{ booking, message }`.
+ * @param {Object} variables `{ action, lineId?, reason?, roomId?, maintenance? }`.
+ * @return {Promise<Object>} `{ booking, message, upcoming? }`.
  */
-function moveRequest( id, { action, lineId, reason, roomId } ) {
+function moveRequest( id, { action, lineId, reason, roomId, maintenance } ) {
+	if ( 'move_room' === action ) {
+		return post( `booking-lines/${ lineId }/move`, {
+			room_id: roomId,
+			reason,
+			maintenance: false !== maintenance,
+		} ).then( ( { data, message } ) => ( {
+			booking: data.booking,
+			message,
+			upcoming: data.upcoming || [],
+		} ) );
+	}
 	const lineActions = {
 		check_in: 'check-in',
 		check_out: 'check-out',
@@ -138,6 +152,8 @@ function refreshAfter( client, id, booking ) {
 	client.invalidateQueries( { queryKey: [ 'guests' ] } );
 	// Add-on panels on the booking (Pro's History) read the activity.
 	client.invalidateQueries( { queryKey: [ 'activity' ] } );
+	// A room move can put the room left in maintenance.
+	client.invalidateQueries( { queryKey: [ 'rooms' ] } );
 }
 
 /**
@@ -168,19 +184,21 @@ export function useLineChange( id ) {
 }
 
 /**
- * Rooms a line could move to at check-in (same type, free for its own
- * window), from the server.
+ * Rooms a line could move to at check-in, or during the stay (same type,
+ * free from now or from its start), from the server.
  *
- * @param {Object|null} line The line (null = no query).
+ * @param {Object|null} line    The line (null = no query).
+ * @param {string}      purpose `check_in` | `move` (its own access key).
  * @return {Object} React Query result; data is `[ { id, number, floor } ]`.
  */
-export function useFreeRoomsFor( line ) {
+export function useFreeRoomsFor( line, purpose = 'check_in' ) {
 	return useQuery( {
-		queryKey: [ 'availability', 'line-rooms', line?.id ],
+		queryKey: [ 'availability', 'line-rooms', line?.id, purpose ],
 		queryFn: () =>
-			get( `booking-lines/${ line.id }/rooms` ).then(
-				( { data } ) => data.rooms
-			),
+			get(
+				`booking-lines/${ line.id }/rooms`,
+				'move' === purpose ? { for: 'move' } : undefined
+			).then( ( { data } ) => data.rooms ),
 		enabled: Boolean( line ),
 		staleTime: 0,
 	} );

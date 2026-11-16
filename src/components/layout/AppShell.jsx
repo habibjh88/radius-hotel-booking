@@ -123,6 +123,7 @@ export default function AppShell( { children } ) {
 							<Sidebar
 								mobile
 								onClose={ () => setMobileOpen( false ) }
+								onSearch={ () => openPalette( true ) }
 							/>
 						</div>
 					</div>
@@ -142,9 +143,7 @@ export default function AppShell( { children } ) {
 								: 'min-w-0 flex-1 p-4 pb-24'
 						}
 					>
-						<div className="w-full">
-							{ children }
-						</div>
+						<div className="w-full">{ children }</div>
 					</main>
 				</div>
 

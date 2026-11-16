@@ -8,7 +8,13 @@
 import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { __ } from '@wordpress/i18n';
-import { ChevronDown, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import {
+	ChevronDown,
+	ChevronLeft,
+	ChevronRight,
+	Search,
+	X,
+} from 'lucide-react';
 
 import Logo from '@/components/brand/Logo';
 import { useBrand } from '@/lib/brand';
@@ -241,6 +247,8 @@ function NavItem( { route, claimed = [], collapsed, onNavigate } ) {
  * @param {Function} props.onToggleCollapse Collapse button handler (desktop).
  * @param {boolean}  props.mobile          Rendered inside the mobile drawer.
  * @param {Function} props.onClose         Closes the mobile drawer.
+ * @param {Function} props.onSearch        Opens the search (mobile drawer; on
+ *                                         phones the top bar has no search).
  * @return {JSX.Element} Sidebar.
  */
 export default function Sidebar( {
@@ -248,6 +256,7 @@ export default function Sidebar( {
 	onToggleCollapse,
 	mobile = false,
 	onClose,
+	onSearch,
 } ) {
 	// Re-render when the access map changes (canSee reads it).
 	useAccessMap();
@@ -293,7 +302,26 @@ export default function Sidebar( {
 				>
 					<X className="h-4 w-4" aria-hidden="true" />
 				</button>
-			) : (
+			) : null }
+			{ mobile && onSearch ? (
+				<div className="px-4 pb-1 pt-3">
+					<button
+						type="button"
+						onClick={ () => {
+							onClose?.();
+							onSearch();
+						} }
+						className="flex h-10 w-full items-center gap-2 rounded-lg border border-border bg-card px-3 text-left text-sm font-normal normal-case tracking-normal text-muted-foreground shadow-none transition-colors hover:border-primary hover:bg-card hover:text-heading focus:bg-card"
+					>
+						<Search
+							className="h-4 w-4 shrink-0"
+							aria-hidden="true"
+						/>
+						{ __( 'Search…', 'radius-hotel-booking' ) }
+					</button>
+				</div>
+			) : null }
+			{ ! mobile ? (
 				<button
 					type="button"
 					onClick={ onToggleCollapse }
@@ -317,7 +345,7 @@ export default function Sidebar( {
 						/>
 					) }
 				</button>
-			) }
+			) : null }
 
 			<nav className="flex-1 overflow-y-auto px-3 pb-4">
 				{ groups.map( ( group ) => (

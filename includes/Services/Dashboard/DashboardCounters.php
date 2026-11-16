@@ -122,6 +122,7 @@ class DashboardCounters {
 		$now_gmt                  = Dates::to_gmt_db( $now );
 		$statuses                 = implode( ',', array_fill( 0, count( self::DAY_STATUSES ), '%s' ) );
 
+		// A room move splits a stay in two lines: no arrival in the new room, no departure from the old one.
 		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $statuses is only "%s,…"; cached by the caller.
 		$row = $wpdb->get_row(
 			$wpdb->prepare(
@@ -130,8 +131,8 @@ class DashboardCounters {
 					( SELECT COUNT(*) FROM %i WHERE deleted_at IS NULL AND status IN ('pending','confirmed')
 						AND payment_status IN ('unpaid','partially_paid') AND balance_due > 0
 						AND payment_due_at_gmt IS NOT NULL AND payment_due_at_gmt < %s ) AS overdue,
-					COALESCE( SUM( CASE WHEN r.start_at_gmt >= %s AND r.start_at_gmt < %s THEN 1 ELSE 0 END ), 0 ) AS arrivals_today,
-					COALESCE( SUM( CASE WHEN r.end_at_gmt >= %s AND r.end_at_gmt < %s THEN 1 ELSE 0 END ), 0 ) AS departures_today,
+					COALESCE( SUM( CASE WHEN r.moved_from = 0 AND r.start_at_gmt >= %s AND r.start_at_gmt < %s THEN 1 ELSE 0 END ), 0 ) AS arrivals_today,
+					COALESCE( SUM( CASE WHEN r.moved_to = 0 AND r.end_at_gmt >= %s AND r.end_at_gmt < %s THEN 1 ELSE 0 END ), 0 ) AS departures_today,
 					COALESCE( SUM( CASE WHEN r.status = 'checked_in' THEN 1 ELSE 0 END ), 0 ) AS in_house
 				FROM %i r INNER JOIN %i b ON b.id = r.booking_id AND b.deleted_at IS NULL
 				WHERE r.status IN ( $statuses )

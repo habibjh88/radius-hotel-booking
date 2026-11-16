@@ -15,6 +15,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import {
+	ArrowRightLeft,
 	Ban,
 	CalendarSearch,
 	Check,
@@ -55,6 +56,7 @@ import {
 	usePaymentAction,
 	usePayments,
 } from './api';
+import MoveGuestDialog from './components/MoveGuestDialog';
 import RecordPaymentDialog from './components/RecordPaymentDialog';
 import { actionLabel, lineQuestion } from './moves';
 
@@ -144,6 +146,7 @@ export function BookingList( { withPageActions = true } ) {
 		check_out: useAccess( 'bookings.check_out' ),
 		record_payment: useAccess( 'payments.record' ),
 		line_edit: useAccess( 'bookings.line_edit' ),
+		move_room: useAccess( 'bookings.move_room' ),
 	};
 	const allowed = ( action ) =>
 		access[ action ] && access[ action ] !== 'locked';
@@ -429,6 +432,15 @@ export function BookingList( { withPageActions = true } ) {
 		return [
 			primary ? moveAction( primary, { primary: true } ) : null,
 			can( 'approve' ) ? moveAction( 'approve' ) : null,
+			// A guest in the room: move them to another one (a fault in the room).
+			can( 'move_room' )
+				? {
+						label: actionLabel( 'move_room' ),
+						icon: ArrowRightLeft,
+						onSelect: () =>
+							setDialog( { action: 'move_room', line } ),
+				  }
+				: null,
 			{
 				label: __( 'View booking', 'radius-hotel-booking' ),
 				icon: Eye,
@@ -475,8 +487,13 @@ export function BookingList( { withPageActions = true } ) {
 
 	return (
 		<>
-			<Panel>
-				<div className="space-y-4">
+			{ /* Phones: no outer card; the filter and the list are cards
+			   of their own, so a third border and padding only cost width. */ }
+			<Panel
+				className="max-md:border-0 max-md:bg-transparent max-md:shadow-none"
+				bodyClassName="max-md:p-0"
+			>
+				<div className="space-y-3 md:space-y-4">
 					{ /* The date filter on top, then search and the quick filters above the table (R1-T9). */ }
 					<PeriodFilter
 						modes={ [ 'arrival', 'created' ] }
@@ -484,6 +501,8 @@ export function BookingList( { withPageActions = true } ) {
 						from={ from }
 						to={ to }
 						idPrefix="rtbp-booking-filter"
+						// Phones: no white panel around it, so a white card of its own.
+						className="max-md:bg-card max-md:shadow-sm"
 						onApply={ ( next ) => setView( next ) }
 					/>
 					<DataTable
@@ -562,6 +581,33 @@ export function BookingList( { withPageActions = true } ) {
 				</div>
 			</Panel>
 
+			<MoveGuestDialog
+				line={
+					'move_room' === dialog?.action
+						? { ...dialog.line, room_number: dialog.line.room }
+						: null
+				}
+				onClose={ () => setDialog( null ) }
+				onConfirm={ ( { roomId, reason, maintenance } ) =>
+					move
+						.mutateAsync( {
+							bookingId: dialog.line.booking_id,
+							lineId: dialog.line.id,
+							action: 'move_room',
+							roomId,
+							reason,
+							maintenance,
+						} )
+						.then( ( result ) => {
+							toast.success( result.message );
+							return result;
+						} )
+						.catch( ( err ) => {
+							toastError( err );
+							throw err;
+						} )
+				}
+			/>
 			<ConfirmDialog
 				open={ [ 'decline', 'cancel' ].includes( dialog?.action ) }
 				onOpenChange={ ( open ) => ! open && setDialog( null ) }

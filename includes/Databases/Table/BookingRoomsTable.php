@@ -59,6 +59,10 @@ class BookingRoomsTable extends Migration {
 				$table->dateTime( 'checked_out_at' )->nullable();
 				$table->unsignedBigInteger( 'checked_in_by' )->nullable();
 				$table->unsignedBigInteger( 'checked_out_by' )->nullable();
+				// A guest moved during the stay (booking-engine §7.1): the line left points to the line
+				// that carries on in the new room, and that one back to it (0 = not moved).
+				$table->unsignedBigInteger( 'moved_from' )->default( 0 );
+				$table->unsignedBigInteger( 'moved_to' )->default( 0 );
 				$table->timestamps();
 
 				$table->index( array( 'room_id', 'start_at_gmt', 'occupied_until_gmt' ), 'room_window' );

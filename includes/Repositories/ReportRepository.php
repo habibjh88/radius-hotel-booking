@@ -65,6 +65,7 @@ class ReportRepository {
 		$where  = "{$column} >= %s AND {$column} < %s";
 
 		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $bucket and $where are fixed SQL fragments chosen above (two %s in $where); $sql is prepared; the report caches its result.
+		// `line_count`: a stay split by a room move counts once, on its first part (its arrival).
 		$sql = $wpdb->prepare(
 			"SELECT {$bucket} AS bucket,
 				COALESCE( pm.method, '' ) AS method,
@@ -74,7 +75,7 @@ class ReportRepository {
 					ELSE 'sold'
 				END AS outcome,
 				IF( b.payment_status = 'paid', 1, 0 ) AS paid,
-				COUNT(*) AS line_count,
+				SUM( CASE WHEN br.moved_from = 0 THEN 1 ELSE 0 END ) AS line_count,
 				COUNT( DISTINCT b.id ) AS booking_count,
 				SUM( br.total ) AS total
 			FROM %i br

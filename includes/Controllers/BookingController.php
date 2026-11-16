@@ -15,6 +15,7 @@ use RadiusTheme\RadiusHotelBooking\Core\Api\Middleware\PermissionMiddleware;
 use RadiusTheme\RadiusHotelBooking\Core\Container\Container;
 use RadiusTheme\RadiusHotelBooking\Core\Permissions\Capabilities;
 use RadiusTheme\RadiusHotelBooking\Repositories\BookingRepository;
+use RadiusTheme\RadiusHotelBooking\Repositories\BookingRoomRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\GuestRepository;
 use RadiusTheme\RadiusHotelBooking\Resources\BookingResource;
 use RadiusTheme\RadiusHotelBooking\Services\Availability\AvailabilityService;
@@ -60,7 +61,18 @@ class BookingController extends BaseController {
 				'checkIn'  => 'bookings.check_in',
 				'checkOut' => 'bookings.check_out',
 				'noShow'   => 'bookings.no_show',
-				'freeRooms' => 'bookings.check_in',
+				// The rooms offered for a check-in, or for a move during the stay (`?for=move`).
+				'freeRooms' => static fn( $request ) => 'move' === $request->get_param( 'for' ) ? array( 'bookings.check_in', 'bookings.move_room' ) : array( 'bookings.check_in' ),
+				// A move during the stay is a check-in-level desk action; putting the room left
+				// in maintenance is a room change (`rooms.manage`, as on the Rooms screen).
+				'moveRoom'  => static function ( $request ) {
+					$body = (array) $request->get_json_params();
+					$keys = array( 'bookings.check_in', 'bookings.move_room' );
+					if ( ! array_key_exists( 'maintenance', $body ) || rest_sanitize_boolean( $body['maintenance'] ) ) {
+						$keys[] = 'rooms.manage';
+					}
+					return $keys;
+				},
 				'addLine'    => 'bookings.line_add',
 				'editLine'   => 'bookings.line_edit',
 				'removeLine' => 'bookings.line_remove',
@@ -262,6 +274,41 @@ class BookingController extends BaseController {
 	 */
 	public function checkOut( WP_REST_Request $request ) {
 		return $this->transition( $request, static fn( $service, $body, $id ) => $service->checkOut( $id ), __( 'Checked out.', 'radius-hotel-booking' ) );
+	}
+
+	/**
+	 * POST booking-lines/{id}/move `{ room_id, reason, maintenance? }`: move a
+	 * checked-in guest to another room of the same type (the old room goes to
+	 * maintenance unless `maintenance` is false).
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function moveRoom( WP_REST_Request $request ) {
+		return $this->applyMiddleware(
+			$request,
+			static function ( $request ) {
+				try {
+					$body        = (array) $request->get_json_params();
+					$id          = (int) $request->get_param( 'id' );
+					$maintenance = ! array_key_exists( 'maintenance', $body ) || rest_sanitize_boolean( $body['maintenance'] );
+					$line        = ( new BookingRoomRepository() )->find( $id );
+					$service     = new BookingStatusService();
+					$booking_id  = $service->moveRoom( $id, (int) ( $body['room_id'] ?? 0 ), (string) ( $body['reason'] ?? '' ), $maintenance );
+					// The room left goes out of order: its bookings still to come need another room.
+					$upcoming = $maintenance && $line ? $service->upcomingOn( (int) $line->room_id, $booking_id ) : array();
+					return ApiResponse::success(
+						array(
+							'booking'  => BookingResource::record( ( new BookingQuery() )->load( $booking_id ) ),
+							'upcoming' => $upcoming,
+						),
+						__( 'Guest moved to the new room.', 'radius-hotel-booking' )
+					)->send();
+				} catch ( \Throwable $e ) {
+					return ApiResponse::fromThrowable( $e )->send();
+				}
+			}
+		);
 	}
 
 	/**

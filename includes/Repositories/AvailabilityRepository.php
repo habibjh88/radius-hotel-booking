@@ -99,14 +99,14 @@ class AvailabilityRepository {
 	 *
 	 * The caller widens the envelope by the cleaning buffer (on the left, so a
 	 * stay ending just before `from` still counts); rows are returned as they
-	 * are stored and `Overlap` applies the buffer.
+	 * are stored (an overstay ends with the envelope) and `Overlap` applies the buffer.
 	 *
 	 * @param int[]  $room_ids     Room ids.
 	 * @param string $from_gmt     Envelope start, GMT `Y-m-d H:i:s`.
 	 * @param string $to_gmt       Envelope end (exclusive), GMT.
 	 * @param string $hold_token   The requester's own hold token: not a conflict (§10 #11).
 	 * @param int    $exclude_line A booking line being edited: not a conflict with itself.
-	 * @param string $now_gmt      "Now" for hold expiry; empty = the current time.
+	 * @param string $now_gmt      "Now" for hold expiry and overstays; empty = the current time.
 	 * @return array<int, array<int, array>> Room id => intervals `{ s, e, kind, ref_id, label }`,
 	 *                                       sorted by start. `label` is the booking reference
 	 *                                       for a line and the reason for a block.
@@ -127,13 +127,19 @@ class AvailabilityRepository {
 		$statuses = implode( ',', array_fill( 0, count( self::OCCUPYING ), '%s' ) );
 
 		// Lines: occupying status, overlapping the envelope, the edited line
-		// excluded (`id <> 0` excludes nothing).
+		// excluded (`id <> 0` excludes nothing). A guest still checked in past
+		// the end of the stay (an overstay, §8) holds the room until check-out:
+		// over any envelope that includes now, to its end — the room is not
+		// sold or moved into while they are there.
 		// Holds: not expired, not the requester's own token ('' matches no row).
 		// Blocks: the property, the room, its room type or its floor.
-		$sql = "SELECT br.room_id, br.start_at_gmt AS s, br.occupied_until_gmt AS e, 'line' AS kind, br.booking_id AS ref_id, COALESCE( bk.reference, '' ) AS label
+		$sql = "SELECT br.room_id, br.start_at_gmt AS s,
+				IF( br.status = 'checked_in' AND br.occupied_until_gmt < %s, %s, br.occupied_until_gmt ) AS e,
+				'line' AS kind, br.booking_id AS ref_id, COALESCE( bk.reference, '' ) AS label
 			FROM %i br LEFT JOIN %i bk ON bk.id = br.booking_id
 			WHERE br.room_id IN ( $rooms ) AND br.status IN ( $statuses ) AND br.id <> %d
-				AND br.start_at_gmt < %s AND br.occupied_until_gmt > %s
+				AND br.start_at_gmt < %s
+				AND ( br.occupied_until_gmt > %s OR ( br.status = 'checked_in' AND %s >= %s ) )
 			UNION ALL
 			SELECT h.room_id, h.start_at_gmt, h.end_at_gmt, 'hold', h.id, ''
 			FROM %i h
@@ -150,10 +156,10 @@ class AvailabilityRepository {
 			WHERE r.id IN ( $rooms ) AND b.start_at_gmt < %s AND b.end_at_gmt > %s";
 
 		$args = array_merge(
-			array( rtbp_table( 'booking_rooms' ), rtbp_table( 'bookings' ) ),
+			array( $now_gmt, $to_gmt, rtbp_table( 'booking_rooms' ), rtbp_table( 'bookings' ) ),
 			$room_ids,
 			self::OCCUPYING,
-			array( $exclude_line, $to_gmt, $from_gmt, rtbp_table( 'holds' ) ),
+			array( $exclude_line, $to_gmt, $from_gmt, $now_gmt, $from_gmt, rtbp_table( 'holds' ) ),
 			$room_ids,
 			array( $now_gmt, $hold_token, $to_gmt, $from_gmt, rtbp_table( 'blocks' ), rtbp_table( 'rooms' ) ),
 			$room_ids,

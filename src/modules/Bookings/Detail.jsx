@@ -55,6 +55,7 @@ import { toast, toastError } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import { useBooking, useBookingAction, useLineChange } from './api';
 import CheckInDialog from './components/CheckInDialog';
+import MoveGuestDialog from './components/MoveGuestDialog';
 import EditBookingGuest from './components/EditBookingGuest';
 import PaymentDue from '@/components/booking/PaymentDue';
 import LineEditor from './components/LineEditor';
@@ -149,7 +150,36 @@ function Line( { line, actions = [], onAction } ) {
 								__( 'Room %s', 'radius-hotel-booking' ),
 								line.room_number
 							) }
-							<StatusBadge domain="stay" value={ line.status } />
+							{ line.moved_to_room ? (
+								// The part of the stay before a room move (split at the move).
+								<span className="inline-flex rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-semibold text-primary">
+									{ sprintf(
+										/* translators: %s: room number. */
+										__(
+											'Moved to room %s',
+											'radius-hotel-booking'
+										),
+										line.moved_to_room
+									) }
+								</span>
+							) : (
+								<StatusBadge
+									domain="stay"
+									value={ line.status }
+								/>
+							) }
+							{ line.moved_from_room ? (
+								<span className="inline-flex rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-semibold text-primary">
+									{ sprintf(
+										/* translators: %s: room number. */
+										__(
+											'From room %s',
+											'radius-hotel-booking'
+										),
+										line.moved_from_room
+									) }
+								</span>
+							) : null }
 							{ 'removed' === line.room_state ? (
 								<span className="text-xs font-normal text-muted-foreground">
 									{ __(
@@ -195,8 +225,17 @@ function Line( { line, actions = [], onAction } ) {
 				{ line.checked_in_at ? (
 					<span>
 						{ sprintf(
-							/* translators: 1: date and time, 2: staff name. */
-							__( 'In %1$s by %2$s', 'radius-hotel-booking' ),
+							line.moved_from_room
+								? /* translators: 1: date and time, 2: staff name. */
+								  __(
+										'Moved in %1$s by %2$s',
+										'radius-hotel-booking'
+								  )
+								: /* translators: 1: date and time, 2: staff name. */
+								  __(
+										'In %1$s by %2$s',
+										'radius-hotel-booking'
+								  ),
 							formatDateTime( line.checked_in_at ),
 							line.checked_in_by || '—'
 						) }
@@ -205,8 +244,17 @@ function Line( { line, actions = [], onAction } ) {
 				{ line.checked_out_at ? (
 					<span>
 						{ sprintf(
-							/* translators: 1: date and time, 2: staff name. */
-							__( 'Out %1$s by %2$s', 'radius-hotel-booking' ),
+							line.moved_to_room
+								? /* translators: 1: date and time, 2: staff name. */
+								  __(
+										'Moved out %1$s by %2$s',
+										'radius-hotel-booking'
+								  )
+								: /* translators: 1: date and time, 2: staff name. */
+								  __(
+										'Out %1$s by %2$s',
+										'radius-hotel-booking'
+								  ),
 							formatDateTime( line.checked_out_at ),
 							line.checked_out_by || '—'
 						) }
@@ -345,6 +393,7 @@ export default function BookingDetail() {
 		check_in: useAccess( 'bookings.check_in' ),
 		check_out: useAccess( 'bookings.check_out' ),
 		no_show: useAccess( 'bookings.no_show' ),
+		move_room: useAccess( 'bookings.move_room' ),
 		line_add: useAccess( 'bookings.line_add' ),
 		line_edit: useAccess( 'bookings.line_edit' ),
 		line_remove: useAccess( 'bookings.line_remove' ),
@@ -382,11 +431,21 @@ export default function BookingDetail() {
 		);
 	}, [ editParam, booking ] );
 
-	const run = ( action, { line = null, reason = '', roomId = 0 } = {} ) =>
+	const run = (
+		action,
+		{ line = null, reason = '', roomId = 0, maintenance } = {}
+	) =>
 		act
-			.mutateAsync( { action, lineId: line?.id, reason, roomId } )
-			.then( ( { message } ) => {
-				toast.success( message );
+			.mutateAsync( {
+				action,
+				lineId: line?.id,
+				reason,
+				roomId,
+				maintenance,
+			} )
+			.then( ( result ) => {
+				toast.success( result.message );
+				return result;
 			} )
 			.catch( ( err ) => {
 				toastError( err );
@@ -931,6 +990,18 @@ export default function BookingDetail() {
 							toastError( err );
 							throw err;
 						} )
+				}
+			/>
+			<MoveGuestDialog
+				line={ 'move_room' === dialog?.action ? dialog.line : null }
+				onClose={ () => setDialog( null ) }
+				onConfirm={ ( { roomId, reason, maintenance } ) =>
+					run( 'move_room', {
+						line: dialog.line,
+						roomId,
+						reason,
+						maintenance,
+					} )
 				}
 			/>
 			<CheckInDialog

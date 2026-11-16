@@ -56,6 +56,7 @@ const TONES = {
  * @param {string}   props.to      Optional route to open on click.
  * @param {boolean}  props.loading Show a skeleton instead of the value.
  * @param {string}   props.tone    `red` | `green` | `orange` | `blue` | `purple` | `amber`: the tinted look.
+ * @param {boolean} props.compact Phones only (below 640 px): smaller padding and number, no hint (the dashboard strip).
  * @return {JSX.Element} Card.
  */
 export default function StatCard( {
@@ -66,18 +67,27 @@ export default function StatCard( {
 	to,
 	loading,
 	tone,
+	compact = false,
 } ) {
 	const colors = tone ? TONES[ tone ] || TONES.blue : null;
 	if ( colors ) {
 		const tinted = (
 			<>
 				<div className="flex items-start justify-between gap-3">
-					<p className="m-0 min-w-0 truncate text-[15px] font-medium text-muted-foreground">
+					<p
+						className={ cn(
+							'm-0 min-w-0 truncate text-[15px] font-medium text-muted-foreground',
+							compact && 'max-sm:text-[13px]'
+						) }
+					>
 						{ label }
 					</p>
 					{ Icon ? (
 						<Icon
-							className="h-6 w-6 shrink-0"
+							className={ cn(
+								'h-6 w-6 shrink-0',
+								compact && 'max-sm:h-5 max-sm:w-5'
+							) }
 							style={ { color: colors.icon } }
 							strokeWidth={ 1.75 }
 							aria-hidden="true"
@@ -87,19 +97,32 @@ export default function StatCard( {
 				{ loading ? (
 					<Skeleton className="mt-2 h-8 w-16" />
 				) : (
-					<p className="m-0 mt-1 text-[32px] font-semibold leading-10 tabular-nums text-heading">
+					<p
+						className={ cn(
+							'm-0 mt-1 text-[32px] font-semibold leading-10 tabular-nums text-heading',
+							compact &&
+								'max-sm:mt-0.5 max-sm:text-2xl max-sm:leading-8'
+						) }
+					>
 						{ value }
 					</p>
 				) }
 				{ hint ? (
-					<p className="m-0 truncate text-xs text-muted-foreground">
+					<p
+						className={ cn(
+							'm-0 truncate text-xs text-muted-foreground',
+							compact && 'max-sm:hidden'
+						) }
+					>
 						{ hint }
 					</p>
 				) : null }
 			</>
 		);
-		const tintedClass =
-			'block min-w-0 rounded-lg border p-5 no-underline transition-all duration-150';
+		const tintedClass = cn(
+			'block min-w-0 rounded-lg border p-5 no-underline transition-all duration-150',
+			compact && 'max-sm:px-3.5 max-sm:py-3'
+		);
 		const style = {
 			backgroundImage: `linear-gradient(${ colors.tint }, #ffffff)`,
 			borderColor: colors.border,

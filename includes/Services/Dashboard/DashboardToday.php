@@ -90,7 +90,7 @@ class DashboardToday {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- cached by the caller.
 		$rows = (array) $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT r.id, r.booking_id, r.status, r.room_number, r.start_at_gmt, r.end_at_gmt, r.checked_in_at, r.checked_out_at,
+				"SELECT r.id, r.booking_id, r.status, r.room_number, r.start_at_gmt, r.end_at_gmt, r.checked_in_at, r.checked_out_at, r.moved_from, r.moved_to,
 					b.reference, COALESCE( t.name, '' ) AS room_type,
 					TRIM( CONCAT( COALESCE( g.first_name, '' ), ' ', COALESCE( g.last_name, '' ) ) ) AS guest
 				FROM %i r
@@ -132,7 +132,11 @@ class DashboardToday {
 				'room'       => (string) $row['room_number'],
 				'room_type'  => (string) $row['room_type'],
 			);
-			if ( $row['start_at_gmt'] >= $today && $row['start_at_gmt'] < $tomorrow && in_array( $status, DashboardCounters::DAY_STATUSES, true ) ) {
+			// A room move during the stay split it in two lines: the guest neither
+			// arrived in the new room nor left the hotel from the old one.
+			$moved_in  = (int) $row['moved_from'] > 0;
+			$moved_out = (int) $row['moved_to'] > 0;
+			if ( ! $moved_in && $row['start_at_gmt'] >= $today && $row['start_at_gmt'] < $tomorrow && in_array( $status, DashboardCounters::DAY_STATUSES, true ) ) {
 				$arrived  = in_array( $status, array( 'checked_in', 'checked_out' ), true );
 				$events[] = $base + array(
 					'kind'  => 'arrival',
@@ -141,7 +145,7 @@ class DashboardToday {
 					'state' => $arrived ? 'done' : ( $start < $ts ? 'overdue' : 'todo' ),
 				);
 			}
-			if ( $row['end_at_gmt'] >= $today && $row['end_at_gmt'] < $tomorrow && in_array( $status, array( 'checked_in', 'checked_out' ), true ) ) {
+			if ( ! $moved_out && $row['end_at_gmt'] >= $today && $row['end_at_gmt'] < $tomorrow && in_array( $status, array( 'checked_in', 'checked_out' ), true ) ) {
 				$events[] = $base + array(
 					'kind'  => 'departure',
 					'type'  => 'scheduled',
@@ -153,6 +157,9 @@ class DashboardToday {
 				'checked_in' => 'checked_in_at',
 				'checked_out' => 'checked_out_at',
 			) as $kind => $column ) {
+				if ( ( 'checked_in' === $kind ? $moved_in : $moved_out ) ) {
+					continue;
+				}
 				if ( $row[ $column ] && $row[ $column ] >= $local_today && $row[ $column ] < $local_tomorrow ) {
 					$events[] = $base + array(
 						'kind'  => $kind,

@@ -253,7 +253,7 @@ lives at most its first hold + 3 hold periods: extending it, or adding rooms, ne
 expiry past that. A web booking is made from exactly the token's live holds (same room and
 window per line, `hold_mismatch` otherwise; no live hold → 410 `hold_expired`).
 
-### 7.1 The locked write path (used by: create hold, create booking, add line, edit line, change room at check-in, import)
+### 7.1 The locked write path (used by: create hold, create booking, add line, edit line, change room at check-in, move a checked-in guest, import)
 
 ```
 Transaction::run(function () {
@@ -376,6 +376,12 @@ never affects inventory, except through the deadline release.
 | 38 | The rate's price changes after booking | existing lines keep their price; only an edit of the plan, room type or window re-prices that one line (M03, acceptance 2) |
 | 39 | Guest arrives before the stay's start and is checked in | allowed on the arrival day only (else 409 `too_early`); the room is locked and checked free for `[now, start)` (else `room_unavailable`); the line's start becomes now, end and price unchanged (M03 critical review) |
 | 40 | The last live room of a booking is removed while its other rooms are cancelled | refused, 409 `last_line`: the booking is cancelled, not emptied (M03 critical review) |
+| 41 | A checked-in guest is moved to another room during the stay (fault in the room) | `BookingStatusService::moveRoom()`: same room type only; both rooms locked (ascending id); the new room must be `available` and free for `[now, occupied_until)` (own line excluded), else 409 `room_unavailable` with the blocking booking's reference. The stay is **split at now**: the line left ends now as `checked_out` (`end_at` = `occupied_until` = now, so its room keeps the cleaning buffer) and points to a new `checked_in` line in the new room for `[now, end)` (`moved_to` / `moved_from`). The line price is shared by time spent (units likewise, at least 1 each); booking total, payments and guest count do not change (`BookingTotals` and `liveCount()` skip the line left). The room left goes to maintenance with the reason unless unticked or already not `available` (state and note kept); `rooms.manage` is required for it. After the commit `rtbp_booking_changed` (action `move_room`) re-issues the invoice with both rooms and refreshes the caches |
+| 42 | Move asked for a pending, confirmed or checked-out line, or once the stay has ended | 409 `illegal_transition` (before check-in the room is changed with Edit or at check-in), or 409 `stay_over` |
+| 43 | Two desks move two guests into the same free room at the same instant | exactly one succeeds, the other 409 `room_unavailable` (checked 3 of 3 runs) |
+| 44 | A room move, seen by the dashboard and reports | no arrival for the new line, no departure for the line left (`DashboardToday`, `DashboardCounters`); sold-room counts take the first part only (`moved_from = 0`); occupancy and room history read each line in its own room |
+| 45 | A guest is still checked in past the end of the stay (overstay) | `busy()` holds the room over any envelope that includes now, to the envelope's end: no sale, check-in move or room move into it until check-out; a stay starting later is not blocked. An overstaying guest is not moved (409 `stay_over`): check out, or extend the stay first |
+| 46 | A guest is checked into the booked room while it is in maintenance or out of service (e.g. after a move put it there) | refused, 409 `room_unavailable`: choose another room at check-in, or set the room back to available. After a move into maintenance the answer lists the room's bookings still to come |
 
 ## 11. Where each part lives
 

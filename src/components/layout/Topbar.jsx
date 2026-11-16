@@ -57,12 +57,12 @@ export default function Topbar( { onOpenMenu, onOpenSearch, isDesktop } ) {
 		__( 'Page not found', 'radius-hotel-booking' );
 
 	return (
-		<header className="rtbp-shell-topbar flex min-h-[72px] items-center gap-4 border-b border-border bg-card px-4 md:px-8">
+		<header className="rtbp-shell-topbar flex min-h-[64px] items-center gap-2 border-b border-border bg-card px-3 sm:min-h-[72px] sm:gap-4 sm:px-4 md:px-8">
 			{ ! isDesktop ? (
 				<button
 					type="button"
 					onClick={ onOpenMenu }
-					className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-card text-heading hover:bg-muted"
+					className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-card text-heading hover:bg-muted sm:h-10 sm:w-10"
 					aria-label={ __( 'Open menu', 'radius-hotel-booking' ) }
 				>
 					<Menu className="h-5 w-5" aria-hidden="true" />
@@ -70,7 +70,7 @@ export default function Topbar( { onOpenMenu, onOpenSearch, isDesktop } ) {
 			) : null }
 
 			<div className="min-w-0 flex-1 py-3">
-				<h1 className="m-0 truncate p-0 text-lg font-bold leading-6 text-heading">
+				<h1 className="m-0 truncate p-0 text-base font-bold leading-6 text-heading sm:text-lg">
 					{ title }
 				</h1>
 				{ route?.description ? (
@@ -80,11 +80,12 @@ export default function Topbar( { onOpenMenu, onOpenSearch, isDesktop } ) {
 				) : null }
 			</div>
 
-			<div className="flex shrink-0 items-center gap-3">
+			<div className="flex shrink-0 items-center gap-1 sm:gap-3">
 				<button
 					type="button"
 					onClick={ onOpenSearch }
-					className="flex h-10 items-center gap-2 rounded-lg border border-border bg-card px-3 text-[13px] text-muted-foreground transition-colors hover:border-primary hover:text-heading"
+					// Phones: search sits in the menu drawer instead.
+					className="hidden h-9 min-w-[36px] items-center justify-center gap-2 sm:flex rounded-lg border border-border bg-card px-2 text-[13px] sm:h-10 sm:min-w-[40px] sm:px-3 text-muted-foreground transition-colors hover:border-primary hover:text-heading"
 					aria-label={ __(
 						'Search and go to a screen',
 						'radius-hotel-booking'
@@ -109,7 +110,12 @@ export default function Topbar( { onOpenMenu, onOpenSearch, isDesktop } ) {
 					<Component key={ key } />
 				) ) }
 				<NotificationBell />
-				{ actions }
+				{ actions ? (
+					// Phones: the page's button ("+") as compact as the others.
+					<div className="flex items-center max-sm:[&>*]:h-9 max-sm:[&>*]:min-w-[36px] max-sm:[&>*]:px-2.5">
+						{ actions }
+					</div>
+				) : null }
 				<UserMenu />
 			</div>
 		</header>
