@@ -158,6 +158,8 @@ $this->router->delete( 'public/holds/(?P<token>[A-Za-z0-9]{32})', array( PublicB
 $this->router->put( 'public/holds/(?P<token>[A-Za-z0-9]{32})', array( PublicBookingController::class, 'holdExtend' ) );
 $this->router->post( 'public/bookings', array( PublicBookingController::class, 'store' ) );
 $this->router->get( 'public/account', array( PublicBookingController::class, 'account' ) );
+$this->router->post( 'public/account/sign-in', array( PublicBookingController::class, 'accountSignIn' ) );
+$this->router->post( 'public/account/register', array( PublicBookingController::class, 'accountRegister' ) );
 $this->router->post( 'public/express/start', array( PublicBookingController::class, 'expressStart' ) );
 $this->router->post( 'public/express/verify', array( PublicBookingController::class, 'expressVerify' ) );
 $this->router->get( 'public/bookings/(?P<token>[a-f0-9]{32})', array( PublicBookingController::class, 'showByToken' ) );

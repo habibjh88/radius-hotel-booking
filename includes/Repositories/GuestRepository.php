@@ -9,6 +9,7 @@ namespace RadiusTheme\RadiusHotelBooking\Repositories;
 
 use RadiusTheme\RadiusHotelBooking\Abstracts\BaseRepository;
 use RadiusTheme\RadiusHotelBooking\Models\Guest;
+use RadiusTheme\RadiusHotelBooking\Support\Phone;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -71,6 +72,39 @@ class GuestRepository extends BaseRepository {
 			}
 		}
 		return array_values( $out );
+	}
+
+	/**
+	 * Guests whose saved phone is this number in any form, whatever country
+	 * code was (or was not) saved with it (Phone::sameNumber()). For records
+	 * kept before numbers carried a country code (`01 92 26 43`).
+	 *
+	 * @param string $raw As typed, at least 8 digits.
+	 * @return int[] Guest ids (at most 20 looked at).
+	 */
+	public function idsByAnyPhoneForm( string $raw ): array {
+		global $wpdb;
+		$tail = Phone::tail( $raw );
+		if ( '' === $tail ) {
+			return array();
+		}
+		// Every form of a number ends with the same 8 digits: the indexed tail finds the candidates.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- express lookup, indexed on phone_tail.
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				'SELECT id, phone, phone_e164 FROM %i WHERE deleted_at IS NULL AND phone_tail = %s ORDER BY id LIMIT 20',
+				rtbp_table( 'guests' ),
+				$tail
+			),
+			ARRAY_A
+		);
+		$ids = array();
+		foreach ( (array) $rows as $row ) {
+			if ( Phone::sameNumber( $raw, (string) $row['phone'] ) || Phone::sameNumber( $raw, (string) $row['phone_e164'] ) ) {
+				$ids[] = (int) $row['id'];
+			}
+		}
+		return array_values( array_unique( $ids ) );
 	}
 
 	/**

@@ -29,26 +29,75 @@ export default function Accounts( { value, setField, errors } ) {
 	return (
 		<>
 			<SettingsSection
-				title={ __( 'Signing in', 'radius-hotel-booking' ) }
+				title={ __(
+					'Signing in and creating an account',
+					'radius-hotel-booking'
+				) }
 				description={ __(
-					'Guests with an account on this website can sign in on the booking form. Their details are filled in for them, and their account is linked to their guest record the first time they book.',
+					'Guests sign in, or create an account, in a popup on the booking form without leaving the page. Their details are filled in for them, and their account is linked to their guest record the first time they book.',
 					'radius-hotel-booking'
 				) }
 			>
 				<div className="space-y-5">
-					<ToggleRow
-						label={ __(
-							'Show a "Sign in" link on the booking form',
-							'radius-hotel-booking'
-						) }
-						description={ __(
-							'Invites returning guests to sign in so they do not have to type their details again. Guests can still book without an account.',
-							'radius-hotel-booking'
-						) }
-						checked={ value.showSignIn }
-						onChange={ setField( 'showSignIn' ) }
-						error={ errors.showSignIn }
-					/>
+					<div className="space-y-3">
+						<div>
+							<h4 className="m-0 text-sm font-semibold text-heading">
+								{ __(
+									'Buttons above the rooms',
+									'radius-hotel-booking'
+								) }
+							</h4>
+							<p className="m-0 mt-0.5 text-[13px] text-muted-foreground">
+								{ __(
+									'The line at the top of the booking form, for guests who are not signed in. Turn off all three to hide it. Guests can still book without an account.',
+									'radius-hotel-booking'
+								) }
+							</p>
+						</div>
+						<ToggleRow
+							label={ __(
+								'Express checkout',
+								'radius-hotel-booking'
+							) }
+							description={
+								false === value.expressCheckout
+									? __(
+											'Shows only while express checkout is on (below).',
+											'radius-hotel-booking'
+									  )
+									: __(
+											'Returning guests enter their phone number before choosing rooms; their details are then ready at checkout.',
+											'radius-hotel-booking'
+									  )
+							}
+							checked={ false !== value.showExpressButton }
+							onChange={ setField( 'showExpressButton' ) }
+							error={ errors.showExpressButton }
+						/>
+						<ToggleRow
+							label={ __( 'Sign in', 'radius-hotel-booking' ) }
+							description={ __(
+								'Guests with an account sign in in a popup and their details are filled in.',
+								'radius-hotel-booking'
+							) }
+							checked={ value.showSignIn }
+							onChange={ setField( 'showSignIn' ) }
+							error={ errors.showSignIn }
+						/>
+						<ToggleRow
+							label={ __(
+								'Create an account',
+								'radius-hotel-booking'
+							) }
+							description={ __(
+								'New guests create an account in the same popup. Shows only while new accounts are allowed: "Create an account for new guests" (below) or WordPress\'s "Anyone can register".',
+								'radius-hotel-booking'
+							) }
+							checked={ false !== value.showRegister }
+							onChange={ setField( 'showRegister' ) }
+							error={ errors.showRegister }
+						/>
+					</div>
 					<ToggleRow
 						label={ __(
 							'Require sign-in to book',
@@ -111,7 +160,7 @@ export default function Accounts( { value, setField, errors } ) {
 			<SettingsSection
 				title={ __( 'New accounts', 'radius-hotel-booking' ) }
 				description={ __(
-					'What happens when someone without an account books on the website.',
+					'How guests without an account get one.',
 					'radius-hotel-booking'
 				) }
 			>
@@ -121,7 +170,7 @@ export default function Accounts( { value, setField, errors } ) {
 						'radius-hotel-booking'
 					) }
 					description={ __(
-						'When a booking comes from a phone number and e-mail address the website does not know, an account is created and the guest receives an e-mail to set their password. A guest without an e-mail address gets no account. Nobody is ever signed in automatically: if an account already exists for that phone or e-mail, the booking is taken without it.',
+						'Guests can create their own account in the sign-in popup, with their name, phone, e-mail and a password. And when a booking comes from a phone number and e-mail address the website does not know, an account is created and the guest receives an e-mail to set their password. A guest without an e-mail address gets no account. Nobody is ever signed in to an existing account automatically.',
 						'radius-hotel-booking'
 					) }
 					checked={ value.createAccounts }

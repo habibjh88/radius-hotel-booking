@@ -418,6 +418,18 @@ Reminders: the bell and an alert flag rooms not checked in or out on time.
 French translation completed; wrong French labels such as "Overdue" fixed.
 Day and month names on documents follow the staff language, even without WordPress language files.
 Booking pages keep the brand colour on Bootstrap themes that forced links blue.
+Booking page: a flexible rate now asks the arrival time with the chosen room, not the dates.
+Express checkout finds returning guests in any phone format, with or without country code.
+Express checkout no longer opens for signed-in guests whose account has no name.
+Express checkout shows the guest's details masked and read-only; bookings always use the record's details.
+Booking page: "Sign in" opens a secure popup, so guests stay on the page.
+New booking: customer and order summary in a right panel, rates side by side.
+New booking: the chosen customer shows contact, ID, stays, balance owed and latest bookings.
+Edit guest: staff allowed to see ID numbers can show and correct the number on file.
+Check-in and check-out can record the actual time, for staff with the new permission.
+New booking: guest search results open in a dropdown, chosen with mouse or arrow keys.
+Booking page: "Create an account" link and tab in the sign-in popup; guests stay signed in.
+Booking page: Express checkout before choosing rooms; each account button can be switched off.
 
 = 1.0.0 =
 Initial release.

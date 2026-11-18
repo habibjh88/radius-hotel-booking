@@ -35,6 +35,7 @@ import { formatMoney } from '@/lib/format';
  * @param {Object|null} props.priceChange `{ index, room, from, to }` from the server.
  * @param {boolean}     props.submitting  Sending.
  * @param {Function}    props.onConfirm   Send the booking (again after a price change).
+ * @param {boolean}     props.compact     One column, full-width button (the desk's side panel).
  * @return {JSX.Element} Step.
  */
 export default function SummaryStep( {
@@ -48,6 +49,7 @@ export default function SummaryStep( {
 	priceChange,
 	submitting,
 	onConfirm,
+	compact = false,
 } ) {
 	// "Paid now" records money taken: `payments.record` (legacy mark-as-paid).
 	const canMarkPaid = 'locked' !== useAccess( 'payments.record' );
@@ -95,7 +97,13 @@ export default function SummaryStep( {
 					] }
 				/>
 				{ 'paid' === payment ? (
-					<div className="grid gap-3 pt-2 sm:grid-cols-2">
+					<div
+						className={
+							compact
+								? 'grid gap-3 pt-2'
+								: 'grid gap-3 pt-2 sm:grid-cols-2'
+						}
+					>
 						<Field
 							label={ __( 'Paid by', 'radius-hotel-booking' ) }
 						>
@@ -171,6 +179,7 @@ export default function SummaryStep( {
 				<Textarea
 					rows={ 2 }
 					maxLength={ 2000 }
+					className={ compact ? '!min-h-[64px]' : undefined }
 					value={ note }
 					onChange={ ( e ) => onChange( { note: e.target.value } ) }
 				/>
@@ -227,7 +236,7 @@ export default function SummaryStep( {
 				<Button
 					type="button"
 					size="lg"
-					className="w-full sm:w-auto"
+					className={ compact ? 'w-full' : 'w-full sm:w-auto' }
 					disabled={ Boolean( blocked ) || banned || submitting }
 					onClick={ () => onConfirm() }
 				>

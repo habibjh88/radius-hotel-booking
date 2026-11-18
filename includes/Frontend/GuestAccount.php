@@ -7,6 +7,8 @@
 
 namespace RadiusTheme\RadiusHotelBooking\Frontend;
 
+use RadiusTheme\RadiusHotelBooking\Core\Api\Middleware\RateLimitMiddleware;
+use RadiusTheme\RadiusHotelBooking\Exceptions\DomainException;
 use RadiusTheme\RadiusHotelBooking\Models\Guest;
 use RadiusTheme\RadiusHotelBooking\Repositories\GuestRepository;
 use RadiusTheme\RadiusHotelBooking\Settings\AccountSettings;
@@ -382,40 +384,11 @@ class GuestAccount {
 			return 'no_email';
 		}
 
-		// The full international digits (`2250707123456`): one form for every
-		// country; guests can sign in with the number written any way.
-		$e164   = Phone::toE164( $phone );
-		$digits = null !== $e164 ? substr( $e164, 1 ) : preg_replace( '/\D+/', '', $phone );
-		$login  = 'phone' === rtbp_setting( 'accounts', 'usernameFrom', 'phone' ) && '' !== $digits ? $digits : $email;
-		if ( username_exists( $login ) ) {
-			$login = $email;
-		}
-		$role    = AccountSettings::accountRole();
-		$user_id = wp_insert_user(
-			array(
-				'user_login'   => $login,
-				'user_email'   => $email,
-				'user_pass'    => wp_generate_password( 24 ),
-				'first_name'   => (string) $guest->first_name,
-				'last_name'    => (string) $guest->last_name,
-				'display_name' => $guest->fullName(),
-				'role'         => $role,
-			)
-		);
-		if ( is_wp_error( $user_id ) ) {
+		$made = self::insertAccount( (string) $guest->first_name, (string) $guest->last_name, $phone, $email, wp_generate_password( 24 ) );
+		if ( is_wp_error( $made ) ) {
 			return '';
 		}
-
-		/**
-		 * The user meta key the phone of a new account is kept in (`billing_phone`,
-		 * which shops already use; '' keeps none).
-		 *
-		 * @param string $key Meta key.
-		 */
-		$phone_key = (string) apply_filters( 'rtbp_account_phone_meta_key', 'billing_phone' );
-		if ( '' !== $phone_key && '' !== trim( $phone ) ) {
-			update_user_meta( $user_id, $phone_key, sanitize_text_field( $phone ) );
-		}
+		list( $user_id, $login, $role ) = $made;
 
 		( new GuestRepository() )->update( $guest_id, array( 'wp_user_id' => (int) $user_id ) );
 		rtbp_activity(
@@ -443,6 +416,195 @@ class GuestAccount {
 		do_action( 'rtbp_guest_account_created', (int) $user_id, $guest );
 
 		return 'created';
+	}
+
+	/**
+	 * Make a guest account (Settings → Guest accounts): the username is the
+	 * phone's full international digits, or the e-mail (Sign in with), the
+	 * role the guest one, the phone kept on the account too.
+	 *
+	 * @param string $first    First name.
+	 * @param string $last     Last name.
+	 * @param string $phone    Phone as typed.
+	 * @param string $email    E-mail (valid, lower case).
+	 * @param string $password Password.
+	 * @return array{0: int, 1: string, 2: string}|\WP_Error `[ user id, username, role ]`.
+	 */
+	private static function insertAccount( string $first, string $last, string $phone, string $email, string $password ) {
+		// The full international digits (`2250707123456`): one form for every
+		// country; guests can sign in with the number written any way.
+		$e164   = Phone::toE164( $phone );
+		$digits = null !== $e164 ? substr( $e164, 1 ) : preg_replace( '/\D+/', '', $phone );
+		$login  = 'phone' === rtbp_setting( 'accounts', 'usernameFrom', 'phone' ) && '' !== $digits ? $digits : $email;
+		if ( username_exists( $login ) ) {
+			$login = $email;
+		}
+		$role    = AccountSettings::accountRole();
+		$user_id = wp_insert_user(
+			array(
+				'user_login'   => $login,
+				'user_email'   => $email,
+				'user_pass'    => $password,
+				'first_name'   => $first,
+				'last_name'    => $last,
+				'display_name' => trim( $first . ' ' . $last ),
+				'role'         => $role,
+			)
+		);
+		if ( is_wp_error( $user_id ) ) {
+			return $user_id;
+		}
+
+		/**
+		 * The user meta key the phone of a new account is kept in (`billing_phone`,
+		 * which shops already use; '' keeps none).
+		 *
+		 * @param string $key Meta key.
+		 */
+		$phone_key = (string) apply_filters( 'rtbp_account_phone_meta_key', 'billing_phone' );
+		if ( '' !== $phone_key && '' !== trim( $phone ) ) {
+			update_user_meta( $user_id, $phone_key, sanitize_text_field( $phone ) );
+		}
+		return array( (int) $user_id, $login, $role );
+	}
+
+	/**
+	 * Fewest characters of a password chosen on the booking page.
+	 */
+	const MIN_PASSWORD = 8;
+
+	/**
+	 * Whether visitors may create an account on the booking page: WordPress's
+	 * "Anyone can register", or Settings → Guest accounts → "Create an account
+	 * for new guests".
+	 *
+	 * @return bool
+	 */
+	public static function registrationOpen(): bool {
+		$open = (bool) get_option( 'users_can_register' ) || (bool) rtbp_setting( 'accounts', 'createAccounts', false );
+
+		/**
+		 * Filters whether the booking page offers "Create an account".
+		 *
+		 * @param bool $open Open.
+		 */
+		return (bool) apply_filters( 'rtbp_account_registration_open', $open );
+	}
+
+	/**
+	 * `POST public/account/register`: the booking page's "Create an account"
+	 * tab. Makes a guest account and signs it in, so the visitor stays on the
+	 * page with their details filled in.
+	 *
+	 * - Only from this site's own pages, only while registrationOpen(), only
+	 *   for a visitor who is not signed in; limited per IP (PublicBookingController).
+	 * - A phone or e-mail that already has an account is refused (sign in or
+	 *   reset the password instead): a second account would split the guest.
+	 * - The account is never linked to a guest record here: its first booking
+	 *   links it, by the same rules as any signed-in visitor (the name and
+	 *   the document or contact detail must agree), so typing someone else's
+	 *   phone reveals nothing.
+	 * - `website` is a field people never see: a bot that fills it is refused.
+	 *
+	 * @param array  $input  `{ first_name, last_name, phone, email, password, remember?, website? }`.
+	 * @param string $source The request's Origin or Referer.
+	 * @return array `{ signed_in: true }`.
+	 * @throws DomainException 403 another site / closed, 409 signed in / account exists, 422 fields.
+	 */
+	public static function register( array $input, string $source ): array {
+		if ( ! self::sameSite( $source ) ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw new DomainException( 'invalid_source', __( 'Please create your account from the booking page.', 'radius-hotel-booking' ), 403 );
+		}
+		if ( ! self::registrationOpen() ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw new DomainException( 'registration_closed', __( 'New accounts cannot be created on this website.', 'radius-hotel-booking' ), 403 );
+		}
+		if ( is_user_logged_in() ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw new DomainException( 'signed_in', __( 'You are already signed in.', 'radius-hotel-booking' ), 409 );
+		}
+
+		$text     = static fn( $key, $max ) => is_scalar( $input[ $key ] ?? null ) ? mb_substr( trim( sanitize_text_field( (string) $input[ $key ] ) ), 0, $max ) : '';
+		$first    = $text( 'first_name', 100 );
+		$last     = $text( 'last_name', 100 );
+		$phone    = $text( 'phone', 40 );
+		$email    = strtolower( $text( 'email', 100 ) );
+		// As typed: a password is never sanitised (wp-login.php does not).
+		$password = is_scalar( $input['password'] ?? null ) ? (string) $input['password'] : '';
+
+		$errors = array();
+		if ( '' !== $text( 'website', 200 ) ) {
+			$errors['email'] = __( 'We could not create your account. Please try again.', 'radius-hotel-booking' );
+		}
+		if ( '' === $first ) {
+			$errors['first_name'] = __( 'Enter your first name.', 'radius-hotel-booking' );
+		}
+		if ( '' === $last ) {
+			$errors['last_name'] = __( 'Enter your last name.', 'radius-hotel-booking' );
+		}
+		if ( null === Phone::toE164( $phone ) ) {
+			$errors['phone'] = __( 'Enter a phone number we can reach you on.', 'radius-hotel-booking' );
+		}
+		if ( ! is_email( $email ) ) {
+			$errors['email'] = __( 'Enter a valid e-mail address. We send your booking and password reset there.', 'radius-hotel-booking' );
+		}
+		if ( mb_strlen( $password ) < self::MIN_PASSWORD ) {
+			/* translators: %d: fewest characters. */
+			$errors['password'] = sprintf( __( 'Choose a password of at least %d characters.', 'radius-hotel-booking' ), self::MIN_PASSWORD );
+		}
+		if ( $errors ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw DomainException::invalid( $errors );
+		}
+
+		if ( self::findUser( $phone, $email ) ) {
+			$message = __( 'An account already uses this phone number or e-mail. Sign in instead, or reset your password.', 'radius-hotel-booking' );
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw new DomainException( 'account_exists', $message, 409 );
+		}
+
+		$made = self::insertAccount( $first, $last, $phone, $email, $password );
+		if ( is_wp_error( $made ) ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw new DomainException( 'registration_failed', __( 'We could not create your account. Please try again.', 'radius-hotel-booking' ), 500 );
+		}
+		list( $user_id, $login ) = $made;
+
+		$user = get_userdata( $user_id );
+		wp_set_current_user( $user_id );
+		wp_set_auth_cookie( $user_id, rest_sanitize_boolean( $input['remember'] ?? false ), is_ssl() );
+		/** This action is documented in wp-includes/user.php */
+		do_action( 'wp_login', $login, $user );
+
+		rtbp_activity(
+			'guests.account_registered',
+			array(
+				'type'  => 'user',
+				'id'    => $user_id,
+				'label' => trim( $first . ' ' . $last ),
+			),
+			array(
+				'after'       => array(
+					'wp_user_id' => $user_id,
+					'username'   => $login,
+				),
+				/* translators: 1: name, 2: account username. */
+				'description' => sprintf( __( '%1$s created the website account %2$s on the booking page', 'radius-hotel-booking' ), trim( $first . ' ' . $last ), $login ),
+			)
+		);
+
+		// As WordPress's own sign-up: the site owner is told (the guest chose their password).
+		wp_new_user_notification( $user_id, null, 'admin' );
+
+		/**
+		 * Fires after a visitor created their account on the booking page.
+		 *
+		 * @param int $user_id New user.
+		 */
+		do_action( 'rtbp_guest_account_registered', $user_id );
+
+		return array( 'signed_in' => true );
 	}
 
 	/**
@@ -477,6 +639,99 @@ class GuestAccount {
 	}
 
 	/**
+	 * Wrong passwords one login may have from one visitor before a pause.
+	 */
+	const MAX_FAILS = 5;
+
+	/**
+	 * Wrong passwords one login may have from everyone before a pause (a
+	 * spread-out guessing attack).
+	 */
+	const MAX_FAILS_ALL = 20;
+
+	/**
+	 * `POST public/account/sign-in`: the booking page's sign-in popup.
+	 *
+	 * Signs in through WordPress itself (wp_signon()): the phone sign-in
+	 * above, e-mail addresses, and any security plugin hooked on
+	 * `authenticate` / `wp_login_failed` (limit login attempts, captcha…)
+	 * all apply as on wp-login.php.
+	 *
+	 * - Only from this site's own pages (Origin, else Referer): another site
+	 *   cannot sign a visitor in to an account of its choosing.
+	 * - One answer for an unknown login and a wrong password.
+	 * - After MAX_FAILS wrong passwords for one login from one visitor (or
+	 *   MAX_FAILS_ALL from everyone) it pauses 15 minutes; the route itself
+	 *   is limited per IP too (PublicBookingController).
+	 * - The cookies are set on this answer; the page then asks
+	 *   `GET public/account` again for the token and the details.
+	 *
+	 * @param string $login    Username, e-mail or phone number.
+	 * @param string $password Password, as typed.
+	 * @param bool   $remember Keep me signed in.
+	 * @param string $source   The request's Origin or Referer.
+	 * @return array `{ signed_in: true }`.
+	 * @throws DomainException 403 another site, 422 missing or wrong, 429 paused.
+	 */
+	public static function signIn( string $login, string $password, bool $remember, string $source ): array {
+		if ( ! self::sameSite( $source ) ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw new DomainException( 'invalid_source', __( 'Please sign in from the booking page.', 'radius-hotel-booking' ), 403 );
+		}
+		$login = trim( $login );
+		if ( '' === $login || '' === $password ) {
+			$errors = array();
+			if ( '' === $login ) {
+				$errors['login'] = __( 'Enter your phone number, e-mail or username.', 'radius-hotel-booking' );
+			}
+			if ( '' === $password ) {
+				$errors['password'] = __( 'Enter your password.', 'radius-hotel-booking' );
+			}
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw DomainException::invalid( $errors, reset( $errors ) );
+		}
+
+		$name = md5( strtolower( preg_replace( '/\s+/', '', $login ) ) );
+		$mine = 'rtbp_lf_' . md5( $name . '|' . RateLimitMiddleware::clientKey() );
+		$all  = 'rtbp_lf_' . $name;
+		if ( (int) get_transient( $mine ) >= self::MAX_FAILS || (int) get_transient( $all ) >= self::MAX_FAILS_ALL ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw new DomainException( 'sign_in_paused', __( 'Too many wrong passwords. Please wait 15 minutes, or reset your password.', 'radius-hotel-booking' ), 429 );
+		}
+
+		$user = wp_signon(
+			array(
+				'user_login'    => $login,
+				'user_password' => $password,
+				'remember'      => $remember,
+			),
+			is_ssl()
+		);
+		if ( ! $user instanceof WP_User ) {
+			foreach ( array( $mine, $all ) as $key ) {
+				set_transient( $key, (int) get_transient( $key ) + 1, 15 * MINUTE_IN_SECONDS );
+			}
+			$message = __( 'The phone number, e-mail or password is incorrect.', 'radius-hotel-booking' );
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw DomainException::invalid( array( 'password' => $message ), $message );
+		}
+		delete_transient( $mine );
+		return array( 'signed_in' => true );
+	}
+
+	/**
+	 * Whether a request's Origin or Referer is this site.
+	 *
+	 * @param string $source URL.
+	 * @return bool
+	 */
+	private static function sameSite( string $source ): bool {
+		$host = wp_parse_url( $source, PHP_URL_HOST );
+		$home = wp_parse_url( home_url(), PHP_URL_HOST );
+		return is_string( $host ) && is_string( $home ) && strtolower( $host ) === strtolower( $home );
+	}
+
+	/**
 	 * `GET public/account`: who is signed in, their token and the details the
 	 * form starts with. Never cached (it is personal).
 	 *
@@ -508,7 +763,14 @@ class GuestAccount {
 			'showSignIn'    => (bool) rtbp_setting( 'accounts', 'showSignIn', true ),
 			'express'       => ExpressCheckout::enabled(),
 			'loginUrl'      => wp_login_url(),
+			'lostPassword'  => wp_lostpassword_url(),
 			'registerUrl'   => get_option( 'users_can_register' ) ? wp_registration_url() : '',
+			// The popup's "Create an account" tab.
+			'register'      => self::registrationOpen(),
+			// The account bar above the rooms: which buttons it shows.
+			'showRegister'  => (bool) rtbp_setting( 'accounts', 'showRegister', true ),
+			'showExpress'   => (bool) rtbp_setting( 'accounts', 'showExpressButton', true ),
+			'minPassword'   => self::MIN_PASSWORD,
 		);
 	}
 }

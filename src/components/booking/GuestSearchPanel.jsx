@@ -1,7 +1,9 @@
 /**
  * The website's search panel on the booking page (M04): arrival, departure,
- * guests (one field with a popover) and, when flexible rates are offered,
- * the check-in time — one row on a wide screen, a tidy grid on a phone.
+ * guests (one field with a popover) — one row on a wide screen, a tidy grid
+ * on a phone. A flexible rate's arrival time is asked in the room step, with
+ * the rate (StaySummary); only a site where the guest does not pick a room
+ * (no room step) still asks it here, through `checkin`.
  *
  * Same values and rules as the desk's DatesBar (the stay keeps its length
  * when the arrival moves); only the look is the website's.

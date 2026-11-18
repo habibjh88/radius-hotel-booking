@@ -127,6 +127,7 @@ final class ActionCatalog {
 			'guests.unban'               => array( self::DATA, __( 'Lifted a guest ban', 'radius-hotel-booking' ) ),
 			'guests.account_linked'      => array( self::DATA, __( 'Linked a guest to a website account', 'radius-hotel-booking' ) ),
 			'guests.account_created'     => array( self::DATA, __( 'Created a website account for a guest', 'radius-hotel-booking' ) ),
+			'guests.account_registered'  => array( self::DATA, __( 'A guest created a website account', 'radius-hotel-booking' ) ),
 			'guests.view_id'             => array( self::VIEW, __( 'Viewed a guest identity document', 'radius-hotel-booking' ) ),
 			'reports.export'             => array( self::VIEW, __( 'Exported a report', 'radius-hotel-booking' ) ),
 			'exports.generate'           => array( self::DATA, __( 'Generated an export file', 'radius-hotel-booking' ) ),

@@ -218,7 +218,24 @@ class PublicBookingService {
 				// is never linked.
 			}
 		}
-		if ( $on_file ) {
+		if ( $on_file && isset( $proof ) && $proof ) {
+			// Express checkout: the form shows the record's details masked and
+			// read-only, so what the browser sends for them is ignored — a
+			// value injected into those fields changes nothing. Only a detail
+			// the record lacks is taken as typed. The phone is the one proved.
+			if ( '' !== $proof['phone'] ) {
+				$on_file['phone'] = $proof['phone'];
+			}
+			foreach ( array( 'first_name', 'last_name', 'phone', 'email' ) as $key ) {
+				if ( '' !== trim( (string) $on_file[ $key ] ) ) {
+					$typed[ $key ] = $on_file[ $key ];
+				}
+			}
+			if ( '' !== trim( (string) $on_file['id_number'] ) ) {
+				$typed['id_type']   = $on_file['id_type'];
+				$typed['id_number'] = $on_file['id_number'];
+			}
+		} elseif ( $on_file ) {
 			// What the visitor left empty comes from the record (the form hides
 			// the document fields when one is on file). A document stays whole.
 			foreach ( array( 'first_name', 'last_name', 'phone', 'email' ) as $key ) {
@@ -440,7 +457,10 @@ class PublicBookingService {
 			&& ( '' !== self::documentKey( $fields['id_number'] ) || 'required' === WebsiteSettings::guestField( 'id_document' ) );
 		$same_id     = $by_document
 			? (string) $guest->id_type === $fields['id_type'] && self::documentKey( (string) $guest->id_number ) === self::documentKey( $fields['id_number'] )
-			: ( null !== $e164 && (string) $guest->phone_e164 === $e164 ) || ( null !== $email && strtolower( (string) $guest->email ) === $email );
+			: ( null !== $e164 && (string) $guest->phone_e164 === $e164 )
+				// A record kept before numbers carried a country code (`05 31…`).
+				|| ( '' === (string) $guest->phone_e164 && Phone::sameNumber( (string) $guest->phone, (string) $fields['phone'] ) )
+				|| ( null !== $email && strtolower( (string) $guest->email ) === $email );
 		if ( ! $same_id ) {
 			self::refuse( (int) $guest->id, $fields, $by_document ? 'document' : 'name', $matched );
 		}

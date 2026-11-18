@@ -228,6 +228,8 @@ final class AccessRegistry {
 			'bookings.no_show'       => array( $open, __( 'Mark as no-show', 'radius-hotel-booking' ), '' ),
 			'bookings.move_room'     => array( $open, __( 'Move a guest to another room', 'radius-hotel-booking' ), '' ),
 			'bookings.undo_check_in' => array( $open, __( 'Undo a check-in', 'radius-hotel-booking' ), '' ),
+			// A check-in or check-out recorded late, at the time it really happened.
+			'bookings.set_time'      => array( $locked, __( 'Record the actual check-in or check-out time', 'radius-hotel-booking' ), '' ),
 			'bookings.extend_stay'   => array( $open, __( 'Extend a guest\'s stay', 'radius-hotel-booking' ), '' ),
 			'bookings.line_add'      => array( $open, __( 'Add a room to a booking', 'radius-hotel-booking' ), 'add-booking-item' ),
 			'bookings.line_edit'     => array( $open, __( 'Edit a room on a booking', 'radius-hotel-booking' ), 'edit-booking-item' ),

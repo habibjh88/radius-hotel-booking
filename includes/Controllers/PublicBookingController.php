@@ -33,6 +33,8 @@ defined( 'ABSPATH' ) || exit;
  * | POST `public/bookings` | 5 / min |
  * | GET `public/bookings/{token}` (M05, the 128-bit token is the key) | 30 / min |
  * | GET `public/account` (the signed-in visitor, Frontend\GuestAccount) | 30 / min |
+ * | POST `public/account/sign-in` (the sign-in popup, GuestAccount::signIn()) | 10 / min |
+ * | POST `public/account/register` (its "Create an account" tab, GuestAccount::register()) | 5 / min |
  * | POST `public/express/start`, `public/express/verify` (Frontend\ExpressCheckout) | 5 / min, 10 / min |
  *
  * Holds belong to the visitor's `rtbp_guest` cookie (Frontend\PublicSession).
@@ -64,6 +66,7 @@ class PublicBookingController extends BaseController {
 				$patterns['PUT'][]    = $base . 'holds/[A-Za-z0-9]{32}$#';
 				$patterns['POST'][]   = $base . 'bookings$#';
 				$patterns['GET'][]    = $base . 'account$#';
+				$patterns['POST'][]   = $base . 'account/(sign-in|register)$#';
 				$patterns['POST'][]   = $base . 'express/(start|verify)$#';
 				return $patterns;
 			}
@@ -193,6 +196,63 @@ class PublicBookingController extends BaseController {
 		);
 		// Personal: no page or proxy cache may keep it (WordPress only adds
 		// these for requests it sees as signed in, and this one it does not).
+		if ( $response instanceof \WP_REST_Response ) {
+			$response->header( 'Cache-Control', 'no-store, private, max-age=0' );
+		}
+		return $response;
+	}
+
+	/**
+	 * POST public/account/sign-in `{ login, password, remember? }`: the
+	 * booking page's sign-in popup (GuestAccount::signIn()).
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function accountSignIn( WP_REST_Request $request ) {
+		$response = self::limited(
+			$request,
+			10,
+			'public_sign_in',
+			static function ( $request ) {
+				$source = (string) $request->get_header( 'origin' );
+				$source = '' !== $source ? $source : (string) $request->get_header( 'referer' );
+				return ApiResponse::success(
+					GuestAccount::signIn(
+						is_scalar( $request->get_param( 'login' ) ) ? (string) $request->get_param( 'login' ) : '',
+						// As typed: a password is never sanitised (wp-login.php does not).
+						is_scalar( $request->get_param( 'password' ) ) ? (string) $request->get_param( 'password' ) : '',
+						rest_sanitize_boolean( $request->get_param( 'remember' ) ),
+						$source
+					)
+				);
+			}
+		);
+		if ( $response instanceof \WP_REST_Response ) {
+			$response->header( 'Cache-Control', 'no-store, private, max-age=0' );
+		}
+		return $response;
+	}
+
+	/**
+	 * POST public/account/register `{ first_name, last_name, phone, email,
+	 * password, remember?, website? }`: the popup's "Create an account" tab
+	 * (GuestAccount::register()).
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function accountRegister( WP_REST_Request $request ) {
+		$response = self::limited(
+			$request,
+			5,
+			'public_register',
+			static function ( $request ) {
+				$source = (string) $request->get_header( 'origin' );
+				$source = '' !== $source ? $source : (string) $request->get_header( 'referer' );
+				return ApiResponse::success( GuestAccount::register( (array) $request->get_json_params(), $source ) );
+			}
+		);
 		if ( $response instanceof \WP_REST_Response ) {
 			$response->header( 'Cache-Control', 'no-store, private, max-age=0' );
 		}

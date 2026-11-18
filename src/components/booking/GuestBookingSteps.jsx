@@ -395,7 +395,7 @@ export default function GuestBookingSteps( props ) {
 						search={ search }
 						limits={ limits }
 						onChange={ onSearch }
-						checkin={ checkin }
+						checkin={ picks ? null : checkin }
 					/>
 				</div>
 				{ pending && ! picks ? (
@@ -457,6 +457,9 @@ export default function GuestBookingSteps( props ) {
 							onClearChoice();
 							setStep( 'rates' );
 						} }
+						onCheckinTime={ ( checkin_time ) =>
+							onSearch( { checkin_time } )
+						}
 					/>
 				) : null }
 				{ chosen.rate.available ? (

@@ -50,6 +50,7 @@ import { cn } from '@/lib/utils';
  * @param {number}   props.reasonMinLength Minimum reason length.
  * @param {string}   props.confirmText    Word to type before confirming ('' = none).
  * @param {Function} props.onConfirm      Called with the reason ('' when not asked).
+ * @param {JSX.Element} props.children    More fields, under the description.
  * @return {JSX.Element} Dialog.
  */
 export default function ConfirmDialog( {
@@ -65,6 +66,7 @@ export default function ConfirmDialog( {
 	reasonMinLength = 3,
 	confirmText = '',
 	onConfirm,
+	children = null,
 } ) {
 	const reasonId = useId();
 	const typedId = useId();
@@ -135,6 +137,8 @@ export default function ConfirmDialog( {
 						) : null }
 					</div>
 				</DialogHeader>
+
+				{ children }
 
 				{ requireReason ? (
 					<div className="space-y-1.5">

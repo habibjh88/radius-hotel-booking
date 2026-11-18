@@ -235,7 +235,7 @@ export default function GuestBookingOnePage( props ) {
 					search={ search }
 					limits={ limits }
 					onChange={ onSearch }
-					checkin={ checkin }
+					checkin={ picks ? null : checkin }
 				/>
 			</Part>
 
@@ -306,6 +306,9 @@ export default function GuestBookingOnePage( props ) {
 									onClearChoice();
 									reveal( datesRef );
 								} }
+								onCheckinTime={ ( checkin_time ) =>
+									onSearch( { checkin_time } )
+								}
 							/>
 						) : null }
 						{ chosen.rate.available ? (

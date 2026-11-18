@@ -11,7 +11,7 @@
  * its tab and a filtered list can be bookmarked or shared. A table on a
  * desktop, cards on a phone (DataTable). Row actions come in T3.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import {
@@ -33,6 +33,7 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 
 import ConfirmDialog from '@/components/common/ConfirmDialog';
+import ActualTimeField from './components/ActualTimeField';
 import DataTable from '@/components/common/DataTable';
 import EmptyState from '@/components/common/EmptyState';
 import FilterTabs from '@/components/common/FilterTabs';
@@ -159,15 +160,19 @@ export function BookingList( { withPageActions = true } ) {
 	const client = useQueryClient();
 	// `{ action, line }` while a move waits for its confirmation; `paying` = the row recording money.
 	const [ dialog, setDialog ] = useState( null );
+	// A check-out recorded late: when the guest really left ('' = now).
+	const [ actualAt, setActualAt ] = useState( '' );
+	useEffect( () => setActualAt( '' ), [ dialog ] );
 	const [ paying, setPaying ] = useState( null );
 
-	const run = ( line, action, reason = '' ) =>
+	const run = ( line, action, reason = '', at = '' ) =>
 		move
 			.mutateAsync( {
 				bookingId: line.booking_id,
 				lineId: line.id,
 				action,
 				reason,
+				at,
 			} )
 			.then( ( { message } ) => toast.success( message ) )
 			.catch( ( err ) => {
@@ -727,11 +732,23 @@ export function BookingList( { withPageActions = true } ) {
 				confirmLabel={ actionLabel( 'check_out' ) }
 				destructive={ Number( dialog?.line?.balance_due ) > 0 }
 				onConfirm={ () =>
-					run( dialog.line, 'check_out' ).then( () =>
+					run( dialog.line, 'check_out', '', actualAt ).then( () =>
 						setDialog( null )
 					)
 				}
-			/>
+			>
+				{ 'check_out' === dialog?.action ? (
+					<ActualTimeField
+						key={ dialog.line.id }
+						kind="check_out"
+						value={ actualAt }
+						onChange={ setActualAt }
+						earliest={
+							dialog.line.checked_in_at || dialog.line.start
+						}
+					/>
+				) : null }
+			</ConfirmDialog>
 			{ paying ? (
 				<RowPayment
 					line={ paying }

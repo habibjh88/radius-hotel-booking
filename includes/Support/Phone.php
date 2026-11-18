@@ -95,6 +95,61 @@ final class Phone {
 	}
 
 	/**
+	 * Whether two numbers, typed or saved in any form, are the same phone:
+	 * digits only, the `00` prefix, the default calling code and one trunk
+	 * `0` set aside, then equal or one ending with the other (8 digits at
+	 * least). `+225 01 92 26 43`, `00225…`, `01 92 26 43` and `1922643…`
+	 * forms all meet. For records kept before numbers carried a country code.
+	 *
+	 * @param string $a A number.
+	 * @param string $b Another.
+	 * @return bool
+	 */
+	public static function sameNumber( string $a, string $b ): bool {
+		$left  = self::variants( $a );
+		$right = self::variants( $b );
+		foreach ( $left as $one ) {
+			foreach ( $right as $two ) {
+				if ( $one === $two ) {
+					return true;
+				}
+				$short = strlen( $one ) < strlen( $two ) ? $one : $two;
+				$long  = $short === $one ? $two : $one;
+				if ( strlen( $short ) >= 8 && str_ends_with( $long, $short ) ) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * The forms a number is compared in (sameNumber()).
+	 *
+	 * @param string $raw As typed or saved.
+	 * @return string[] Digit strings, at least 7 digits each.
+	 */
+	private static function variants( string $raw ): array {
+		$digits = preg_replace( '/\D+/', '', $raw );
+		if ( strlen( $digits ) < 7 ) {
+			return array();
+		}
+		$out   = array( $digits );
+		$intl  = preg_replace( '/^00/', '', $digits );
+		$out[] = $intl;
+		$code  = self::defaultCountry();
+		if ( 0 === strpos( $intl, $code ) && strlen( $intl ) - strlen( $code ) >= 7 ) {
+			$out[] = substr( $intl, strlen( $code ) );
+		}
+		foreach ( $out as $form ) {
+			if ( strlen( $form ) > 7 && '0' === $form[0] ) {
+				$out[] = substr( $form, 1 );
+			}
+		}
+		return array_values( array_unique( $out ) );
+	}
+
+	/**
 	 * The digits of an international number (`+…` or `00…`), or null for a
 	 * national one.
 	 *

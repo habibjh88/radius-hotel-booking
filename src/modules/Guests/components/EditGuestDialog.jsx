@@ -1,12 +1,15 @@
 /**
  * Edit a guest's details (9.5, 9.7): name, phone, e-mail and identity
  * document. Only the fields that changed are sent; the server logs them with
- * before/after. The document number is never pre-filled (the full number is
+ * before/after. The document number is not pre-filled (the full number is
  * a logged read): leave it empty to keep the one on file, type a new one to
- * replace it, or remove the document.
+ * replace it, or remove the document. Staff who may see ID numbers
+ * (`guests.view_id`, administrators always) click Show to load the number
+ * on file into the field (logged, as on the guest page) and correct it.
  */
 import { useState } from 'react';
 import { __ } from '@wordpress/i18n';
+import { Eye, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -30,7 +33,7 @@ import {
 	SelectValue,
 } from '@/components/ui/select';
 import { toast, toastError } from '@/lib/toast';
-import { useUpdateGuest } from '../api';
+import { revealIdNumber, useUpdateGuest } from '../api';
 
 const FIELDS = [
 	'first_name',
@@ -59,6 +62,21 @@ export default function EditGuestDialog( { guest, idTypes, onClose } ) {
 	const [ values, setValues ] = useState( initial );
 	const [ newNumber, setNewNumber ] = useState( '' );
 	const [ removeId, setRemoveId ] = useState( false );
+	// The number on file once Show was clicked (null: still hidden).
+	const [ revealed, setRevealed ] = useState( null );
+	const [ revealing, setRevealing ] = useState( false );
+	const reveal = async () => {
+		setRevealing( true );
+		try {
+			const data = await revealIdNumber( guest.id );
+			setRevealed( data.id_number );
+			setNewNumber( data.id_number );
+		} catch ( err ) {
+			toastError( err );
+		} finally {
+			setRevealing( false );
+		}
+	};
 	const [ errors, setErrors ] = useState( {} );
 	const update = useUpdateGuest( guest.id );
 
@@ -86,7 +104,7 @@ export default function EditGuestDialog( { guest, idTypes, onClose } ) {
 			if ( values.id_type !== initial.id_type ) {
 				changes.id_type = values.id_type;
 			}
-			if ( newNumber.trim() !== '' ) {
+			if ( newNumber.trim() !== '' && newNumber !== revealed ) {
 				changes.id_number = newNumber;
 				changes.id_type = values.id_type;
 			}
@@ -261,7 +279,7 @@ export default function EditGuestDialog( { guest, idTypes, onClose } ) {
 									htmlFor="rtbp-edit-guest-id_number"
 									className="text-sm font-semibold text-heading"
 								>
-									{ guest.has_id
+									{ guest.has_id && null === revealed
 										? __(
 												'New number',
 												'radius-hotel-booking'
@@ -271,26 +289,59 @@ export default function EditGuestDialog( { guest, idTypes, onClose } ) {
 												'radius-hotel-booking'
 										  ) }
 								</Label>
-								<Input
-									id="rtbp-edit-guest-id_number"
-									value={ newNumber }
-									onChange={ ( e ) => {
-										setNewNumber( e.target.value );
-										setErrors( {} );
-									} }
-									placeholder={
-										guest.has_id
-											? guest.id_number_masked
-											: undefined
-									}
-									maxLength={ 60 }
-									autoComplete="off"
-									disabled={ removeId }
-									aria-describedby="rtbp-edit-guest-id-help"
-									aria-invalid={
-										errors.id_number ? true : undefined
-									}
-								/>
+								<div className="flex gap-2">
+									<Input
+										id="rtbp-edit-guest-id_number"
+										className="min-w-0 flex-1"
+										value={ newNumber }
+										onChange={ ( e ) => {
+											setNewNumber( e.target.value );
+											setErrors( {} );
+										} }
+										placeholder={
+											guest.has_id
+												? guest.id_number_masked
+												: undefined
+										}
+										maxLength={ 60 }
+										autoComplete="off"
+										disabled={ removeId }
+										aria-describedby="rtbp-edit-guest-id-help"
+										aria-invalid={
+											errors.id_number ? true : undefined
+										}
+									/>
+									{ guest.has_id &&
+									guest.can_view_id &&
+									null === revealed ? (
+										<Button
+											type="button"
+											variant="outline"
+											onClick={ reveal }
+											disabled={ revealing || removeId }
+											aria-label={ __(
+												'Show the number on file',
+												'radius-hotel-booking'
+											) }
+										>
+											{ revealing ? (
+												<Loader2
+													className="h-4 w-4 animate-spin"
+													aria-hidden="true"
+												/>
+											) : (
+												<Eye
+													className="h-4 w-4"
+													aria-hidden="true"
+												/>
+											) }
+											{ __(
+												'Show',
+												'radius-hotel-booking'
+											) }
+										</Button>
+									) : null }
+								</div>
 								{ errorText( 'id_number' ) }
 							</div>
 						</div>
@@ -300,10 +351,15 @@ export default function EditGuestDialog( { guest, idTypes, onClose } ) {
 									id="rtbp-edit-guest-id-help"
 									className="m-0 text-xs text-muted-foreground"
 								>
-									{ __(
-										'Leave the number empty to keep the one on file.',
-										'radius-hotel-booking'
-									) }
+									{ null === revealed
+										? __(
+												'Leave the number empty to keep the one on file.',
+												'radius-hotel-booking'
+										  )
+										: __(
+												'The number on file. Change it to correct it.',
+												'radius-hotel-booking'
+										  ) }
 								</p>
 								<label
 									htmlFor="rtbp-edit-guest-remove-id"

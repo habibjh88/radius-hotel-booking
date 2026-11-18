@@ -2,6 +2,8 @@
  * Check a room in (3.9): keep the booked room, or move the guest to another
  * free room of the same type for the same stay (the price does not change).
  * The rooms offered come from the server; it checks again under the lock.
+ * A check-in recorded late can carry the time the guest really arrived
+ * (ActualTimeField, `bookings.set_time`).
  */
 import { useEffect, useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
@@ -25,27 +27,30 @@ import {
 } from '@/components/ui/select';
 import { formatDateRange } from '@/lib/format';
 import { useFreeRoomsFor } from '../api';
+import ActualTimeField from './ActualTimeField';
 
 /**
  * @param {Object}      props           Props.
  * @param {Object|null} props.line      The line to check in (null = closed).
  * @param {Function}    props.onClose   Close.
- * @param {Function}    props.onConfirm Called with the room id (0 = keep); returns a promise.
+ * @param {Function}    props.onConfirm Called with the room id (0 = keep) and the actual time ('' = now); returns a promise.
  * @return {JSX.Element} Dialog.
  */
 export default function CheckInDialog( { line, onClose, onConfirm } ) {
 	const rooms = useFreeRoomsFor( line );
 	const [ room, setRoom ] = useState( 'keep' );
+	const [ at, setAt ] = useState( '' );
 	const [ busy, setBusy ] = useState( false );
 
 	useEffect( () => {
 		setRoom( 'keep' );
+		setAt( '' );
 	}, [ line?.id ] );
 
 	const confirm = async () => {
 		setBusy( true );
 		try {
-			await onConfirm( 'keep' === room ? 0 : Number( room ) );
+			await onConfirm( 'keep' === room ? 0 : Number( room ), at );
 			onClose();
 		} catch ( e ) {
 			// The caller shows the error; the dialog stays open to choose again.
@@ -127,6 +132,16 @@ export default function CheckInDialog( { line, onClose, onConfirm } ) {
 							'radius-hotel-booking'
 						) }
 					</p>
+				) : null }
+				{ line ? (
+					<ActualTimeField
+						key={ line.id }
+						kind="check_in"
+						value={ at }
+						onChange={ setAt }
+						earliest={ line.start }
+						disabled={ busy }
+					/>
 				) : null }
 				<DialogFooter>
 					<Button type="button" variant="ghost" onClick={ onClose }>

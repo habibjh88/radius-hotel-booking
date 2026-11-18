@@ -36,6 +36,16 @@ class AccountSettings {
 				'type'    => 'bool',
 				'default' => true,
 			),
+			// A "Create an account" button on the booking form (shown only while registration is open).
+			'showRegister'      => array(
+				'type'    => 'bool',
+				'default' => true,
+			),
+			// An "Express checkout" button on the booking form, above the rooms (needs express checkout on).
+			'showExpressButton' => array(
+				'type'    => 'bool',
+				'default' => true,
+			),
 			// Express checkout: a returning guest proves their phone with a one-time code and their details fill the form.
 			'expressCheckout' => array(
 				'type'    => 'bool',

@@ -34,8 +34,10 @@ defined( 'ABSPATH' ) || exit;
  * - Codes are kept hashed for 10 minutes, tied to the visitor's session
  *   cookie, 5 tries; one number gets at most 3 codes per 15 minutes.
  * - The proof (a token, 1 hour, same session) goes with the booking; the
- *   server fills empty fields from the record. The document number never
- *   reaches the browser.
+ *   server then takes every detail the record has from the record and
+ *   ignores what the browser sent for it (the phone too), so a value
+ *   injected into the read-only fields changes nothing. The document number
+ *   never reaches the browser.
  * - With "Verify with a code" off (the default: many guests have no
  *   e-mail to send a code to), start() answers `recognised` at once: a
  *   masked hint only (`H••• R•••`, `h•••@site.com`, `Passport •••• 4813`)
@@ -83,6 +85,11 @@ class ExpressCheckout {
 	/**
 	 * Step 1: the number typed in the popup.
 	 *
+	 * The number is looked up in E.164 first; when nobody has it, in any
+	 * form (Phone::sameNumber()), so a record kept before numbers carried a
+	 * country code (`01 92 26 43`) is still found, as the old site did. Only
+	 * the masked hint or a code follows either way.
+	 *
 	 * @param string $phone   As typed.
 	 * @param string $session The visitor's session key.
 	 * @return array `{ status: 'new', phone }`, `{ status: 'code_sent', challenge, channel, to, phone }`
@@ -91,26 +98,37 @@ class ExpressCheckout {
 	 */
 	public static function start( string $phone, string $session ): array {
 		self::assertEnabled();
-		$e164 = Phone::toE164( $phone );
-		if ( null === $e164 ) {
+		$e164   = Phone::toE164( $phone );
+		$digits = strlen( preg_replace( '/\D+/', '', $phone ) );
+		if ( null === $e164 && ( $digits < 8 || $digits > 15 ) ) {
 			$message = __( 'Enter a valid phone number.', 'radius-hotel-booking' );
 			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 			throw DomainException::invalid( array( 'phone' => $message ), $message );
 		}
-		$new = array(
+		// The number in E.164 when it can be placed ('' otherwise: the form keeps its own).
+		$e164 = (string) $e164;
+		$new  = array(
 			'status' => 'new',
 			'phone'  => $e164,
 		);
 
-		$target = self::target( $e164 );
+		$target = '' !== $e164 ? self::target( $e164 ) : null;
+		if ( ! $target ) {
+			$ids    = ( new GuestRepository() )->idsByAnyPhoneForm( $phone );
+			$target = $ids ? self::target( $e164, $ids ) : null;
+		}
 		if ( ! $target ) {
 			return $new;
 		}
+		// The guest's own saved number (its E.164) is the one that is proved.
+		$e164 = $target['phone'];
 		if ( ! self::verifies() ) {
-			return self::recognise( $target, $session );
+			// A record kept without a country code: the number as typed, which matched it.
+			return self::recognise( $target, $session, '' !== $e164 ? $e164 : sanitize_text_field( $phone ) );
 		}
 
-		$sends = (int) get_transient( self::sendsKey( $e164 ) );
+		$sends_key = self::sendsKey( '' !== $e164 ? $e164 : 'guest:' . $target['guest_id'] );
+		$sends     = (int) get_transient( $sends_key );
 		if ( $sends >= self::MAX_SENDS ) {
 			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 			throw new DomainException( 'too_many_codes', __( 'Too many codes were sent to this number. Please wait a few minutes, or fill in your details.', 'radius-hotel-booking' ), 429 );
@@ -124,7 +142,7 @@ class ExpressCheckout {
 			return $new;
 		}
 
-		set_transient( self::sendsKey( $e164 ), $sends + 1, 15 * MINUTE_IN_SECONDS );
+		set_transient( $sends_key, $sends + 1, 15 * MINUTE_IN_SECONDS );
 		set_transient(
 			self::challengeKey( $challenge ),
 			array(
@@ -190,12 +208,14 @@ class ExpressCheckout {
 		}
 
 		delete_transient( $key );
-		$token = self::issueProof( $session, (int) $state['guest_id'], (int) $state['user_id'], true );
+		$token = self::issueProof( $session, (int) $state['guest_id'], (int) $state['user_id'], true, (string) $state['phone'] );
 
 		$details = self::details( (int) $state['guest_id'], (int) $state['user_id'] );
 		// The number just proved, in E.164: an older record may hold `01 92…`,
 		// which the form would read in the wrong country.
-		$details['phone'] = (string) $state['phone'];
+		if ( '' !== (string) $state['phone'] ) {
+			$details['phone'] = (string) $state['phone'];
+		}
 		return array(
 			'token'   => $token,
 			'details' => $details,
@@ -205,11 +225,16 @@ class ExpressCheckout {
 	/**
 	 * A known number without verification: a masked hint and an unverified proof.
 	 *
+	 * The form shows each detail masked and read-only (`A•••• B•••••`,
+	 * `a•••@gmail.com`, `•••• 1142`), the phone in full; the booking takes
+	 * them from the record, whatever the browser sends.
+	 *
 	 * @param array  $target  target().
 	 * @param string $session The visitor's session key.
-	 * @return array `{ status: 'recognised', token, hint, phone }`.
+	 * @param string $phone   The number the booking uses (the record's, as proved).
+	 * @return array `{ status: 'recognised', token, hint: { name, first_name, last_name, email, document }, phone }`.
 	 */
-	private static function recognise( array $target, string $session ): array {
+	private static function recognise( array $target, string $session, string $phone ): array {
 		$details = self::details( $target['guest_id'], $target['user_id'] );
 		rtbp_activity(
 			'security.express_recognised',
@@ -218,10 +243,12 @@ class ExpressCheckout {
 		);
 		return array(
 			'status' => 'recognised',
-			'token'  => self::issueProof( $session, $target['guest_id'], $target['user_id'], false ),
+			'token'  => self::issueProof( $session, $target['guest_id'], $target['user_id'], false, $phone ),
 			'hint'   => array(
-				'name'     => self::maskName( $target['name'] ),
-				'email'    => '' !== $target['email'] ? self::maskEmail( $target['email'] ) : '',
+				'name'       => self::maskName( $target['name'] ),
+				'first_name' => self::maskName( $details['first_name'] ),
+				'last_name'  => self::maskName( $details['last_name'] ),
+				'email'      => '' !== $target['email'] ? self::maskEmail( $target['email'] ) : '',
 				// The document on file: its type and last 4 only; the server adds the number at booking.
 				'document' => $details['id_on_file']
 					? array(
@@ -230,7 +257,7 @@ class ExpressCheckout {
 					)
 					: null,
 			),
-			'phone'  => $target['phone'],
+			'phone'  => $phone,
 		);
 	}
 
@@ -241,9 +268,10 @@ class ExpressCheckout {
 	 * @param int    $guest_id Guest record (0 = none).
 	 * @param int    $user_id  Account (0 = none).
 	 * @param bool   $verified Proved with a code.
+	 * @param string $phone    The number the booking uses ('' = the record's own).
 	 * @return string Token.
 	 */
-	private static function issueProof( string $session, int $guest_id, int $user_id, bool $verified ): string {
+	private static function issueProof( string $session, int $guest_id, int $user_id, bool $verified, string $phone = '' ): string {
 		$token = bin2hex( random_bytes( 16 ) );
 		set_transient(
 			self::proofKey( $token ),
@@ -252,6 +280,7 @@ class ExpressCheckout {
 				'guest_id' => $guest_id,
 				'user_id'  => $user_id,
 				'verified' => $verified,
+				'phone'    => $phone,
 			),
 			HOUR_IN_SECONDS
 		);
@@ -263,7 +292,7 @@ class ExpressCheckout {
 	 *
 	 * @param string $token   From verify() or start() (no code).
 	 * @param string $session The visitor's session key.
-	 * @return array{ guest: Guest|null, user: WP_User|null, verified: bool }|null Null when the proof is missing or not this visitor's.
+	 * @return array{ guest: Guest|null, user: WP_User|null, verified: bool, phone: string }|null Null when the proof is missing or not this visitor's.
 	 */
 	public static function proof( string $token, string $session ): ?array {
 		if ( ! preg_match( '/^[a-f0-9]{32}$/', $token ) || '' === $session ) {
@@ -280,6 +309,7 @@ class ExpressCheckout {
 			'user'     => $user instanceof WP_User ? $user : null,
 			// Older proofs (before the setting) were all verified.
 			'verified' => (bool) ( $state['verified'] ?? true ),
+			'phone'    => (string) ( $state['phone'] ?? '' ),
 		);
 	}
 
@@ -347,18 +377,25 @@ class ExpressCheckout {
 	 * Who has this number: a guest record (only one), else an account; with
 	 * where a code can go.
 	 *
-	 * @param string $e164 Number.
+	 * @param string     $e164 Number ('' when it could not be placed).
+	 * @param int[]|null $ids  The matching guests when already found (any phone form).
 	 * @return array|null `{ guest_id, user_id, email, phone, name }`.
 	 */
-	private static function target( string $e164 ): ?array {
-		$rows  = ( new GuestRepository() )->duplicates( $e164, Phone::tail( $e164 ), null );
-		$ids   = array_values( array_unique( array_map( static fn( $row ) => (int) $row['id'], array_filter( $rows, static fn( $row ) => 'phone' === ( $row['match'] ?? '' ) ) ) ) );
+	private static function target( string $e164, ?array $ids = null ): ?array {
+		if ( null === $ids ) {
+			$rows = ( new GuestRepository() )->duplicates( $e164, Phone::tail( $e164 ), null );
+			$ids  = array_values( array_unique( array_map( static fn( $row ) => (int) $row['id'], array_filter( $rows, static fn( $row ) => 'phone' === ( $row['match'] ?? '' ) ) ) ) );
+		}
 		$guest = 1 === count( $ids ) ? ( new GuestRepository() )->find( $ids[0] ) : null;
 		if ( $guest instanceof Guest && Guest::BANNED === (string) $guest->standing ) {
 			// Booking is refused anyway; nothing to speed up.
 			return null;
 		}
-		$user_id = $guest instanceof Guest && (int) $guest->wp_user_id ? (int) $guest->wp_user_id : GuestAccount::findUserByPhone( $e164, true );
+		if ( $guest instanceof Guest && '' !== (string) $guest->phone_e164 ) {
+			// The number as the guest record holds it.
+			$e164 = (string) $guest->phone_e164;
+		}
+		$user_id = $guest instanceof Guest && (int) $guest->wp_user_id ? (int) $guest->wp_user_id : ( '' !== $e164 ? GuestAccount::findUserByPhone( $e164, true ) : 0 );
 		$user    = $user_id ? get_userdata( $user_id ) : false;
 		$user    = $user instanceof WP_User ? $user : null;
 		if ( ! $guest instanceof Guest && ! $user ) {

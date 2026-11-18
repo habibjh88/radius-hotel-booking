@@ -1,0 +1,117 @@
+{
+    "translation-revision-date": "2026-11-18T12:15:38+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/components\/booking\/SignInDialog.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "We could not create your account. Please try again.": [
+                "Nous n'avons pas pu cr\u00e9er votre compte. Veuillez r\u00e9essayer."
+            ],
+            "Enter your first name.": [
+                "Saisissez votre pr\u00e9nom."
+            ],
+            "Enter your last name.": [
+                "Saisissez votre nom."
+            ],
+            "Enter a phone number we can reach you on.": [
+                "Saisissez un num\u00e9ro de t\u00e9l\u00e9phone o\u00f9 nous pouvons vous joindre."
+            ],
+            "Enter a valid e-mail address. We send your booking and password reset there.": [
+                "Saisissez une adresse e-mail valide. Nous y envoyons votre r\u00e9servation et la r\u00e9initialisation du mot de passe."
+            ],
+            "Choose a password of at least %d characters.": [
+                "Choisissez un mot de passe d'au moins %d caract\u00e8res."
+            ],
+            "Enter your phone number, e-mail or username.": [
+                "Saisissez votre num\u00e9ro de t\u00e9l\u00e9phone, votre e-mail ou votre identifiant."
+            ],
+            "Enter your password.": [
+                "Saisissez votre mot de passe."
+            ],
+            "Phone": [
+                "T\u00e9l\u00e9phone"
+            ],
+            "Sign in": [
+                "Se connecter"
+            ],
+            "Password": [
+                "Mot de passe"
+            ],
+            "Keep me signed in": [
+                "Rester connect\u00e9"
+            ],
+            "Forgot your password?": [
+                "Mot de passe oubli\u00e9\u00a0?"
+            ],
+            "Create an account": [
+                "Cr\u00e9er un compte"
+            ],
+            "Close": [
+                "Fermer"
+            ],
+            "First name": [
+                "Pr\u00e9nom"
+            ],
+            "Last name": [
+                "Nom"
+            ],
+            "E-mail": [
+                "E-mail"
+            ],
+            "Hide password": [
+                "Masquer le mot de passe"
+            ],
+            "Show password": [
+                "Afficher le mot de passe"
+            ],
+            "We could not sign you in. Please try again.": [
+                "Nous n'avons pas pu vous connecter. Veuillez r\u00e9essayer."
+            ],
+            "Phone number, e-mail or username": [
+                "Num\u00e9ro de t\u00e9l\u00e9phone, e-mail ou identifiant"
+            ],
+            "Signing in\u2026": [
+                "Connexion\u2026"
+            ],
+            "Sign in to your account": [
+                "Connectez-vous \u00e0 votre compte"
+            ],
+            "You can sign in with it.": [
+                "Vous pourrez vous connecter avec."
+            ],
+            "At least %d characters.": [
+                "Au moins %d caract\u00e8res."
+            ],
+            "Create my account": [
+                "Cr\u00e9er mon compte"
+            ],
+            "Creating your account\u2026": [
+                "Cr\u00e9ation de votre compte\u2026"
+            ],
+            "Create your account": [
+                "Cr\u00e9ez votre compte"
+            ],
+            "Book faster next time: your details are filled in for you. You stay on this page.": [
+                "R\u00e9servez plus vite la prochaine fois : vos informations sont remplies pour vous. Vous restez sur cette page."
+            ],
+            "Your details are filled in for you, and you stay on this page.": [
+                "Vos informations sont remplies pour vous, et vous restez sur cette page."
+            ],
+            "Your account": [
+                "Votre compte"
+            ],
+            "Already have an account?": [
+                "Vous avez d\u00e9j\u00e0 un compte ?"
+            ],
+            "New here?": [
+                "Nouveau ici ?"
+            ]
+        }
+    }
+}

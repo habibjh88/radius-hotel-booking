@@ -161,18 +161,29 @@ class BookingStatusService {
 	/**
 	 * Check a line in (3.9), optionally into another room of the same type.
 	 *
+	 * With `$at` (a check-in recorded late, `bookings.set_time`), the guest
+	 * arrived then: no later than now, not before the stay starts, before it
+	 * ends. The stay is then checked as of that time.
+	 *
 	 * @param int                    $line_id Line id.
 	 * @param int                    $room_id Another room (0 = keep the room).
 	 * @param DateTimeImmutable|null $now     Now.
+	 * @param DateTimeImmutable|null $at      When the guest really arrived (null = now).
 	 * @return int Booking id.
-	 * @throws DomainException 404, 409 `illegal_transition` / `stay_over` / `room_unavailable`.
+	 * @throws DomainException 404, 409 `illegal_transition` / `stay_over` / `room_unavailable`, 422 `at`.
 	 */
-	public function checkIn( int $line_id, int $room_id = 0, ?DateTimeImmutable $now = null ): int {
-		$now = $now ?? Dates::now();
+	public function checkIn( int $line_id, int $room_id = 0, ?DateTimeImmutable $now = null, ?DateTimeImmutable $at = null ): int {
+		$real = $now ?? Dates::now();
+		$now  = $at ?? $real;
 		return $this->lineMove(
 			'check_in',
 			$line_id,
-			function ( BookingRoom $line, Booking $booking ) use ( $room_id, $now ) {
+			function ( BookingRoom $line, Booking $booking ) use ( $room_id, $now, $real, $at ) {
+				$extra = array();
+				if ( $at ) {
+					self::assertActualTime( $at, $real, Dates::from_gmt( (string) $line->start_at_gmt ), __( 'The arrival time cannot be before the stay starts.', 'radius-hotel-booking' ) );
+					$extra = array( 'after' => array( 'actual_time' => Dates::to_db( $at ) ) );
+				}
 				if ( strtotime( (string) $line->end_at_gmt . ' UTC' ) <= $now->getTimestamp() ) {
 					// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 					throw DomainException::conflict( 'stay_over', __( 'This stay has already ended. It cannot be checked in.', 'radius-hotel-booking' ), array( 'line_id' => (int) $line->id ) );
@@ -202,7 +213,6 @@ class BookingStatusService {
 					'checked_in_at' => Dates::to_db( $now ),
 					'checked_in_by' => get_current_user_id() ? get_current_user_id() : null,
 				);
-				$extra  = array();
 				if ( $early ) {
 					// The stay starts now; the price stays as sold (3.16). The booked start is
 					// kept (once) so an undone check-in gets it back.
@@ -648,21 +658,32 @@ class BookingStatusService {
 	 * Check a line out (3.10). Before the end of its window, the room is free
 	 * from now on.
 	 *
+	 * With `$at` (a check-out recorded late, `bookings.set_time`), the guest
+	 * left then: no later than now and not before the check-in; the room is
+	 * free from that time when it is before the end of the stay.
+	 *
 	 * @param int                    $line_id Line id.
 	 * @param DateTimeImmutable|null $now     Now.
+	 * @param DateTimeImmutable|null $at      When the guest really left (null = now).
 	 * @return int Booking id.
+	 * @throws DomainException 404, 409 `illegal_transition`, 422 `at`.
 	 */
-	public function checkOut( int $line_id, ?DateTimeImmutable $now = null ): int {
-		$now = $now ?? Dates::now();
+	public function checkOut( int $line_id, ?DateTimeImmutable $now = null, ?DateTimeImmutable $at = null ): int {
+		$real = $now ?? Dates::now();
+		$now  = $at ?? $real;
 		return $this->lineMove(
 			'check_out',
 			$line_id,
-			function ( BookingRoom $line ) use ( $now ) {
+			function ( BookingRoom $line ) use ( $now, $real, $at ) {
 				$fields = array(
 					'checked_out_at' => Dates::to_db( $now ),
 					'checked_out_by' => get_current_user_id() ? get_current_user_id() : null,
 				);
 				$extra  = array();
+				if ( $at ) {
+					$in = ! empty( $line->checked_in_at ) ? Dates::local( substr( (string) $line->checked_in_at, 0, 19 ) ) : Dates::from_gmt( (string) $line->start_at_gmt );
+					self::assertActualTime( $at, $real, $in, __( 'The departure time cannot be before the check-in.', 'radius-hotel-booking' ) );
+				}
 				if ( $now->getTimestamp() < strtotime( (string) $line->end_at_gmt . ' UTC' ) ) {
 					// Early check-out: the room is free from now (plus the cleaning buffer).
 					$fields['occupied_until_gmt'] = Dates::to_gmt_db( $now );
@@ -671,9 +692,36 @@ class BookingStatusService {
 						'after'  => array( 'occupied_until' => $fields['occupied_until_gmt'] ),
 					);
 				}
+				if ( $at ) {
+					$extra['after']['actual_time'] = Dates::to_db( $at );
+				}
 				return array( $fields, $extra );
 			}
 		);
+	}
+
+	/**
+	 * Refuse an actual check-in or check-out time in the future or too early.
+	 *
+	 * @param DateTimeImmutable $at       The time given.
+	 * @param DateTimeImmutable $now      Now.
+	 * @param DateTimeImmutable $earliest The earliest it may be.
+	 * @param string            $too_early Message when it is earlier.
+	 * @return void
+	 * @throws DomainException 422 `at`.
+	 */
+	private static function assertActualTime( DateTimeImmutable $at, DateTimeImmutable $now, DateTimeImmutable $earliest, string $too_early ): void {
+		$message = '';
+		// A minute of grace: the field has no seconds.
+		if ( $at->getTimestamp() > $now->getTimestamp() + MINUTE_IN_SECONDS ) {
+			$message = __( 'The time cannot be in the future.', 'radius-hotel-booking' );
+		} elseif ( $at->getTimestamp() < $earliest->getTimestamp() ) {
+			$message = $too_early;
+		}
+		if ( '' !== $message ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw DomainException::invalid( array( 'at' => $message ), $message );
+		}
 	}
 
 	/**

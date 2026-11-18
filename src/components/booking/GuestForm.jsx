@@ -6,7 +6,10 @@
  * signed in to their account starts with their details filled in
  * (AccountBar); a document already on file shows as "•••• 4821" and is not
  * asked again (`id_on_file`: the server uses the one it has), also after
- * Express checkout without a code. When those
+ * Express checkout without a code, which shows the record's details masked
+ * (`A•••• B•••••`, `a•••@gmail.com`) and read-only, the phone in full: the
+ * server takes them from the record and ignores what is sent for them, so
+ * editing the page or injecting values changes nothing. When those
  * details are a guest record's (signed in, or Express checkout with a code),
  * the booking goes to that record as it is, so the name, phone and e-mail
  * are shown locked (`details_locked`) rather than edited for nothing.
@@ -23,12 +26,16 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { isEmailValid } from '@/lib/email';
 import { invalidPhoneMessage, isPhoneValid } from '@/lib/phone';
-import { accountSettings } from './AccountBar';
+import { accountSettings, useAccount } from './AccountBar';
+
+import {
+	RECORD_FIELDS,
+	knownPatch,
+	recognisedPatch,
+	takeExpressOffer,
+} from './expressPatch';
 
 const ExpressCheckout = lazy( () => import( './ExpressCheckout' ) );
-
-// The popup opens by itself once per page (the details step remounts the form).
-let expressShown = false;
 
 export const EMPTY_GUEST_FORM = {
 	first_name: '',
@@ -44,25 +51,10 @@ export const EMPTY_GUEST_FORM = {
 	id_hint: '',
 	// Express checkout's proof that the visitor owns the phone of a guest on file.
 	express_token: '',
-	// Express checkout without a code: `{ name, email }` masked; the server
-	// fills the name and e-mail left empty from the record.
+	// Express checkout without a code: `{ name, first_name, last_name, email,
+	// document }` masked; shown read-only, the server uses the record's own.
 	express_hint: null,
 	// The name, phone and e-mail are a guest record's: shown, not edited.
-	details_locked: false,
-};
-
-// What a recognised guest's record supplies (cleared by "Not you?").
-const RECORD_FIELDS = {
-	first_name: '',
-	last_name: '',
-	phone: '',
-	email: '',
-	id_type: '',
-	id_number: '',
-	id_on_file: false,
-	id_hint: '',
-	express_token: '',
-	express_hint: null,
 	details_locked: false,
 };
 
@@ -114,9 +106,11 @@ export function guestFormErrors( value, fields ) {
 		return extra;
 	}
 	const errors = {};
-	// Recognised without a code: an empty name and e-mail come from the record.
-	const onFile = !! value.express_hint;
-	if ( ! onFile && ! value.first_name.trim() ) {
+	// Recognised without a code: what the record has is shown masked and
+	// comes from the record; only what it lacks is asked.
+	const hint = value.express_hint;
+	const onFile = ( key ) => !! hint?.[ key ];
+	if ( ! onFile( 'first_name' ) && ! value.first_name.trim() ) {
 		errors.first_name = __(
 			'Enter your first name.',
 			'radius-hotel-booking'
@@ -124,7 +118,7 @@ export function guestFormErrors( value, fields ) {
 	}
 	if (
 		'required' === modes.last_name &&
-		! onFile &&
+		! onFile( 'last_name' ) &&
 		! value.last_name.trim()
 	) {
 		errors.last_name = __(
@@ -133,8 +127,8 @@ export function guestFormErrors( value, fields ) {
 		);
 	}
 	const digits = value.phone.replace( /\D/g, '' ).length;
-	if ( 'hidden' === modes.phone ) {
-		// Not asked.
+	if ( 'hidden' === modes.phone || hint ) {
+		// Not asked, or the number the record was found by.
 	} else if ( ( digits || 'required' === modes.phone ) && digits < 8 ) {
 		errors.phone = __(
 			'Enter a phone number we can reach you on.',
@@ -143,13 +137,9 @@ export function guestFormErrors( value, fields ) {
 	} else if ( digits && ! isPhoneValid( value.phone ) ) {
 		errors.phone = invalidPhoneMessage();
 	}
-	if ( 'hidden' === modes.email ) {
-		// Not asked.
-	} else if (
-		'required' === modes.email &&
-		! onFile &&
-		! value.email.trim()
-	) {
+	if ( 'hidden' === modes.email || onFile( 'email' ) ) {
+		// Not asked, or the record's.
+	} else if ( 'required' === modes.email && ! value.email.trim() ) {
 		errors.email = __(
 			'Enter your e-mail address.',
 			'radius-hotel-booking'
@@ -223,53 +213,36 @@ export default function GuestForm( {
 
 	// Express checkout: offered while the details are still empty (not signed
 	// in, nothing typed, not done already); opens by itself the first time.
+	// A signed-in visitor books with their account, even one without a name
+	// on file. The account is BookingFlow's query, already loaded (cached).
+	const expressOn = Boolean( accountSettings().express );
+	const { data: account, isFetched: accountChecked } =
+		useAccount( expressOn );
 	const offerExpress =
-		accountSettings().express &&
+		expressOn &&
+		accountChecked &&
+		! account?.signed_in &&
 		! value.express_token &&
 		! value.id_on_file &&
 		! value.first_name &&
 		! value.last_name;
 	const [ express, setExpress ] = useState( () => {
-		if ( offerExpress && ! value.phone && ! expressShown ) {
-			expressShown = true;
-			return true;
-		}
-		return false;
+		return offerExpress && ! value.phone && takeExpressOffer();
 	} );
 	const known = ( details, token ) => {
 		setExpress( false );
-		const locked = !! details.on_file;
-		const next = { express_token: token, details_locked: locked };
-		[ 'first_name', 'last_name', 'phone', 'email' ].forEach( ( key ) => {
-			// A record's details replace whatever was typed.
-			if ( details[ key ] || locked ) {
-				next[ key ] = details[ key ] || '';
-			}
-		} );
-		if ( details.id_on_file ) {
-			next.id_on_file = true;
-			next.id_type = details.id_type;
-			next.id_number = '';
-			next.id_hint = details.id_hint;
-		}
-		onChange( next );
+		onChange( knownPatch( details, token ) );
 	};
-	const recognised = ( { token, hint, phone } ) => {
+	const recognised = ( result ) => {
 		setExpress( false );
-		const next = { express_token: token, express_hint: hint, phone };
-		// Its document is used as it is on file (the server adds the number).
-		if ( hint?.document ) {
-			next.id_on_file = true;
-			next.id_type = hint.document.id_type;
-			next.id_number = '';
-			next.id_hint = hint.document.id_hint;
-		}
-		onChange( next );
+		onChange( recognisedPatch( result, value.phone ) );
 	};
 	// Another number than the one recognised: the record no longer applies.
+	// A record found without its country code may come with no number the
+	// form can show: the guest then types it, and the record still applies.
 	const changePhone = ( phone ) =>
 		onChange(
-			value.express_hint && phone !== value.phone
+			value.express_hint && value.phone && phone !== value.phone
 				? {
 						phone,
 						express_token: '',
@@ -287,6 +260,9 @@ export default function GuestForm( {
 		);
 	const hint = value.express_hint;
 	const locked = value.details_locked;
+	// Read-only: a guest record's details, or what a recognised record has (masked).
+	const fixed = ( key ) => locked || !! hint?.[ key ];
+	const phoneFixed = locked || !! hint;
 
 	// A field is checked as soon as the guest leaves it, then live while
 	// they fix it — not only on Continue.
@@ -321,46 +297,47 @@ export default function GuestForm( {
 						onRecognised={ recognised }
 						onNew={ ( phone ) => {
 							setExpress( false );
-							onChange( { phone } );
+							if ( phone ) {
+								onChange( { phone } );
+							}
 						} }
 						onClose={ () => setExpress( false ) }
 					/>
 				</Suspense>
 			) : null }
-			{ hint ? (
-				<p className="m-0 rounded-lg border border-border bg-muted px-3 py-2.5 text-sm text-foreground sm:col-span-2">
-					<span className="font-semibold text-heading">
-						{ hint.name
-							? sprintf(
-									/* translators: %s: masked guest name, e.g. "H••• R•••". */
-									__(
-										'Welcome back, %s!',
-										'radius-hotel-booking'
-									),
-									hint.name
-							  )
-							: __( 'Welcome back!', 'radius-hotel-booking' ) }
-					</span>{ ' ' }
-					{ __(
-						'Leave your name and e-mail empty to use the ones we have on file.',
-						'radius-hotel-booking'
-					) }
-				</p>
-			) : null }
-			{ locked ? (
+			{ locked || hint ? (
 				<div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-muted px-3 py-2.5 sm:col-span-2">
 					<p className="m-0 text-sm text-foreground">
 						<span className="font-semibold text-heading">
-							{ __(
-								'Your details on file',
-								'radius-hotel-booking'
-							) }
+							{ ! hint
+								? __(
+										'Your details on file',
+										'radius-hotel-booking'
+								  )
+								: hint.name
+								? sprintf(
+										/* translators: %s: masked guest name, e.g. "H••• R•••". */
+										__(
+											'Welcome back, %s!',
+											'radius-hotel-booking'
+										),
+										hint.name
+								  )
+								: __(
+										'Welcome back!',
+										'radius-hotel-booking'
+								  ) }
 						</span>
 						{ ' · ' }
-						{ __(
-							'To change them, please contact the hotel.',
-							'radius-hotel-booking'
-						) }
+						{ hint
+							? __(
+									'We use the details we have on file, hidden here for your privacy.',
+									'radius-hotel-booking'
+							  )
+							: __(
+									'To change them, please contact the hotel.',
+									'radius-hotel-booking'
+							  ) }
 					</p>
 					{ value.express_token ? (
 						<button
@@ -386,16 +363,18 @@ export default function GuestForm( {
 					__( 'First name', 'radius-hotel-booking' )
 				) }
 				error={ errorOf( 'first_name' ) }
-				required={ ! hint && ! locked }
+				required={ ! fixed( 'first_name' ) }
 			>
 				<Input
 					value={ value.first_name }
-					readOnly={ locked }
+					readOnly={ fixed( 'first_name' ) }
 					onChange={ text( 'first_name' ) }
 					onBlur={ blur( 'first_name' ) }
 					placeholder={ placeholderOf( 'first_name' ) }
 					autoComplete="given-name"
-					className={ locked ? 'h-11 bg-muted' : 'h-11' }
+					className={
+						fixed( 'first_name' ) ? 'h-11 bg-muted' : 'h-11'
+					}
 				/>
 			</Field>
 			{ shows( 'last_name' ) ? (
@@ -406,17 +385,19 @@ export default function GuestForm( {
 					) }
 					error={ errorOf( 'last_name' ) }
 					required={
-						'required' === modes.last_name && ! hint && ! locked
+						'required' === modes.last_name && ! fixed( 'last_name' )
 					}
 				>
 					<Input
 						value={ value.last_name }
-						readOnly={ locked }
+						readOnly={ fixed( 'last_name' ) }
 						onChange={ text( 'last_name' ) }
 						onBlur={ blur( 'last_name' ) }
 						placeholder={ placeholderOf( 'last_name' ) }
 						autoComplete="family-name"
-						className={ locked ? 'h-11 bg-muted' : 'h-11' }
+						className={
+							fixed( 'last_name' ) ? 'h-11 bg-muted' : 'h-11'
+						}
 					/>
 				</Field>
 			) : null }
@@ -427,11 +408,11 @@ export default function GuestForm( {
 						__( 'Phone', 'radius-hotel-booking' )
 					) }
 					error={ errorOf( 'phone' ) }
-					required={ 'required' === modes.phone && ! locked }
+					required={ 'required' === modes.phone && ! phoneFixed }
 				>
 					<PhoneField
 						value={ value.phone }
-						disabled={ locked }
+						disabled={ phoneFixed }
 						onChange={ changePhone }
 						onBlur={ blur( 'phone' ) }
 						placeholder={ placeholderOf( 'phone' ) }
@@ -450,19 +431,21 @@ export default function GuestForm( {
 					) }
 					error={ errorOf( 'email' ) }
 					required={
-						'required' === modes.email && ! hint && ! locked
+						'required' === modes.email && ! fixed( 'email' )
 					}
 				>
 					<Input
-						type="email"
+						type={ hint?.email ? 'text' : 'email' }
 						value={ value.email }
-						readOnly={ locked }
+						readOnly={ fixed( 'email' ) }
 						onChange={ text( 'email' ) }
 						onBlur={ blur( 'email' ) }
-						placeholder={ hint?.email || placeholderOf( 'email' ) }
+						placeholder={ placeholderOf( 'email' ) }
 						autoComplete="email"
 						inputMode="email"
-						className={ locked ? 'h-11 bg-muted' : 'h-11' }
+						className={
+							fixed( 'email' ) ? 'h-11 bg-muted' : 'h-11'
+						}
 					/>
 				</Field>
 			) : null }
@@ -481,7 +464,7 @@ export default function GuestForm( {
 							.join( ' ' ) }
 					</p>
 					{ /* A record's booking keeps its own document. */ }
-					{ ! locked ? (
+					{ ! locked && ! hint ? (
 						<button
 							type="button"
 							className="m-0 cursor-pointer border-0 bg-transparent p-0 text-sm font-medium text-primary underline-offset-2 hover:underline"

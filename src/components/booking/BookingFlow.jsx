@@ -7,7 +7,7 @@
  * check-in time is always part of the search (fixed plans ignore it): today
  * it starts at the next half hour, later days at 08:00.
  */
-import { Suspense, lazy, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { AlertTriangle } from 'lucide-react';
@@ -15,7 +15,12 @@ import { AlertTriangle } from 'lucide-react';
 import Panel from '@/components/common/Panel';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { addDaysYmd, formatDate, siteToday } from '@/lib/format';
+import {
+	addDaysYmd,
+	formatDate,
+	formatDateRange,
+	siteToday,
+} from '@/lib/format';
 import { toast, toastError } from '@/lib/toast';
 import { post } from '@/api/client';
 import AccountBar, {
@@ -25,10 +30,11 @@ import AccountBar, {
 } from './AccountBar';
 import BookingDone from './BookingDone';
 import BookingLines from './BookingLines';
-import DatesBar from './DatesBar';
+import DatesBar, { ArrivalTimeField } from './DatesBar';
 import GuestStep, { EMPTY_GUEST } from './GuestStep';
 import HoldChip from './HoldChip';
 import RateList from './RateList';
+import RoomSelection from './RoomSelection';
 import SummaryStep from './SummaryStep';
 import { AVAILABILITY_KEY, searchIsValid, useAvailability } from './api';
 import GuestBookingOnePage from './GuestBookingOnePage';
@@ -43,8 +49,23 @@ import { useHolds } from './holds';
 import { allowLeave } from './leaveGuard';
 import { checkinRange, defaultCheckin } from './rates';
 
-// Desk only, and heavy (Radix dialog): kept out of the website's bundle.
-const RoomDrawer = lazy( () => import( './RoomDrawer' ) );
+/**
+ * A desk panel's title with its step number (customer first, as on the
+ * hotel's old screen).
+ *
+ * @param {Object}      props          Props.
+ * @param {number}      props.n        Step.
+ * @param {JSX.Element} props.children Title.
+ * @return {JSX.Element} Title.
+ */
+const StepTitle = ( { n, children } ) => (
+	<span className="inline-flex items-center gap-2">
+		<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+			{ n }
+		</span>
+		{ children }
+	</span>
+);
 
 /**
  * The chosen rate, looked up in the latest search.
@@ -250,6 +271,17 @@ export default function BookingFlow( {
 			room_type_id: type.id,
 			rate_plan_id: rate.rate_plan_id,
 		} );
+		if ( ! guestMode ) {
+			// The desk's room numbers sit under the rates: bring them into view.
+			window.setTimeout(
+				() =>
+					roomRef.current?.scrollIntoView( {
+						behavior: 'smooth',
+						block: 'start',
+					} ),
+				150
+			);
+		}
 	};
 
 	// Rooms already in this booking for an overlapping time.
@@ -273,12 +305,8 @@ export default function BookingFlow( {
 	const left = Math.max( 0, maxRooms - lines.length );
 	// The rate rooms were last held at: "Add another room" reopens it.
 	const [ lastChoice, setLastChoice ] = useState( null );
-	// The desk's room drawer: kept mounted once used, so it can animate closed.
-	const linesRef = useRef( null );
-	const drawerUsed = useRef( false );
-	if ( chosen && ! guestMode ) {
-		drawerUsed.current = true;
-	}
+	// The desk's room numbers, under the rates.
+	const roomRef = useRef( null );
 
 	// What every hold of this rate sends.
 	const holdRequest = ( type, rate ) => ( {
@@ -459,7 +487,18 @@ export default function BookingFlow( {
 		  newGuest.last_name.trim() &&
 		  newGuest.phone.replace( /\D/g, '' ).length >= 8;
 	let blocked = '';
-	if ( ! lines.length ) {
+	if (
+		! guestMode &&
+		! guestReady &&
+		! guest.guest &&
+		'new' !== guest.mode
+	) {
+		// The desk chooses the customer first.
+		blocked = __(
+			'Choose the customer first, or add a new guest.',
+			'radius-hotel-booking'
+		);
+	} else if ( ! lines.length ) {
 		blocked = __( 'Add a room first.', 'radius-hotel-booking' );
 	} else if ( ! guestReady ) {
 		blocked =
@@ -506,10 +545,18 @@ export default function BookingFlow( {
 						expected_total: line.total,
 					} ) ),
 					guest: {
-						first_name: guestForm.first_name,
-						last_name: guestForm.last_name,
+						// Express checkout's masked details are not sent back:
+						// the server takes them from the record.
+						first_name: guestForm.express_hint?.first_name
+							? ''
+							: guestForm.first_name,
+						last_name: guestForm.express_hint?.last_name
+							? ''
+							: guestForm.last_name,
 						phone: guestForm.phone,
-						email: guestForm.email,
+						email: guestForm.express_hint?.email
+							? ''
+							: guestForm.email,
 						// A document on file is not sent: the server takes the one it has.
 						id_type: guestForm.id_on_file ? '' : guestForm.id_type,
 						id_number: guestForm.id_on_file
@@ -747,7 +794,14 @@ export default function BookingFlow( {
 		}
 		return (
 			<div data-mode={ mode } data-layout={ layout }>
-				<AccountBar account={ account } checked={ accountChecked } />
+				<AccountBar
+					account={ account }
+					checked={ accountChecked }
+					guestForm={ guestForm }
+					onGuestForm={ ( patch ) =>
+						setGuestForm( ( prev ) => ( { ...prev, ...patch } ) )
+					}
+				/>
 				<Face
 					visible={ visible }
 					roomDetails={ roomDetails }
@@ -832,6 +886,7 @@ export default function BookingFlow( {
 	} else {
 		body = (
 			<RateList
+				compact
 				data={ availability.data }
 				choice={ choice }
 				onSelect={ select }
@@ -840,94 +895,29 @@ export default function BookingFlow( {
 		);
 	}
 
+	const times = chosen?.rate?.window
+		? formatDateRange( chosen.rate.window.start, chosen.rate.window.end )
+		: '';
+
+	// The desk, laid out as the hotel's old screen: the customer and the order
+	// summary in a panel on the right (kept in view), the dates, the rates
+	// side by side and the room numbers on the left. On a phone or tablet:
+	// customer, then dates and rooms, then the summary.
 	return (
-		<div className="space-y-4" data-mode={ mode }>
-			<Panel title={ __( 'Dates and guests', 'radius-hotel-booking' ) }>
-				<DatesBar search={ search } onChange={ change } />
-			</Panel>
-			<Panel
-				title={ __( 'Rates', 'radius-hotel-booking' ) }
-				description={ __(
-					'Every rate for these dates, by room type.',
-					'radius-hotel-booking'
-				) }
-				actions={
-					availability.isFetching && ! availability.isPending ? (
-						<span
-							className="text-xs text-muted-foreground"
-							role="status"
-						>
-							{ __( 'Updating…', 'radius-hotel-booking' ) }
-						</span>
-					) : null
-				}
-			>
-				{ body }
-			</Panel>
-
-			{ /* The room step: a drawer over the rates (loaded on first use). */ }
-			<Suspense fallback={ null }>
-				{ ! guestMode && ( chosen || drawerUsed.current ) ? (
-					<RoomDrawer
-						chosen={ chosen }
-						taken={ taken }
-						pending={ Boolean( pending ) }
-						left={ left }
-						onHold={ holdRooms }
-						lines={ lines }
-						holds={ holds }
-						checkinTime={ search.checkin_time }
-						onCheckinTime={ ( checkin_time ) =>
-							change( { checkin_time } )
-						}
-						onClose={ () => setChoice( null ) }
-						onDone={ () => {
-							setChoice( null );
-							// On to the booking's rooms and the guest.
-							window.setTimeout(
-								() =>
-									linesRef.current?.scrollIntoView( {
-										behavior: 'smooth',
-										block: 'start',
-									} ),
-								350
-							);
-						} }
-					/>
-				) : null }
-			</Suspense>
-
-			<div ref={ linesRef } className="scroll-mt-20" />
-			{ lines.length ? (
+		<div
+			className="flex flex-col gap-4 xl:grid xl:grid-cols-[minmax(0,1fr)_25rem] xl:items-start"
+			data-mode={ mode }
+		>
+			<aside className="contents xl:sticky xl:top-[calc(var(--rtbp-top,0px)+5rem)] xl:col-start-2 xl:row-start-1 xl:block xl:max-h-[calc(100vh-var(--rtbp-top,0px)-6rem)] xl:space-y-4 xl:overflow-y-auto xl:pb-1">
 				<Panel
-					title={ __(
-						'Rooms in this booking',
-						'radius-hotel-booking'
-					) }
-					description={ __(
-						'To add more rooms, choose a rate above.',
-						'radius-hotel-booking'
-					) }
-					actions={
-						<HoldChip
-							expiresAt={ holds.expiresAt }
-							expired={ holds.expired }
-						/>
+					className="order-1"
+					title={
+						<StepTitle n={ 1 }>
+							{ __( 'Customer', 'radius-hotel-booking' ) }
+						</StepTitle>
 					}
-				>
-					<BookingLines
-						lines={ lines }
-						onRemove={ remove }
-						failed={ failed }
-					/>
-				</Panel>
-			) : null }
-
-			{ lines.length ? (
-				<Panel
-					title={ __( 'Guest', 'radius-hotel-booking' ) }
 					description={ __(
-						'Find the guest, or add them with their identity document.',
+						'Choose the customer first: find them, or add a new guest.',
 						'radius-hotel-booking'
 					) }
 				>
@@ -966,6 +956,7 @@ export default function BookingFlow( {
 						</div>
 					) : null }
 					<GuestStep
+						compact
 						value={ guest }
 						onChange={ ( next ) => {
 							setGuest( next );
@@ -974,37 +965,161 @@ export default function BookingFlow( {
 						errors={ guestErrors }
 					/>
 				</Panel>
-			) : null }
 
-			{ lines.length ? (
-				<Panel title={ __( 'Summary', 'radius-hotel-booking' ) }>
-					<SummaryStep
-						total={ total }
-						payment={ payment }
-						paidWith={ paidWith }
-						note={ note }
-						onChange={ ( changed ) => {
-							if ( 'paidWith' in changed ) {
-								setPaidWith( ( prev ) => ( {
-									...prev,
-									...changed.paidWith,
-								} ) );
-							}
-							if ( 'payment' in changed ) {
-								setPayment( changed.payment );
-							}
-							if ( 'note' in changed ) {
-								setNote( changed.note );
-							}
-						} }
-						blocked={ blocked }
-						banned={ banned }
-						priceChange={ priceChange }
-						submitting={ submitting }
-						onConfirm={ confirm }
-					/>
+				<Panel
+					className="order-3"
+					title={
+						<StepTitle n={ 4 }>
+							{ __( 'Order summary', 'radius-hotel-booking' ) }
+						</StepTitle>
+					}
+					actions={
+						lines.length ? (
+							<HoldChip
+								expiresAt={ holds.expiresAt }
+								expired={ holds.expired }
+							/>
+						) : null
+					}
+				>
+					<div className="space-y-4">
+						{ lines.length ? (
+							<BookingLines
+								lines={ lines }
+								onRemove={ remove }
+								failed={ failed }
+							/>
+						) : (
+							<p className="m-0 rounded-lg border border-dashed border-border px-3 py-4 text-center text-sm text-muted-foreground">
+								{ __(
+									'No room yet. Choose a rate, then a room number.',
+									'radius-hotel-booking'
+								) }
+							</p>
+						) }
+						<SummaryStep
+							compact
+							total={ total }
+							payment={ payment }
+							paidWith={ paidWith }
+							note={ note }
+							onChange={ ( changed ) => {
+								if ( 'paidWith' in changed ) {
+									setPaidWith( ( prev ) => ( {
+										...prev,
+										...changed.paidWith,
+									} ) );
+								}
+								if ( 'payment' in changed ) {
+									setPayment( changed.payment );
+								}
+								if ( 'note' in changed ) {
+									setNote( changed.note );
+								}
+							} }
+							blocked={ blocked }
+							banned={ banned }
+							priceChange={ priceChange }
+							submitting={ submitting }
+							onConfirm={ confirm }
+						/>
+					</div>
 				</Panel>
-			) : null }
+			</aside>
+
+			<div className="order-2 min-w-0 space-y-4 xl:col-start-1 xl:row-start-1">
+				<Panel
+					title={
+						<StepTitle n={ 2 }>
+							{ __( 'Dates and rate', 'radius-hotel-booking' ) }
+						</StepTitle>
+					}
+					description={ __(
+						'Choose the dates and guests, then a rate.',
+						'radius-hotel-booking'
+					) }
+					actions={
+						availability.isFetching && ! availability.isPending ? (
+							<span
+								className="text-xs text-muted-foreground"
+								role="status"
+							>
+								{ __( 'Updating…', 'radius-hotel-booking' ) }
+							</span>
+						) : null
+					}
+				>
+					<div className="space-y-5">
+						<DatesBar search={ search } onChange={ change } />
+						<div className="border-t border-border pt-5">
+							{ body }
+						</div>
+					</div>
+				</Panel>
+
+				<div ref={ roomRef } className="scroll-mt-28" />
+				{ chosen ? (
+					<Panel
+						title={
+							<StepTitle n={ 3 }>
+								{ __( 'Room number', 'radius-hotel-booking' ) }
+							</StepTitle>
+						}
+						description={ [
+							sprintf(
+								/* translators: 1: room type, 2: rate name. */
+								__( '%1$s · %2$s', 'radius-hotel-booking' ),
+								chosen.type.name,
+								chosen.rate.name
+							),
+							times,
+						]
+							.filter( Boolean )
+							.join( ' · ' ) }
+						actions={
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								onClick={ () => setChoice( null ) }
+							>
+								{ __( 'Other rates', 'radius-hotel-booking' ) }
+							</Button>
+						}
+					>
+						<div className="space-y-4">
+							{ chosen.rate.checkin ? (
+								<ArrivalTimeField
+									checkin={ chosen.rate.checkin }
+									rateName={ chosen.rate.name }
+									value={ search.checkin_time }
+									onChange={ ( checkin_time ) =>
+										change( { checkin_time } )
+									}
+								/>
+							) : null }
+							{ chosen.rate.available ? (
+								<RoomSelection
+									type={ chosen.type }
+									rate={ chosen.rate }
+									taken={ taken }
+									pending={ Boolean( pending ) }
+									left={ left }
+									onHold={ holdRooms }
+								/>
+							) : (
+								<p className="m-0 text-sm text-muted-foreground">
+									{ chosen.rate.reasons?.[ 0 ]?.message ||
+										__(
+											'This rate is no longer available.',
+											'radius-hotel-booking'
+										) }
+								</p>
+							) }
+						</div>
+					</Panel>
+				) : null }
+			</div>
 		</div>
 	);
 }

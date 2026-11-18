@@ -14,6 +14,7 @@ use RadiusTheme\RadiusHotelBooking\Core\Api\Middleware\AuthMiddleware;
 use RadiusTheme\RadiusHotelBooking\Core\Api\Middleware\PermissionMiddleware;
 use RadiusTheme\RadiusHotelBooking\Core\Container\Container;
 use RadiusTheme\RadiusHotelBooking\Core\Permissions\Capabilities;
+use RadiusTheme\RadiusHotelBooking\Exceptions\DomainException;
 use RadiusTheme\RadiusHotelBooking\Repositories\BookingRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\BookingRoomRepository;
 use RadiusTheme\RadiusHotelBooking\Repositories\GuestRepository;
@@ -24,6 +25,7 @@ use RadiusTheme\RadiusHotelBooking\Services\Booking\BookingQuery;
 use RadiusTheme\RadiusHotelBooking\Services\Booking\BookingService;
 use RadiusTheme\RadiusHotelBooking\Services\Booking\BookingStatusService;
 use RadiusTheme\RadiusHotelBooking\Services\Booking\StayExtension;
+use RadiusTheme\RadiusHotelBooking\Support\Dates;
 use WP_REST_Request;
 
 defined( 'ABSPATH' ) || exit;
@@ -59,8 +61,9 @@ class BookingController extends BaseController {
 				'approve'  => 'bookings.approve',
 				'decline'  => 'bookings.decline',
 				'cancel'   => 'bookings.cancel',
-				'checkIn'  => 'bookings.check_in',
-				'checkOut' => 'bookings.check_out',
+				// With `at` (the time it really happened), also `bookings.set_time`.
+				'checkIn'  => static fn( $request ) => self::withTime( $request, 'bookings.check_in' ),
+				'checkOut' => static fn( $request ) => self::withTime( $request, 'bookings.check_out' ),
 				'undoCheckIn' => array( 'bookings.check_in', 'bookings.undo_check_in' ),
 				// A guest in the room stays on for another slot (the options, then the extension).
 				'extendOptions' => array( 'bookings.check_in', 'bookings.extend_stay' ),
@@ -262,23 +265,65 @@ class BookingController extends BaseController {
 	}
 
 	/**
-	 * POST booking-lines/{id}/check-in `{ room_id? }` (3.9).
+	 * POST booking-lines/{id}/check-in `{ room_id?, at? }` (3.9). `at`: the
+	 * local time the guest really arrived (`Y-m-d H:i`), for a check-in
+	 * recorded late (`bookings.set_time`).
 	 *
 	 * @param WP_REST_Request $request Request.
 	 * @return mixed
 	 */
 	public function checkIn( WP_REST_Request $request ) {
-		return $this->transition( $request, static fn( $service, $body, $id ) => $service->checkIn( $id, (int) ( $body['room_id'] ?? 0 ) ), __( 'Checked in.', 'radius-hotel-booking' ) );
+		return $this->transition( $request, static fn( $service, $body, $id ) => $service->checkIn( $id, (int) ( $body['room_id'] ?? 0 ), null, self::actualTime( $body ) ), __( 'Checked in.', 'radius-hotel-booking' ) );
 	}
 
 	/**
-	 * POST booking-lines/{id}/check-out (3.10).
+	 * POST booking-lines/{id}/check-out `{ at? }` (3.10). `at`: the local time
+	 * the guest really left, for a check-out recorded late (`bookings.set_time`).
 	 *
 	 * @param WP_REST_Request $request Request.
 	 * @return mixed
 	 */
 	public function checkOut( WP_REST_Request $request ) {
-		return $this->transition( $request, static fn( $service, $body, $id ) => $service->checkOut( $id ), __( 'Checked out.', 'radius-hotel-booking' ) );
+		return $this->transition( $request, static fn( $service, $body, $id ) => $service->checkOut( $id, null, self::actualTime( $body ) ), __( 'Checked out.', 'radius-hotel-booking' ) );
+	}
+
+	/**
+	 * The access keys of a check-in or check-out: with an actual time, also
+	 * `bookings.set_time`.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @param string          $key     The move's own key.
+	 * @return string[]
+	 */
+	private static function withTime( WP_REST_Request $request, string $key ): array {
+		$body = (array) $request->get_json_params();
+		return '' !== trim( (string) ( $body['at'] ?? '' ) ) ? array( $key, 'bookings.set_time' ) : array( $key );
+	}
+
+	/**
+	 * The body's actual time (`at`, local `Y-m-d H:i` or `Y-m-dTH:i`), or null.
+	 *
+	 * @param array $body Request body.
+	 * @return \DateTimeImmutable|null
+	 * @throws DomainException 422 not a date and time.
+	 */
+	private static function actualTime( array $body ): ?\DateTimeImmutable {
+		$at = str_replace( 'T', ' ', trim( (string) ( $body['at'] ?? '' ) ) );
+		if ( '' === $at ) {
+			return null;
+		}
+		if ( ! preg_match( '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}(:\d{2})?$/', $at ) ) {
+			$message = __( 'Enter the date and time it happened.', 'radius-hotel-booking' );
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw DomainException::invalid( array( 'at' => $message ), $message );
+		}
+		try {
+			return Dates::local( $at );
+		} catch ( \InvalidArgumentException $e ) {
+			$message = __( 'Enter the date and time it happened.', 'radius-hotel-booking' );
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw DomainException::invalid( array( 'at' => $message ), $message );
+		}
 	}
 
 	/**

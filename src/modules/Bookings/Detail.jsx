@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 
 import ConfirmDialog from '@/components/common/ConfirmDialog';
+import ActualTimeField from './components/ActualTimeField';
 import EmptyState from '@/components/common/EmptyState';
 import NotesPanel from '@/components/common/NotesPanel';
 import Money from '@/components/common/Money';
@@ -460,6 +461,9 @@ export default function BookingDetail() {
 		( list || [] ).filter( ( action ) => 'locked' !== levels[ action ] );
 	// The dialog open: `{ action, line? }`.
 	const [ dialog, setDialog ] = useState( null );
+	// A check-out recorded late: when the guest really left ('' = now).
+	const [ actualAt, setActualAt ] = useState( '' );
+	useEffect( () => setActualAt( '' ), [ dialog ] );
 	// The room editor: `{ line }` (line null = add a room).
 	const [ editor, setEditor ] = useState( null );
 	const lineChange = useLineChange( id );
@@ -496,6 +500,7 @@ export default function BookingDetail() {
 			maintenance,
 			ratePlanId,
 			expectedTotal,
+			at = '',
 		} = {}
 	) =>
 		act
@@ -507,6 +512,7 @@ export default function BookingDetail() {
 				maintenance,
 				ratePlanId,
 				expectedTotal,
+				at,
 			} )
 			.then( ( result ) => {
 				toast.success( result.message );
@@ -1083,8 +1089,8 @@ export default function BookingDetail() {
 			<CheckInDialog
 				line={ 'check_in' === dialog?.action ? dialog.line : null }
 				onClose={ () => setDialog( null ) }
-				onConfirm={ ( roomId ) =>
-					run( 'check_in', { line: dialog.line, roomId } )
+				onConfirm={ ( roomId, at ) =>
+					run( 'check_in', { line: dialog.line, roomId, at } )
 				}
 			/>
 			<ConfirmDialog
@@ -1177,11 +1183,24 @@ export default function BookingDetail() {
 					Number( booking.money.balance_due ) > 0
 				}
 				onConfirm={ () =>
-					run( dialog.action, { line: dialog.line } ).then( () =>
-						setDialog( null )
-					)
+					run( dialog.action, {
+						line: dialog.line,
+						at: 'check_out' === dialog.action ? actualAt : '',
+					} ).then( () => setDialog( null ) )
 				}
-			/>
+			>
+				{ 'check_out' === dialog?.action ? (
+					<ActualTimeField
+						key={ dialog.line.id }
+						kind="check_out"
+						value={ actualAt }
+						onChange={ setActualAt }
+						earliest={
+							dialog.line.checked_in_at || dialog.line.start
+						}
+					/>
+				) : null }
+			</ConfirmDialog>
 		</div>
 	);
 }

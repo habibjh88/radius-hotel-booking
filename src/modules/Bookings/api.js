@@ -48,12 +48,24 @@ export function useBookingAction( id ) {
  * @param {number} id        Booking id.
  * `extend_stay` adds a slot to a checked-in stay (`ratePlanId`, `expectedTotal`).
  *
- * @param {Object} variables `{ action, lineId?, reason?, roomId?, maintenance?, ratePlanId?, expectedTotal? }`.
+ * Check-in and check-out take `at`: the local time it really happened
+ * (`YYYY-MM-DDTHH:MM`, `bookings.set_time`), for one recorded late.
+ *
+ * @param {Object} variables `{ action, lineId?, reason?, roomId?, maintenance?, ratePlanId?, expectedTotal?, at? }`.
  * @return {Promise<Object>} `{ booking, message, upcoming? }`.
  */
 function moveRequest(
 	id,
-	{ action, lineId, reason, roomId, maintenance, ratePlanId, expectedTotal }
+	{
+		action,
+		lineId,
+		reason,
+		roomId,
+		maintenance,
+		ratePlanId,
+		expectedTotal,
+		at,
+	}
 ) {
 	if ( 'extend_stay' === action ) {
 		return post( `booking-lines/${ lineId }/extend`, {
@@ -85,6 +97,9 @@ function moveRequest(
 		? post( `booking-lines/${ lineId }/${ lineActions[ action ] }`, {
 				...( roomId ? { room_id: roomId } : {} ),
 				...( reason ? { reason } : {} ),
+				...( at && [ 'check_in', 'check_out' ].includes( action )
+					? { at }
+					: {} ),
 		  } )
 		: post( `bookings/${ id }/${ action }`, {
 				...( lineId ? { line_id: lineId } : {} ),

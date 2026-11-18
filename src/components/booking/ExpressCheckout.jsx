@@ -7,6 +7,10 @@
  * number is `recognised` at once: a masked hint, and the server fills the
  * name, e-mail and document on file at booking.
  *
+ * A number the country's rules reject (`01 92 26 43`, kept before numbers
+ * changed) still goes to the server with 8 digits or more: it is matched
+ * there in any form, as the old site did (Phone::sameNumber()).
+ *
  * Light on purpose like RateDetailsDialog (no Radix dialog in the website's
  * bundle), in a portal on `<body>`, and loaded only when it opens.
  */
@@ -73,7 +77,8 @@ export default function ExpressCheckout( {
 
 	const start = async ( event ) => {
 		event?.preventDefault();
-		if ( ! isPhoneValid( phone ) ) {
+		const valid = isPhoneValid( phone );
+		if ( ! valid && phone.replace( /\D/g, '' ).length < 8 ) {
 			setError( invalidPhoneMessage() );
 			return;
 		}
@@ -87,7 +92,8 @@ export default function ExpressCheckout( {
 			} else if ( 'recognised' === data.status ) {
 				onRecognised( data );
 			} else {
-				onNew( data.phone || phone );
+				// A number the rules reject is not put in the form: the guest types it there.
+				onNew( data.phone || ( valid ? phone : '' ) );
 			}
 		} catch ( err ) {
 			setError( err?.errors?.phone?.first_message || err.message );

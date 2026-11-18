@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-16T08:26:51+00:00",
+    "translation-revision-date": "2026-11-18T12:15:38+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/modules\/Settings\/sections\/Accounts.jsx",
     "domain": "messages",
@@ -10,23 +10,41 @@
                 "lang": "fr_FR",
                 "plural-forms": "nplurals=2; plural=(n > 1);"
             },
+            "Sign in": [
+                "Se connecter"
+            ],
             "Express checkout": [
                 "R\u00e9servation express"
+            ],
+            "Create an account": [
+                "Cr\u00e9er un compte"
             ],
             "Phone number": [
                 "Num\u00e9ro de t\u00e9l\u00e9phone"
             ],
-            "Signing in": [
-                "Connexion"
+            "Signing in and creating an account": [
+                "Connexion et cr\u00e9ation de compte"
             ],
-            "Guests with an account on this website can sign in on the booking form. Their details are filled in for them, and their account is linked to their guest record the first time they book.": [
-                "Les clients ayant un compte sur ce site peuvent se connecter sur le formulaire de r\u00e9servation. Leurs informations sont pr\u00e9remplies, et leur compte est li\u00e9 \u00e0 leur fiche client lors de leur premi\u00e8re r\u00e9servation."
+            "Guests sign in, or create an account, in a popup on the booking form without leaving the page. Their details are filled in for them, and their account is linked to their guest record the first time they book.": [
+                "Les clients se connectent, ou cr\u00e9ent un compte, dans une fen\u00eatre sur le formulaire de r\u00e9servation sans quitter la page. Leurs informations sont remplies pour eux, et leur compte est li\u00e9 \u00e0 leur fiche client lors de leur premi\u00e8re r\u00e9servation."
             ],
-            "Show a \"Sign in\" link on the booking form": [
-                "Afficher un lien \u00ab Se connecter \u00bb sur le formulaire de r\u00e9servation"
+            "Buttons above the rooms": [
+                "Boutons au-dessus des chambres"
             ],
-            "Invites returning guests to sign in so they do not have to type their details again. Guests can still book without an account.": [
-                "Invite les clients connus \u00e0 se connecter pour ne pas ressaisir leurs informations. Les clients peuvent toujours r\u00e9server sans compte."
+            "The line at the top of the booking form, for guests who are not signed in. Turn off all three to hide it. Guests can still book without an account.": [
+                "La ligne en haut du formulaire de r\u00e9servation, pour les clients non connect\u00e9s. D\u00e9sactivez les trois pour la masquer. Les clients peuvent toujours r\u00e9server sans compte."
+            ],
+            "Shows only while express checkout is on (below).": [
+                "Affich\u00e9 uniquement si la r\u00e9servation express est activ\u00e9e (ci-dessous)."
+            ],
+            "Returning guests enter their phone number before choosing rooms; their details are then ready at checkout.": [
+                "Les clients habituels saisissent leur num\u00e9ro de t\u00e9l\u00e9phone avant de choisir les chambres ; leurs informations sont alors pr\u00eates \u00e0 la r\u00e9servation."
+            ],
+            "Guests with an account sign in in a popup and their details are filled in.": [
+                "Les clients ayant un compte se connectent dans une fen\u00eatre et leurs informations sont remplies."
+            ],
+            "New guests create an account in the same popup. Shows only while new accounts are allowed: \"Create an account for new guests\" (below) or WordPress's \"Anyone can register\".": [
+                "Les nouveaux clients cr\u00e9ent un compte dans la m\u00eame fen\u00eatre. Affich\u00e9 uniquement si les nouveaux comptes sont autoris\u00e9s : \u00ab Cr\u00e9er un compte pour les nouveaux clients \u00bb (ci-dessous) ou \u00ab Tout le monde peut s'enregistrer \u00bb de WordPress."
             ],
             "Require sign-in to book": [
                 "Exiger la connexion pour r\u00e9server"
@@ -55,14 +73,14 @@
             "New accounts": [
                 "Nouveaux comptes"
             ],
-            "What happens when someone without an account books on the website.": [
-                "Ce qui se passe quand une personne sans compte r\u00e9serve sur le site."
+            "How guests without an account get one.": [
+                "Comment les clients sans compte en obtiennent un."
             ],
             "Create an account for new guests": [
                 "Cr\u00e9er un compte pour les nouveaux clients"
             ],
-            "When a booking comes from a phone number and e-mail address the website does not know, an account is created and the guest receives an e-mail to set their password. A guest without an e-mail address gets no account. Nobody is ever signed in automatically: if an account already exists for that phone or e-mail, the booking is taken without it.": [
-                "Lorsqu\u2019une r\u00e9servation provient d\u2019un num\u00e9ro de t\u00e9l\u00e9phone et d\u2019une adresse e-mail inconnus du site, un compte est cr\u00e9\u00e9 et le client re\u00e7oit un e-mail pour d\u00e9finir son mot de passe. Un client sans adresse e-mail n\u2019a pas de compte. Personne n\u2019est jamais connect\u00e9 automatiquement : si un compte existe d\u00e9j\u00e0 pour ce t\u00e9l\u00e9phone ou cet e-mail, la r\u00e9servation est prise sans lui."
+            "Guests can create their own account in the sign-in popup, with their name, phone, e-mail and a password. And when a booking comes from a phone number and e-mail address the website does not know, an account is created and the guest receives an e-mail to set their password. A guest without an e-mail address gets no account. Nobody is ever signed in to an existing account automatically.": [
+                "Les clients peuvent cr\u00e9er leur propre compte dans la fen\u00eatre de connexion, avec leur nom, t\u00e9l\u00e9phone, e-mail et un mot de passe. Et quand une r\u00e9servation vient d'un num\u00e9ro de t\u00e9l\u00e9phone et d'une adresse e-mail que le site ne conna\u00eet pas, un compte est cr\u00e9\u00e9 et le client re\u00e7oit un e-mail pour choisir son mot de passe. Un client sans adresse e-mail n'a pas de compte. Personne n'est jamais connect\u00e9 automatiquement \u00e0 un compte existant."
             ],
             "Username": [
                 "Nom d\u2019utilisateur"

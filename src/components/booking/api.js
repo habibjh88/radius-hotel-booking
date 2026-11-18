@@ -77,3 +77,22 @@ export function useGuestLookup( q ) {
 		staleTime: 10 * 1000,
 	} );
 }
+
+/**
+ * A guest's bookings, newest arrival first (the desk's chosen-customer card).
+ * Only for staff who may open the guest list (`page.guests`).
+ *
+ * @param {number}  id      Guest id.
+ * @param {boolean} enabled Ask.
+ * @return {Object} React Query result; data is the stays array.
+ */
+export function useGuestHistory( id, enabled = true ) {
+	return useQuery( {
+		queryKey: [ 'guests', 'stays', Number( id ) ],
+		queryFn: () =>
+			get( `guests/${ id }/stays` ).then( ( { data } ) => data.stays ),
+		enabled: Boolean( id ) && enabled,
+		staleTime: 30 * 1000,
+		retry: false,
+	} );
+}
