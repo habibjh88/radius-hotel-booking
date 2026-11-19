@@ -438,6 +438,8 @@ class LoadAssets {
 				'notify_sound_url' => $this->notification_sound_url(),
 				// Most rooms one front-desk booking may take (Settings → Booking).
 				'max_rooms'        => \RadiusTheme\RadiusHotelBooking\Services\Booking\BookingService::maxRooms( 'staff' ),
+				// New booking's rates layout (Settings → Booking rules): columns|wide.
+				'desk_rate_layout' => (string) rtbp_setting( 'booking', 'deskRateLayout', 'columns' ),
 				// *Paid now* at the desk picks one of these (M05); the instructions stay on the server.
 				'payment_methods'  => array_map(
 					array( \RadiusTheme\RadiusHotelBooking\Settings\PaymentSettings::class, 'method_for_desk' ),
@@ -568,6 +570,8 @@ class LoadAssets {
 				'booking'     => \RadiusTheme\RadiusHotelBooking\Frontend\Embeds::rules(),
 				// Settings → Guest accounts: sign-in on the booking form (who is signed in comes from `public/account`).
 				'account'     => \RadiusTheme\RadiusHotelBooking\Frontend\GuestAccount::siteParams(),
+				// Settings → General's hotel name and logo (the sign-in popup shows the logo).
+				'brand'       => $this->brand_params(),
 			)
 		);
 	}

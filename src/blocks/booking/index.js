@@ -34,6 +34,7 @@ registerBlockType( 'radius-hotel-booking/booking', {
 		roomCard: { type: 'string', default: 'split' },
 		ratesShown: { type: 'number', default: 2 },
 		priceBreakdown: { type: 'boolean', default: true },
+		roomCounts: { type: 'boolean', default: false },
 	},
 	supports: { html: false, multiple: true },
 	edit: function Edit( { attributes, setAttributes } ) {
@@ -45,6 +46,7 @@ registerBlockType( 'radius-hotel-booking/booking', {
 			roomCard,
 			ratesShown,
 			priceBreakdown,
+			roomCounts,
 		} = attributes;
 		const modal = 'modal' === display;
 		return (
@@ -205,6 +207,17 @@ registerBlockType( 'radius-hotel-booking/booking', {
 							checked={ priceBreakdown }
 							onChange={ ( value ) =>
 								setAttributes( { priceBreakdown: value } )
+							}
+						/>
+						<ToggleControl
+							label={ __( 'Rooms left', 'radius-hotel-booking' ) }
+							help={ __(
+								"How many rooms are available on each room type's photo and free under each price.",
+								'radius-hotel-booking'
+							) }
+							checked={ roomCounts }
+							onChange={ ( value ) =>
+								setAttributes( { roomCounts: value } )
 							}
 						/>
 					</PanelBody>

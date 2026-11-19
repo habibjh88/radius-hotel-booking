@@ -70,7 +70,11 @@ export function searchFromUrl( rules, limits ) {
 		arrival,
 		departure,
 		adults: between( url.get( 'adults' ), 1, 20, rules.defaultAdults || 2 ),
-		children: between( url.get( 'children' ), 0, 10, 0 ),
+		// No Children field (Settings → Public booking): adults only.
+		children:
+			false === rules.childrenField
+				? 0
+				: between( url.get( 'children' ), 0, 10, 0 ),
 		rooms: between( url.get( 'rooms' ), 1, 10, 1 ),
 		// From a room type page's *Book this room* (0 = every room type).
 		room_type_id: between( url.get( 'room_type' ), 1, 1000000000, 0 ),

@@ -60,6 +60,7 @@ class RoomTypeController extends BaseController {
 				'store'   => 'room_types.manage',
 				'update'  => 'room_types.manage',
 				'destroy' => 'room_types.manage',
+				'order'   => 'room_types.manage',
 			)
 		);
 	}
@@ -102,6 +103,22 @@ class RoomTypeController extends BaseController {
 			fn( $request ) => ApiResponse::created(
 				array( 'room_type' => $this->transformItem( $this->service->create( (array) $request->get_json_params() ) ) ),
 				__( 'Room type added.', 'radius-hotel-booking' )
+			)
+		);
+	}
+
+	/**
+	 * PUT /room-types/order `{ ids }`: the display order, first to last.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function order( WP_REST_Request $request ) {
+		return $this->respond(
+			$request,
+			fn( $request ) => ApiResponse::success(
+				array( 'room_types' => $this->transformCollection( $this->service->reorder( (array) ( $request->get_json_params()['ids'] ?? array() ) ) ) ),
+				__( 'Room type order saved.', 'radius-hotel-booking' )
 			)
 		);
 	}

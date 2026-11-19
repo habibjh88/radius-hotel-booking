@@ -430,6 +430,22 @@ Check-in and check-out can record the actual time, for staff with the new permis
 New booking: guest search results open in a dropdown, chosen with mouse or arrow keys.
 Booking page: "Create an account" link and tab in the sign-in popup; guests stay signed in.
 Booking page: Express checkout before choosing rooms; each account button can be switched off.
+Booking shortcode: new "Rooms left" option (room_counts) to hide the rooms available/free counts.
+Shortcodes page: "Rates shown first" now starts at 0 (all rates) in the booking builder.
+Bookings list: the payment method is now centred under the payment badge.
+Sign-in and Express checkout popups now show the hotel logo and name from Settings → General.
+Settings: resetting a tab now asks you to type RESET to confirm.
+Settings: new Import / Export tab saves settings to a file and loads them back.
+New booking: each room type is a numbered full-width block; its name stays visible while scrolling.
+New: house rules shown before confirming a website booking, in the e-mail, with an optional accept checkbox.
+New: "Ask for children" setting hides the children field so guests book for adults only.
+Booking form: chosen rooms now have a light brand-colour background so they stand out.
+New booking: new layout setting; room types side by side (default) or one per row.
+Rooms: new Reorder button to drag room types; the booking page and New booking follow it.
+Rooms: a new room type is now added at the end of the list, not the top.
+Rooms: switch room types between grid and list view; your choice is remembered.
+New booking: more space between room type blocks.
+Rooms: room counts now sit inside their status badge, e.g. "23 Available".
 
 = 1.0.0 =
 Initial release.

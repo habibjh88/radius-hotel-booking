@@ -24,6 +24,7 @@ import { Field } from '@/components/common/Form';
 import PhoneField from '@/components/common/Phone';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import HotelBrand, { hasHotelBrand } from './HotelBrand';
 import { invalidPhoneMessage, isPhoneValid } from '@/lib/phone';
 
 /**
@@ -127,6 +128,19 @@ export default function ExpressCheckout( {
 		}
 	};
 
+	// Settings → General's logo and hotel name on top, as in the sign-in popup.
+	const branded = hasHotelBrand();
+	const closeButton = (
+		<button
+			type="button"
+			className="inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg border-0 bg-muted p-0 text-heading transition hover:bg-heading hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+			aria-label={ __( 'Close', 'radius-hotel-booking' ) }
+			onClick={ onClose }
+		>
+			<X className="h-4 w-4" aria-hidden="true" />
+		</button>
+	);
+
 	return createPortal(
 		// Utilities are scoped *under* .rtbp-root, so the overlay is its child.
 		<div className="rtbp-root" data-rtbp-nested-dialog>
@@ -144,6 +158,7 @@ export default function ExpressCheckout( {
 					aria-labelledby="rtbp-express-title"
 					className="w-full max-w-md rounded-t-2xl bg-card p-6 shadow-2xl duration-200 animate-in fade-in-0 zoom-in-95 motion-reduce:animate-none sm:rounded-2xl"
 				>
+					{ branded ? <HotelBrand close={ closeButton } /> : null }
 					<div className="mb-1 flex items-start justify-between gap-3">
 						<h2
 							id="rtbp-express-title"
@@ -151,14 +166,7 @@ export default function ExpressCheckout( {
 						>
 							{ __( 'Express checkout', 'radius-hotel-booking' ) }
 						</h2>
-						<button
-							type="button"
-							className="inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg border-0 bg-muted p-0 text-heading transition hover:bg-heading hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-							aria-label={ __( 'Close', 'radius-hotel-booking' ) }
-							onClick={ onClose }
-						>
-							<X className="h-4 w-4" aria-hidden="true" />
-						</button>
+						{ branded ? null : closeButton }
 					</div>
 
 					{ ! sent ? (

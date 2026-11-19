@@ -22,7 +22,7 @@ import SearchBar from './SearchBar';
  * The guest booking flow with what it needs around it.
  *
  * @param {Object} props         Props.
- * @param {Object} props.options `layout`, `display`, `buttonText`, `roomDetails`, `roomCard`, `ratesShown`, `priceBreakdown` (the mount node's data).
+ * @param {Object} props.options `layout`, `display`, `buttonText`, `roomDetails`, `roomCard`, `ratesShown`, `priceBreakdown`, `roomCounts` (the mount node's data).
  * @return {JSX.Element} Flow.
  */
 function Booking( { options = {} } ) {
@@ -51,6 +51,8 @@ function Booking( { options = {} } ) {
 						: Math.max( 0, parseInt( options.ratesShown, 10 ) || 0 )
 				}
 				priceBreakdown={ 'yes' === options.priceBreakdown }
+				// Missing (a theme's older template): shown, like the shortcode.
+				roomCounts={ 'no' !== options.roomCounts }
 			/>
 			<Toaster
 				position="top-center"

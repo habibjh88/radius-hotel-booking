@@ -5,7 +5,14 @@
  */
 import { useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { ExternalLink, FilePlus2, Plus, Trash2 } from 'lucide-react';
+import {
+	ArrowDown,
+	ArrowUp,
+	ExternalLink,
+	FilePlus2,
+	Plus,
+	Trash2,
+} from 'lucide-react';
 
 import { post } from '@/api/client';
 import { Button } from '@/components/ui/button';
@@ -13,6 +20,7 @@ import { Input } from '@/components/ui/input';
 import { toast, toastError } from '@/lib/toast';
 
 import { Field } from '@/components/common/Form';
+import IconField from '@/components/icons/IconField';
 import SettingsSection from '@/components/common/SettingsSection';
 import {
 	Select,
@@ -258,6 +266,156 @@ function IdTypesList( { value, onChange, error } ) {
 }
 
 /**
+ * The house rules: each an optional icon and one line of text, in order.
+ *
+ * @param {Object}   props          Props.
+ * @param {Object[]} props.value    `[ { icon, text } ]`.
+ * @param {Function} props.onChange Called with the new list.
+ * @param {string}   props.error    Server message.
+ * @return {JSX.Element} List.
+ */
+function HouseRulesList( { value, onChange, error } ) {
+	const rows = Array.isArray( value ) ? value : [];
+	const change = ( index, fields ) =>
+		onChange(
+			rows.map( ( row, i ) =>
+				i === index ? { ...row, ...fields } : row
+			)
+		);
+	const move = ( index, by ) => {
+		const next = [ ...rows ];
+		const [ row ] = next.splice( index, 1 );
+		next.splice( index + by, 0, row );
+		onChange( next );
+	};
+	return (
+		<div className="space-y-2">
+			<p className="m-0 text-sm font-medium text-heading">
+				{ __( 'Rules', 'radius-hotel-booking' ) }
+			</p>
+			<p className="m-0 text-[13px] leading-5 text-muted-foreground">
+				{ __(
+					'One rule per line, short and clear. Pick an icon to make each one easy to spot.',
+					'radius-hotel-booking'
+				) }
+			</p>
+			{ rows.length ? (
+				<ul className="m-0 list-none space-y-2 p-0">
+					{ rows.map( ( row, index ) => (
+						<li
+							// Rows have no id; the position is their identity while editing.
+							key={ index }
+							className="m-0 flex items-center gap-2"
+						>
+							<IconField
+								compact
+								value={ row.icon || '' }
+								onChange={ ( icon ) =>
+									change( index, { icon } )
+								}
+								label={
+									row.text ||
+									__( 'House rule', 'radius-hotel-booking' )
+								}
+							/>
+							<Input
+								value={ row.text }
+								onChange={ ( event ) =>
+									change( index, {
+										text: event.target.value,
+									} )
+								}
+								maxLength={ 160 }
+								placeholder={ __(
+									'e.g. No pets allowed',
+									'radius-hotel-booking'
+								) }
+								aria-label={ sprintf(
+									/* translators: %d: row number. */
+									__( 'Rule %d', 'radius-hotel-booking' ),
+									index + 1
+								) }
+							/>
+							<Button
+								type="button"
+								variant="ghost"
+								size="icon"
+								className="shrink-0 text-muted-foreground"
+								disabled={ 0 === index }
+								onClick={ () => move( index, -1 ) }
+								aria-label={ __(
+									'Move up',
+									'radius-hotel-booking'
+								) }
+							>
+								<ArrowUp aria-hidden="true" />
+							</Button>
+							<Button
+								type="button"
+								variant="ghost"
+								size="icon"
+								className="shrink-0 text-muted-foreground"
+								disabled={ index === rows.length - 1 }
+								onClick={ () => move( index, 1 ) }
+								aria-label={ __(
+									'Move down',
+									'radius-hotel-booking'
+								) }
+							>
+								<ArrowDown aria-hidden="true" />
+							</Button>
+							<Button
+								type="button"
+								variant="ghost"
+								size="icon"
+								className="shrink-0 text-muted-foreground hover:text-destructive"
+								onClick={ () =>
+									onChange(
+										rows.filter( ( _, i ) => i !== index )
+									)
+								}
+								aria-label={ sprintf(
+									/* translators: %s: the rule's text. */
+									__( 'Remove %s', 'radius-hotel-booking' ),
+									row.text ||
+										__( 'this row', 'radius-hotel-booking' )
+								) }
+							>
+								<Trash2 aria-hidden="true" />
+							</Button>
+						</li>
+					) ) }
+				</ul>
+			) : (
+				<p className="m-0 rounded-lg border border-dashed border-border px-3 py-4 text-center text-sm text-muted-foreground">
+					{ __( 'No rules yet.', 'radius-hotel-booking' ) }
+				</p>
+			) }
+			<Button
+				type="button"
+				variant="outline"
+				size="sm"
+				disabled={ rows.length >= 20 }
+				onClick={ () =>
+					onChange( [ ...rows, { icon: '', text: '' } ] )
+				}
+			>
+				<Plus aria-hidden="true" />
+				{ __( 'Add rule', 'radius-hotel-booking' ) }
+			</Button>
+			{ error ? (
+				<p
+					role="alert"
+					className="m-0 text-xs font-medium text-destructive"
+				>
+					{ error }
+				</p>
+			) : null }
+		</div>
+	);
+}
+
+/**
  * @param {Object}   props          Props from the Settings screen.
  * @param {Object}   props.value    Section values.
  * @param {Function} props.setField `setField( key )( value )`.
@@ -427,6 +585,16 @@ export default function Website( { value, setField, errors, schema, accept } ) {
 					onChange={ setField( 'showRoomsField' ) }
 					error={ errors.showRoomsField }
 				/>
+				<ToggleRow
+					label={ __( 'Ask for children', 'radius-hotel-booking' ) }
+					description={ __(
+						'Adds a children field to the search bars. Turn it off when children are not accepted: guests then book for adults only.',
+						'radius-hotel-booking'
+					) }
+					checked={ value.childrenField }
+					onChange={ setField( 'childrenField' ) }
+					error={ errors.childrenField }
+				/>
 			</SettingsSection>
 
 			<SettingsSection
@@ -469,6 +637,61 @@ export default function Website( { value, setField, errors, schema, accept } ) {
 					onChange={ setField( 'privacyConsent' ) }
 					error={ errors.privacyConsent }
 				/>
+			</SettingsSection>
+
+			<SettingsSection
+				title={ __( 'House rules', 'radius-hotel-booking' ) }
+				description={ __(
+					'Rules guests must know before they come (pets, outside food, age…). Shown on the booking page before the guest confirms, and in the booking e-mail.',
+					'radius-hotel-booking'
+				) }
+			>
+				<ToggleRow
+					label={ __( 'Show house rules', 'radius-hotel-booking' ) }
+					checked={ value.houseRulesEnabled }
+					onChange={ setField( 'houseRulesEnabled' ) }
+					error={ errors.houseRulesEnabled }
+				/>
+				{ value.houseRulesEnabled ? (
+					<>
+						<Field
+							label={ __( 'Heading', 'radius-hotel-booking' ) }
+							error={ errors.houseRulesTitle }
+						>
+							<Input
+								value={ value.houseRulesTitle || '' }
+								onChange={ ( event ) =>
+									setField( 'houseRulesTitle' )(
+										event.target.value
+									)
+								}
+								maxLength={ 80 }
+								placeholder={ __(
+									'House rules',
+									'radius-hotel-booking'
+								) }
+							/>
+						</Field>
+						<HouseRulesList
+							value={ value.houseRules }
+							onChange={ setField( 'houseRules' ) }
+							error={ errors.houseRules }
+						/>
+						<ToggleRow
+							label={ __(
+								'Guests must accept the house rules',
+								'radius-hotel-booking'
+							) }
+							description={ __(
+								'A checkbox "I have read and accept the house rules" that must be ticked to book.',
+								'radius-hotel-booking'
+							) }
+							checked={ value.houseRulesConsent }
+							onChange={ setField( 'houseRulesConsent' ) }
+							error={ errors.houseRulesConsent }
+						/>
+					</>
+				) : null }
 			</SettingsSection>
 
 			<SettingsSection

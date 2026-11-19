@@ -227,6 +227,44 @@ export default function Booking( {
 					onChange={ setField( 'deskStartedSlots' ) }
 					error={ errors.deskStartedSlots }
 				/>
+				<Field
+					label={ __(
+						'New booking layout (front desk)',
+						'radius-hotel-booking'
+					) }
+					description={ __(
+						'How room types and their rates are laid out on the staff New booking screen. Reload the page after saving to see it.',
+						'radius-hotel-booking'
+					) }
+					error={ errors.deskRateLayout }
+				>
+					<div>
+						<SegmentedControl
+							label={ __(
+								'New booking layout (front desk)',
+								'radius-hotel-booking'
+							) }
+							value={ value.deskRateLayout }
+							onChange={ setField( 'deskRateLayout' ) }
+							options={ [
+								{
+									value: 'columns',
+									label: __(
+										'Room types side by side',
+										'radius-hotel-booking'
+									),
+								},
+								{
+									value: 'wide',
+									label: __(
+										'One room type per row',
+										'radius-hotel-booking'
+									),
+								},
+							] }
+						/>
+					</div>
+				</Field>
 			</SettingsSection>
 
 			<SettingsSection

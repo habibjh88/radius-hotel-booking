@@ -38,6 +38,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { isPhoneValid } from '@/lib/phone';
 import { cn } from '@/lib/utils';
+import HotelBrand, { hasHotelBrand } from './HotelBrand';
 
 /**
  * A WordPress link that brings the visitor back to this page afterwards.
@@ -619,6 +620,18 @@ export default function SignInDialog( {
 	const queryClient = useQueryClient();
 	const dialogRef = useRef( null );
 	const isRegister = 'register' === mode;
+	// Settings → General's logo and hotel name; neither set: the round icon.
+	const branded = hasHotelBrand();
+	const closeButton = (
+		<button
+			type="button"
+			className="inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg border-0 bg-muted p-0 text-heading transition hover:bg-heading hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+			aria-label={ __( 'Close', 'radius-hotel-booking' ) }
+			onClick={ onClose }
+		>
+			<X className="h-4 w-4" aria-hidden="true" />
+		</button>
+	);
 
 	// Escape closes, the page stops scrolling, Tab stays inside, focus goes back on close.
 	useEffect( () => {
@@ -730,32 +743,36 @@ export default function SignInDialog( {
 					aria-describedby="rtbp-sign-in-intro"
 					className="max-h-[100dvh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-card p-6 shadow-2xl duration-200 animate-in fade-in-0 zoom-in-95 motion-reduce:animate-none sm:max-h-[calc(100dvh-3rem)] sm:rounded-2xl sm:p-8"
 				>
-					<div className="flex items-start justify-between gap-3">
-						<span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary">
-							{ isRegister ? (
-								<UserRoundPlus
-									className="h-5 w-5"
-									aria-hidden="true"
-								/>
-							) : (
-								<LockKeyhole
-									className="h-5 w-5"
-									aria-hidden="true"
-								/>
-							) }
-						</span>
-						<button
-							type="button"
-							className="inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg border-0 bg-muted p-0 text-heading transition hover:bg-heading hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-							aria-label={ __( 'Close', 'radius-hotel-booking' ) }
-							onClick={ onClose }
-						>
-							<X className="h-4 w-4" aria-hidden="true" />
-						</button>
-					</div>
+					{ branded ? (
+						<HotelBrand
+							close={ closeButton }
+							bleed="-mx-6 -mt-6 sm:-mx-8 sm:-mt-8"
+							inset="px-6 sm:px-8"
+						/>
+					) : (
+						<div className="flex items-start justify-between gap-3">
+							<span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary">
+								{ isRegister ? (
+									<UserRoundPlus
+										className="h-5 w-5"
+										aria-hidden="true"
+									/>
+								) : (
+									<LockKeyhole
+										className="h-5 w-5"
+										aria-hidden="true"
+									/>
+								) }
+							</span>
+							{ closeButton }
+						</div>
+					) }
 					<h2
 						id="rtbp-sign-in-title"
-						className="mb-1 mt-4 text-xl font-bold text-heading"
+						className={ cn(
+							'mb-1 text-xl font-bold text-heading',
+							! branded && 'mt-4'
+						) }
 					>
 						{ isRegister
 							? __(

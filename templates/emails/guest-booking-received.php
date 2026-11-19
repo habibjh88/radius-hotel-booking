@@ -1,6 +1,7 @@
 <?php
 /**
- * Guest e-mail: booking received, with how to pay (M05, 5.2, 5.7).
+ * Guest e-mail: booking received, with how to pay (M05, 5.2, 5.7), and the
+ * house rules from Settings → Public booking (WebsiteSettings::houseRules()).
  *
  * @var \RadiusTheme\RadiusHotelBooking\Abstracts\BaseEmail $email      The e-mail.
  * @var array $data `{ intro, rooms, total, paid, due, deadline, instructions, reference, page_url, invoice }`.
@@ -81,6 +82,21 @@ do_action( 'rtbp_email_before_content', $email, $data );
 		</td></tr>
 	</table>
 	<?php endforeach; ?>
+<?php endif; ?>
+
+<?php
+// Settings → Public booking → House rules (none when off).
+$rtbp_house = \RadiusTheme\RadiusHotelBooking\Settings\WebsiteSettings::houseRules();
+?>
+<?php if ( $rtbp_house ) : ?>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin: 24px 0 8px; background: #fffaeb; border: 1px solid #fde68a;">
+	<tr><td style="padding: 12px 14px;">
+		<p style="margin: 0 0 8px; font-size: 15px; font-weight: bold; color: #111827;"><?php echo esc_html( $rtbp_house['title'] ); ?></p>
+		<?php foreach ( $rtbp_house['rules'] as $rtbp_rule ) : ?>
+		<p style="margin: 0 0 4px; font-size: 14px; line-height: 1.5; color: #374151;">&bull;&nbsp;<?php echo esc_html( $rtbp_rule['text'] ); ?></p>
+		<?php endforeach; ?>
+	</td></tr>
+</table>
 <?php endif; ?>
 
 <p style="margin: 24px 0 8px;">

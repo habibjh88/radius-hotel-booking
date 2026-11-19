@@ -389,11 +389,12 @@ export function BookingList( { withPageActions = true } ) {
 			),
 		},
 		{
-			// The payment status, and how it was paid.
+			// The payment status, and how it was paid: the method centred under
+			// the badge (the badge's own padding made a left edge look off).
 			id: 'payment',
 			header: __( 'Payment', 'radius-hotel-booking' ),
 			cell: ( line ) => (
-				<span className="flex flex-col items-start gap-1">
+				<span className="inline-flex flex-col items-center gap-1 text-center">
 					<StatusBadge
 						domain="payment"
 						value={ line.overdue ? 'overdue' : line.payment_status }

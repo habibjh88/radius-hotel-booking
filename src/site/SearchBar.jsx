@@ -65,6 +65,7 @@ export default function SearchBar() {
 			<DatesBar
 				search={ search }
 				limits={ limits }
+				showChildren={ false !== rules.childrenField }
 				onChange={ ( changes ) =>
 					setSearch( ( prev ) => ( { ...prev, ...changes } ) )
 				}

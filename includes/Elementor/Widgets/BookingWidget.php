@@ -145,6 +145,16 @@ class BookingWidget extends \Elementor\Widget_Base {
 				'default'      => Embeds::BOOKING_DEFAULTS['price_breakdown'],
 			)
 		);
+		$this->add_control(
+			'room_counts',
+			array(
+				'label'        => __( 'Rooms left', 'radius-hotel-booking' ),
+				'description'  => __( 'How many rooms are available on each room type\'s photo and free under each price.', 'radius-hotel-booking' ),
+				'type'         => \Elementor\Controls_Manager::SWITCHER,
+				'return_value' => 'yes',
+				'default'      => 'yes' === Embeds::ROOM_COUNTS_SETTING_DEFAULT ? 'yes' : '',
+			)
+		);
 		$this->end_controls_section();
 	}
 
@@ -163,6 +173,7 @@ class BookingWidget extends \Elementor\Widget_Base {
 			'room_card'       => $settings['room_card'] ?? Embeds::BOOKING_DEFAULTS['room_card'],
 			'rates_shown'     => $settings['rates_shown'] ?? Embeds::BOOKING_DEFAULTS['rates_shown'],
 			'price_breakdown' => 'yes' === ( $settings['price_breakdown'] ?? '' ) ? 'yes' : 'no',
+			'room_counts'     => 'yes' === ( $settings['room_counts'] ?? '' ) ? 'yes' : 'no',
 		);
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the template escapes every value.
 		echo Embeds::booking( $atts );

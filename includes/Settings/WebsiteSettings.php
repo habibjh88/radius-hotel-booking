@@ -47,6 +47,11 @@ class WebsiteSettings {
 	const MAX_ID_TYPES = 30;
 
 	/**
+	 * Most house rules the list may hold.
+	 */
+	const MAX_HOUSE_RULES = 20;
+
+	/**
 	 * The section's schema.
 	 *
 	 * @return array
@@ -54,35 +59,35 @@ class WebsiteSettings {
 	public static function schema(): array {
 		return array(
 			// The guest picks the room number; off = the first free room by number is assigned (legacy: on).
-			'guestPicksRoom' => array(
+			'guestPicksRoom'    => array(
 				'type'    => 'bool',
 				'default' => true,
 			),
 			// A "how many rooms" field in the search bar (4.2).
-			'showRoomsField' => array(
+			'showRoomsField'    => array(
 				'type'    => 'bool',
 				'default' => false,
 			),
 			// The page holding [rtbp_booking], where the search bar sends guests; 0 = none yet.
-			'resultsPageId'  => array(
+			'resultsPageId'     => array(
 				'type'     => 'int',
 				'default'  => 0,
 				'min'      => 0,
 				'sanitize' => array( self::class, 'page' ),
 			),
 			// Guests tick "I agree to the privacy policy" before booking (the site's privacy page).
-			'privacyConsent' => array(
+			'privacyConsent'    => array(
 				'type'    => 'bool',
 				'default' => true,
 			),
 			// Guest fields on the booking form: field => required|optional|hidden (GUEST_FIELDS).
-			'guestFields'    => array(
+			'guestFields'       => array(
 				'type'     => 'array',
 				'default'  => self::GUEST_FIELDS,
 				'sanitize' => array( self::class, 'guestFieldsValue' ),
 			),
 			// Each input's own label and placeholder: field => { label, placeholder }; '' = the built-in text.
-			'guestFieldText' => array(
+			'guestFieldText'    => array(
 				'type'     => 'array',
 				'default'  => array_fill_keys(
 					self::TEXT_FIELDS,
@@ -94,13 +99,40 @@ class WebsiteSettings {
 				'sanitize' => array( self::class, 'guestFieldTextValue' ),
 			),
 			// The identity documents a guest can choose: [ { key, label } ], the built-in ones until changed.
-			'idTypes'        => array(
+			'idTypes'           => array(
 				'type'     => 'array',
 				'default'  => array( self::class, 'defaultIdTypes' ),
 				'sanitize' => array( self::class, 'idTypesValue' ),
 			),
+			// A Children field in the search bars; off = adults only (children always 0).
+			'childrenField'     => array(
+				'type'    => 'bool',
+				'default' => true,
+			),
+			// House rules shown on the booking page and in the guest's e-mail.
+			'houseRulesEnabled' => array(
+				'type'    => 'bool',
+				'default' => false,
+			),
+			// The box's heading; '' = "House rules".
+			'houseRulesTitle'   => array(
+				'type'      => 'string',
+				'default'   => '',
+				'maxLength' => 80,
+			),
+			// The rules: [ { icon (Lucide kebab name, '' = none), text } ].
+			'houseRules'        => array(
+				'type'     => 'array',
+				'default'  => array(),
+				'sanitize' => array( self::class, 'houseRulesValue' ),
+			),
+			// Guests tick "I accept the house rules" before booking.
+			'houseRulesConsent' => array(
+				'type'    => 'bool',
+				'default' => true,
+			),
 			// Adults preselected in the search bar (legacy ?adults=2).
-			'defaultAdults'  => array(
+			'defaultAdults'     => array(
 				'type'    => 'int',
 				'default' => 2,
 				'min'     => 1,
@@ -272,6 +304,59 @@ class WebsiteSettings {
 		if ( count( $rows ) > self::MAX_ID_TYPES ) {
 			/* translators: %d: most document types allowed. */
 			return new WP_Error( 'invalid', sprintf( __( 'Add up to %d identity documents.', 'radius-hotel-booking' ), self::MAX_ID_TYPES ) );
+		}
+		return $rows;
+	}
+
+	/**
+	 * The house rules to show, or [] when they are off or empty.
+	 *
+	 * @return array{title: string, rules: array<int, array{icon: string, text: string}>, consent: bool}|array
+	 */
+	public static function houseRules(): array {
+		if ( ! rtbp_setting( 'website', 'houseRulesEnabled', false ) ) {
+			return array();
+		}
+		$rules = self::houseRulesValue( rtbp_setting( 'website', 'houseRules', array() ) );
+		if ( ! is_array( $rules ) || ! $rules ) {
+			return array();
+		}
+		$title = trim( (string) rtbp_setting( 'website', 'houseRulesTitle', '' ) );
+		return array(
+			'title'   => '' !== $title ? $title : __( 'House rules', 'radius-hotel-booking' ),
+			'rules'   => $rules,
+			'consent' => (bool) rtbp_setting( 'website', 'houseRulesConsent', true ),
+		);
+	}
+
+	/**
+	 * `houseRules`: rows with text (an empty row is dropped), each with an
+	 * optional Lucide icon name.
+	 *
+	 * @param mixed $value Input: [ { icon, text } ].
+	 * @return array|WP_Error
+	 */
+	public static function houseRulesValue( $value ) {
+		if ( ! is_array( $value ) ) {
+			return new WP_Error( 'invalid', __( 'Add the house rules as a list.', 'radius-hotel-booking' ) );
+		}
+		$rows = array();
+		foreach ( array_values( $value ) as $row ) {
+			$row  = is_array( $row ) ? $row : array();
+			$text = is_scalar( $row['text'] ?? null ) ? sanitize_text_field( (string) $row['text'] ) : '';
+			$text = function_exists( 'mb_substr' ) ? mb_substr( $text, 0, 160 ) : substr( $text, 0, 160 );
+			if ( '' === $text ) {
+				continue;
+			}
+			$icon   = is_scalar( $row['icon'] ?? null ) ? (string) $row['icon'] : '';
+			$rows[] = array(
+				'icon' => preg_match( '/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $icon ) ? substr( $icon, 0, 60 ) : '',
+				'text' => $text,
+			);
+		}
+		if ( count( $rows ) > self::MAX_HOUSE_RULES ) {
+			/* translators: %d: most house rules allowed. */
+			return new WP_Error( 'invalid', sprintf( __( 'Add up to %d house rules.', 'radius-hotel-booking' ), self::MAX_HOUSE_RULES ) );
 		}
 		return $rows;
 	}

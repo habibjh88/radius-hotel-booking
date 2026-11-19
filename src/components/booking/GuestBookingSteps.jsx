@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { formatDateRange } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import BookingLines from './BookingLines';
+import BookingTerms, { termsReady } from './BookingTerms';
 import GuestForm, { guestFormErrors } from './GuestForm';
 import GuestSearchPanel from './GuestSearchPanel';
 import HoldChip from './HoldChip';
@@ -191,6 +192,8 @@ export default function GuestBookingSteps( props ) {
 		guestErrors,
 		consent,
 		onConsent,
+		rulesAccepted = false,
+		onRulesAccepted = () => {},
 		priceChange,
 		submitting,
 		onConfirm,
@@ -199,6 +202,7 @@ export default function GuestBookingSteps( props ) {
 		roomCard = 'classic',
 		ratesShown = 4,
 		priceBreakdown = false,
+		roomCounts = true,
 	} = props;
 	const rootRef = useRef( null );
 	const picks = false !== rules.guestPicksRoom;
@@ -232,7 +236,7 @@ export default function GuestBookingSteps( props ) {
 	// The server refused the guest's details (e.g. a phone on file under
 	// another name): back to the form, where the fields show why.
 	const detailErrors = Object.keys( guestErrors ).filter(
-		( key ) => 'consent' !== key
+		( key ) => 'consent' !== key && 'house_rules' !== key
 	).length;
 	useEffect( () => {
 		if ( detailErrors && 'review' === step ) {
@@ -418,6 +422,7 @@ export default function GuestBookingSteps( props ) {
 					roomCard={ roomCard }
 					ratesShown={ ratesShown }
 					priceBreakdown={ priceBreakdown }
+					roomCounts={ roomCounts }
 					// The rooms already added for these dates show on their rates.
 					lines={ lines.filter(
 						( line ) => line.arrival === search.arrival
@@ -637,47 +642,14 @@ export default function GuestBookingSteps( props ) {
 						'radius-hotel-booking'
 					) }
 				</p>
-				{ rules.privacyConsent ? (
-					<label className="flex min-h-[44px] items-start gap-3 text-sm">
-						<input
-							type="checkbox"
-							className="mt-0.5 h-5 w-5 shrink-0 accent-primary"
-							checked={ consent }
-							onChange={ ( event ) =>
-								onConsent( event.target.checked )
-							}
-						/>
-						<span>
-							{ __(
-								'I agree that the hotel keeps my details for this booking',
-								'radius-hotel-booking'
-							) }
-							{ rules.privacyUrl ? (
-								<>
-									{ ' (' }
-									<a
-										href={ rules.privacyUrl }
-										target="_blank"
-										rel="noopener noreferrer"
-										className="text-primary underline"
-									>
-										{ __(
-											'privacy policy',
-											'radius-hotel-booking'
-										) }
-									</a>
-									{ ')' }
-								</>
-							) : null }
-							.
-						</span>
-					</label>
-				) : null }
-				{ guestErrors.consent ? (
-					<p className="m-0 text-sm text-destructive" role="alert">
-						{ guestErrors.consent }
-					</p>
-				) : null }
+				<BookingTerms
+					rules={ rules }
+					consent={ consent }
+					onConsent={ onConsent }
+					rulesAccepted={ rulesAccepted }
+					onRulesAccepted={ onRulesAccepted }
+					errors={ guestErrors }
+				/>
 			</div>
 		);
 	}
@@ -699,7 +671,7 @@ export default function GuestBookingSteps( props ) {
 					disabled:
 						submitting ||
 						holds.expired ||
-						( rules.privacyConsent && ! consent ),
+						! termsReady( rules, consent, rulesAccepted ),
 			  }
 			: null;
 

@@ -83,16 +83,28 @@ export function Stepper( { label, value, min, max, onChange } ) {
  * @param {Object}      props.search   `{ arrival, departure, adults, children, checkin_time }`.
  * @param {Function}    props.onChange Called with the changed fields.
  * @param {Object}      props.limits   Optional `{ min, max }` arrivals (`Y-m-d`; the website's rules, M04).
+ * @param {boolean}     props.showChildren Show the Children field (off on the website when Settings → Public booking says so).
  * @return {JSX.Element} Bar.
  */
-export default function DatesBar( { search, onChange, limits } ) {
+export default function DatesBar( {
+	search,
+	onChange,
+	limits,
+	showChildren = true,
+} ) {
 	const today = siteToday();
 	const first = limits?.min && limits.min > today ? limits.min : today;
 	const last = limits?.max || undefined;
 	const badSpan = search.departure && search.departure < search.arrival;
 
 	return (
-		<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+		<div
+			className={
+				showChildren
+					? 'grid gap-4 sm:grid-cols-2 lg:grid-cols-4'
+					: 'grid gap-4 sm:grid-cols-3'
+			}
+		>
 			<Field label={ __( 'Arrival', 'radius-hotel-booking' ) } required>
 				<DatePicker
 					min={ first }
@@ -151,13 +163,15 @@ export default function DatesBar( { search, onChange, limits } ) {
 				max={ 20 }
 				onChange={ ( adults ) => onChange( { adults } ) }
 			/>
-			<Stepper
-				label={ __( 'Children', 'radius-hotel-booking' ) }
-				value={ Number( search.children ) }
-				min={ 0 }
-				max={ 10 }
-				onChange={ ( children ) => onChange( { children } ) }
-			/>
+			{ showChildren ? (
+				<Stepper
+					label={ __( 'Children', 'radius-hotel-booking' ) }
+					value={ Number( search.children ) }
+					min={ 0 }
+					max={ 10 }
+					onChange={ ( children ) => onChange( { children } ) }
+				/>
+			) : null }
 		</div>
 	);
 }

@@ -75,6 +75,8 @@ final class ActionCatalog {
 			'settings.updated'           => array( self::SYSTEM, __( 'Changed settings', 'radius-hotel-booking' ) ),
 			'settings.pro_features'      => array( self::SYSTEM, __( 'Switched Pro features', 'radius-hotel-booking' ) ),
 			'settings.renumbered'        => array( self::SYSTEM, __( 'Renumbered existing bookings', 'radius-hotel-booking' ) ),
+			'settings.exported'          => array( self::SYSTEM, __( 'Exported settings', 'radius-hotel-booking' ) ),
+			'settings.imported'          => array( self::SYSTEM, __( 'Imported settings', 'radius-hotel-booking' ) ),
 			'activity.archived'          => array( self::SYSTEM, __( 'Archived the activity log', 'radius-hotel-booking' ) ),
 			'activity.purged'            => array( self::SYSTEM, __( 'Removed archived log entries', 'radius-hotel-booking' ) ),
 
@@ -86,6 +88,7 @@ final class ActionCatalog {
 			'room_types.create'          => array( self::DATA, __( 'Added a room type', 'radius-hotel-booking' ) ),
 			'room_types.update'          => array( self::DATA, __( 'Changed a room type', 'radius-hotel-booking' ) ),
 			'room_types.delete'          => array( self::DATA, __( 'Deleted a room type', 'radius-hotel-booking' ) ),
+			'room_types.reorder'         => array( self::DATA, __( 'Reordered the room types', 'radius-hotel-booking' ) ),
 			'amenities.create'           => array( self::DATA, __( 'Added an amenity', 'radius-hotel-booking' ) ),
 			'amenities.update'           => array( self::DATA, __( 'Renamed an amenity', 'radius-hotel-booking' ) ),
 			'amenities.import'           => array( self::DATA, __( 'Added common amenities', 'radius-hotel-booking' ) ),

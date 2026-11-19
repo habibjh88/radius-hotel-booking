@@ -20,6 +20,7 @@
  * @var string $room_card    Room type design in the results: `classic` or `split`.
  * @var int    $rates_shown  Rates per room type before "Show more rates" (0: all).
  * @var bool   $breakdown    An info icon beside each rate's price opens its price breakdown.
+ * @var bool   $room_counts  Show how many rooms are available / free on each room type and rate.
  *
  * @package RadiusTheme\RadiusHotelBooking
  */
@@ -35,17 +36,19 @@ $room_card    = $room_card ?? \RadiusTheme\RadiusHotelBooking\Frontend\Embeds::B
 $rates_shown  = (int) ( $rates_shown ?? \RadiusTheme\RadiusHotelBooking\Frontend\Embeds::BOOKING_DEFAULTS['rates_shown'] );
 $breakdown    = $breakdown ?? 'yes' === \RadiusTheme\RadiusHotelBooking\Frontend\Embeds::BOOKING_DEFAULTS['price_breakdown'];
 $breakdown    = ! empty( $breakdown );
+$room_counts  = $room_counts ?? 'yes' === \RadiusTheme\RadiusHotelBooking\Frontend\Embeds::BOOKING_DEFAULTS['room_counts'];
+$room_counts  = ! empty( $room_counts );
 ?>
 <?php if ( 'modal' === $display ) : ?>
 	<?php // Before the app starts (or without JavaScript) the button is a link to the booking page. ?>
-	<div class="rtbp-root rtbp-site-mount" data-embed="booking" data-display="modal" data-layout="<?php echo esc_attr( $layout ); ?>" data-room-details="<?php echo esc_attr( $room_details ); ?>" data-room-card="<?php echo esc_attr( $room_card ); ?>" data-rates-shown="<?php echo (int) $rates_shown; ?>" data-price-breakdown="<?php echo $breakdown ? 'yes' : 'no'; ?>" data-button-text="<?php echo esc_attr( $button_text ); ?>">
+	<div class="rtbp-root rtbp-site-mount" data-embed="booking" data-display="modal" data-layout="<?php echo esc_attr( $layout ); ?>" data-room-details="<?php echo esc_attr( $room_details ); ?>" data-room-card="<?php echo esc_attr( $room_card ); ?>" data-rates-shown="<?php echo (int) $rates_shown; ?>" data-price-breakdown="<?php echo $breakdown ? 'yes' : 'no'; ?>" data-room-counts="<?php echo $room_counts ? 'yes' : 'no'; ?>" data-button-text="<?php echo esc_attr( $button_text ); ?>">
 		<a class="rtbp-book-now inline-flex min-h-[44px] items-center justify-center rounded-lg bg-primary px-6 py-2.5 text-base font-semibold text-primary-foreground no-underline shadow-sm hover:bg-primary-hover hover:text-primary-foreground" href="<?php echo esc_url( '' !== $page_url ? $page_url : '#rtbp-booking' ); ?>">
 			<?php echo esc_html( $button_text ); ?>
 		</a>
 	</div>
 <?php else : ?>
 	<?php // Room reserved for the app, so the page below does not jump when it loads. ?>
-	<div class="rtbp-root rtbp-site-mount min-h-[36rem]" data-embed="booking" data-layout="<?php echo esc_attr( $layout ); ?>" data-room-details="<?php echo esc_attr( $room_details ); ?>" data-room-card="<?php echo esc_attr( $room_card ); ?>" data-rates-shown="<?php echo (int) $rates_shown; ?>" data-price-breakdown="<?php echo $breakdown ? 'yes' : 'no'; ?>">
+	<div class="rtbp-root rtbp-site-mount min-h-[36rem]" data-embed="booking" data-layout="<?php echo esc_attr( $layout ); ?>" data-room-details="<?php echo esc_attr( $room_details ); ?>" data-room-card="<?php echo esc_attr( $room_card ); ?>" data-rates-shown="<?php echo (int) $rates_shown; ?>" data-price-breakdown="<?php echo $breakdown ? 'yes' : 'no'; ?>" data-room-counts="<?php echo $room_counts ? 'yes' : 'no'; ?>">
 		<p class="rtbp-booking-fallback text-sm text-muted-foreground">
 			<?php
 			if ( '' !== $phone ) {

@@ -65,7 +65,12 @@ function useSections() {
 				( section.Component || typeof section.render === 'function' ) &&
 				! core.some( ( { key } ) => key === section.key )
 		);
-		return [ ...core, ...extra ];
+		// Tool tabs (Import / Export) after every settings tab, add-ons' too.
+		const all = [ ...core, ...extra ];
+		return [
+			...all.filter( ( section ) => ! section.tool ),
+			...all.filter( ( section ) => section.tool ),
+		];
 	}, [] );
 }
 
@@ -231,7 +236,8 @@ export default function Settings( { only = '' } ) {
 							( only
 								? section.key === only
 								: ! section.standalone ) &&
-							section.key in state.drafts &&
+							// A tool tab has no settings of its own.
+							( section.tool || section.key in state.drafts ) &&
 							canAccess(
 								section.accessKey ?? `settings.${ section.key }`
 							)
@@ -301,6 +307,35 @@ export default function Settings( { only = '' } ) {
 	}
 
 	const key = active.key;
+
+	// Export / Import: every section the server sent, except a tab whose
+	// access is locked; named as their tabs are.
+	const transferLabels = Object.fromEntries(
+		sections.map( ( section ) => [ section.key, section.label ] )
+	);
+	const transferKeys = Object.keys( state.saved || {} ).filter(
+		( section ) => {
+			const tab = sections.find( ( item ) => item.key === section );
+			return (
+				! tab || canAccess( tab.accessKey ?? `settings.${ section }` )
+			);
+		}
+	);
+	// After an import: the saved values come from the server, and each
+	// imported tab reacts as after a save (brand, formats…).
+	const imported = ( result ) => {
+		Object.keys( result.imported || {} ).forEach( ( section ) => {
+			const values = result.settings?.[ section ];
+			if ( ! values ) {
+				return;
+			}
+			state.accept( section, values );
+			const tab = sections.find( ( item ) => item.key === section );
+			if ( typeof tab?.onSaved === 'function' ) {
+				tab.onSaved( values );
+			}
+		} );
+	};
 	// Save or reset, then let the tab react (e.g. General updates formats).
 	const after = ( values ) => {
 		if ( values && typeof active.onSaved === 'function' ) {
@@ -308,18 +343,27 @@ export default function Settings( { only = '' } ) {
 		}
 		return values;
 	};
-	const props = {
-		value: state.drafts[ key ] ?? {},
-		setField: state.setField( key ),
-		errors: state.errors[ key ] ?? {},
-		schema: state.schema[ key ] ?? {},
-		// The values as saved (a tab may act only on those, e.g. renumber bookings).
-		saved: state.saved?.[ key ] ?? {},
-		save: () => state.save( key ).then( after ),
-		saving: state.saving === key,
-		// Values the server already saved (an action such as *Create the booking page*): no unsaved bar.
-		accept: ( values ) => state.accept( key, values ),
+	// A tool tab gets what it works on instead of a section's values.
+	const toolProps = {
+		keys: transferKeys,
+		labels: transferLabels,
+		onImported: imported,
+		blocked: anyDirty,
 	};
+	const props = active.tool
+		? toolProps
+		: {
+				value: state.drafts[ key ] ?? {},
+				setField: state.setField( key ),
+				errors: state.errors[ key ] ?? {},
+				schema: state.schema[ key ] ?? {},
+				// The values as saved (a tab may act only on those, e.g. renumber bookings).
+				saved: state.saved?.[ key ] ?? {},
+				save: () => state.save( key ).then( after ),
+				saving: state.saving === key,
+				// Values the server already saved (an action such as *Create the booking page*): no unsaved bar.
+				accept: ( values ) => state.accept( key, values ),
+		  };
 	const { Component } = active;
 
 	return (
@@ -359,18 +403,20 @@ export default function Settings( { only = '' } ) {
 								</>
 							) }
 						</div>
-						<Button
-							variant="ghost"
-							size="sm"
-							onClick={ () => setConfirmReset( true ) }
-							disabled={ !! state.saving }
-						>
-							<RotateCcw aria-hidden="true" />
-							{ __(
-								'Reset to defaults',
-								'radius-hotel-booking'
-							) }
-						</Button>
+						{ active.tool ? null : (
+							<Button
+								variant="ghost"
+								size="sm"
+								onClick={ () => setConfirmReset( true ) }
+								disabled={ !! state.saving }
+							>
+								<RotateCcw aria-hidden="true" />
+								{ __(
+									'Reset to defaults',
+									'radius-hotel-booking'
+								) }
+							</Button>
+						) }
 					</div>
 
 					<div className="space-y-4">
@@ -406,10 +452,12 @@ export default function Settings( { only = '' } ) {
 						active.label
 					) }
 					description={ __(
-						'Every setting on this tab goes back to its default value. Other tabs are not changed.',
+						'Every setting on this tab goes back to its default value and your current values are lost. This cannot be undone. Other tabs are not changed.',
 						'radius-hotel-booking'
 					) }
 					confirmLabel={ __( 'Reset', 'radius-hotel-booking' ) }
+					// A second step, so a reset is never made by a stray click.
+					confirmText="RESET"
 					destructive
 					onConfirm={ () => state.reset( key ).then( after ) }
 				/>

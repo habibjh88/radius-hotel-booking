@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/popover';
 import { addDaysYmd, siteToday, ymdToDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import { siteBookingRules } from './guestLimits';
 
 /**
  * A labelled cell of the panel.
@@ -132,13 +133,15 @@ function CountRow( { label, hint, value, min, max, onChange } ) {
  */
 export function GuestsField( { adults, children, onChange } ) {
 	const [ open, setOpen ] = useState( false );
+	// Settings → Public booking → Ask for children.
+	const askChildren = false !== siteBookingRules().childrenField;
 	const label = [
 		sprintf(
 			/* translators: %d: number of adults. */
 			_n( '%d adult', '%d adults', adults, 'radius-hotel-booking' ),
 			adults
 		),
-		children
+		askChildren && children
 			? sprintf(
 					/* translators: %d: number of children. */
 					_n(
@@ -182,15 +185,17 @@ export function GuestsField( { adults, children, onChange } ) {
 						max={ 20 }
 						onChange={ ( value ) => onChange( { adults: value } ) }
 					/>
-					<CountRow
-						label={ __( 'Children', 'radius-hotel-booking' ) }
-						value={ children }
-						min={ 0 }
-						max={ 10 }
-						onChange={ ( value ) =>
-							onChange( { children: value } )
-						}
-					/>
+					{ askChildren ? (
+						<CountRow
+							label={ __( 'Children', 'radius-hotel-booking' ) }
+							value={ children }
+							min={ 0 }
+							max={ 10 }
+							onChange={ ( value ) =>
+								onChange( { children: value } )
+							}
+						/>
+					) : null }
 				</div>
 				<Button
 					type="button"

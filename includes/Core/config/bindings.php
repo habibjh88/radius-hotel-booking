@@ -50,6 +50,7 @@ use RadiusTheme\RadiusHotelBooking\Services\Pricing\RoomTypeRateService;
 use RadiusTheme\RadiusHotelBooking\Services\Inventory\RoomService;
 use RadiusTheme\RadiusHotelBooking\Services\Inventory\RoomTypeService;
 use RadiusTheme\RadiusHotelBooking\Services\SettingsService;
+use RadiusTheme\RadiusHotelBooking\Services\SettingsTransferService;
 
 return array(
 
@@ -73,6 +74,7 @@ return array(
 
 	// Services.
 	SettingsService::class    => fn() => new SettingsService(),
+	SettingsTransferService::class => fn() => new SettingsTransferService( Container::resolve( SettingsService::class ) ),
 	AmenityService::class     => fn() => new AmenityService( Container::resolve( AmenityRepository::class ), Container::resolve( RoomTypeRepository::class ) ),
 	FloorService::class       => fn() => new FloorService( Container::resolve( FloorRepository::class ) ),
 	RoomService::class        => fn() => new RoomService( Container::resolve( RoomRepository::class ), Container::resolve( RoomTypeRepository::class ), Container::resolve( FloorRepository::class ) ),

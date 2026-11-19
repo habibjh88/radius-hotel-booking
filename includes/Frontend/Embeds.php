@@ -52,7 +52,22 @@ class Embeds {
 		'room_card'       => 'split',
 		'rates_shown'     => 2,
 		'price_breakdown' => 'yes',
+		'room_counts'     => 'yes',
 	);
+
+	/**
+	 * Where "Rooms left" starts in the settings UIs (Shortcodes page builder,
+	 * block, Elementor widget): off. A shortcode without the attribute still
+	 * shows the counts (BOOKING_DEFAULTS).
+	 */
+	public const ROOM_COUNTS_SETTING_DEFAULT = 'no';
+
+	/**
+	 * Where "Rates shown first" starts in the Shortcodes page builder: 0 (all
+	 * rates, no "Show more rates"). A shortcode without the attribute keeps
+	 * BOOKING_DEFAULTS['rates_shown'].
+	 */
+	public const RATES_SHOWN_SETTING_DEFAULT = 0;
 
 	/**
 	 * Hook in.
@@ -150,7 +165,7 @@ class Embeds {
 					'name'    => 'rates_shown',
 					'label'   => __( 'Rates shown first', 'radius-hotel-booking' ),
 					'type'    => 'number',
-					'default' => (string) self::BOOKING_DEFAULTS['rates_shown'],
+					'default' => (string) self::RATES_SHOWN_SETTING_DEFAULT,
 					'min'     => 0,
 					'max'     => 50,
 					'help'    => __( 'Rates per room type before "Show more rates". 0 shows them all, without the button.', 'radius-hotel-booking' ),
@@ -171,6 +186,23 @@ class Embeds {
 						),
 					),
 					'help'    => __( 'The icon opens how each rate\'s price is made: the stay, any discount and the total.', 'radius-hotel-booking' ),
+				),
+				array(
+					'name'    => 'room_counts',
+					'label'   => __( 'Rooms left', 'radius-hotel-booking' ),
+					'type'    => 'select',
+					'default' => self::ROOM_COUNTS_SETTING_DEFAULT,
+					'options' => array(
+						array(
+							'value' => 'no',
+							'label' => __( 'Hide', 'radius-hotel-booking' ),
+						),
+						array(
+							'value' => 'yes',
+							'label' => __( 'Show', 'radius-hotel-booking' ),
+						),
+					),
+					'help'    => __( 'How many rooms are available on each room type\'s photo and free under each price.', 'radius-hotel-booking' ),
 				),
 			),
 		);
@@ -309,6 +341,10 @@ class Embeds {
 						'type'    => 'boolean',
 						'default' => 'yes' === self::BOOKING_DEFAULTS['price_breakdown'],
 					),
+					'roomCounts'     => array(
+						'type'    => 'boolean',
+						'default' => 'yes' === self::ROOM_COUNTS_SETTING_DEFAULT,
+					),
 				),
 				'render_callback' => static fn( $attributes = array() ) => self::booking(
 					array(
@@ -319,6 +355,7 @@ class Embeds {
 						'room_card'    => $attributes['roomCard'] ?? self::BOOKING_DEFAULTS['room_card'],
 						'rates_shown'  => $attributes['ratesShown'] ?? self::BOOKING_DEFAULTS['rates_shown'],
 						'price_breakdown' => ! empty( $attributes['priceBreakdown'] ) ? 'yes' : 'no',
+						'room_counts'     => ! empty( $attributes['roomCounts'] ) ? 'yes' : 'no',
 					)
 				),
 			)
@@ -399,7 +436,7 @@ class Embeds {
 	 * over; without JavaScript, a short message with the hotel's phone (or, in
 	 * a popup, a link to the booking page).
 	 *
-	 * @param array $atts `layout` steps|onepage, `display` inline|modal, `button_text`, `price_breakdown` yes|no.
+	 * @param array $atts `layout` steps|onepage, `display` inline|modal, `button_text`, `price_breakdown` yes|no, `room_counts` yes|no.
 	 * @return string
 	 */
 	public static function booking( array $atts = array() ): string {
@@ -412,6 +449,7 @@ class Embeds {
 		// Left empty (an emptied field): the default, not 0 (= all).
 		$first     = '' === trim( (string) $atts['rates_shown'] ) ? self::BOOKING_DEFAULTS['rates_shown'] : min( 50, absint( $atts['rates_shown'] ) );
 		$breakdown = in_array( strtolower( (string) $atts['price_breakdown'] ), array( 'yes', 'true', '1' ), true );
+		$counts    = in_array( strtolower( (string) $atts['room_counts'] ), array( 'yes', 'true', '1' ), true );
 		LoadAssets::enqueue_site_app();
 		ob_start();
 		rtbp_get_template(
@@ -427,6 +465,7 @@ class Embeds {
 				'room_card'    => $card,
 				'rates_shown'  => $first,
 				'breakdown'    => $breakdown,
+				'room_counts'  => $counts,
 			)
 		);
 		return (string) ob_get_clean();
@@ -591,6 +630,9 @@ class Embeds {
 			'resultsUrl'        => $url,
 			'defaultAdults'     => (int) rtbp_setting( 'website', 'defaultAdults', 2 ),
 			'showRoomsField'    => (bool) rtbp_setting( 'website', 'showRoomsField', false ),
+			'childrenField'     => (bool) rtbp_setting( 'website', 'childrenField', true ),
+			// `{ title, rules: [ { icon, text } ], consent }`, or null when off.
+			'houseRules'        => \RadiusTheme\RadiusHotelBooking\Settings\WebsiteSettings::houseRules() ?: null,
 			'bookingWindowDays' => max( 0, (int) rtbp_setting( 'booking', 'bookingWindowDays', 0 ) ),
 			'sameDayEnabled'    => (bool) rtbp_setting( 'booking', 'sameDayEnabled', false ),
 			'sameDayCutoff'     => (string) rtbp_setting( 'booking', 'sameDayCutoff', '14:00' ),

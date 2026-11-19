@@ -300,9 +300,15 @@ function StayBreakdown( { rate } ) {
  * @param {Object}  props.rate        An available rate.
  * @param {string}  [props.align]     `right` on wide screens (the classic row) or `left`.
  * @param {boolean} [props.breakdown] Show the ⓘ and its breakdown.
+ * @param {boolean} [props.counts]    Show how many rooms are free (`[rtbp_booking room_counts="yes"]`).
  * @return {JSX.Element} Price.
  */
-export function RatePrice( { rate, align = 'right', breakdown = false } ) {
+export function RatePrice( {
+	rate,
+	align = 'right',
+	breakdown = false,
+	counts = true,
+} ) {
 	const few = rate.free_count <= FEW_LEFT;
 	return (
 		<div
@@ -322,34 +328,38 @@ export function RatePrice( { rate, align = 'right', breakdown = false } ) {
 				</span>
 				{ breakdown ? <StayBreakdown rate={ rate } /> : null }
 			</p>
-			<p
-				className={ cn(
-					'm-0 text-xs',
-					few ? 'font-semibold text-warning' : 'text-muted-foreground'
-				) }
-			>
-				{ few
-					? sprintf(
-							/* translators: %d: rooms left at this rate. */
-							_n(
-								'Only %d room left',
-								'Only %d rooms left',
-								rate.free_count,
-								'radius-hotel-booking'
-							),
-							rate.free_count
-					  )
-					: sprintf(
-							/* translators: %d: rooms free at this rate. */
-							_n(
-								'%d room free',
-								'%d rooms free',
-								rate.free_count,
-								'radius-hotel-booking'
-							),
-							rate.free_count
-					  ) }
-			</p>
+			{ counts ? (
+				<p
+					className={ cn(
+						'm-0 text-xs',
+						few
+							? 'font-semibold text-warning'
+							: 'text-muted-foreground'
+					) }
+				>
+					{ few
+						? sprintf(
+								/* translators: %d: rooms left at this rate. */
+								_n(
+									'Only %d room left',
+									'Only %d rooms left',
+									rate.free_count,
+									'radius-hotel-booking'
+								),
+								rate.free_count
+						  )
+						: sprintf(
+								/* translators: %d: rooms free at this rate. */
+								_n(
+									'%d room free',
+									'%d rooms free',
+									rate.free_count,
+									'radius-hotel-booking'
+								),
+								rate.free_count
+						  ) }
+				</p>
+			) : null }
 		</div>
 	);
 }

@@ -82,6 +82,47 @@ export function useDeleteRoomType() {
 	} );
 }
 
+/**
+ * Save the room types' display order (every id, first to last). The list
+ * moves at once and goes back if the save fails. The order is the one the
+ * booking page, New booking and the reports use.
+ *
+ * @return {Object} React Query mutation, called with the ids.
+ */
+export function useReorderRoomTypes() {
+	const client = useQueryClient();
+	return useMutation( {
+		mutationFn: ( ids ) =>
+			put( 'room-types/order', { ids } ).then(
+				( { data } ) => data.room_types
+			),
+		onMutate: async ( ids ) => {
+			await client.cancelQueries( { queryKey: ROOM_TYPES_KEY } );
+			const previous = client.getQueryData( ROOM_TYPES_KEY );
+			if ( previous ) {
+				const byId = new Map(
+					previous.map( ( type ) => [ type.id, type ] )
+				);
+				client.setQueryData(
+					ROOM_TYPES_KEY,
+					ids.map( ( id ) => byId.get( id ) ).filter( Boolean )
+				);
+			}
+			return { previous };
+		},
+		onError: ( _error, _ids, context ) => {
+			if ( context?.previous ) {
+				client.setQueryData( ROOM_TYPES_KEY, context.previous );
+			}
+		},
+		onSuccess: ( types ) => {
+			client.setQueryData( ROOM_TYPES_KEY, types );
+			// Screens listing room types elsewhere (New booking, availability) reload in the new order.
+			client.invalidateQueries( { queryKey: [ 'availability' ] } );
+		},
+	} );
+}
+
 export const FLOORS_KEY = [ 'floors' ];
 
 /**

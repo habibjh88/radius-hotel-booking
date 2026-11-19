@@ -28,12 +28,13 @@ export default function BookingLines( { lines, onRemove, failed = -1 } ) {
 						'flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3',
 						index === failed
 							? 'border-destructive bg-destructive/5'
-							: 'border-border bg-card'
+							: // The brand's lightest tint, so a chosen room stands out from the form.
+							  'border-solid border-[color-mix(in_srgb,var(--primary)_45%,#ffffff)] bg-primary-softer'
 					) }
 				>
 					<div className="flex min-w-0 items-center gap-3">
 						<BedDouble
-							className="h-5 w-5 shrink-0 text-muted-foreground"
+							className="h-5 w-5 shrink-0 text-primary"
 							aria-hidden="true"
 						/>
 						<div className="min-w-0">

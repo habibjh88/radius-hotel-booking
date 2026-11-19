@@ -97,6 +97,11 @@ class RoomTypeService {
 	public function create( array $input ): RoomType {
 		$data         = $this->withLibraryAmenities( $this->validate( $input, null ), null );
 		$data['slug'] = $this->uniqueSlug( (string) ( $input['slug'] ?? '' ) ? (string) $input['slug'] : $data['name'], 0 );
+		if ( ! array_key_exists( 'sort_order', $input ) ) {
+			// A new type goes last, so it never jumps ahead of the order set on the Rooms screen.
+			$last               = $this->types->ordered();
+			$data['sort_order'] = $last ? min( 100000, max( array_map( static fn( RoomType $type ) => (int) $type->sort_order, $last ) ) + 1 ) : 0;
+		}
 		$type         = Db::quietly( fn() => $this->types->create( $data ) );
 		if ( ! $type instanceof RoomType || ! $type->id ) {
 			// Two identical names at the same moment: the UNIQUE slug refused the second.
@@ -163,6 +168,72 @@ class RoomTypeService {
 		}
 
 		return $type;
+	}
+
+	/**
+	 * Save the display order: every room type's id, first to last. The same
+	 * order is used everywhere room types are listed (booking page, New
+	 * booking, availability, reports).
+	 *
+	 * @param int[] $ids Ids in the new order.
+	 * @return RoomType[]
+	 * @throws DomainException When the list does not match the room types.
+	 */
+	public function reorder( array $ids ): array {
+		$ids     = array_map( 'intval', array_values( $ids ) );
+		$current = $this->types->ordered();
+		$known   = array_map( static fn( RoomType $type ) => (int) $type->id, $current );
+
+		$sorted_ids   = $ids;
+		$sorted_known = $known;
+		sort( $sorted_ids );
+		sort( $sorted_known );
+		if ( $sorted_ids !== $sorted_known ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw DomainException::invalid( array( 'ids' => __( 'The list of room types has changed. Reload the page and try again.', 'radius-hotel-booking' ) ) );
+		}
+
+		$stored = array_map( static fn( RoomType $type ) => (int) $type->sort_order, $current );
+		// Already in this order with distinct positions: nothing to write.
+		if ( $ids === $known && count( array_unique( $stored ) ) === count( $stored ) ) {
+			return $current;
+		}
+
+		$names = array();
+		foreach ( $current as $type ) {
+			$names[ (int) $type->id ] = (string) $type->name;
+		}
+
+		Transaction::run(
+			function () use ( $ids ) {
+				foreach ( $ids as $position => $id ) {
+					$this->types->update( $id, array( 'sort_order' => $position ) );
+				}
+			}
+		);
+
+		rtbp_activity(
+			'room_types.reorder',
+			array(
+				'type'  => 'room_type',
+				'id'    => 0,
+				'label' => __( 'Room types', 'radius-hotel-booking' ),
+			),
+			array(
+				'before'      => array( 'order' => array_values( array_map( static fn( $id ) => $names[ $id ], $known ) ) ),
+				'after'       => array( 'order' => array_values( array_map( static fn( $id ) => $names[ $id ], $ids ) ) ),
+				'description' => __( 'Reordered the room types', 'radius-hotel-booking' ),
+			)
+		);
+
+		/**
+		 * Fires after the room types are reordered.
+		 *
+		 * @param int[] $ids Ids, first to last.
+		 */
+		do_action( 'rtbp_room_types_reordered', $ids );
+
+		return $this->types->ordered();
 	}
 
 	/**

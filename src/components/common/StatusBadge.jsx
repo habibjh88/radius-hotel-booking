@@ -11,9 +11,10 @@ import { cn } from '@/lib/utils';
  * @param {string} props.domain    'stay' | 'payment' | 'room' | 'availability' | 'active' | 'standing' | 'note' | 'sync'.
  * @param {string} props.value     Status value.
  * @param {string} props.className Extra classes.
+ * @param {number} props.count     Optional number shown inside, before the label ("23 Available").
  * @return {JSX.Element} Badge.
  */
-export default function StatusBadge( { domain, value, className } ) {
+export default function StatusBadge( { domain, value, className, count } ) {
 	const status = getStatus( domain, value );
 	const classes = TONE_CLASSES[ status.tone ] || TONE_CLASSES.neutral;
 
@@ -30,7 +31,12 @@ export default function StatusBadge( { domain, value, className } ) {
 				style={ { background: TONE_COLOR[ status.tone ] } }
 				aria-hidden="true"
 			/>
-			{ status.label }
+			{ undefined !== count && null !== count ? (
+				<span className="tabular-nums">{ count }</span>
+			) : null }
+			<span className={ undefined !== count ? 'font-medium' : undefined }>
+				{ status.label }
+			</span>
 		</span>
 	);
 }

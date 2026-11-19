@@ -80,6 +80,10 @@ $this->router->post( 'settings/website/booking-page', array( SettingsController:
 $this->router->get( 'settings/booking/renumber', array( SettingsController::class, 'renumberPreview' ) );
 $this->router->post( 'settings/booking/renumber', array( SettingsController::class, 'renumber' ) );
 $this->router->put( 'settings/reset', array( SettingsController::class, 'reset' ) );
+// Before settings/{section}, which would take "export" for a section.
+$this->router->get( 'settings/export', array( SettingsController::class, 'export' ) );
+$this->router->post( 'settings/import/preview', array( SettingsController::class, 'importPreview' ) );
+$this->router->post( 'settings/import', array( SettingsController::class, 'import' ) );
 $this->router->put( 'settings/(?P<section>[a-zA-Z0-9_-]+)/reset', array( SettingsController::class, 'resetSection' ) ); // phpcs:ignore
 $this->router->get( 'settings/(?P<section>[a-zA-Z0-9_-]+)', array( SettingsController::class, 'show' ) ); // phpcs:ignore
 $this->router->put( 'settings/(?P<section>[a-zA-Z0-9_-]+)', array( SettingsController::class, 'updateSection' ) ); // phpcs:ignore
@@ -95,6 +99,7 @@ $this->router->delete( 'amenities/sections/(?P<section>\d+)', array( AmenityCont
 $this->router->get( 'amenities/common', array( AmenityController::class, 'common' ) );
 $this->router->post( 'amenities/import', array( AmenityController::class, 'import' ) );
 $this->router->resource( 'amenities', AmenityController::class );
+$this->router->put( 'room-types/order', array( RoomTypeController::class, 'order' ) );
 $this->router->resource( 'room-types', RoomTypeController::class );
 $this->router->get( 'room-types/(?P<id>\d+)/rooms', array( RoomController::class, 'ofType' ) );
 // Before the resource: `rooms/bulk…` is not an id.

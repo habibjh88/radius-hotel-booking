@@ -13,6 +13,7 @@
 import { lazy } from 'react';
 import { __ } from '@wordpress/i18n';
 import {
+	ArrowLeftRight,
 	Bell,
 	Building2,
 	CalendarCheck,
@@ -205,6 +206,20 @@ export default function coreSections() {
 			),
 			icon: Palette,
 			Component: lazy( () => import( './Display' ) ),
+		},
+		{
+			// A tool, not a settings section: listed after every settings tab
+			// (../index.jsx) and given `{ keys, labels, onImported, blocked }`.
+			key: 'transfer',
+			tool: true,
+			label: __( 'Import / Export', 'radius-hotel-booking' ),
+			description: __(
+				'Save your settings to a file, or load them from one',
+				'radius-hotel-booking'
+			),
+			icon: ArrowLeftRight,
+			accessKey: 'page.settings',
+			Component: lazy( () => import( '../SettingsTransfer' ) ),
 		},
 		{
 			key: 'access',

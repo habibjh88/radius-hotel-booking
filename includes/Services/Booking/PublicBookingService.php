@@ -68,6 +68,10 @@ class PublicBookingService {
 	 * @return array The public payload.
 	 */
 	public function availability( array $input, ?DateTimeImmutable $now = null ): array {
+		if ( ! rtbp_setting( 'website', 'childrenField', true ) ) {
+			$input['children'] = 0;
+			unset( $input['child_ages'] );
+		}
 		$result = Container::resolve( AvailabilityService::class )->search( $input, AvailabilityService::PUBLIC, $now );
 		return AvailabilityResource::public(
 			$result,
@@ -256,6 +260,10 @@ class PublicBookingService {
 		}
 		if ( rtbp_setting( 'website', 'privacyConsent', true ) && ! rest_sanitize_boolean( $input['consent'] ?? false ) ) {
 			$errors['consent'] = __( 'Please accept the privacy policy to book.', 'radius-hotel-booking' );
+		}
+		$house = WebsiteSettings::houseRules();
+		if ( $house && $house['consent'] && ! rest_sanitize_boolean( $input['house_rules'] ?? false ) ) {
+			$errors['house_rules'] = __( 'Please accept the house rules to book.', 'radius-hotel-booking' );
 		}
 		$lines = array();
 		foreach ( array_values( (array) ( $input['lines'] ?? array() ) ) as $line ) {
@@ -573,8 +581,12 @@ class PublicBookingService {
 	private static function party( array $input ): array {
 		$party = array(
 			'adults'   => max( 1, min( 20, (int) ( $input['adults'] ?? 1 ) ) ),
-			'children' => max( 0, min( 10, (int) ( $input['children'] ?? 0 ) ) ),
+			// No Children field on the website (Settings → Public booking): adults only.
+			'children' => rtbp_setting( 'website', 'childrenField', true ) ? max( 0, min( 10, (int) ( $input['children'] ?? 0 ) ) ) : 0,
 		);
+		if ( ! $party['children'] ) {
+			return $party;
+		}
 		if ( ! empty( $input['child_ages'] ) && is_array( $input['child_ages'] ) ) {
 			$party['child_ages'] = array_slice( array_map( 'absint', $input['child_ages'] ), 0, 10 );
 		}

@@ -231,6 +231,7 @@ function SelectButton( { selected, onClick, className, added = false } ) {
  * @param {Function} props.onSelect Called when chosen.
  * @param {string[]} props.added    Rooms of this rate already in the booking.
  * @param {boolean}  props.breakdown An info icon beside the price opens its breakdown.
+ * @param {boolean}  props.counts    Show how many rooms are free under the price.
  * @return {JSX.Element} Card.
  */
 function RateCard( {
@@ -239,6 +240,7 @@ function RateCard( {
 	onSelect,
 	added = [],
 	breakdown = false,
+	counts = true,
 } ) {
 	const available = rate.available;
 	return (
@@ -263,7 +265,11 @@ function RateCard( {
 						<span className="block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
 							{ totalFor( rate ) }
 						</span>
-						<RatePrice rate={ rate } breakdown={ breakdown } />
+						<RatePrice
+							rate={ rate }
+							breakdown={ breakdown }
+							counts={ counts }
+						/>
 					</div>
 					<SelectButton
 						selected={ selected }
@@ -286,6 +292,7 @@ function RateCard( {
  * @param {Function} props.onSelect Called when chosen.
  * @param {string[]} props.added    Rooms of this rate already in the booking.
  * @param {boolean}  props.breakdown An info icon beside the price opens its breakdown.
+ * @param {boolean}  props.counts    Show how many rooms are free under the price.
  * @return {JSX.Element} Row.
  */
 function RateRow( {
@@ -294,6 +301,7 @@ function RateRow( {
 	onSelect,
 	added = [],
 	breakdown = false,
+	counts = true,
 } ) {
 	const available = rate.available;
 
@@ -310,7 +318,11 @@ function RateRow( {
 
 			{ available ? (
 				<div className="flex items-center justify-between gap-4 sm:justify-end">
-					<RatePrice rate={ rate } breakdown={ breakdown } />
+					<RatePrice
+						rate={ rate }
+						breakdown={ breakdown }
+						counts={ counts }
+					/>
 					<SelectButton
 						selected={ selected }
 						added={ added.length > 0 }
@@ -335,6 +347,7 @@ function RateRow( {
  *                                  `split` (photo and facts beside the rates, each a card).
  * @param {number}   props.firstRates Rates before "Show more rates" (0: all, no button).
  * @param {boolean}  props.breakdown  An info icon beside each price opens its breakdown.
+ * @param {boolean}  props.counts     Show how many rooms are available / free.
  * @return {JSX.Element} Card.
  */
 function RoomTypeCard( {
@@ -346,6 +359,7 @@ function RoomTypeCard( {
 	card = 'classic',
 	firstRates = 4,
 	breakdown = false,
+	counts = true,
 	booked = {},
 } ) {
 	const [ allRates, setAllRates ] = useState( false );
@@ -506,7 +520,7 @@ function RoomTypeCard( {
 					<aside className="min-w-0 space-y-4 sm:grid sm:grid-cols-2 sm:items-start sm:gap-5 sm:space-y-0 lg:sticky lg:top-[var(--rtbp-sticky-top,6rem)] lg:block lg:space-y-4 lg:self-start">
 						<RoomPhoto
 							type={ type }
-							free={ free }
+							free={ counts ? free : 0 }
 							className="aspect-[4/3] rounded-xl"
 						/>
 						<div className="min-w-0 space-y-4">
@@ -565,6 +579,7 @@ function RoomTypeCard( {
 										selected={ isSelected( rate ) }
 										added={ addedTo( rate ) }
 										breakdown={ breakdown }
+										counts={ counts }
 										onSelect={ ( picked ) =>
 											onSelect( type, picked )
 										}
@@ -601,7 +616,7 @@ function RoomTypeCard( {
 			<div className="flex flex-col sm:flex-row">
 				<RoomPhoto
 					type={ type }
-					free={ free }
+					free={ counts ? free : 0 }
 					className="aspect-[16/10] sm:aspect-auto sm:min-h-[12rem] sm:w-56"
 				/>
 
@@ -672,6 +687,7 @@ function RoomTypeCard( {
 								rate={ rate }
 								selected={ isSelected( rate ) }
 								breakdown={ breakdown }
+								counts={ counts }
 								onSelect={ ( picked ) =>
 									onSelect( type, picked )
 								}
@@ -709,6 +725,7 @@ function RoomTypeCard( {
  * @param {string}   props.roomCard     Room type card: `classic` or `split`.
  * @param {number}   props.ratesShown   Rates per room type before "Show more rates" (0: all).
  * @param {boolean}  props.priceBreakdown An info icon beside each price opens its breakdown.
+ * @param {boolean}  props.roomCounts   Show how many rooms are available / free (photo badge, under each price).
  * @param {Object[]} props.lines        The booking's rooms (`room_type_id`, `rate_plan_id`, `room_number`)
  *                                      for these dates: their rates are marked as added.
  * @return {JSX.Element} Results.
@@ -722,6 +739,7 @@ export default function RoomTypeResults( {
 	roomCard = 'classic',
 	ratesShown = 4,
 	priceBreakdown = false,
+	roomCounts = true,
 	lines = [],
 } ) {
 	// Type id => rate plan id => room numbers already in the booking.
@@ -822,6 +840,7 @@ export default function RoomTypeResults( {
 						card={ roomCard }
 						firstRates={ ratesShown }
 						breakdown={ priceBreakdown }
+						counts={ roomCounts }
 						booked={ booked[ type.id ] }
 					/>
 				) ) }

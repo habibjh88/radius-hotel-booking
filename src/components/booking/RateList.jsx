@@ -15,6 +15,7 @@ import {
 
 import EmptyState from '@/components/common/EmptyState';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import RateCard from './RateCard';
 import { localDate, windowLabel } from './rates';
 
@@ -24,8 +25,15 @@ import { localDate, windowLabel } from './rates';
  * @param {Object}   props.choice    `{ room_type_id, rate_plan_id }` or null.
  * @param {Function} props.onSelect  Called with `( roomType, rate )`.
  * @param {Function} props.onDates   Called with `{ departure }` to switch dates.
- * @param {boolean}  props.compact   Room types side by side, rates as radio
- *                                   cards (the desk's new booking screen).
+ * @param {boolean}  props.compact   The desk's new booking screen: each room
+ *                                   type a numbered block, its rates as radio
+ *                                   cards, and its header sticky while its
+ *                                   rates scroll past, so it is always clear
+ *                                   which type a rate is of.
+ * @param {string}   props.layout    With `compact` (Settings → Booking rules):
+ *                                   `columns` = room types two per row, rates
+ *                                   one per line; `wide` = one room type per
+ *                                   row, rates two per line.
  * @return {JSX.Element} List.
  */
 export default function RateList( {
@@ -34,7 +42,9 @@ export default function RateList( {
 	onSelect,
 	onDates,
 	compact = false,
+	layout = 'columns',
 } ) {
+	const wide = 'wide' === layout;
 	const types = data?.room_types || [];
 	const other = data?.other_options || [];
 
@@ -54,30 +64,40 @@ export default function RateList( {
 	return (
 		<div className="space-y-4">
 			<div
-				className={
-					compact
-						? 'grid items-start gap-4 min-[1400px]:grid-cols-2'
-						: 'space-y-4'
-				}
+				className={ cn(
+					! compact && 'space-y-4',
+					compact && wide && 'space-y-[30px]',
+					// Two columns only where each still fits a rate card.
+					compact &&
+						! wide &&
+						'grid items-start gap-[30px] min-[1400px]:grid-cols-2'
+				) }
 				role={ compact ? 'radiogroup' : undefined }
 				aria-label={
 					compact ? __( 'Rates', 'radius-hotel-booking' ) : undefined
 				}
 			>
-				{ types.map( ( type ) => {
+				{ types.map( ( type, index ) => {
 					const rates = type.rates || [];
 					return (
 						<section
 							key={ type.id }
-							className="overflow-hidden rounded-xl border border-border bg-card"
+							aria-label={ type.name }
+							className={
+								compact
+									? // No overflow-hidden: it would stop the header sticking.
+									  'rounded-xl border-2 border-solid border-[color-mix(in_srgb,var(--primary)_45%,#ffffff)] bg-card shadow-sm'
+									: 'overflow-hidden rounded-xl border border-border bg-card'
+							}
 						>
 							{ compact ? (
-								<div className="flex items-center gap-3 border-b border-primary/20 bg-primary-softer px-4 py-3">
+								<div className="sticky top-[calc(var(--rtbp-top)+64px)] z-10 flex items-center gap-3 rounded-t-[10px] border-0 border-b border-solid border-[color-mix(in_srgb,var(--primary)_25%,#ffffff)] bg-primary-softer px-4 py-3 shadow-[0_1px_0_rgba(0,0,0,0.02)] sm:top-[calc(var(--rtbp-top)+72px)]">
+									{ /* Its place in the list, so staff keep track while scrolling. */ }
 									<span
-										className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary"
+										className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground"
 										aria-hidden="true"
 									>
-										<BedDouble className="h-[18px] w-[18px]" />
+										{ index + 1 }
 									</span>
 									<div className="min-w-0 flex-1">
 										<h3 className="m-0 truncate text-base font-bold leading-tight text-heading">
@@ -118,6 +138,18 @@ export default function RateList( {
 											</span>
 										</p>
 									</div>
+									<span className="hidden shrink-0 text-xs font-semibold text-muted-foreground sm:block">
+										{ sprintf(
+											/* translators: %d: number of rates of this room type. */
+											_n(
+												'%d rate',
+												'%d rates',
+												rates.length,
+												'radius-hotel-booking'
+											),
+											rates.length
+										) }
+									</span>
 								</div>
 							) : (
 								<div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-border bg-muted/60 px-4 py-2.5">
@@ -143,7 +175,10 @@ export default function RateList( {
 								<ul
 									className={
 										compact
-											? 'm-0 list-none space-y-2 p-2'
+											? cn(
+													'm-0 grid list-none gap-2 p-3',
+													wide && 'sm:grid-cols-2'
+											  )
 											: 'm-0 list-none divide-y divide-border p-0'
 									}
 								>

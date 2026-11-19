@@ -108,6 +108,7 @@ const overlaps = ( a, b ) =>
  * @param {string}  [props.roomCard] Website: room type card, `classic` or `split`.
  * @param {number}  [props.ratesShown] Website: rates per room type before "Show more" (0: all).
  * @param {boolean} [props.priceBreakdown] Website: an info icon beside each rate's price opens its breakdown.
+ * @param {boolean} [props.roomCounts] Website: show how many rooms are available / free per room type and rate.
  * @return {JSX.Element} Flow.
  */
 export default function BookingFlow( {
@@ -118,6 +119,7 @@ export default function BookingFlow( {
 	roomCard = 'classic',
 	ratesShown = 4,
 	priceBreakdown = false,
+	roomCounts = true,
 } ) {
 	// The website (M04): its own endpoints and rules; the flow is the same.
 	const guestMode = 'guest' === mode;
@@ -152,6 +154,7 @@ export default function BookingFlow( {
 	// The guest's own details and consent (website only).
 	const [ guestForm, setGuestForm ] = useState( EMPTY_GUEST_FORM );
 	const [ consent, setConsent ] = useState( false );
+	const [ rulesAccepted, setRulesAccepted ] = useState( false );
 	// The signed-in visitor (Settings → Guest accounts): their details fill the form once.
 	const { data: account, isFetched: accountChecked } =
 		useAccount( guestMode );
@@ -565,6 +568,7 @@ export default function BookingFlow( {
 					},
 					special_requests: guestForm.special_requests,
 					consent,
+					house_rules: rulesAccepted,
 					company_website: guestForm.company_website,
 					// Express checkout's proof: the server fills the rest from the record.
 					...( guestForm.express_token
@@ -808,6 +812,7 @@ export default function BookingFlow( {
 					roomCard={ roomCard }
 					ratesShown={ ratesShown }
 					priceBreakdown={ priceBreakdown }
+					roomCounts={ roomCounts }
 					rules={ rules }
 					search={ search }
 					limits={ limits }
@@ -836,6 +841,8 @@ export default function BookingFlow( {
 					guestErrors={ guestErrors }
 					consent={ consent }
 					onConsent={ setConsent }
+					rulesAccepted={ rulesAccepted }
+					onRulesAccepted={ setRulesAccepted }
 					priceChange={ priceChange }
 					submitting={ submitting }
 					onConfirm={ confirmGuest }
@@ -887,6 +894,10 @@ export default function BookingFlow( {
 		body = (
 			<RateList
 				compact
+				layout={
+					window.radius_hotel_booking_param?.desk_rate_layout ||
+					'columns'
+				}
 				data={ availability.data }
 				choice={ choice }
 				onSelect={ select }

@@ -224,6 +224,13 @@ final class CoreSettings {
 				'options' => array( 'hide', 'disable' ),
 				'default' => 'disable',
 			),
+			// New booking (front desk): `columns` = room types two per row, rates one per line;
+			// `wide` = one room type per row, rates two per line.
+			'deskRateLayout'    => array(
+				'type'    => 'enum',
+				'options' => array( 'columns', 'wide' ),
+				'default' => 'columns',
+			),
 			// Guests up to this age (years) count as children (8.9).
 			'maxChildAge'       => array(
 				'type'    => 'int',

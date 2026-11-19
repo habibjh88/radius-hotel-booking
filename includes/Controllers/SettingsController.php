@@ -19,6 +19,7 @@ use RadiusTheme\RadiusHotelBooking\Exceptions\DomainException;
 use RadiusTheme\RadiusHotelBooking\Helpers\SettingsHelper;
 use RadiusTheme\RadiusHotelBooking\Repositories\SettingsRepository;
 use RadiusTheme\RadiusHotelBooking\Services\SettingsService;
+use RadiusTheme\RadiusHotelBooking\Services\SettingsTransferService;
 use RadiusTheme\RadiusHotelBooking\Settings\SettingsSchema;
 use RadiusTheme\RadiusHotelBooking\Settings\SettingsValidator;
 use WP_REST_Request;
@@ -63,6 +64,14 @@ class SettingsController extends BaseController {
 				'resetSection'    => fn( WP_REST_Request $r ) => self::accessKey( (string) $r->get_param( 'section' ) ),
 				// Every section in the body (update) or being reset.
 				'update'          => fn( WP_REST_Request $r ) => array_map( array( self::class, 'accessKey' ), array_keys( (array) $r->get_json_params() ) ),
+				// Reading every section is the Settings page's own key (as index).
+				'export'          => 'page.settings',
+				'importPreview'   => 'page.settings',
+				// Writing: every section the import would change.
+				'import'          => fn( WP_REST_Request $r ) => array_map(
+					array( self::class, 'accessKey' ),
+					SettingsTransferService::sectionsIn( $r->get_param( 'file' ), self::sectionsParam( $r ) )
+				),
 				'reset'           => function ( WP_REST_Request $r ) {
 					$sections = $r->get_param( 'sections' );
 					$sections = is_array( $sections ) && $sections ? $sections : array_keys( SettingsHelper::all() );
@@ -397,6 +406,72 @@ class SettingsController extends BaseController {
 				return ApiResponse::success( array( 'settings' => $this->settings->all() ), __( 'Settings reset to defaults successfully.', 'radius-hotel-booking' ) );
 			}
 		);
+	}
+
+	/**
+	 * GET /settings/export: the settings file (`sections[]` to pick some; all by default).
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function export( WP_REST_Request $request ) {
+		return $this->respond(
+			$request,
+			function ( $request ) {
+				return ApiResponse::success(
+					Container::resolve( SettingsTransferService::class )->export( self::sectionsParam( $request ) )
+				);
+			}
+		);
+	}
+
+	/**
+	 * POST /settings/import/preview: what importing `file` would change. Saves nothing.
+	 *
+	 * @param WP_REST_Request $request Request (`file`: the parsed export).
+	 * @return mixed
+	 */
+	public function importPreview( WP_REST_Request $request ) {
+		return $this->respond(
+			$request,
+			function ( $request ) {
+				return ApiResponse::success(
+					Container::resolve( SettingsTransferService::class )->preview( $request->get_param( 'file' ) )
+				);
+			}
+		);
+	}
+
+	/**
+	 * POST /settings/import: import `sections` (all by default) of `file`.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return mixed
+	 */
+	public function import( WP_REST_Request $request ) {
+		return $this->respond(
+			$request,
+			function ( $request ) {
+				$result = Container::resolve( SettingsTransferService::class )->import( $request->get_param( 'file' ), self::sectionsParam( $request ) );
+				return ApiResponse::success(
+					$result + array( 'settings' => $this->settings->all() ),
+					__( 'Settings imported.', 'radius-hotel-booking' )
+				);
+			}
+		);
+	}
+
+	/**
+	 * The `sections` request param as a list of section keys (an array, or `a,b`).
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return string[]
+	 */
+	private static function sectionsParam( WP_REST_Request $request ): array {
+		$sections = $request->get_param( 'sections' );
+		// A list, or a comma-separated string (a GET query).
+		$sections = is_string( $sections ) ? explode( ',', $sections ) : $sections;
+		return is_array( $sections ) ? array_values( array_filter( array_map( 'sanitize_key', $sections ) ) ) : array();
 	}
 
 	/**
