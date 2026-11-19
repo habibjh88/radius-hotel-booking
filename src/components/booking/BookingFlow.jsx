@@ -265,8 +265,9 @@ export default function BookingFlow( {
 	};
 
 	const select = ( type, rate ) => {
-		// On the website without a choice of room, choosing the rate holds a room at once.
-		if ( guestMode && false === rules.guestPicksRoom ) {
+		// On the website without a choice of room, choosing a fixed rate holds a
+		// room at once; a flexible one first asks its arrival time with the rate.
+		if ( guestMode && false === rules.guestPicksRoom && ! rate.checkin ) {
 			holdRoom( type, rate, null );
 			return;
 		}
@@ -826,6 +827,9 @@ export default function BookingFlow( {
 					taken={ taken }
 					pending={ pending }
 					onHoldRooms={ holdRooms }
+					onHoldFirstFree={ () =>
+						chosen && holdRoom( chosen.type, chosen.rate, null )
+					}
 					left={ left }
 					onAddAnother={ () => setChoice( lastChoice ) }
 					lines={ lines }

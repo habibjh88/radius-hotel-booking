@@ -11,6 +11,7 @@ import {
 	ArrowRight,
 	CalendarDays,
 	Clock,
+	Loader2,
 	Users,
 } from 'lucide-react';
 
@@ -189,6 +190,48 @@ export function StaySummary( { rate, search, onChange, onCheckinTime } ) {
 				</div>
 			</div>
 		</section>
+	);
+}
+
+/**
+ * Without a choice of room (Settings → Website → Guests choose their room
+ * off): the flexible rate's arrival time is asked in StaySummary, then this
+ * holds the first free room at that time.
+ *
+ * @param {Object}   props         Props.
+ * @param {Object}   props.rate    The chosen rate (`available`, `reasons`).
+ * @param {boolean}  props.pending A hold is under way.
+ * @param {Function} props.onHold  Hold the first free room.
+ * @return {JSX.Element} Button, or why the rate cannot be booked.
+ */
+export function FirstFreeRoom( { rate, pending, onHold } ) {
+	if ( ! rate.available ) {
+		return (
+			<p className="m-0 text-sm text-muted-foreground">
+				{ rate.reasons?.[ 0 ]?.message ||
+					__(
+						'This rate is no longer available.',
+						'radius-hotel-booking'
+					) }
+			</p>
+		);
+	}
+	return (
+		<div className="flex justify-end">
+			<Button
+				type="button"
+				className="h-11 min-w-[9rem]"
+				onClick={ onHold }
+				disabled={ pending }
+			>
+				{ pending ? (
+					<Loader2 className="animate-spin" aria-hidden="true" />
+				) : null }
+				{ pending
+					? __( 'Holding a room for you…', 'radius-hotel-booking' )
+					: __( 'Book at this time', 'radius-hotel-booking' ) }
+			</Button>
+		</div>
 	);
 }
 

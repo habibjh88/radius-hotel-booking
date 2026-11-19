@@ -23,6 +23,7 @@ import RoomTypeResults from './RoomTypeResults';
 import { searchIsValid } from './api';
 import {
 	BackButton,
+	FirstFreeRoom,
 	LeavePrompt,
 	StaySummary,
 	scrollToPart,
@@ -81,7 +82,6 @@ export default function GuestBookingOnePage( props ) {
 		search,
 		limits,
 		onSearch,
-		checkin,
 		availability,
 		choice,
 		chosen,
@@ -90,6 +90,7 @@ export default function GuestBookingOnePage( props ) {
 		taken,
 		pending,
 		onHoldRooms,
+		onHoldFirstFree,
 		left,
 		lines,
 		onRemove,
@@ -148,10 +149,10 @@ export default function GuestBookingOnePage( props ) {
 		? `${ chosen.type.id }-${ chosen.rate.rate_plan_id }`
 		: '';
 	useEffect( () => {
-		if ( chosenKey && picks ) {
+		if ( chosenKey ) {
 			reveal( roomRef );
 		}
-	}, [ chosenKey, picks ] );
+	}, [ chosenKey ] );
 	// A room held: on to the details.
 	const [ seen, setSeen ] = useState( 0 );
 	useEffect( () => {
@@ -239,7 +240,6 @@ export default function GuestBookingOnePage( props ) {
 					search={ search }
 					limits={ limits }
 					onChange={ onSearch }
-					checkin={ picks ? null : checkin }
 				/>
 			</Part>
 
@@ -280,16 +280,22 @@ export default function GuestBookingOnePage( props ) {
 					</div>
 				) : null }
 
-				{ chosen && picks ? (
+				{ chosen ? (
 					<div className="space-y-4 rounded-xl border border-primary/30 p-4">
 						<div className="flex flex-wrap items-center justify-between gap-3">
 							<h3 className="m-0 text-base font-bold text-heading">
 								{ sprintf(
-									/* translators: 1: room type, 2: rate name. */
-									__(
-										'Choose your room: %1$s, %2$s',
-										'radius-hotel-booking'
-									),
+									picks
+										? /* translators: 1: room type, 2: rate name. */
+										  __(
+												'Choose your room: %1$s, %2$s',
+												'radius-hotel-booking'
+										  )
+										: /* translators: 1: room type, 2: rate name. */
+										  __(
+												'Your arrival: %1$s, %2$s',
+												'radius-hotel-booking'
+										  ),
 									chosen.type.name,
 									chosen.rate.name
 								) }
@@ -315,7 +321,13 @@ export default function GuestBookingOnePage( props ) {
 								}
 							/>
 						) : null }
-						{ chosen.rate.available ? (
+						{ ! picks ? (
+							<FirstFreeRoom
+								rate={ chosen.rate }
+								pending={ Boolean( pending ) }
+								onHold={ onHoldFirstFree }
+							/>
+						) : chosen.rate.available ? (
 							<RoomSelection
 								type={ chosen.type }
 								rate={ chosen.rate }

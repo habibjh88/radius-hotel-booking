@@ -419,6 +419,7 @@ French translation completed; wrong French labels such as "Overdue" fixed.
 Day and month names on documents follow the staff language, even without WordPress language files.
 Booking pages keep the brand colour on Bootstrap themes that forced links blue.
 Booking page: a flexible rate now asks the arrival time with the chosen room, not the dates.
+Booking page: flexible rates ask the arrival time with the rate, even when guests cannot pick rooms.
 Express checkout finds returning guests in any phone format, with or without country code.
 Express checkout no longer opens for signed-in guests whose account has no name.
 Express checkout shows the guest's details masked and read-only; bookings always use the record's details.

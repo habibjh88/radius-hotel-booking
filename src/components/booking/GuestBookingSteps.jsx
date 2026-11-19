@@ -26,6 +26,7 @@ import RoomTypeResults from './RoomTypeResults';
 import { searchIsValid } from './api';
 import {
 	BackButton,
+	FirstFreeRoom,
 	LeavePrompt,
 	StaySummary,
 	scrollToTop,
@@ -171,7 +172,6 @@ export default function GuestBookingSteps( props ) {
 		search,
 		limits,
 		onSearch,
-		checkin,
 		availability,
 		choice,
 		chosen,
@@ -180,6 +180,7 @@ export default function GuestBookingSteps( props ) {
 		taken,
 		pending,
 		onHoldRooms,
+		onHoldFirstFree,
 		left,
 		onAddAnother,
 		lines,
@@ -209,12 +210,14 @@ export default function GuestBookingSteps( props ) {
 	const [ step, setStep ] = useState( 'rates' );
 	const [ shown, setShown ] = useState( {} );
 
-	// A rate chosen: pick the room (or, without a choice of room, it was held already).
+	// A rate chosen: pick the room. Without a choice of room, a fixed rate was
+	// held already and a flexible one opens this step for its arrival time.
+	const asksRoom = picks || Boolean( chosen?.rate?.checkin );
 	useEffect( () => {
-		if ( chosen && picks && 'rates' === step ) {
+		if ( chosen && 'rates' === step ) {
 			setStep( 'room' );
 		}
-	}, [ chosen, picks, step ] );
+	}, [ chosen, step ] );
 	// A room held: on to the details.
 	const count = lines.length;
 	const [ seen, setSeen ] = useState( 0 );
@@ -299,13 +302,25 @@ export default function GuestBookingSteps( props ) {
 			label: __( 'Rates', 'radius-hotel-booking' ),
 			hint: __( 'Dates and stay', 'radius-hotel-booking' ),
 		},
-		...( picks
+		...( asksRoom
 			? [
-					{
-						key: 'room',
-						label: __( 'Room', 'radius-hotel-booking' ),
-						hint: __( 'Pick your rooms', 'radius-hotel-booking' ),
-					},
+					picks
+						? {
+								key: 'room',
+								label: __( 'Room', 'radius-hotel-booking' ),
+								hint: __(
+									'Pick your rooms',
+									'radius-hotel-booking'
+								),
+						  }
+						: {
+								key: 'room',
+								label: __( 'Arrival', 'radius-hotel-booking' ),
+								hint: __(
+									'Choose your time',
+									'radius-hotel-booking'
+								),
+						  },
 			  ]
 			: [] ),
 		{
@@ -399,7 +414,6 @@ export default function GuestBookingSteps( props ) {
 						search={ search }
 						limits={ limits }
 						onChange={ onSearch }
-						checkin={ picks ? null : checkin }
 					/>
 				</div>
 				{ pending && ! picks ? (
@@ -445,11 +459,17 @@ export default function GuestBookingSteps( props ) {
 				/>
 				<h2 className="m-0 text-lg font-bold text-heading">
 					{ sprintf(
-						/* translators: 1: room type, 2: rate name. */
-						__(
-							'Choose your room: %1$s, %2$s',
-							'radius-hotel-booking'
-						),
+						picks
+							? /* translators: 1: room type, 2: rate name. */
+							  __(
+									'Choose your room: %1$s, %2$s',
+									'radius-hotel-booking'
+							  )
+							: /* translators: 1: room type, 2: rate name. */
+							  __(
+									'Your arrival: %1$s, %2$s',
+									'radius-hotel-booking'
+							  ),
 						chosen.type.name,
 						chosen.rate.name
 					) }
@@ -467,7 +487,13 @@ export default function GuestBookingSteps( props ) {
 						}
 					/>
 				) : null }
-				{ chosen.rate.available ? (
+				{ ! picks ? (
+					<FirstFreeRoom
+						rate={ chosen.rate }
+						pending={ Boolean( pending ) }
+						onHold={ onHoldFirstFree }
+					/>
+				) : chosen.rate.available ? (
 					<RoomSelection
 						type={ chosen.type }
 						rate={ chosen.rate }
