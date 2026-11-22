@@ -7,6 +7,8 @@
  * React root; its `data-*` attributes carry the embed's options. The original
  * single node `#radius-hotel-booking-site` still mounts as a booking embed.
  */
+// First: sets where lazy chunks load from (see the file).
+import '@/lib/public-path';
 import { createRoot } from 'react-dom/client';
 
 import App from './App';

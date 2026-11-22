@@ -447,6 +447,8 @@ Rooms: a new room type is now added at the end of the list, not the top.
 Rooms: switch room types between grid and list view; your choice is remembered.
 New booking: more space between room type blocks.
 Rooms: room counts now sit inside their status badge, e.g. "23 Available".
+Fixed dashboard screens not loading when a caching plugin combines or moves JavaScript files.
+The Hotel Dashboard page is no longer stored by page-caching plugins.
 
 = 1.0.0 =
 Initial release.

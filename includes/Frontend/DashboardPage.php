@@ -53,6 +53,10 @@ class DashboardPage {
 		add_filter( 'body_class', array( __CLASS__, 'body_class' ) );
 		add_filter( 'show_admin_bar', array( __CLASS__, 'show_admin_bar' ) );
 
+		// Never serve the dashboard page from a page cache: its HTML carries a
+		// per-user REST nonce, the signed-in state and the current bundle URLs.
+		add_action( 'template_redirect', array( __CLASS__, 'prevent_caching' ), 0 );
+
 		// Staff get their profile language here, as they do in wp-admin
 		// (early, before anything on the page is translated).
 		add_action( 'template_redirect', array( __CLASS__, 'use_staff_locale' ), 0 );
@@ -63,6 +67,32 @@ class DashboardPage {
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'isolate_assets' ), PHP_INT_MAX );
 		add_action( 'wp_print_footer_scripts', array( __CLASS__, 'isolate_assets' ), 0 );
 		add_action( 'wp_head', array( __CLASS__, 'drop_custom_css' ), 0 );
+	}
+
+	/**
+	 * Keep the dashboard page out of page caches (SiteGround, LiteSpeed,
+	 * WP Rocket, W3TC…). A cached copy would show one user's app to another,
+	 * or an expired nonce and old chunk hashes after an update.
+	 *
+	 * `nocache_headers()` covers server/CDN caches that honour Cache-Control;
+	 * the DONOTCACHE* constants are the convention most cache plugins read.
+	 *
+	 * @return void
+	 */
+	public static function prevent_caching(): void {
+		if ( ! self::is_dashboard_request() ) {
+			return;
+		}
+
+		foreach ( array( 'DONOTCACHEPAGE', 'DONOTCACHEOBJECT', 'DONOTCACHEDB', 'DONOTMINIFY' ) as $constant ) {
+			if ( ! defined( $constant ) ) {
+				define( $constant, true );
+			}
+		}
+
+		if ( ! headers_sent() ) {
+			nocache_headers();
+		}
 	}
 
 	/**

@@ -9,6 +9,8 @@
  * plugin — so `__()` resolves against the same locale data with no runtime
  * loader and no bundled copy of the package.
  */
+// First: sets where lazy chunks load from (see the file).
+import '@/lib/public-path';
 import { createRoot } from 'react-dom/client';
 
 import App from './App';

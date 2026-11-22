@@ -13,6 +13,8 @@
  * pointer first nears a gallery, or on the first click. Without JavaScript
  * each photo on the room type page is a plain link to the full image.
  */
+// First: sets where lazy chunks load from (see the file).
+import '@/lib/public-path';
 import { createElement, createRoot, lazy, Suspense } from '@wordpress/element';
 
 const Viewer = lazy( () => import( './Viewer' ) );

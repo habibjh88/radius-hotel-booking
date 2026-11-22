@@ -129,6 +129,16 @@ class LoadAssets {
 			);
 		}
 
+		// Where the bundle's lazy chunks live (read by src/lib/public-path.js).
+		// Without it webpack guesses from the script's own URL, which breaks
+		// when an optimizer (SiteGround, LiteSpeed, WP Rocket…) combines or
+		// moves the file: every chunk is then requested from the wrong folder.
+		wp_add_inline_script(
+			$handle,
+			'window.rtbpBuildUrl=' . wp_json_encode( trailingslashit( RADIUS_HOTEL_BOOKING_BUILD ) ) . ';',
+			'before'
+		);
+
 		$this->register_script_translations( $handle );
 
 		return true;
