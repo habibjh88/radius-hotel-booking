@@ -285,7 +285,7 @@ export default function GuestForm( {
 						className="m-0 cursor-pointer border-0 bg-transparent p-0 font-medium text-primary underline-offset-2 hover:underline"
 						onClick={ () => setExpress( true ) }
 					>
-						{ __( 'Use express checkout', 'radius-hotel-booking' ) }
+						{ __( 'Use express booking', 'radius-hotel-booking' ) }
 					</button>
 				</p>
 			) : null }

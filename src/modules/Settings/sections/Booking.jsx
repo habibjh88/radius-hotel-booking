@@ -26,6 +26,7 @@ const REFERENCE_KEYS = [
  * @param {Object}   props.errors   Key => server message.
  * @param {Object}   props.schema   Key => schema (limits).
  * @param {Object}   props.saved    The values as saved.
+ * @param {Object}   props.drafts   Every section's current values.
  * @return {JSX.Element} Tab.
  */
 export default function Booking( {
@@ -34,8 +35,12 @@ export default function Booking( {
 	errors,
 	schema,
 	saved = {},
+	drafts = {},
 } ) {
 	const minutes = __( 'minutes', 'radius-hotel-booking' );
+	// Website → Public booking → Ask for children: when off, children are not
+	// accepted, so the child age has nothing to apply to.
+	const childrenAccepted = false !== drafts.website?.childrenField;
 
 	return (
 		<>
@@ -138,29 +143,34 @@ export default function Booking( {
 				</Field>
 			</SettingsSection>
 
-			<SettingsSection
-				title={ __( 'Guests', 'radius-hotel-booking' ) }
-				description={ __(
-					'How guests are counted when a room’s capacity is checked.',
-					'radius-hotel-booking'
-				) }
-			>
-				<Field
-					label={ __( 'Maximum child age', 'radius-hotel-booking' ) }
+			{ childrenAccepted ? (
+				<SettingsSection
+					title={ __( 'Guests', 'radius-hotel-booking' ) }
 					description={ __(
-						'Guests up to this age count as children; older guests count as adults.',
+						'How guests are counted when a room’s capacity is checked.',
 						'radius-hotel-booking'
 					) }
-					error={ errors.maxChildAge }
 				>
-					<NumberInput
-						value={ value.maxChildAge }
-						onChange={ setField( 'maxChildAge' ) }
-						unit={ __( 'years', 'radius-hotel-booking' ) }
-						limits={ schema.maxChildAge }
-					/>
-				</Field>
-			</SettingsSection>
+					<Field
+						label={ __(
+							'Maximum child age',
+							'radius-hotel-booking'
+						) }
+						description={ __(
+							'Guests up to this age count as children; older guests count as adults.',
+							'radius-hotel-booking'
+						) }
+						error={ errors.maxChildAge }
+					>
+						<NumberInput
+							value={ value.maxChildAge }
+							onChange={ setField( 'maxChildAge' ) }
+							unit={ __( 'years', 'radius-hotel-booking' ) }
+							limits={ schema.maxChildAge }
+						/>
+					</Field>
+				</SettingsSection>
+			) : null }
 
 			<SettingsSection
 				title={ __( 'Rooms between stays', 'radius-hotel-booking' ) }

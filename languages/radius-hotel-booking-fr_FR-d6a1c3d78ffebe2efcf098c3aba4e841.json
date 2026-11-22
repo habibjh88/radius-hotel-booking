@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-18T12:15:38+00:00",
+    "translation-revision-date": "2026-11-22T10:38:58+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/components\/booking\/AccountBar.jsx",
     "domain": "messages",
@@ -31,20 +31,35 @@
             "Booked with us before? Sign in and we will fill in your details.": [
                 "D\u00e9j\u00e0 venu chez nous ? Connectez-vous et nous remplirons vos informations."
             ],
-            "Booked with us before? Use express checkout and we will fill in your details.": [
-                "D\u00e9j\u00e0 r\u00e9serv\u00e9 chez nous ? Utilisez la r\u00e9servation express et nous remplirons vos informations."
-            ],
             "Sign in and we will fill in your details, or create an account to book faster next time.": [
                 "Connectez-vous et nous remplirons vos informations, ou cr\u00e9ez un compte pour r\u00e9server plus vite la prochaine fois."
             ],
             "Create an account to book faster next time.": [
                 "Cr\u00e9ez un compte pour r\u00e9server plus vite la prochaine fois."
             ],
-            "Express checkout": [
+            "Express booking": [
                 "R\u00e9servation express"
             ],
             "Create an account": [
                 "Cr\u00e9er un compte"
+            ],
+            "Click \u201cExpress booking\u201d.": [
+                "Cliquez sur \u00ab R\u00e9servation express \u00bb."
+            ],
+            "Enter your phone number.": [
+                "Saisissez votre num\u00e9ro de t\u00e9l\u00e9phone."
+            ],
+            "Your details are filled in for you. Then choose your room.": [
+                "Vos informations sont remplies pour vous. Choisissez ensuite votre chambre."
+            ],
+            "Booked with us before? Book in a few seconds.": [
+                "D\u00e9j\u00e0 venu chez nous ? R\u00e9servez en quelques secondes."
+            ],
+            "First time here? Just choose your dates and room below.": [
+                "Premi\u00e8re visite ? Choisissez simplement vos dates et votre chambre ci-dessous."
+            ],
+            "You can also:": [
+                "Vous pouvez aussi :"
             ],
             "We do not know this number yet. Choose your room, then enter your details at checkout.": [
                 "Nous ne connaissons pas encore ce num\u00e9ro. Choisissez votre chambre, puis saisissez vos informations \u00e0 la r\u00e9servation."

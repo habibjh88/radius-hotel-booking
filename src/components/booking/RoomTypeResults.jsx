@@ -198,11 +198,22 @@ function RateSummary( { rate, large = false, added = [] } ) {
  * @param {Function} props.onClick  Choose it.
  * @param {string}   props.className Extra classes.
  * @param {boolean}  props.added    Rooms of this rate are already in the booking.
+ * @param {boolean}  props.holding  A room of this rate is being held (spinner).
+ * @param {boolean}  props.busy     A room is being held: no second click.
  * @return {JSX.Element} Button.
  */
-function SelectButton( { selected, onClick, className, added = false } ) {
+function SelectButton( {
+	selected,
+	onClick,
+	className,
+	added = false,
+	holding = false,
+	busy = false,
+} ) {
 	let label = __( 'Select', 'radius-hotel-booking' );
-	if ( selected ) {
+	if ( holding ) {
+		label = __( 'Holding a room…', 'radius-hotel-booking' );
+	} else if ( selected ) {
 		label = __( 'Selected', 'radius-hotel-booking' );
 	} else if ( added ) {
 		label = __( 'Add more', 'radius-hotel-booking' );
@@ -210,12 +221,22 @@ function SelectButton( { selected, onClick, className, added = false } ) {
 	return (
 		<Button
 			type="button"
-			className={ cn( 'h-11 min-w-[7.5rem]', className ) }
-			variant={ selected ? 'default' : 'outline' }
+			className={ cn(
+				'h-11 min-w-[7.5rem]',
+				holding && 'pointer-events-none',
+				className
+			) }
+			variant={ selected || holding ? 'default' : 'outline' }
 			aria-pressed={ selected }
-			onClick={ onClick }
+			aria-busy={ holding }
+			// The holding button stays bright (no faded disabled look) but takes no click.
+			disabled={ busy && ! holding }
+			onClick={ holding ? undefined : onClick }
 		>
-			{ selected ? <Check aria-hidden="true" /> : null }
+			{ holding ? (
+				<Loader2 className="animate-spin" aria-hidden="true" />
+			) : null }
+			{ selected && ! holding ? <Check aria-hidden="true" /> : null }
 			{ label }
 		</Button>
 	);
@@ -232,6 +253,8 @@ function SelectButton( { selected, onClick, className, added = false } ) {
  * @param {string[]} props.added    Rooms of this rate already in the booking.
  * @param {boolean}  props.breakdown An info icon beside the price opens its breakdown.
  * @param {boolean}  props.counts    Show how many rooms are free under the price.
+ * @param {boolean}  props.holding   A room of this rate is being held.
+ * @param {boolean}  props.busy      A room is being held (any rate).
  * @return {JSX.Element} Card.
  */
 function RateCard( {
@@ -241,6 +264,8 @@ function RateCard( {
 	added = [],
 	breakdown = false,
 	counts = true,
+	holding = false,
+	busy = false,
 } ) {
 	const available = rate.available;
 	return (
@@ -274,6 +299,8 @@ function RateCard( {
 					<SelectButton
 						selected={ selected }
 						added={ added.length > 0 }
+						holding={ holding }
+						busy={ busy }
 						onClick={ () => onSelect( rate ) }
 						className="w-full sm:w-auto"
 					/>
@@ -293,6 +320,8 @@ function RateCard( {
  * @param {string[]} props.added    Rooms of this rate already in the booking.
  * @param {boolean}  props.breakdown An info icon beside the price opens its breakdown.
  * @param {boolean}  props.counts    Show how many rooms are free under the price.
+ * @param {boolean}  props.holding   A room of this rate is being held.
+ * @param {boolean}  props.busy      A room is being held (any rate).
  * @return {JSX.Element} Row.
  */
 function RateRow( {
@@ -302,6 +331,8 @@ function RateRow( {
 	added = [],
 	breakdown = false,
 	counts = true,
+	holding = false,
+	busy = false,
 } ) {
 	const available = rate.available;
 
@@ -326,6 +357,8 @@ function RateRow( {
 					<SelectButton
 						selected={ selected }
 						added={ added.length > 0 }
+						holding={ holding }
+						busy={ busy }
 						onClick={ () => onSelect( rate ) }
 					/>
 				</div>
@@ -341,6 +374,7 @@ function RateRow( {
  * @param {Object}   props.type     Room type from the search.
  * @param {Object[]} props.other    This type's rates that do not fit the dates (shown greyed out).
  * @param {Object}   props.choice   `{ room_type_id, rate_plan_id }` or null.
+ * @param {Object}   props.holding  The rate a room is being held at, or null.
  * @param {Function} props.onSelect Called with `( type, rate )`.
  * @param {string}   props.roomDetails `page` (link to its page) or `popup`.
  * @param {string}   props.card     `classic` (rates as rows under the type) or
@@ -354,6 +388,7 @@ function RoomTypeCard( {
 	type,
 	other = [],
 	choice,
+	holding = null,
 	onSelect,
 	roomDetails = 'page',
 	card = 'classic',
@@ -435,6 +470,9 @@ function RoomTypeCard( {
 	const isSelected = ( rate ) =>
 		choice?.room_type_id === type.id &&
 		choice?.rate_plan_id === rate.rate_plan_id;
+	const isHolding = ( rate ) =>
+		holding?.room_type_id === type.id &&
+		holding?.rate_plan_id === rate.rate_plan_id;
 	const dialog = showDetails ? (
 		<Suspense fallback={ null }>
 			<RoomDetailsDialog
@@ -577,6 +615,10 @@ function RoomTypeCard( {
 										key={ rate.rate_plan_id }
 										rate={ rate }
 										selected={ isSelected( rate ) }
+										holding={ isHolding( rate ) }
+										busy={ Boolean( holding ) }
+										holding={ isHolding( rate ) }
+										busy={ Boolean( holding ) }
 										added={ addedTo( rate ) }
 										breakdown={ breakdown }
 										counts={ counts }
@@ -720,6 +762,7 @@ function RoomTypeCard( {
  * @param {Object}   props.availability The React Query result of the search.
  * @param {boolean}  props.needsDates   No dates picked yet: the prices are only a preview.
  * @param {Object}   props.choice       `{ room_type_id, rate_plan_id }` or null.
+ * @param {Object}   props.holding      The rate a room is being held at (`{ room_type_id, rate_plan_id }`), or null.
  * @param {Function} props.onSelect     Called with `( type, rate )`.
  * @param {string}   props.roomDetails  What "Room details" opens: `page` or `popup`.
  * @param {string}   props.roomCard     Room type card: `classic` or `split`.
@@ -734,6 +777,7 @@ export default function RoomTypeResults( {
 	availability,
 	needsDates = false,
 	choice,
+	holding = null,
 	onSelect,
 	roomDetails = 'page',
 	roomCard = 'classic',
@@ -835,6 +879,7 @@ export default function RoomTypeResults( {
 							availability.data?.other_options || []
 						).filter( ( rate ) => rate.room_type_id === type.id ) }
 						choice={ choice }
+						holding={ holding }
 						onSelect={ onSelect }
 						roomDetails={ roomDetails }
 						card={ roomCard }

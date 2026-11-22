@@ -449,6 +449,11 @@ New booking: more space between room type blocks.
 Rooms: room counts now sit inside their status badge, e.g. "23 Available".
 Fixed dashboard screens not loading when a caching plugin combines or moves JavaScript files.
 The Hotel Dashboard page is no longer stored by page-caching plugins.
+Settings: "Maximum child age" is hidden when "Ask for children" is turned off.
+Booking page: "Express checkout" is now a large "Express booking" button with simple steps.
+Booking page: the Select button shows a spinner while a room is being held.
+French translation completed for every new text, including Express booking and house rules.
+Room type page: content now sits in a centred 1200px container instead of full width.
 
 = 1.0.0 =
 Initial release.

@@ -191,6 +191,8 @@ export default function BookingFlow( {
 	// The booking's rooms so far (2.12), each held (2.14).
 	const [ lines, setLines ] = useState( [] );
 	const [ pending, setPending ] = useState( 0 );
+	// The rate a room is being held at from its Select button (no room choice).
+	const [ holding, setHolding ] = useState( null );
 	// The guest (2.7–2.9): an existing one, or the fields of a new one.
 	const [ guest, setGuest ] = useState( {
 		mode: 'find',
@@ -268,7 +270,15 @@ export default function BookingFlow( {
 		// On the website without a choice of room, choosing a fixed rate holds a
 		// room at once; a flexible one first asks its arrival time with the rate.
 		if ( guestMode && false === rules.guestPicksRoom && ! rate.checkin ) {
-			holdRoom( type, rate, null );
+			if ( pending ) {
+				return; // A room is already being held: no second hold.
+			}
+			// The clicked Select shows a spinner until the room is held.
+			setHolding( {
+				room_type_id: type.id,
+				rate_plan_id: rate.rate_plan_id,
+			} );
+			holdRoom( type, rate, null ).finally( () => setHolding( null ) );
 			return;
 		}
 		setChoice( {
@@ -821,6 +831,7 @@ export default function BookingFlow( {
 					checkin={ checkin }
 					availability={ availability }
 					choice={ choice }
+					holding={ holding }
 					chosen={ chosen }
 					onSelect={ select }
 					onClearChoice={ () => setChoice( null ) }

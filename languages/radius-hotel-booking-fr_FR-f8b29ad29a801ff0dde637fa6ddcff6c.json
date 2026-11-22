@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-18T12:15:38+00:00",
+    "translation-revision-date": "2026-11-22T10:38:58+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/modules\/Settings\/sections\/Accounts.jsx",
     "domain": "messages",
@@ -12,9 +12,6 @@
             },
             "Sign in": [
                 "Se connecter"
-            ],
-            "Express checkout": [
-                "R\u00e9servation express"
             ],
             "Create an account": [
                 "Cr\u00e9er un compte"
@@ -33,6 +30,9 @@
             ],
             "The line at the top of the booking form, for guests who are not signed in. Turn off all three to hide it. Guests can still book without an account.": [
                 "La ligne en haut du formulaire de r\u00e9servation, pour les clients non connect\u00e9s. D\u00e9sactivez les trois pour la masquer. Les clients peuvent toujours r\u00e9server sans compte."
+            ],
+            "Express checkout": [
+                "R\u00e9servation express"
             ],
             "Shows only while express checkout is on (below).": [
                 "Affich\u00e9 uniquement si la r\u00e9servation express est activ\u00e9e (ci-dessous)."

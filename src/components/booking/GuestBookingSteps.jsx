@@ -174,6 +174,7 @@ export default function GuestBookingSteps( props ) {
 		onSearch,
 		availability,
 		choice,
+		holding,
 		chosen,
 		onSelect,
 		onClearChoice,
@@ -431,6 +432,7 @@ export default function GuestBookingSteps( props ) {
 					availability={ availability }
 					needsDates={ ! datesPicked }
 					choice={ choice }
+					holding={ holding }
 					onSelect={ selectRate }
 					roomDetails={ roomDetails }
 					roomCard={ roomCard }

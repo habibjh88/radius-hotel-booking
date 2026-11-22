@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-18T12:15:38+00:00",
+    "translation-revision-date": "2026-11-22T10:38:58+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/modules\/Settings\/sections\/Website.jsx",
     "domain": "messages",
@@ -12,6 +12,9 @@
             },
             "Phone": [
                 "T\u00e9l\u00e9phone"
+            ],
+            "House rules": [
+                "R\u00e8glement int\u00e9rieur"
             ],
             "First name": [
                 "Pr\u00e9nom"
@@ -42,6 +45,12 @@
             ],
             "None": [
                 "Aucun"
+            ],
+            "Move up": [
+                "Monter"
+            ],
+            "Move down": [
+                "Descendre"
             ],
             "Optional": [
                 "Facultatif"
@@ -85,6 +94,27 @@
             "Add document type": [
                 "Ajouter un type de document"
             ],
+            "Rules": [
+                "R\u00e8gles"
+            ],
+            "One rule per line, short and clear. Pick an icon to make each one easy to spot.": [
+                "Une r\u00e8gle par ligne, courte et claire. Choisissez une ic\u00f4ne pour que chacune se rep\u00e8re facilement."
+            ],
+            "House rule": [
+                "R\u00e8gle de l\u2019\u00e9tablissement"
+            ],
+            "e.g. No pets allowed": [
+                "ex. Animaux non admis"
+            ],
+            "Rule %d": [
+                "R\u00e8gle %d"
+            ],
+            "No rules yet.": [
+                "Aucune r\u00e8gle pour l\u2019instant."
+            ],
+            "Add rule": [
+                "Ajouter une r\u00e8gle"
+            ],
             "Search and results": [
                 "Recherche et r\u00e9sultats"
             ],
@@ -118,6 +148,12 @@
             "Adds a rooms field to the search bar, for guests booking for a group.": [
                 "Ajoute un champ de chambres \u00e0 la barre de recherche, pour les clients qui r\u00e9servent pour un groupe."
             ],
+            "Ask for children": [
+                "Demander les enfants"
+            ],
+            "Adds a children field to the search bars. Turn it off when children are not accepted: guests then book for adults only.": [
+                "Ajoute un champ enfants aux barres de recherche. D\u00e9sactivez-le si les enfants ne sont pas accept\u00e9s : les clients r\u00e9servent alors pour des adultes uniquement."
+            ],
             "Booking form": [
                 "Formulaire de r\u00e9servation"
             ],
@@ -138,6 +174,21 @@
             ],
             "A checkbox before booking. Set your privacy policy page in Settings \u2192 Privacy (WordPress) so the box can link to it.": [
                 "Une case \u00e0 cocher avant la r\u00e9servation. D\u00e9finissez votre page de politique de confidentialit\u00e9 dans R\u00e9glages \u2192 Confidentialit\u00e9 (WordPress) pour que la case puisse y renvoyer."
+            ],
+            "Rules guests must know before they come (pets, outside food, age\u2026). Shown on the booking page before the guest confirms, and in the booking e-mail.": [
+                "Les r\u00e8gles que les clients doivent conna\u00eetre avant de venir (animaux, nourriture ext\u00e9rieure, \u00e2ge\u2026). Affich\u00e9es sur la page de r\u00e9servation avant que le client confirme, et dans l\u2019e-mail de r\u00e9servation."
+            ],
+            "Show house rules": [
+                "Afficher le r\u00e8glement int\u00e9rieur"
+            ],
+            "Heading": [
+                "Titre"
+            ],
+            "Guests must accept the house rules": [
+                "Les clients doivent accepter le r\u00e8glement int\u00e9rieur"
+            ],
+            "A checkbox \"I have read and accept the house rules\" that must be ticked to book.": [
+                "Une case \u00ab J\u2019ai lu et j\u2019accepte le r\u00e8glement int\u00e9rieur \u00bb \u00e0 cocher pour r\u00e9server."
             ],
             "Guest details": [
                 "Informations du client"

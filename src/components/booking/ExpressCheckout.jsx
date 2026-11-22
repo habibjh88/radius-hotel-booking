@@ -164,7 +164,7 @@ export default function ExpressCheckout( {
 							id="rtbp-express-title"
 							className="m-0 text-xl font-bold text-heading"
 						>
-							{ __( 'Express checkout', 'radius-hotel-booking' ) }
+							{ __( 'Express booking', 'radius-hotel-booking' ) }
 						</h2>
 						{ branded ? null : closeButton }
 					</div>

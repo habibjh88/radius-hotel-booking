@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-18T12:15:38+00:00",
+    "translation-revision-date": "2026-11-22T10:38:58+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/blocks\/booking\/index.js",
     "domain": "messages",
@@ -51,6 +51,12 @@
             ],
             "An info icon next to each price opens how it is made: the stay, any discount and the total.": [
                 "Une ic\u00f4ne d'information \u00e0 c\u00f4t\u00e9 de chaque prix en d\u00e9taille le calcul : le s\u00e9jour, la remise \u00e9ventuelle et le total."
+            ],
+            "Rooms left": [
+                "Chambres restantes"
+            ],
+            "How many rooms are available on each room type's photo and free under each price.": [
+                "Le nombre de chambres disponibles sur la photo de chaque type de chambre, et libres sous chaque prix."
             ],
             "Steps (one step at a time)": [
                 "\u00c9tapes (une \u00e9tape \u00e0 la fois)"

@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-18T12:15:38+00:00",
+    "translation-revision-date": "2026-11-22T10:38:58+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/modules\/Settings\/sections\/index.js",
     "domain": "messages",
@@ -81,6 +81,12 @@
             ],
             "Brand colour of the dashboard and booking pages": [
                 "Couleur de la marque du tableau de bord et des pages de r\u00e9servation"
+            ],
+            "Import \/ Export": [
+                "Import \/ Export"
+            ],
+            "Save your settings to a file, or load them from one": [
+                "Enregistrez vos r\u00e9glages dans un fichier, ou chargez-les depuis un fichier"
             ],
             "What each staff role may open and do": [
                 "Ce que chaque r\u00f4le du personnel peut ouvrir et faire"

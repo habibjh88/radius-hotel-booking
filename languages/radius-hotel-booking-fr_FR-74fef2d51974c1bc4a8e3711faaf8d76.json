@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-18T12:15:38+00:00",
+    "translation-revision-date": "2026-11-22T10:38:58+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/components\/booking\/GuestBookingOnePage.jsx",
     "domain": "messages",
@@ -41,6 +41,9 @@
             "Choose your room: %1$s, %2$s": [
                 "Choisissez votre chambre : %1$s, %2$s"
             ],
+            "Your arrival: %1$s, %2$s": [
+                "Votre arriv\u00e9e : %1$s, %2$s"
+            ],
             "Back to other rates": [
                 "Retour aux autres tarifs"
             ],
@@ -62,12 +65,6 @@
             ],
             "Your room is held while you book. Payment instructions and your invoice are on the next page and in your e-mail.": [
                 "Votre chambre est retenue pendant votre r\u00e9servation. Les instructions de paiement et votre facture figurent sur la page suivante et dans votre e-mail."
-            ],
-            "I agree that the hotel keeps my details for this booking": [
-                "J'accepte que l'h\u00f4tel conserve mes informations pour cette r\u00e9servation"
-            ],
-            "privacy policy": [
-                "politique de confidentialit\u00e9"
             ],
             "Booking\u2026": [
                 "R\u00e9servation en cours\u2026"

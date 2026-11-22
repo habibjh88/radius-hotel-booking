@@ -1,0 +1,98 @@
+{
+    "translation-revision-date": "2026-11-22T10:38:58+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/modules\/Settings\/SettingsTransfer.jsx",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Something went wrong. Please try again.": [
+                "Une erreur est survenue. Veuillez r\u00e9essayer."
+            ],
+            "Type %s to confirm": [
+                "Saisissez %s pour confirmer"
+            ],
+            "Cancel": [
+                "Annuler"
+            ],
+            "%1$d of %2$d selected": [
+                "%1$d s\u00e9lectionn\u00e9(s) sur %2$d"
+            ],
+            "All settings": [
+                "Tous les r\u00e9glages"
+            ],
+            "Settings file downloaded.": [
+                "Fichier de r\u00e9glages t\u00e9l\u00e9charg\u00e9."
+            ],
+            "Export settings": [
+                "Exporter les r\u00e9glages"
+            ],
+            "Download your settings as a file, to keep a copy or to set up another site the same way.": [
+                "T\u00e9l\u00e9chargez vos r\u00e9glages dans un fichier, pour en garder une copie ou configurer un autre site de la m\u00eame fa\u00e7on."
+            ],
+            "Passwords, PINs and API keys are never included.": [
+                "Les mots de passe, codes PIN et cl\u00e9s API ne sont jamais inclus."
+            ],
+            "Preparing\u2026": [
+                "Pr\u00e9paration\u2026"
+            ],
+            "Download file": [
+                "T\u00e9l\u00e9charger le fichier"
+            ],
+            "Not on this site (an add-on that is not active here). Skipped.": [
+                "Absent de ce site (un module compl\u00e9mentaire inactif ici). Ignor\u00e9."
+            ],
+            "%d setting changes": [
+                "%d r\u00e9glage modifi\u00e9",
+                "%d r\u00e9glages modifi\u00e9s"
+            ],
+            "Same as now": [
+                "Identique \u00e0 l\u2019actuel"
+            ],
+            "%1$s. Skipped: %2$s": [
+                "%1$s. Ignor\u00e9s : %2$s"
+            ],
+            "This file cannot be read. Choose a settings file exported from Radius Hotel Booking (.json).": [
+                "Ce fichier est illisible. Choisissez un fichier de r\u00e9glages export\u00e9 depuis Radius Hotel Booking (.json)."
+            ],
+            "Settings imported into %d tab.": [
+                "R\u00e9glages import\u00e9s dans %d onglet.",
+                "R\u00e9glages import\u00e9s dans %d onglets."
+            ],
+            "Import settings": [
+                "Importer des r\u00e9glages"
+            ],
+            "Replace settings with the ones in a file exported from Radius Hotel Booking. You see what changes before anything is saved.": [
+                "Remplacez les r\u00e9glages par ceux d\u2019un fichier export\u00e9 depuis Radius Hotel Booking. Vous voyez ce qui change avant que rien ne soit enregistr\u00e9."
+            ],
+            "Another tab has unsaved changes. Save or discard them before importing.": [
+                "Un autre onglet a des modifications non enregistr\u00e9es. Enregistrez-les ou annulez-les avant d\u2019importer."
+            ],
+            "Exported from %1$s on %2$s": [
+                "Export\u00e9 depuis %1$s le %2$s"
+            ],
+            "Choose another file": [
+                "Choisir un autre fichier"
+            ],
+            "Reading the file\u2026": [
+                "Lecture du fichier\u2026"
+            ],
+            "Drop a settings file here, or click to choose one": [
+                "D\u00e9posez un fichier de r\u00e9glages ici, ou cliquez pour en choisir un"
+            ],
+            "A .json file exported from Radius Hotel Booking": [
+                "Un fichier .json export\u00e9 depuis Radius Hotel Booking"
+            ],
+            "Choose the settings to import": [
+                "Choisissez les r\u00e9glages \u00e0 importer"
+            ],
+            "Importing\u2026": [
+                "Importation\u2026"
+            ]
+        }
+    }
+}

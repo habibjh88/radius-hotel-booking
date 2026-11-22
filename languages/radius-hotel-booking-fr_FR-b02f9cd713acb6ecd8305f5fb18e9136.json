@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-18T12:15:38+00:00",
+    "translation-revision-date": "2026-11-22T10:38:58+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/modules\/Settings\/sections\/General.jsx",
     "domain": "messages",
@@ -15,6 +15,9 @@
             ],
             "Phone": [
                 "T\u00e9l\u00e9phone"
+            ],
+            "Logo": [
+                "Logo"
             ],
             "US dollar (USD)": [
                 "Dollar am\u00e9ricain (USD)"
@@ -51,9 +54,6 @@
             ],
             "Contact e-mail": [
                 "E-mail de contact"
-            ],
-            "Logo": [
-                "Logo"
             ],
             "Shown at the top of e-mails and documents. A square image works best.": [
                 "Affich\u00e9 en haut des e-mails et des documents. Une image carr\u00e9e convient le mieux."

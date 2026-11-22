@@ -21,7 +21,9 @@ $rtbp_type = RoomTypePage::current();
 get_header();
 ?>
 <main id="primary" class="site-main">
-	<div class="rtbp-root rtbp-room-type mx-auto max-w-5xl space-y-8 px-4 py-8 text-foreground">
+	<?php // Utilities only reach elements inside .rtbp-root (Tailwind `important`), so the container is an inner div. ?>
+	<div class="rtbp-root rtbp-room-type">
+	<div class="mx-auto w-full max-w-[1200px] space-y-8 px-4 py-8 text-foreground">
 		<header class="space-y-2">
 			<h1 class="text-3xl font-bold text-heading"><?php echo esc_html( $rtbp_type['name'] ); ?></h1>
 			<?php if ( '' !== $rtbp_type['short_description'] ) : ?>
@@ -65,7 +67,7 @@ get_header();
 								array(
 									'class'   => 'm-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]',
 									'loading' => 0 === $rtbp_index ? 'eager' : 'lazy',
-									'sizes'   => 0 === $rtbp_index ? '(min-width: 1024px) 1024px, 100vw' : '(min-width: 1024px) 340px, 33vw',
+									'sizes'   => 0 === $rtbp_index ? '(min-width: 1200px) 1200px, 100vw' : '(min-width: 1200px) 400px, 33vw',
 								)
 							);
 							?>
@@ -185,6 +187,7 @@ get_header();
 				</section>
 			</aside>
 		</div>
+	</div>
 	</div>
 </main>
 <?php

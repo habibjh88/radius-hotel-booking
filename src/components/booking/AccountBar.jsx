@@ -13,7 +13,7 @@
 import { Fragment, Suspense, lazy, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { __, sprintf } from '@wordpress/i18n';
-import { CircleCheck, LogIn, UserRound } from 'lucide-react';
+import { CircleCheck, LogIn, UserRound, Zap } from 'lucide-react';
 
 import { get } from '@/api/client';
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -238,12 +238,7 @@ export default function AccountBar( {
 		'Booked with us before? Sign in and we will fill in your details.',
 		'radius-hotel-booking'
 	);
-	if ( canExpress ) {
-		intro = __(
-			'Booked with us before? Use express checkout and we will fill in your details.',
-			'radius-hotel-booking'
-		);
-	} else if ( canRegister && canSignIn ) {
+	if ( canRegister && canSignIn ) {
 		intro = __(
 			'Sign in and we will fill in your details, or create an account to book faster next time.',
 			'radius-hotel-booking'
@@ -255,20 +250,22 @@ export default function AccountBar( {
 		);
 	}
 
+	const openExpress = () => {
+		markExpressOffered();
+		setNewPhone( false );
+		setExpress( true );
+	};
+
 	const items = [];
-	if ( canExpress ) {
+	if ( canExpress && newPhone ) {
 		items.push(
 			<button
 				key="express"
 				type="button"
 				className={ cn( linkClass, buttonReset ) }
-				onClick={ () => {
-					markExpressOffered();
-					setNewPhone( false );
-					setExpress( true );
-				} }
+				onClick={ openExpress }
 			>
-				{ __( 'Express checkout', 'radius-hotel-booking' ) }
+				{ __( 'Express booking', 'radius-hotel-booking' ) }
 			</button>
 		);
 	}
@@ -293,6 +290,100 @@ export default function AccountBar( {
 			>
 				{ __( 'Create an account', 'radius-hotel-booking' ) }
 			</SignInLink>
+		);
+	}
+
+	const expressDialog = express ? (
+		<Suspense fallback={ null }>
+			<ExpressCheckout
+				phone={ guestForm?.phone }
+				onKnown={ ( details, token ) => {
+					setExpress( false );
+					onGuestForm( knownPatch( details, token ) );
+				} }
+				onRecognised={ ( result ) => {
+					setExpress( false );
+					onGuestForm( recognisedPatch( result, guestForm?.phone ) );
+				} }
+				onNew={ ( phone ) => {
+					setExpress( false );
+					setNewPhone( true );
+					if ( phone ) {
+						onGuestForm( { phone } );
+					}
+				} }
+				onClose={ () => setExpress( false ) }
+			/>
+		</Suspense>
+	) : null;
+
+	// Express booking on: a panel that stands out, with one big button and the
+	// steps spelled out (guests found the small link hard to notice and use).
+	if ( canExpress && ! newPhone ) {
+		const steps = [
+			__( 'Click “Express booking”.', 'radius-hotel-booking' ),
+			__( 'Enter your phone number.', 'radius-hotel-booking' ),
+			__(
+				'Your details are filled in for you. Then choose your room.',
+				'radius-hotel-booking'
+			),
+		];
+		return (
+			<div className="mb-4 rounded-xl border-2 border-[color-mix(in_srgb,var(--primary)_45%,#ffffff)] bg-primary-soft p-4 text-foreground sm:p-5">
+				<div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+					<span className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground sm:flex">
+						<Zap className="h-6 w-6" aria-hidden="true" />
+					</span>
+					<div className="min-w-0 flex-1">
+						<p className="m-0 text-base font-bold text-heading">
+							{ __(
+								'Booked with us before? Book in a few seconds.',
+								'radius-hotel-booking'
+							) }
+						</p>
+						<ol className="m-0 mt-2 list-none space-y-1 p-0 text-sm">
+							{ steps.map( ( step, index ) => (
+								<li
+									key={ index }
+									className="flex items-start gap-2"
+								>
+									<span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+										{ index + 1 }
+									</span>
+									<span>{ step }</span>
+								</li>
+							) ) }
+						</ol>
+					</div>
+					<Button
+						type="button"
+						onClick={ openExpress }
+						className="h-12 w-full shrink-0 gap-2 px-6 text-base font-semibold shadow-md sm:w-auto"
+					>
+						<Zap className="h-5 w-5" aria-hidden="true" />
+						{ __( 'Express booking', 'radius-hotel-booking' ) }
+					</Button>
+				</div>
+				<p className="m-0 mt-3 border-t border-[color-mix(in_srgb,var(--primary)_25%,#ffffff)] pt-3 text-sm text-muted-foreground">
+					{ __(
+						'First time here? Just choose your dates and room below.',
+						'radius-hotel-booking'
+					) }
+					{ items.length ? (
+						<>
+							{ ' ' }
+							{ __( 'You can also:', 'radius-hotel-booking' ) }
+							{ items.map( ( item, index ) => (
+								<Fragment key={ item.key }>
+									{ index ? ' · ' : ' ' }
+									{ item }
+								</Fragment>
+							) ) }
+						</>
+					) : null }
+				</p>
+				{ expressDialog }
+			</div>
 		);
 	}
 
@@ -323,31 +414,7 @@ export default function AccountBar( {
 					</Fragment>
 				) ) }
 			</span>
-			{ express ? (
-				<Suspense fallback={ null }>
-					<ExpressCheckout
-						phone={ guestForm?.phone }
-						onKnown={ ( details, token ) => {
-							setExpress( false );
-							onGuestForm( knownPatch( details, token ) );
-						} }
-						onRecognised={ ( result ) => {
-							setExpress( false );
-							onGuestForm(
-								recognisedPatch( result, guestForm?.phone )
-							);
-						} }
-						onNew={ ( phone ) => {
-							setExpress( false );
-							setNewPhone( true );
-							if ( phone ) {
-								onGuestForm( { phone } );
-							}
-						} }
-						onClose={ () => setExpress( false ) }
-					/>
-				</Suspense>
-			) : null }
+			{ expressDialog }
 		</div>
 	);
 }

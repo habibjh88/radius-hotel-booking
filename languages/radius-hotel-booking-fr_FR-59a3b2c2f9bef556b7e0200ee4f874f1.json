@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-18T12:15:38+00:00",
+    "translation-revision-date": "2026-11-22T10:38:58+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/components\/booking\/GuestParts.jsx",
     "domain": "messages",
@@ -27,17 +27,26 @@
                 "%d adulte",
                 "%d adultes"
             ],
+            "This rate is no longer available.": [
+                "Ce tarif n'est plus disponible."
+            ],
             "The %s stay is counted from this time.": [
                 "Le s\u00e9jour %s est compt\u00e9 \u00e0 partir de cette heure."
             ],
             "%1$s Arrival between %2$s and %3$s.": [
                 "%1$s Arriv\u00e9e entre %2$s et %3$s."
             ],
+            "Holding a room for you\u2026": [
+                "Retenue de votre chambre\u2026"
+            ],
             "Change dates": [
                 "Modifier les dates"
             ],
             "Choose your arrival time": [
                 "Choisissez votre heure d'arriv\u00e9e"
+            ],
+            "Book at this time": [
+                "R\u00e9server \u00e0 cette heure"
             ],
             "Leave your booking?": [
                 "Quitter votre r\u00e9servation ?"
