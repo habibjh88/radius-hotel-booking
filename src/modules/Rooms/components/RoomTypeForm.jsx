@@ -528,7 +528,8 @@ export default function RoomTypeForm( { type, readOnly = false, onSaved } ) {
 					) : null }
 					<Button
 						type="submit"
-						disabled={ save.isPending || ( type && ! isDirty ) }
+						disabled={ type && ! isDirty }
+						loading={ save.isPending }
 					>
 						{ save.isPending
 							? __( 'Saving…', 'radius-hotel-booking' )

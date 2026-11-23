@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-22T10:38:58+00:00",
+    "translation-revision-date": "2026-11-23T10:19:31+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/modules\/Bookings\/Detail.jsx",
     "domain": "messages",
@@ -19,12 +19,6 @@
             "Notes": [
                 "Notes"
             ],
-            "Room %s": [
-                "Chambre %s"
-            ],
-            "Extended with %s": [
-                "Prolong\u00e9 avec %s"
-            ],
             "Guest": [
                 "Client"
             ],
@@ -35,6 +29,9 @@
             "Invoice": [
                 "Facture"
             ],
+            "Room %s": [
+                "Chambre %s"
+            ],
             "%d adult": [
                 "%d adulte",
                 "%d adultes"
@@ -42,6 +39,9 @@
             "%d room": [
                 "%d chambre",
                 "%d chambres"
+            ],
+            "Add a room": [
+                "Ajouter une chambre"
             ],
             "Try again": [
                 "R\u00e9essayer"
@@ -51,9 +51,6 @@
             ],
             "Edit": [
                 "Modifier"
-            ],
-            "Add a room": [
-                "Ajouter une chambre"
             ],
             "At the desk": [
                 "\u00c0 la r\u00e9ception"
@@ -90,6 +87,9 @@
             ],
             "Out %1$s by %2$s": [
                 "D\u00e9part %1$s par %2$s"
+            ],
+            "Extended with %s": [
+                "Prolong\u00e9 avec %s"
             ],
             "Added %1$s by %2$s": [
                 "Ajout\u00e9 le %1$s par %2$s"

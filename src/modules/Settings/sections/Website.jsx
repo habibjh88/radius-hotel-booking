@@ -48,7 +48,7 @@ function guestFieldRows() {
 			key: 'phone',
 			label: __( 'Phone', 'radius-hotel-booking' ),
 			help: __(
-				'Express checkout needs it: hiding it turns Express checkout off.',
+				'Express booking needs it: hiding it turns Express booking off.',
 				'radius-hotel-booking'
 			),
 		},

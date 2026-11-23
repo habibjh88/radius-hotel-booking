@@ -306,7 +306,7 @@ export default function AddGuestDialog( {
 						>
 							{ __( 'Cancel', 'radius-hotel-booking' ) }
 						</Button>
-						<Button type="submit" disabled={ create.isPending }>
+						<Button type="submit" loading={ create.isPending }>
 							{ __( 'Add guest', 'radius-hotel-booking' ) }
 						</Button>
 					</DialogFooter>

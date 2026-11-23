@@ -38,6 +38,7 @@ import FilterTabs from '@/components/common/FilterTabs';
 import MediaField from '@/components/common/MediaField';
 import GalleryField from '@/components/common/GalleryField';
 import TagInput from '@/components/common/TagInput';
+import GuestLink from '@/components/common/GuestLink';
 import Money from '@/components/common/Money';
 import Panel from '@/components/common/Panel';
 import SegmentedControl from '@/components/common/SegmentedControl';
@@ -64,6 +65,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import * as phone from '@/lib/phone';
+import { useFloors, useRoomTypes, useTypeRooms } from '@/modules/Rooms/api';
+import { useFreeRoomsFor } from '@/modules/Bookings/api';
 import IconField from '@/components/icons/IconField';
 import LucideIcon from '@/components/icons/LucideIcon';
 
@@ -184,6 +187,22 @@ const SelectParts = lazyParts(
 	]
 );
 
+// Checkbox and radio group (Radix): lazy, wrap in Suspense.
+const CheckboxParts = lazyParts(
+	() => import( '@/components/ui/checkbox' ),
+	[ 'Checkbox' ]
+);
+const RadioParts = lazyParts(
+	() => import( '@/components/ui/radio-group' ),
+	[ 'RadioGroup', 'RadioGroupItem' ]
+);
+
+// A small anchored panel (Radix popover): lazy, wrap in Suspense.
+const PopoverParts = lazyParts(
+	() => import( '@/components/ui/popover' ),
+	[ 'Popover', 'PopoverTrigger', 'PopoverContent' ]
+);
+
 const TabsParts = lazyParts(
 	() => import( '@/components/ui/tabs' ),
 	[ 'Tabs', 'TabsList', 'TabsTrigger', 'TabsContent' ]
@@ -234,6 +253,11 @@ export function publishRuntime() {
 			...SelectParts,
 			...TabsParts,
 			...SheetParts,
+			...PopoverParts,
+			...CheckboxParts,
+			...RadioParts,
+			// A guest's name linking to their record when the user may open it.
+			GuestLink,
 			Badge,
 			// M08: dates × rows with sticky headers (the availability calendar).
 			CalendarGrid,
@@ -296,6 +320,10 @@ export function publishRuntime() {
 			phone,
 			// The new-booking sound: sound.playNotificationSound( url ).
 			sound,
+			// Room types, floors and a type's rooms (shared react-query cache).
+			rooms: { useFloors, useRoomTypes, useTypeRooms },
+			// The rooms a booked room could go to (`purpose` check_in | move).
+			bookings: { useFreeRoomsFor },
 			status,
 			toast,
 			toastError,

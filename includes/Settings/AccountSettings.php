@@ -41,20 +41,30 @@ class AccountSettings {
 				'type'    => 'bool',
 				'default' => true,
 			),
-			// An "Express checkout" button on the booking form, above the rooms (needs express checkout on).
+			// An "Express booking" button on the booking form, above the rooms (needs express booking on).
 			'showExpressButton' => array(
 				'type'    => 'bool',
 				'default' => true,
 			),
-			// Express checkout: a returning guest proves their phone with a one-time code and their details fill the form.
+			// Express booking: a returning guest proves their phone with a one-time code and their details fill the form.
 			'expressCheckout' => array(
 				'type'    => 'bool',
 				'default' => true,
 			),
-			// Express checkout sends the code first; off (default, as e-mail is optional): a known number is recognised at once (masked hint, no document on file).
+			// Express booking sends the code first; off (default, as e-mail is optional): a known number is recognised at once (masked hint, no document on file).
 			'expressVerify'   => array(
 				'type'    => 'bool',
 				'default' => false,
+			),
+			// Without a code, a recognised phone fills the guest's details from their record (the booking is filed on it). Off: the visitor types every detail.
+			'expressAutofill' => array(
+				'type'    => 'bool',
+				'default' => true,
+			),
+			// Show the guest's name, e-mail and phone masked (Alice D., a•••@gmail.com, •••• 56) on the public confirmation page and the guest's invoice / receipt links.
+			'maskGuestContact' => array(
+				'type'    => 'bool',
+				'default' => true,
 			),
 			// A website booking from an unknown phone and e-mail creates a WordPress account.
 			'createAccounts' => array(

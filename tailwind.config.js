@@ -14,6 +14,24 @@ module.exports = {
 		'md:items-center',
 		'md:gap-4',
 		'xl:grid-cols-5',
+		// Pro's Rooms and Room availability report tabs (moved out of free).
+		'-top-2.5',
+		'divide-dashed',
+		'gap-x-8',
+		'gap-y-4',
+		'h-[4.25rem]',
+		'h-[5.5rem]',
+		'w-[7.5rem]',
+		'md:gap-6',
+		'md:w-48',
+		'pb-5',
+		'tracking-[0.06em]',
+		// Pro's availability calendar and blocked dates (moved out of free).
+		'min-w-[3rem]',
+		// Pro: Move to another room / Extend stay dialogs.
+		'hover:border-border',
+		'max-h-[50vh]',
+		'min-h-[4.5rem]',
 	],
 	theme: {
 		extend: {

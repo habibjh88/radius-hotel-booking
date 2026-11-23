@@ -28,6 +28,8 @@ import { usePageActions } from '@/components/layout/PageActions';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAccess } from '@/lib/access';
+import { canSee, getRoutes } from '@/admin/routes';
+import ProBadge from '@/modules/ProLocked/ProBadge';
 import RoomTypeOrder from './RoomTypeOrder';
 import { useRoomTypes } from './api';
 
@@ -95,6 +97,10 @@ const adults = ( count ) =>
 export default function RoomTypes() {
 	const { data: types, isPending, error, refetch } = useRoomTypes();
 	const canManage = useAccess( 'room_types.manage' ) !== 'locked';
+	// Floors is Pro's page (locked with a PRO badge while Pro is off).
+	const floorsPage = getRoutes().find(
+		( route ) => route.path === '/rooms/floors'
+	);
 	// Reorder mode: a compact list to drag (the cards open the type instead).
 	const [ ordering, setOrdering ] = useState( false );
 	const [ view, setView ] = useState( savedView );
@@ -126,14 +132,17 @@ export default function RoomTypes() {
 					</span>
 				</Link>
 			</Button>
-			<Button asChild variant="outline">
-				<Link to="/rooms/floors">
-					<Layers className="h-4 w-4" aria-hidden="true" />
-					<span className="sr-only sm:not-sr-only">
-						{ __( 'Floors', 'radius-hotel-booking' ) }
-					</span>
-				</Link>
-			</Button>
+			{ floorsPage && canSee( floorsPage ) ? (
+				<Button asChild variant="outline">
+					<Link to="/rooms/floors">
+						<Layers className="h-4 w-4" aria-hidden="true" />
+						<span className="sr-only sm:not-sr-only">
+							{ __( 'Floors', 'radius-hotel-booking' ) }
+						</span>
+						{ floorsPage.locked ? <ProBadge /> : null }
+					</Link>
+				</Button>
+			) : null }
 			{ canManage ? (
 				<Button asChild>
 					<Link to="/rooms/new">

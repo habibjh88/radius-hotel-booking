@@ -3,7 +3,9 @@
  * own rules (`AvailabilityService`), mirrored so the date pickers disable what
  * the API would refuse anyway:
  * - today only while same-day booking is on **and** the cut-off has not been
- *   reached (the server refuses at `now >= cutoff`);
+ *   reached (the server refuses at `now >= cutoff`), or, past it, while the
+ *   website sells slots that have already started (the server then decides
+ *   slot by slot: started ones until their stop time, the rest refused);
  * - no later than today + the booking window (0 = no limit).
  */
 import { addDaysYmd, siteNowTime, siteToday } from '@/lib/format';
@@ -13,13 +15,15 @@ import { addDaysYmd, siteNowTime, siteToday } from '@/lib/format';
  * @param {number}  rules.bookingWindowDays Days ahead (0 = unlimited).
  * @param {boolean} rules.sameDayEnabled    Same-day bookings allowed.
  * @param {string}  rules.sameDayCutoff     `HH:MM`, site time.
+ * @param {boolean} rules.startedSlots      Started same-day slots on sale.
  * @return {{min: string, max: string}} First and last arrival, `Y-m-d` ('' = no limit).
  */
 export function guestDateLimits( rules = {} ) {
 	const today = siteToday();
 	const sameDayOpen =
 		Boolean( rules.sameDayEnabled ) &&
-		siteNowTime() < ( rules.sameDayCutoff || '14:00' );
+		( Boolean( rules.startedSlots ) ||
+			siteNowTime() < ( rules.sameDayCutoff || '14:00' ) );
 	const window = Number( rules.bookingWindowDays ) || 0;
 	return {
 		min: sameDayOpen ? today : addDaysYmd( today, 1 ),

@@ -387,7 +387,7 @@ Why this is reliable:
 ## 7. Step 3: the guest confirms (the booking)
 
 `POST public/bookings` goes to `PublicBookingService::create()`. It sorts out the guest (signed
-in, Express checkout, a returning guest matched by details, or a new one) and the settings
+in, Express booking, a returning guest matched by details, or a new one) and the settings
 (consent, required fields), then calls `BookingService::create()`
 (`includes/Services/Booking/BookingService.php`):
 
@@ -499,7 +499,7 @@ lists Half Day and Rest Time under *Other stay options* as `incompatible_span`.
 | Holds | `includes/Services/Availability/HoldService.php`, `src/components/booking/holds.js` |
 | Locked re-check | `includes/Services/Booking/BookingWriter.php` → `lockAndCheck()` |
 | Booking write | `includes/Services/Booking/BookingService.php` → `create()` |
-| Website booking (guest, Express checkout, settings) | `includes/Services/Booking/PublicBookingService.php` |
+| Website booking (guest, Express booking, settings) | `includes/Services/Booking/PublicBookingService.php` |
 | Pricing | `includes/Services/Pricing/PriceResolver.php` (+ Pro's `Features/Pricing`) |
 | Booking form | `src/components/booking/` (`BookingFlow.jsx`, `GuestBookingSteps.jsx`, `api.js`) |
 | The rules, edge cases and checklist | `docs/project/booking-engine.md` |

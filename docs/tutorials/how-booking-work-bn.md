@@ -382,7 +382,7 @@ Search (§৩) শুধু পেজ লোডের মুহূর্তে�
 ## ৭. ধাপ ৩: গেস্ট নিশ্চিত করে (booking)
 
 `POST public/bookings` যায় `PublicBookingService::create()`-এ। এটা গেস্ট কে তা ঠিক করে (signed in,
-Express checkout, তথ্য মিলিয়ে চেনা পুরনো গেস্ট, অথবা নতুন) আর settings দেখে (consent, required field),
+Express booking, তথ্য মিলিয়ে চেনা পুরনো গেস্ট, অথবা নতুন) আর settings দেখে (consent, required field),
 তারপর `BookingService::create()` (`includes/Services/Booking/BookingService.php`) ডাকে:
 
 ```
@@ -493,7 +493,7 @@ Rest Time *অন্য স্টে অপশন*-এ `incompatible_span` হ�
 | Hold | `includes/Services/Availability/HoldService.php`, `src/components/booking/holds.js` |
 | Lock-এর ভেতরে আবার যাচাই | `includes/Services/Booking/BookingWriter.php` → `lockAndCheck()` |
 | বুকিং লেখা | `includes/Services/Booking/BookingService.php` → `create()` |
-| ওয়েবসাইটের বুকিং (গেস্ট, Express checkout, settings) | `includes/Services/Booking/PublicBookingService.php` |
+| ওয়েবসাইটের বুকিং (গেস্ট, Express booking, settings) | `includes/Services/Booking/PublicBookingService.php` |
 | দাম | `includes/Services/Pricing/PriceResolver.php` (+ Pro-র `Features/Pricing`) |
 | বুকিং ফর্ম | `src/components/booking/` (`BookingFlow.jsx`, `GuestBookingSteps.jsx`, `api.js`) |
 | নিয়ম, edge case আর checklist | `docs/project/booking-engine.md` |

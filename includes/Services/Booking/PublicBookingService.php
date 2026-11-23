@@ -211,6 +211,10 @@ class PublicBookingService {
 			$on_file = GuestAccount::fields( $account );
 		} else {
 			$proof = ExpressCheckout::proof( (string) ( $input['express_token'] ?? '' ), $session );
+			if ( $proof && ! $proof['verified'] && ! rtbp_setting( 'accounts', 'expressAutofill' ) ) {
+				// Settings → Accounts: without a code, nothing comes from the record.
+				$proof = null;
+			}
 			if ( $proof ) {
 				$on_file = ExpressCheckout::fields( $proof['guest'], $proof['user'] );
 				if ( $proof['verified'] ) {
@@ -223,7 +227,7 @@ class PublicBookingService {
 			}
 		}
 		if ( $on_file && isset( $proof ) && $proof ) {
-			// Express checkout: the form shows the record's details masked and
+			// Express booking: the form shows the record's details masked and
 			// read-only, so what the browser sends for them is ignored — a
 			// value injected into those fields changes nothing. Only a detail
 			// the record lacks is taken as typed. The phone is the one proved.
@@ -314,11 +318,21 @@ class PublicBookingService {
 			self::refuse( (int) ( $e->getContext()['guest_id'] ?? 0 ), $guest['fields'], 'banned' );
 		}
 
-		$created = '';
+		// Link an account to the booking's guest record only when the record is
+		// proven to be this visitor's: the booking just created it, it is already
+		// theirs, the phone was verified by code, or its e-mail is the account's.
+		// Otherwise someone typing another guest's name and phone could take over
+		// that guest's record (and see their details in "My account").
+		$guest_id = (int) $booking->guest_id;
+		$verified = isset( $proof ) && $proof && ! empty( $proof['verified'] );
+		$created  = '';
 		if ( $link_to ) {
-			GuestAccount::link( $link_to, (int) $booking->guest_id );
-		} elseif ( ! $account ) {
-			$created = GuestAccount::createFor( (int) $booking->guest_id, $guest['fields']['phone'], $guest['fields']['email'] );
+			$user = get_userdata( (int) $link_to );
+			if ( ! $known || ( $linked && (int) $linked === $guest_id ) || $verified || ( $user && self::guestEmailIs( $guest_id, (string) $user->user_email ) ) ) {
+				GuestAccount::link( $link_to, $guest_id );
+			}
+		} elseif ( ! $account && ( ! $known || $verified || self::guestEmailIs( $guest_id, (string) $guest['fields']['email'] ) ) ) {
+			$created = GuestAccount::createFor( $guest_id, $guest['fields']['phone'], $guest['fields']['email'] );
 		}
 
 		return array(
@@ -510,6 +524,19 @@ class PublicBookingService {
 		}
 
 		throw self::mismatch( $reason, $matched ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- fixed translated messages, sent as JSON; React escapes them.
+	}
+
+	/**
+	 * Whether a guest record's own (real) e-mail is this address.
+	 *
+	 * @param int    $guest_id Guest id.
+	 * @param string $email    E-mail.
+	 * @return bool
+	 */
+	private static function guestEmailIs( int $guest_id, string $email ): bool {
+		$email = strtolower( trim( $email ) );
+		$guest = $guest_id && '' !== $email ? ( new GuestRepository() )->find( $guest_id ) : null;
+		return $guest instanceof Guest && ! $guest->email_is_placeholder && '' !== (string) $guest->email && strtolower( (string) $guest->email ) === $email;
 	}
 
 	/**

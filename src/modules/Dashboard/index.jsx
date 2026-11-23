@@ -31,6 +31,7 @@ import StatCard from '@/components/common/StatCard';
 import { usePageActions } from '@/components/layout/PageActions';
 import { Button } from '@/components/ui/button';
 import { canAccess, useAccessMap } from '@/lib/access';
+import { canSee, getRoutes } from '@/admin/routes';
 import { BookingList } from '@/modules/Bookings';
 import { useDashboardSummary } from './api';
 import RoomStatusPanel from './components/RoomStatusPanel';
@@ -124,7 +125,15 @@ export default function Dashboard() {
 				),
 				stats.rooms_total ?? 0
 			),
-			to: '/calendar',
+			// The availability calendar is Pro's: linked only when it is really there.
+			to: getRoutes().some(
+				( route ) =>
+					'/calendar' === route.path &&
+					! route.locked &&
+					canSee( route )
+			)
+				? '/calendar'
+				: undefined,
 		},
 		{
 			key: 'overdue',

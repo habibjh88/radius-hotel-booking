@@ -1,5 +1,5 @@
 /**
- * What express checkout puts in the guest form, shared by the details step
+ * What express booking puts in the guest form, shared by the details step
  * (GuestForm) and the account bar above the rooms (AccountBar), so a guest
  * can use it before choosing rooms and find their details ready later.
  */

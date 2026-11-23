@@ -107,13 +107,17 @@ final class BookingResource {
 		if ( Dates::from_gmt( $start_gmt )->setTimezone( Dates::timezone() )->format( 'Y-m-d' ) > $today ) {
 			$actions = array_values( array_diff( $actions, array( 'check_in' ) ) );
 		}
-		// A guest in the room can be moved to another one (a fault in the room).
-		if ( StatusMachine::CHECKED_IN === $status ) {
-			$actions[] = 'move_room';
-			// …or stay on for another slot in the same room.
-			$actions[] = 'extend_stay';
-		}
-		return $actions;
+		/**
+		 * Filters the actions a booked room offers (Pro adds `move_room` and
+		 * `extend_stay` to a checked-in room). The endpoint of each action
+		 * still checks the move itself.
+		 *
+		 * @param string[] $actions   Actions.
+		 * @param string   $status    Line status.
+		 * @param string   $start_gmt Stay start, GMT.
+		 * @param int      $now       Now (timestamp).
+		 */
+		return array_values( array_filter( (array) apply_filters( 'rtbp_booking_line_actions', $actions, $status, $start_gmt, $now ), 'is_string' ) );
 	}
 
 	/**
@@ -189,17 +193,15 @@ final class BookingResource {
 					'currency'       => (string) $booking->currency,
 				),
 				// Whole-booking actions: approve / decline while a line waits, cancel while one is live.
-				'actions'        => array_values(
-					array_filter(
-						array(
+				'actions'        => self::bookingActions(
+					$booking,
+					array(
 							$any( array( StatusMachine::PENDING ) ) ? 'approve' : null,
 							$any( array( StatusMachine::PENDING ) ) ? 'decline' : null,
 							$any( array( StatusMachine::PENDING, StatusMachine::CONFIRMED ) ) ? 'cancel' : null,
-							in_array( (string) $booking->status, BookingLineService::OPEN, true ) ? 'line_add' : null,
 							// M05: remind while money is due on a booking going ahead; release once it is overdue.
 							(float) $booking->balance_due > 0 && in_array( (string) $booking->status, PaymentDeadline::OPEN, true ) ? 'remind' : null,
 							PaymentDeadline::overdue( $booking ) ? 'release' : null,
-						)
 					)
 				),
 				'cancelled_reason' => (string) $booking->cancelled_reason,
@@ -207,6 +209,26 @@ final class BookingResource {
 				'invoice'          => self::invoice( $booking ),
 			)
 		);
+	}
+
+	/**
+	 * The whole-booking actions, then the ones an add-on offers (Pro: `line_add`).
+	 *
+	 * @param Booking $booking Booking.
+	 * @param array   $actions Actions (nulls dropped).
+	 * @return string[]
+	 */
+	private static function bookingActions( Booking $booking, array $actions ): array {
+		/**
+		 * Filters the actions the booking screen offers on the whole booking
+		 * (Pro adds `line_add`: Add a room). Each action's endpoint still
+		 * checks access and the booking itself.
+		 *
+		 * @param string[] $actions Actions.
+		 * @param Booking  $booking Booking.
+		 */
+		$actions = (array) apply_filters( 'rtbp_booking_actions', array_values( array_filter( $actions ) ), $booking );
+		return array_values( array_unique( array_filter( $actions, 'is_string' ) ) );
 	}
 
 	/**

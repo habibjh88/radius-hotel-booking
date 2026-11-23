@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-22T10:38:58+00:00",
+    "translation-revision-date": "2026-11-23T10:19:31+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/components\/booking\/SummaryStep.jsx",
     "domain": "messages",
@@ -10,14 +10,14 @@
                 "lang": "fr_FR",
                 "plural-forms": "nplurals=2; plural=(n > 1);"
             },
-            "Payment": [
-                "Paiement"
-            ],
             "Unpaid": [
                 "Non pay\u00e9"
             ],
             "Reference": [
                 "R\u00e9f\u00e9rence"
+            ],
+            "Payment": [
+                "Paiement"
             ],
             "Total": [
                 "Total"

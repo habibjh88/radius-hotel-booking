@@ -56,13 +56,13 @@ export default function Accounts( { value, setField, errors } ) {
 						</div>
 						<ToggleRow
 							label={ __(
-								'Express checkout',
+								'Express booking',
 								'radius-hotel-booking'
 							) }
 							description={
 								false === value.expressCheckout
 									? __(
-											'Shows only while express checkout is on (below).',
+											'Shows only while express booking is on (below).',
 											'radius-hotel-booking'
 									  )
 									: __(
@@ -115,7 +115,7 @@ export default function Accounts( { value, setField, errors } ) {
 			</SettingsSection>
 
 			<SettingsSection
-				title={ __( 'Express checkout', 'radius-hotel-booking' ) }
+				title={ __( 'Express booking', 'radius-hotel-booking' ) }
 				description={ __(
 					'Lets returning guests fill in their details without signing in.',
 					'radius-hotel-booking'
@@ -123,7 +123,7 @@ export default function Accounts( { value, setField, errors } ) {
 			>
 				<ToggleRow
 					label={ __(
-						'Offer express checkout on the booking form',
+						'Offer express booking on the booking form',
 						'radius-hotel-booking'
 					) }
 					description={ __(
@@ -154,7 +154,42 @@ export default function Accounts( { value, setField, errors } ) {
 						onChange={ setField( 'expressVerify' ) }
 						error={ errors.expressVerify }
 					/>
+					{ ! value.expressVerify && (
+						<ToggleRow
+							label={ __(
+								'Without a code, fill in the details on file',
+								'radius-hotel-booking'
+							) }
+							description={
+								value.expressAutofill
+									? __(
+											'A known phone number is enough: the booking uses the details on file and is added to that guest. Anyone who knows the number can book in that guest’s name, so keep “Mask guest details on public pages” on.',
+											'radius-hotel-booking'
+									  )
+									: __(
+											'A known number is recognised, but the visitor types every detail and nothing is taken from the record. Safer; returning guests type a little more.',
+											'radius-hotel-booking'
+									  )
+							}
+							checked={ value.expressAutofill }
+							onChange={ setField( 'expressAutofill' ) }
+							error={ errors.expressAutofill }
+						/>
+					) }
 				</ToggleRow>
+				<ToggleRow
+					label={ __(
+						'Mask guest details on public pages',
+						'radius-hotel-booking'
+					) }
+					description={ __(
+						'The confirmation page and the guest’s invoice and receipt links show “Alice D.”, “a•••@gmail.com” and “•••• 56”. Those pages open with a link only, so this keeps a guest’s details private if someone else books with their phone number or the link is shared. Staff screens and e-mails always show everything.',
+						'radius-hotel-booking'
+					) }
+					checked={ value.maskGuestContact }
+					onChange={ setField( 'maskGuestContact' ) }
+					error={ errors.maskGuestContact }
+				/>
 			</SettingsSection>
 
 			<SettingsSection

@@ -4,6 +4,8 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 
+import { extraLineAction } from './lineActions';
+
 /**
  * An action in words.
  *
@@ -18,10 +20,11 @@ export const actionLabel = ( action ) =>
 		check_in: __( 'Check in', 'radius-hotel-booking' ),
 		check_out: __( 'Check out', 'radius-hotel-booking' ),
 		no_show: __( 'No-show', 'radius-hotel-booking' ),
-		move_room: __( 'Move to another room', 'radius-hotel-booking' ),
 		undo_check_in: __( 'Undo check-in', 'radius-hotel-booking' ),
-		extend_stay: __( 'Extend stay', 'radius-hotel-booking' ),
-	} )[ action ] || action;
+	} )[ action ] ||
+	// An add-on's action on the room (`./lineActions`).
+	extraLineAction( action )?.label ||
+	action;
 
 /**
  * The question asked before a move on one room.

@@ -126,7 +126,7 @@ function NoteForm( {
 							{ __( 'Cancel', 'radius-hotel-booking' ) }
 						</Button>
 					) : null }
-					<Button type="submit" size="sm" disabled={ busy }>
+					<Button type="submit" size="sm" loading={ busy }>
 						{ submitLabel }
 					</Button>
 				</div>

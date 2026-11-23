@@ -60,7 +60,8 @@ export default function RoomDialog( {
 	const update = useUpdateRoom( Number( typeId ) );
 	const [ number, setNumber ] = useState( room?.number ?? '' );
 	const [ floor, setFloor ] = useState(
-		String( room?.floor_id || floorId || floors[ 0 ]?.id || '' )
+		// '0' = no floor (a hotel on one level, or no floors set up).
+		String( room?.floor_id || floorId || floors[ 0 ]?.id || 0 )
 	);
 	const [ errors, setErrors ] = useState( {} );
 	const busy = add.isPending || update.isPending;
@@ -79,9 +80,6 @@ export default function RoomDialog( {
 				'Give the room a number.',
 				'radius-hotel-booking'
 			);
-		}
-		if ( ! Number( floor ) ) {
-			next.floor_id = __( 'Choose a floor.', 'radius-hotel-booking' );
 		}
 		setErrors( next );
 		if ( Object.keys( next ).length ) {
@@ -208,50 +206,59 @@ export default function RoomDialog( {
 						) : null }
 					</div>
 
-					<div className="space-y-1.5">
-						<Label
-							htmlFor="rtbp-room-floor"
-							className="text-sm font-semibold text-heading"
-						>
-							{ __( 'Floor', 'radius-hotel-booking' ) }
-						</Label>
-						<Select value={ floor } onValueChange={ setFloor }>
-							<SelectTrigger
-								id="rtbp-room-floor"
-								aria-invalid={
-									errors.floor_id ? true : undefined
-								}
-								className={ cn(
-									errors.floor_id && '!border-destructive'
-								) }
+					{ /* The floor is optional; hidden while the hotel has none. */ }
+					{ floors.length ? (
+						<div className="space-y-1.5">
+							<Label
+								htmlFor="rtbp-room-floor"
+								className="text-sm font-semibold text-heading"
 							>
-								<SelectValue
-									placeholder={ __(
-										'Choose a floor',
-										'radius-hotel-booking'
+								{ __( 'Floor', 'radius-hotel-booking' ) }
+							</Label>
+							<Select value={ floor } onValueChange={ setFloor }>
+								<SelectTrigger
+									id="rtbp-room-floor"
+									aria-invalid={
+										errors.floor_id ? true : undefined
+									}
+									className={ cn(
+										errors.floor_id && '!border-destructive'
 									) }
-								/>
-							</SelectTrigger>
-							<SelectContent>
-								{ floors.map( ( option ) => (
-									<SelectItem
-										key={ option.id }
-										value={ String( option.id ) }
-									>
-										{ option.name }
+								>
+									<SelectValue
+										placeholder={ __(
+											'Choose a floor',
+											'radius-hotel-booking'
+										) }
+									/>
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="0">
+										{ __(
+											'No floor',
+											'radius-hotel-booking'
+										) }
 									</SelectItem>
-								) ) }
-							</SelectContent>
-						</Select>
-						{ errors.floor_id ? (
-							<p
-								role="alert"
-								className="m-0 text-xs text-destructive"
-							>
-								{ errors.floor_id }
-							</p>
-						) : null }
-					</div>
+									{ floors.map( ( option ) => (
+										<SelectItem
+											key={ option.id }
+											value={ String( option.id ) }
+										>
+											{ option.name }
+										</SelectItem>
+									) ) }
+								</SelectContent>
+							</Select>
+							{ errors.floor_id ? (
+								<p
+									role="alert"
+									className="m-0 text-xs text-destructive"
+								>
+									{ errors.floor_id }
+								</p>
+							) : null }
+						</div>
+					) : null }
 
 					<DialogFooter>
 						{ room ? (
@@ -271,7 +278,7 @@ export default function RoomDialog( {
 						>
 							{ __( 'Cancel', 'radius-hotel-booking' ) }
 						</Button>
-						<Button type="submit" disabled={ busy }>
+						<Button type="submit" loading={ busy }>
 							{ room
 								? __( 'Save', 'radius-hotel-booking' )
 								: __( 'Add room', 'radius-hotel-booking' ) }

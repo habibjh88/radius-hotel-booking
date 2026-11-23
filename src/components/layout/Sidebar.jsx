@@ -26,6 +26,7 @@ import {
 	navTarget,
 } from '@/admin/routes';
 import { useAccessMap } from '@/lib/access';
+import ProBadge from '@/modules/ProLocked/ProBadge';
 import { cn } from '@/lib/utils';
 
 /**
@@ -72,6 +73,9 @@ function Brand( { collapsed } ) {
 	);
 }
 
+// Sub-links that are pages added by Pro: hidden when that page is absent.
+const PAGE_ONLY = [ '/rooms/floors' ];
+
 /**
  * One navigation link, with its sub-links (`route.subnav`) below it. They show
  * only while one of the item's pages is open; clicking the item there folds
@@ -99,8 +103,20 @@ function NavItem( { route, claimed = [], collapsed, onNavigate } ) {
 		}
 		return isActive && ! claimed.some( matches );
 	};
-	const subnav =
-		! collapsed && Array.isArray( route.subnav ) ? route.subnav : [];
+	// A sub-link shows only when its page exists for this user (an add-on
+	// page may be off); a locked Pro page carries the PRO badge.
+	const subnav = (
+		! collapsed && Array.isArray( route.subnav ) ? route.subnav : []
+	)
+		.map( ( item ) => {
+			const page = getRoutes().find( ( r ) => r.path === item.path );
+			if ( ! page ) {
+				// Not a page of its own (e.g. `/rooms/new`): always shown.
+				return PAGE_ONLY.includes( item.path ) ? null : item;
+			}
+			return canSee( page ) ? { ...item, locked: page.locked } : null;
+		} )
+		.filter( Boolean );
 	const inside =
 		pathname === route.path || pathname.startsWith( `${ route.path }/` );
 	const [ open, setOpen ] = useState( inside );
@@ -195,6 +211,16 @@ function NavItem( { route, claimed = [], collapsed, onNavigate } ) {
 									{ route.label }
 								</span>
 							) : null }
+							{ route.locked ? (
+								<ProBadge
+									iconOnly={ collapsed }
+									className={
+										collapsed
+											? 'absolute right-0.5 top-0.5 px-1'
+											: ''
+									}
+								/>
+							) : null }
 							{ subnav.length ? (
 								<ChevronDown
 									className={ cn(
@@ -230,6 +256,9 @@ function NavItem( { route, claimed = [], collapsed, onNavigate } ) {
 								}
 							>
 								<span className="truncate">{ item.label }</span>
+								{ item.locked ? (
+									<ProBadge className="ml-auto" />
+								) : null }
 							</NavLink>
 						</li>
 					) ) }

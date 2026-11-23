@@ -103,7 +103,13 @@ class ExportService {
 		if ( ! $file instanceof StoredFile || self::FILE_KIND !== (string) $file->kind ) {
 			return (bool) $allowed;
 		}
-		return (int) $user_id > 0 && Access::LOCKED !== Access::level( 'exports.download', (int) $user_id );
+		if ( ! $allowed || (int) $user_id <= 0 ) {
+			return false;
+		}
+		// The current user: open, or passcode with a live unlock. Anyone else: open only.
+		return (int) $user_id === get_current_user_id()
+			? Access::can( 'exports.download' )
+			: Access::OPEN === Access::level( 'exports.download', (int) $user_id );
 	}
 
 	/**

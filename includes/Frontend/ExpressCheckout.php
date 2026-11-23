@@ -1,6 +1,6 @@
 <?php
 /**
- * Express checkout on the website booking form: a returning guest proves
+ * Express booking on the website booking form: a returning guest proves
  * their phone number with a one-time code, and their details fill the form.
  *
  * @package RadiusTheme\RadiusHotelBooking\Frontend
@@ -19,7 +19,7 @@ use WP_User;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Settings → Guest accounts → Express checkout.
+ * Settings → Guest accounts → Express booking.
  *
  * A phone number alone never shows anyone's details (the legacy
  * `/customer/lookup?phone=` leaked ID numbers): start() sends a 6-digit code
@@ -161,7 +161,7 @@ class ExpressCheckout {
 			self::subject( $target ),
 			array(
 				/* translators: %s: how the code was sent (e-mail, SMS…). */
-				'description' => sprintf( __( 'Sent an express checkout code by %s', 'radius-hotel-booking' ), $sent['channel'] ),
+				'description' => sprintf( __( 'Sent an express booking code by %s', 'radius-hotel-booking' ), $sent['channel'] ),
 			)
 		);
 
@@ -197,7 +197,7 @@ class ExpressCheckout {
 			++$state['tries'];
 			if ( $state['tries'] >= self::MAX_TRIES ) {
 				delete_transient( $key );
-				rtbp_activity( 'security.express_locked', self::subject( $state ), array( 'description' => __( 'Express checkout code locked after wrong tries', 'radius-hotel-booking' ) ) );
+				rtbp_activity( 'security.express_locked', self::subject( $state ), array( 'description' => __( 'Express booking code locked after wrong tries', 'radius-hotel-booking' ) ) );
 				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 				throw new DomainException( 'code_expired', __( 'Too many wrong codes. Ask for a new one.', 'radius-hotel-booking' ), 410 );
 			}
@@ -239,7 +239,7 @@ class ExpressCheckout {
 		rtbp_activity(
 			'security.express_recognised',
 			self::subject( $target ),
-			array( 'description' => __( 'Recognised a guest at express checkout without a code', 'radius-hotel-booking' ) )
+			array( 'description' => __( 'Recognised a guest at express booking without a code', 'radius-hotel-booking' ) )
 		);
 		return array(
 			'status' => 'recognised',
@@ -420,7 +420,7 @@ class ExpressCheckout {
 	 */
 	private static function send( string $code, array $target ): ?array {
 		/**
-		 * Send an express checkout code another way than e-mail (SMS,
+		 * Send an express booking code another way than e-mail (SMS,
 		 * WhatsApp…). Return `[ 'channel' => 'SMS', 'to' => '•••• 56' ]` when
 		 * sent; null to let the e-mail (if any) go instead.
 		 *
@@ -509,7 +509,7 @@ class ExpressCheckout {
 	}
 
 	/**
-	 * Refuse when Settings → Guest accounts → Express checkout is off.
+	 * Refuse when Settings → Guest accounts → Express booking is off.
 	 *
 	 * @return void
 	 * @throws DomainException 403.
@@ -517,7 +517,7 @@ class ExpressCheckout {
 	private static function assertEnabled(): void {
 		if ( ! self::enabled() ) {
 			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
-			throw new DomainException( 'express_off', __( 'Express checkout is not available.', 'radius-hotel-booking' ), 403 );
+			throw new DomainException( 'express_off', __( 'Express booking is not available.', 'radius-hotel-booking' ), 403 );
 		}
 	}
 

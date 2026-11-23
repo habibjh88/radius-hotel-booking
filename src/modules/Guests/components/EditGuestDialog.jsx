@@ -390,7 +390,7 @@ export default function EditGuestDialog( { guest, idTypes, onClose } ) {
 						>
 							{ __( 'Cancel', 'radius-hotel-booking' ) }
 						</Button>
-						<Button type="submit" disabled={ update.isPending }>
+						<Button type="submit" loading={ update.isPending }>
 							{ __( 'Save', 'radius-hotel-booking' ) }
 						</Button>
 					</DialogFooter>

@@ -59,7 +59,7 @@ class BookingConfirmationPage {
 			);
 		}
 		status_header( 200 );
-		rtbp_get_template( 'booking/confirmation.php', array( 'view' => GuestBookingView::data( $booking ) ) );
+		rtbp_get_template( 'booking/confirmation.php', array( 'view' => GuestBookingView::publicData( $booking ) ) );
 		exit;
 	}
 }

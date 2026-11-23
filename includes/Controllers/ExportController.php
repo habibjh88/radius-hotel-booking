@@ -30,14 +30,14 @@ class ExportController {
 	 * Run a handler behind auth, the dashboard capability and an access key.
 	 *
 	 * @param WP_REST_Request $request Request.
-	 * @param string          $key     Access key.
+	 * @param string|string[] $key     Access key, or keys that must all pass.
 	 * @param callable        $handler Receives the request, returns the response.
 	 * @return mixed
 	 */
-	private function guarded( WP_REST_Request $request, string $key, callable $handler ) {
+	private function guarded( WP_REST_Request $request, $key, callable $handler ) {
 		$auth       = new AuthMiddleware();
 		$permission = new PermissionMiddleware( Capabilities::VIEW_DASHBOARD );
-		$access     = new AccessMiddleware( $key );
+		$access     = new AccessMiddleware( is_array( $key ) ? array( '*' => $key ) : (string) $key );
 		return $auth->handle(
 			$request,
 			fn( $request ) => $permission->handle(
@@ -142,9 +142,11 @@ class ExportController {
 	 * @return mixed
 	 */
 	public function restore( WP_REST_Request $request ) {
+		// A restore writes bookings and guests from an uploaded file, so it needs
+		// the keys those writes need, not only exports.restore.
 		return $this->guarded(
 			$request,
-			'exports.restore',
+			array( 'exports.restore', 'bookings.create', 'guests.create' ),
 			function ( $request ) {
 				$restore = new \RadiusTheme\RadiusHotelBooking\Services\Export\BookingRestore();
 				$mode    = sanitize_key( (string) $request->get_param( 'mode' ) );

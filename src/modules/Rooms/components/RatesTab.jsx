@@ -551,7 +551,7 @@ export default function RatesTab( { type } ) {
 						<Button
 							type="button"
 							onClick={ submit }
-							disabled={ save.isPending }
+							loading={ save.isPending }
 						>
 							{ save.isPending
 								? __( 'Saving…', 'radius-hotel-booking' )

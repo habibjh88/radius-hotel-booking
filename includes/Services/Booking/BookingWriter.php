@@ -182,7 +182,7 @@ class BookingWriter {
 				// A line sold after its slot started keeps its own start.
 				$window = $window->from( Dates::from_gmt( (string) $options['keep']['start_at_gmt'] ) );
 			} elseif ( ! $importing ) {
-				// A started slot the desk sells runs from now (§10 #49).
+				// A started same-day slot that may be sold runs from now (§10 #49).
 				$window = AvailabilityService::soldFrom( $window, $audience, $now );
 			}
 			if ( $importing && isset( $request['price_override'] ) ) {
@@ -222,7 +222,7 @@ class BookingWriter {
 
 			// The search's public date rules and the guest limits: a request
 			// posted directly must not skip them (critical review, M08).
-			$rule = ! $selling ? null : AvailabilityService::dateRuleReason( $arrival, $audience, $now );
+			$rule = ! $selling ? null : AvailabilityService::dateRuleReason( $arrival, $audience, $now, StayWindow::for( $plan, $arrival, $units, $checkin ) );
 			if ( $rule ) {
 				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 				throw DomainException::conflict( $rule['code'], $rule['message'], array( 'index' => $index ) );

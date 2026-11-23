@@ -6,11 +6,11 @@
  * signed in to their account starts with their details filled in
  * (AccountBar); a document already on file shows as "•••• 4821" and is not
  * asked again (`id_on_file`: the server uses the one it has), also after
- * Express checkout without a code, which shows the record's details masked
+ * Express booking without a code, which shows the record's details masked
  * (`A•••• B•••••`, `a•••@gmail.com`) and read-only, the phone in full: the
  * server takes them from the record and ignores what is sent for them, so
  * editing the page or injecting values changes nothing. When those
- * details are a guest record's (signed in, or Express checkout with a code),
+ * details are a guest record's (signed in, or Express booking with a code),
  * the booking goes to that record as it is, so the name, phone and e-mail
  * are shown locked (`details_locked`) rather than edited for nothing.
  *
@@ -19,9 +19,11 @@
  */
 import { Suspense, lazy, useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
+import { Zap } from 'lucide-react';
 
 import { Field } from '@/components/common/Form';
 import PhoneField from '@/components/common/Phone';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { isEmailValid } from '@/lib/email';
@@ -49,9 +51,9 @@ export const EMPTY_GUEST_FORM = {
 	// Signed in with a document on file: the server uses it (never sent here).
 	id_on_file: false,
 	id_hint: '',
-	// Express checkout's proof that the visitor owns the phone of a guest on file.
+	// Express booking's proof that the visitor owns the phone of a guest on file.
 	express_token: '',
-	// Express checkout without a code: `{ name, first_name, last_name, email,
+	// Express booking without a code: `{ name, first_name, last_name, email,
 	// document }` masked; shown read-only, the server uses the record's own.
 	express_hint: null,
 	// The name, phone and e-mail are a guest record's: shown, not edited.
@@ -211,7 +213,7 @@ export default function GuestForm( {
 	const text = ( key ) => ( event ) =>
 		onChange( { [ key ]: event.target.value } );
 
-	// Express checkout: offered while the details are still empty (not signed
+	// Express booking: offered while the details are still empty (not signed
 	// in, nothing typed, not done already); opens by itself the first time.
 	// A signed-in visitor books with their account, even one without a name
 	// on file. The account is BookingFlow's query, already loaded (cached).
@@ -278,16 +280,23 @@ export default function GuestForm( {
 	return (
 		<div className="grid gap-4 sm:grid-cols-2">
 			{ offerExpress ? (
-				<p className="m-0 text-sm text-muted-foreground sm:col-span-2">
-					{ __( 'Booked with us before?', 'radius-hotel-booking' ) }{ ' ' }
-					<button
+				<div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-muted px-4 py-3 sm:col-span-2">
+					<p className="m-0 text-sm text-muted-foreground">
+						{ __(
+							'Booked with us before?',
+							'radius-hotel-booking'
+						) }
+					</p>
+					<Button
 						type="button"
-						className="m-0 cursor-pointer border-0 bg-transparent p-0 font-medium text-primary underline-offset-2 hover:underline"
+						variant="outline"
+						size="sm"
 						onClick={ () => setExpress( true ) }
 					>
+						<Zap aria-hidden="true" />
 						{ __( 'Use express booking', 'radius-hotel-booking' ) }
-					</button>
-				</p>
+					</Button>
+				</div>
 			) : null }
 			{ express ? (
 				<Suspense fallback={ null }>

@@ -38,18 +38,16 @@ import { applyFilters } from '@wordpress/hooks';
 import { __, _x } from '@wordpress/i18n';
 
 import { canAccess } from '@/lib/access';
+import { proPages, showsProLocked } from '@/admin/proCatalog';
 import {
 	BarChart3,
-	Ban,
 	BedDouble,
-	CalendarDays,
 	CalendarPlus,
 	Clock,
 	Code,
 	DoorOpen,
 	Download,
 	LayoutDashboard,
-	LayoutGrid,
 	Settings,
 	ShieldCheck,
 	Users,
@@ -100,32 +98,6 @@ const baseRoutes = [
 		capability: VIEW,
 		accessKey: 'page.dashboard',
 		element: lazy( () => import( '@/modules/Dashboard' ) ),
-	},
-	{
-		path: '/calendar',
-		group: 'overview',
-		label: __( 'Availability', 'radius-hotel-booking' ),
-		description: __(
-			'Open, close and price your rooms by date',
-			'radius-hotel-booking'
-		),
-		icon: CalendarDays,
-		capability: VIEW,
-		accessKey: 'page.availability',
-		element: lazy( () => import( '@/modules/Availability' ) ),
-	},
-	{
-		path: '/blocks',
-		group: 'overview',
-		label: __( 'Blocked dates', 'radius-hotel-booking' ),
-		description: __(
-			'Close the hotel, a floor, a room type or a room for a while',
-			'radius-hotel-booking'
-		),
-		icon: Ban,
-		capability: VIEW,
-		accessKey: 'page.availability',
-		element: lazy( () => import( '@/modules/Availability/Blocks' ) ),
 	},
 	{
 		path: '/bookings/new',
@@ -259,18 +231,6 @@ const baseRoutes = [
 		element: lazy( () => import( '@/modules/Rooms/AllRooms' ) ),
 	},
 	{
-		path: '/rooms/floors',
-		hidden: true,
-		label: __( 'Floors', 'radius-hotel-booking' ),
-		description: __(
-			'The floors of the hotel, in order',
-			'radius-hotel-booking'
-		),
-		capability: VIEW,
-		accessKey: 'page.rooms',
-		element: lazy( () => import( '@/modules/Rooms/Floors' ) ),
-	},
-	{
 		path: '/rooms/amenities',
 		hidden: true,
 		label: __( 'Amenities', 'radius-hotel-booking' ),
@@ -308,42 +268,11 @@ const baseRoutes = [
 		path: '/reports',
 		group: 'insights',
 		label: __( 'Reports', 'radius-hotel-booking' ),
-		description: __(
-			'Sales, rooms and availability reports',
-			'radius-hotel-booking'
-		),
+		description: __( 'Sales and other reports', 'radius-hotel-booking' ),
 		icon: BarChart3,
 		capability: VIEW,
 		accessKey: [ 'page.reports_sales', 'page.reports_rooms' ],
 		element: lazy( () => import( '@/modules/Reports' ) ),
-	},
-	{
-		path: '/reports',
-		navOnly: true,
-		navSearch: { tab: 'rooms' },
-		group: 'insights',
-		label: __( 'Rooms report', 'radius-hotel-booking' ),
-		description: __(
-			'Rented and empty rooms in a period, by floor',
-			'radius-hotel-booking'
-		),
-		icon: BedDouble,
-		capability: VIEW,
-		accessKey: 'page.reports_rooms',
-	},
-	{
-		path: '/reports',
-		navOnly: true,
-		navSearch: { tab: 'availability' },
-		group: 'insights',
-		label: __( 'Room availability', 'radius-hotel-booking' ),
-		description: __(
-			'Which rooms are free for each stay window',
-			'radius-hotel-booking'
-		),
-		icon: LayoutGrid,
-		capability: VIEW,
-		accessKey: 'page.reports_rooms',
 	},
 	{
 		path: '/exports',
@@ -428,6 +357,26 @@ export function getRoutes() {
 		cache = ( Array.isArray( filtered ) ? filtered : baseRoutes ).filter(
 			( route ) => route && typeof route.path === 'string'
 		);
+		// Pro not active: its pages show locked (lock + PRO badge, an upgrade page).
+		if ( showsProLocked() ) {
+			const Screen = lazy( () => import( '@/modules/ProLocked' ) );
+			proPages()
+				.filter(
+					( page ) => ! cache.some( ( r ) => r.path === page.path )
+				)
+				.forEach( ( { after, ...page } ) => {
+					const route = { ...page, locked: true, element: Screen };
+					// `after`: right below that page in its sidebar group.
+					const at = after
+						? cache.map( ( r ) => r.path ).lastIndexOf( after )
+						: -1;
+					if ( at >= 0 ) {
+						cache.splice( at + 1, 0, route );
+					} else {
+						cache.push( route );
+					}
+				} );
+		}
 	}
 	return cache;
 }
@@ -442,6 +391,10 @@ export function getRoutes() {
  * @return {boolean} Visible.
  */
 export function canSee( route ) {
+	// A locked Pro page: PHP shows these to administrators only (upgrade.locked).
+	if ( route.locked ) {
+		return showsProLocked();
+	}
 	const caps = window.radius_hotel_booking_param?.capabilities;
 	if ( route.capability && caps && caps[ route.capability ] !== true ) {
 		return false;

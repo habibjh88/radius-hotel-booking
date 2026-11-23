@@ -3,8 +3,8 @@
  * in ("Signed in as Awa Koné · Sign out"), or an invitation to sign in so the
  * details are filled in. With "Require sign-in", `SignInGate` replaces the
  * form until the visitor signs in. "Sign in" opens SignInDialog, so the
- * guest stays on the page. Its buttons (Express checkout, Sign in, Create an
- * account) are each switched in Settings → Guest accounts; express checkout
+ * guest stays on the page. Its buttons (Express booking, Sign in, Create an
+ * account) are each switched in Settings → Guest accounts; express booking
  * here fills the guest details before the rooms are chosen.
  *
  * Who is signed in comes from `GET public/account` (useAccount), not from the
@@ -27,7 +27,7 @@ import {
 
 // The sign-in popup, loaded the first time it opens.
 const SignInDialog = lazy( () => import( './SignInDialog' ) );
-// Express checkout, loaded the first time it opens.
+// Express booking, loaded the first time it opens.
 const ExpressCheckout = lazy( () => import( './ExpressCheckout' ) );
 
 const linkClass = 'font-medium text-primary underline-offset-2 hover:underline';
@@ -146,9 +146,12 @@ const backHere = ( url ) =>
  *                                before, so a signed-in guest never sees
  *                                "Sign in" flash first).
  * @param {Object}   props.guestForm   The booking form's guest details
- *                                     (express checkout fills them early).
+ *                                     (express booking fills them early).
  * @param {Function} props.onGuestForm Called with a patch for them; without
- *                                     it, no "Express checkout" here.
+ *                                     it, no "Express booking" here.
+ * @param {boolean}  props.picksRoom   Guests choose their room (Settings →
+ *                                     Website); off, the steps say one is
+ *                                     chosen for them.
  * @return {JSX.Element|null} Line.
  */
 export default function AccountBar( {
@@ -156,10 +159,11 @@ export default function AccountBar( {
 	checked = true,
 	guestForm,
 	onGuestForm,
+	picksRoom = true,
 } ) {
 	const settings = accountSettings();
 	const [ express, setExpress ] = useState( false );
-	// Express checkout found no guest with that number.
+	// Express booking found no guest with that number.
 	const [ newPhone, setNewPhone ] = useState( false );
 	if ( ! checked ) {
 		return null;
@@ -196,7 +200,7 @@ export default function AccountBar( {
 	const canRegister = settings.showRegister && settings.register;
 	const canExpress = settings.showExpress && settings.express && onGuestForm;
 
-	// Express checkout already used above the rooms: the details are waiting.
+	// Express booking already used above the rooms: the details are waiting.
 	if ( canExpress && guestForm?.express_token ) {
 		const name = guestForm.express_hint?.name || guestForm.first_name;
 		return (
@@ -323,10 +327,15 @@ export default function AccountBar( {
 		const steps = [
 			__( 'Click “Express booking”.', 'radius-hotel-booking' ),
 			__( 'Enter your phone number.', 'radius-hotel-booking' ),
-			__(
-				'Your details are filled in for you. Then choose your room.',
-				'radius-hotel-booking'
-			),
+			picksRoom
+				? __(
+						'Your details are filled in for you. Then choose your room.',
+						'radius-hotel-booking'
+				  )
+				: __(
+						'Your details are filled in for you. Then your room is chosen automatically for you.',
+						'radius-hotel-booking'
+				  ),
 		];
 		return (
 			<div className="mb-4 rounded-xl border-2 border-[color-mix(in_srgb,var(--primary)_45%,#ffffff)] bg-primary-soft p-4 text-foreground sm:p-5">

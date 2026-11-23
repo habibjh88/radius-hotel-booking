@@ -58,7 +58,7 @@ class BookingLineList {
 	/**
 	 * Status moves offered on a row (the booking screen has the rest).
 	 */
-	public const ROW_MOVES = array( 'approve', 'decline', 'cancel', 'check_in', 'check_out', 'move_room', 'undo_check_in', 'extend_stay' );
+	public const ROW_MOVES = array( 'approve', 'decline', 'cancel', 'check_in', 'check_out', 'undo_check_in' );
 	public const MAX_PER_PAGE = 100;
 
 	/**
@@ -333,7 +333,13 @@ class BookingLineList {
 	 */
 	public static function row( array $row, DateTimeImmutable $now ): array {
 		$moves   = BookingResource::lineActions( (string) $row['status'], (string) $row['start_at_gmt'], $now->getTimestamp(), $now->setTimezone( Dates::timezone() )->format( 'Y-m-d' ) );
-		$actions = array_values( array_intersect( $moves, self::ROW_MOVES ) );
+		/**
+		 * Filters the room moves the front desk list offers on a row (Pro adds its own).
+		 *
+		 * @param string[] $moves Moves.
+		 */
+		$allowed = (array) apply_filters( 'rtbp_booking_row_moves', self::ROW_MOVES );
+		$actions = array_values( array_intersect( $moves, $allowed ) );
 		if ( (int) ( $row['moved_from'] ?? 0 ) > 0 ) {
 			// A stay carrying on after a room move: its check-in is not undone.
 			$actions = array_values( array_diff( $actions, array( 'undo_check_in' ) ) );

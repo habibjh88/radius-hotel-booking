@@ -122,7 +122,7 @@ function SearchBox( { value, onChange, placeholder } ) {
  * beside it (one click, label as tooltip), the rest in a ⋯ menu.
  *
  * @param {Object} props         Props.
- * @param {Array}  props.actions `[{ label, onSelect, icon, primary, inline, destructive, disabled }]`.
+ * @param {Array}  props.actions `[{ label, onSelect, icon, primary, inline, destructive, disabled, badge }]` (`badge`: a node after the label).
  * @param {boolean} props.stretch Full-width buttons (mobile cards).
  * @return {JSX.Element|null} Actions.
  */
@@ -227,6 +227,11 @@ function RowActions( { actions, stretch = false } ) {
 									<action.icon aria-hidden="true" />
 								) : null }
 								{ action.label }
+								{ action.badge ? (
+									<span className="ml-auto pl-2">
+										{ action.badge }
+									</span>
+								) : null }
 							</DropdownMenuItem>
 						) ) }
 					</DropdownMenuContent>

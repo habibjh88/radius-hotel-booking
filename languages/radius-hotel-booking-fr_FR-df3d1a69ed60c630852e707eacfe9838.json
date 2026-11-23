@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-22T10:38:58+00:00",
+    "translation-revision-date": "2026-11-23T10:19:31+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/modules\/Bookings\/components\/LineEditor.jsx",
     "domain": "messages",
@@ -17,6 +17,9 @@
             "%d adult": [
                 "%d adulte",
                 "%d adultes"
+            ],
+            "Add a room": [
+                "Ajouter une chambre"
             ],
             "Choose the dates and the number of guests.": [
                 "Choisissez les dates et le nombre de clients."
@@ -38,9 +41,6 @@
             ],
             "Change room %s": [
                 "Modifier la chambre %s"
-            ],
-            "Add a room": [
-                "Ajouter une chambre"
             ],
             "Keep the rate, room type and times to keep the price. Changing one of them takes today\u2019s price.": [
                 "Gardez le tarif, le type de chambre et les horaires pour conserver le prix. En changer un applique le prix du jour."

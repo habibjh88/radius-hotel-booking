@@ -73,12 +73,44 @@ final class UpgradeNotice {
 	/**
 	 * Data for the Settings screen.
 	 *
-	 * @return array{show:bool,url:string}
+	 * `locked`: Pro is not active and the user is an administrator, so the
+	 * dashboard lists Pro's pages and Settings tabs with a lock and a PRO badge
+	 * (names and descriptions only; no Pro code ships here).
+	 *
+	 * `carryover`: blocks and date prices / closures made with Pro that the
+	 * engine still applies (counted only for the locked pages).
+	 *
+	 * @return array{show:bool,url:string,locked:bool,carryover:array{blocks:int,dates:int}}
 	 */
 	public static function params(): array {
+		$locked = ! rtbp_addon_active() && current_user_can( 'manage_options' );
 		return array(
-			'show' => self::should_show(),
-			'url'  => self::url(),
+			'show'      => self::should_show(),
+			'url'       => esc_url_raw( self::url(), array( 'https', 'http' ) ),
+			'locked'    => $locked,
+			'carryover' => $locked ? self::carryover() : array(
+				'blocks' => 0,
+				'dates'  => 0,
+			),
+		);
+	}
+
+	/**
+	 * Blocks not yet over, and dates from today with a price or a closure.
+	 *
+	 * @return array{blocks:int,dates:int}
+	 */
+	private static function carryover(): array {
+		global $wpdb;
+		$now   = gmdate( 'Y-m-d H:i:s' );
+		$today = wp_date( 'Y-m-d' );
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- two counts, administrators only, while Pro is inactive.
+		$blocks = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i WHERE end_at_gmt > %s', rtbp_table( 'blocks' ), $now ) );
+		$dates  = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i WHERE date >= %s AND ( price_override IS NOT NULL OR is_closed = 1 )', rtbp_table( 'rate_calendar' ), $today ) );
+		// phpcs:enable
+		return array(
+			'blocks' => $blocks,
+			'dates'  => $dates,
 		);
 	}
 

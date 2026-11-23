@@ -35,8 +35,6 @@ use RadiusTheme\RadiusHotelBooking\Controllers\NoteController;
 use RadiusTheme\RadiusHotelBooking\Controllers\PaymentController;
 use RadiusTheme\RadiusHotelBooking\Controllers\PublicBookingController;
 use RadiusTheme\RadiusHotelBooking\Controllers\AvailabilityController;
-use RadiusTheme\RadiusHotelBooking\Controllers\BlockController;
-use RadiusTheme\RadiusHotelBooking\Controllers\CalendarController;
 use RadiusTheme\RadiusHotelBooking\Controllers\HoldController;
 use RadiusTheme\RadiusHotelBooking\Controllers\PricingController;
 use RadiusTheme\RadiusHotelBooking\Controllers\RatePlanController;
@@ -89,8 +87,10 @@ $this->router->get( 'settings/(?P<section>[a-zA-Z0-9_-]+)', array( SettingsContr
 $this->router->put( 'settings/(?P<section>[a-zA-Z0-9_-]+)', array( SettingsController::class, 'updateSection' ) ); // phpcs:ignore
 
 /** Inventory (M06). */
-$this->router->put( 'floors/order', array( FloorController::class, 'order' ) );
-$this->router->resource( 'floors', FloorController::class );
+// Floors: the list is free (rooms keep their floor); adding, renaming,
+// reordering and deleting floors is Pro (feature `floors`).
+$this->router->get( 'floors', array( FloorController::class, 'index' ) );
+$this->router->get( 'floors/(?P<id>\d+)', array( FloorController::class, 'show' ) );
 $this->router->put( 'amenities/order', array( AmenityController::class, 'order' ) );
 $this->router->put( 'amenities/layout', array( AmenityController::class, 'layout' ) );
 $this->router->post( 'amenities/sections', array( AmenityController::class, 'sectionStore' ) );
@@ -116,12 +116,10 @@ $this->router->get( 'room-types/(?P<id>\d+)/rates', array( RoomTypeRateControlle
 $this->router->put( 'room-types/(?P<id>\d+)/rates', array( RoomTypeRateController::class, 'save' ) );
 $this->router->post( 'pricing/quote', array( PricingController::class, 'quote' ) );
 
-// Availability (M08): the staff search.
+// Availability (M08): the staff search. The rate calendar and blocked dates
+// screens (and their endpoints) are Pro's (`room_calendar`); the engine here
+// still honours their data.
 $this->router->get( 'availability', array( AvailabilityController::class, 'search' ) );
-$this->router->get( 'availability/calendar', array( CalendarController::class, 'grid' ) );
-$this->router->put( 'availability/calendar', array( CalendarController::class, 'save' ) );
-$this->router->post( 'availability/calendar/bulk', array( CalendarController::class, 'bulk' ) );
-$this->router->resource( 'blocks', BlockController::class );
 $this->router->post( 'holds', array( HoldController::class, 'store' ) );
 $this->router->put( 'holds/(?P<token>[A-Za-z0-9]{32})', array( HoldController::class, 'extend' ) );
 $this->router->delete( 'holds/(?P<token>[A-Za-z0-9]{32})', array( HoldController::class, 'destroy' ) );
@@ -141,11 +139,7 @@ $this->router->post( 'booking-lines/(?P<id>\d+)/check-in', array( BookingControl
 $this->router->post( 'booking-lines/(?P<id>\d+)/check-out', array( BookingController::class, 'checkOut' ) );
 $this->router->post( 'booking-lines/(?P<id>\d+)/no-show', array( BookingController::class, 'noShow' ) );
 $this->router->get( 'booking-lines/(?P<id>\d+)/rooms', array( BookingController::class, 'freeRooms' ) );
-$this->router->post( 'booking-lines/(?P<id>\d+)/move', array( BookingController::class, 'moveRoom' ) );
 $this->router->post( 'booking-lines/(?P<id>\d+)/undo-check-in', array( BookingController::class, 'undoCheckIn' ) );
-$this->router->get( 'booking-lines/(?P<id>\d+)/extend', array( BookingController::class, 'extendOptions' ) );
-$this->router->post( 'booking-lines/(?P<id>\d+)/extend', array( BookingController::class, 'extendStay' ) );
-$this->router->post( 'bookings/(?P<id>\d+)/lines', array( BookingController::class, 'addLine' ) );
 $this->router->put( 'booking-lines/(?P<id>\d+)', array( BookingController::class, 'editLine' ) );
 $this->router->delete( 'booking-lines/(?P<id>\d+)', array( BookingController::class, 'removeLine' ) );
 

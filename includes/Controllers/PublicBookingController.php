@@ -310,7 +310,7 @@ class PublicBookingController extends BaseController {
 				if ( ! $booking ) {
 					return ApiResponse::notFound( __( 'We could not find this booking.', 'radius-hotel-booking' ) );
 				}
-				return ApiResponse::success( array( 'booking' => GuestBookingView::data( $booking ) ) );
+				return ApiResponse::success( array( 'booking' => GuestBookingView::publicData( $booking ) ) );
 			}
 		);
 	}

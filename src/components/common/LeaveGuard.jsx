@@ -187,7 +187,7 @@ export default function LeaveGuard( { when, onSave } ) {
 							<Button
 								type="button"
 								onClick={ saveAndGo }
-								disabled={ saving }
+								loading={ saving }
 							>
 								{ saving
 									? __( 'Saving…', 'radius-hotel-booking' )

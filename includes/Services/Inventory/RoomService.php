@@ -112,7 +112,8 @@ class RoomService {
 		if ( $orphans ) {
 			$floors[] = array(
 				'id'    => 0,
-				'name'  => __( 'No floor', 'radius-hotel-booking' ),
+				// No heading when the hotel has no floors at all.
+				'name'  => $groups ? __( 'No floor', 'radius-hotel-booking' ) : '',
 				'rooms' => $orphans,
 			);
 		}
@@ -273,7 +274,7 @@ class RoomService {
 				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 				throw DomainException::invalid( array( 'room_type_id' => __( 'Choose a room type.', 'radius-hotel-booking' ) ) );
 			}
-			if ( ! $floor || ! $this->floors->find( $floor ) ) {
+			if ( $floor && ! $this->floors->find( $floor ) ) {
 				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 				throw DomainException::invalid( array( 'floor_id' => __( 'Choose a floor.', 'radius-hotel-booking' ) ) );
 			}
@@ -1100,14 +1101,18 @@ class RoomService {
 	}
 
 	/**
-	 * Lock a floor; it must exist.
+	 * Lock a floor; it must exist. A room needs no floor (0: a hotel on one
+	 * level, or no floors set up).
 	 *
-	 * @param int $floor Floor id.
+	 * @param int $floor Floor id (0 = none).
 	 * @return void
-	 * @throws DomainException When missing.
+	 * @throws DomainException When a floor is given and missing.
 	 */
 	private function lockFloor( int $floor ): void {
-		if ( ! $floor || ! $this->floors->lock( $floor ) ) {
+		if ( 0 === $floor ) {
+			return;
+		}
+		if ( ! $this->floors->lock( $floor ) ) {
 			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 			throw DomainException::invalid( array( 'floor_id' => __( 'Choose a floor.', 'radius-hotel-booking' ) ) );
 		}

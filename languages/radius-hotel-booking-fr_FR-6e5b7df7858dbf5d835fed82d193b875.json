@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-22T10:38:58+00:00",
+    "translation-revision-date": "2026-11-23T10:19:31+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/modules\/Bookings\/index.jsx",
     "domain": "messages",
@@ -22,14 +22,11 @@
             "Check-out": [
                 "D\u00e9part"
             ],
-            "Room": [
-                "Chambre"
+            "Guest": [
+                "Client"
             ],
             "Booking": [
                 "R\u00e9servation"
-            ],
-            "Guest": [
-                "Client"
             ],
             "Payment": [
                 "Paiement"
@@ -37,9 +34,15 @@
             "Invoice": [
                 "Facture"
             ],
+            "Room": [
+                "Chambre"
+            ],
             "%d room": [
                 "%d chambre",
                 "%d chambres"
+            ],
+            "Calendar sync": [
+                "Synchro calendrier"
             ],
             "New booking": [
                 "Nouvelle r\u00e9servation"
@@ -100,9 +103,6 @@
             ],
             "Online": [
                 "En ligne"
-            ],
-            "Calendar sync": [
-                "Synchro calendrier"
             ],
             "View booking": [
                 "Voir la r\u00e9servation"

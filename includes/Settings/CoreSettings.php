@@ -245,10 +245,22 @@ final class CoreSettings {
 				'min'     => 5,
 				'max'     => 120,
 			),
-			// The front desk may sell a slot that has already started, until it ends (day-use hotels).
+			// The front desk may sell a same-day slot that has already started (day-use hotels) …
 			'deskStartedSlots'  => array(
 				'type'    => 'bool',
 				'default' => false,
+			),
+			// … and so may the website …
+			'startedSlotsWebsite' => array(
+				'type'    => 'bool',
+				'default' => false,
+			),
+			// … until this many minutes before the slot ends.
+			'startedSlotsStopMinutes' => array(
+				'type'    => 'int',
+				'default' => 30,
+				'min'     => 0,
+				'max'     => 720,
 			),
 			// Most rooms one booking may take at the front desk (held and booked).
 			'maxRoomsDesk'      => array(

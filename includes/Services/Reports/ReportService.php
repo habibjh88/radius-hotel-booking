@@ -9,9 +9,6 @@ namespace RadiusTheme\RadiusHotelBooking\Services\Reports;
 
 use RadiusTheme\RadiusHotelBooking\Core\Events\EventDispatcher;
 use RadiusTheme\RadiusHotelBooking\Exceptions\DomainException;
-use RadiusTheme\RadiusHotelBooking\Models\Room;
-use RadiusTheme\RadiusHotelBooking\Repositories\AvailabilityRepository;
-use RadiusTheme\RadiusHotelBooking\Services\Availability\Overlap;
 use RadiusTheme\RadiusHotelBooking\Services\Export\ExportWriter;
 use RadiusTheme\RadiusHotelBooking\Repositories\ReportRepository;
 use RadiusTheme\RadiusHotelBooking\Settings\PaymentSettings;
@@ -31,8 +28,8 @@ defined( 'ABSPATH' ) || exit;
  *
  * `GET reports/{name}` resolves the definition, checks its access key, and
  * returns `build()`'s payload, cached per (report, input) until a booking,
- * payment or block changes. Pro adds its reports (occupancy, revenue
- * breakdowns) to the same registry.
+ * payment or block changes. Pro adds its reports (rooms, room availability,
+ * occupancy, revenue breakdowns) to the same registry.
  *
  * **Sales** (10.1–10.7). All money comes from stored lines and payments;
  * nothing is re-priced.
@@ -46,11 +43,6 @@ defined( 'ABSPATH' ) || exit;
  * - *Collected* — the signed sum of the ledger (see `ReportRepository::collected()`).
  * - Chart and method table: a line's revenue goes to its booking's latest
  *   payment's method, or *Not paid yet*.
- *
- * **Rooms** (10.8–10.11). Room states are counted as they are now; *rented*
- * and *empty* split the **available** rooms by whether a stay occupied them
- * in the period (arrival mode: overlap at any moment; created mode: bookings
- * taken in the period), and the empty ones are listed floor by floor.
  */
 class ReportService {
 
@@ -140,20 +132,6 @@ class ReportService {
 				'access' => 'page.reports_sales',
 				'build'  => static fn( ReportRange $range ) => ( new self() )->sales( $range ),
 				'export' => static fn( ReportRange $range ) => ( new self() )->salesTables( $range ),
-			),
-			'rooms' => array(
-				'label'  => __( 'Rooms', 'radius-hotel-booking' ),
-				'access' => 'page.reports_rooms',
-				'build'  => static fn( ReportRange $range, array $input = array() ) => ( new self() )->rooms( $range, $input ),
-				'export' => static fn( ReportRange $range ) => ( new self() )->roomsTables( $range ),
-			),
-			'availability' => array(
-				'label'  => __( 'Room availability', 'radius-hotel-booking' ),
-				'access' => 'page.reports_rooms',
-				// Live: holds expire by the minute, so never cached.
-				'cache'  => false,
-				'build'  => static fn( ReportRange $range, array $input = array() ) => ( new self() )->availability( $range, $input ),
-				'export' => static fn( ReportRange $range, array $input = array() ) => ( new self() )->availabilityTables( $range, $input ),
 			),
 		);
 
@@ -348,96 +326,6 @@ class ReportService {
 	}
 
 	/**
-	 * The rooms report as tables: the counts, the empty rooms, every booked room.
-	 *
-	 * @param ReportRange $range Period.
-	 * @return array[] Tables.
-	 */
-	public function roomsTables( ReportRange $range ): array {
-		$report = $this->rooms( $range, array( 'per_page' => 0 ) );
-		$cards  = $report['cards'];
-		$empty  = array();
-		foreach ( $report['empty_floors'] as $floor ) {
-			foreach ( $floor['rooms'] as $room ) {
-				$empty[] = array( $floor['floor'], $room['number'], $room['room_type'] );
-			}
-		}
-		$booked = $this->reports->bookedRooms( $range, 1, 0 );
-		return array(
-			array(
-				'title'   => self::periodTitle( __( 'Rooms', 'radius-hotel-booking' ), $range ),
-				'columns' => array( __( 'Figure', 'radius-hotel-booking' ), __( 'Rooms', 'radius-hotel-booking' ) ),
-				'rows'    => array(
-					array( __( 'All rooms', 'radius-hotel-booking' ), $cards['total'] ),
-					array( __( 'Available', 'radius-hotel-booking' ), $cards['available'] ),
-					array( __( 'Rented', 'radius-hotel-booking' ), $cards['rented'] ),
-					array( __( 'Empty', 'radius-hotel-booking' ), $cards['empty'] ),
-					array( __( 'Maintenance', 'radius-hotel-booking' ), $cards['maintenance'] ),
-					array( __( 'Out of service', 'radius-hotel-booking' ), $cards['out_of_service'] ),
-				),
-			),
-			array(
-				'title'   => __( 'Empty rooms', 'radius-hotel-booking' ),
-				'columns' => array( __( 'Floor', 'radius-hotel-booking' ), __( 'Room', 'radius-hotel-booking' ), __( 'Room type', 'radius-hotel-booking' ) ),
-				'rows'    => $empty,
-			),
-			array(
-				'title'   => __( 'Booked rooms', 'radius-hotel-booking' ),
-				'columns' => array( __( 'Booking', 'radius-hotel-booking' ), __( 'Guest', 'radius-hotel-booking' ), __( 'Booked on', 'radius-hotel-booking' ), __( 'Room type', 'radius-hotel-booking' ), __( 'Room', 'radius-hotel-booking' ), __( 'Arrival', 'radius-hotel-booking' ), __( 'Departure', 'radius-hotel-booking' ), __( 'Payment', 'radius-hotel-booking' ), __( 'Status', 'radius-hotel-booking' ), __( 'Subtotal', 'radius-hotel-booking' ) ),
-				'rows'    => array_map(
-					static fn( $row ) => array(
-						$row['reference'],
-						$row['guest'],
-						substr( $row['created_at'], 0, 16 ),
-						$row['room_type'],
-						$row['room'],
-						substr( $row['start_at'], 0, 16 ),
-						substr( $row['end_at'], 0, 16 ),
-						self::statusLabel( $row['payment_status'] ),
-						self::statusLabel( $row['status'] ),
-						Money::round( $row['total'] ),
-					),
-					$booked['rows']
-				),
-			),
-		);
-	}
-
-	/**
-	 * The availability grid as one table: a row per room.
-	 *
-	 * @param ReportRange $range Period.
-	 * @param array       $input `from_time`, `to_time`.
-	 * @return array[] Tables.
-	 */
-	public function availabilityTables( ReportRange $range, array $input = array() ): array {
-		$report = $this->availability( $range, $input );
-		$rows   = array();
-		foreach ( $report['room_types'] as $type ) {
-			foreach ( $type['floors'] as $floor ) {
-				foreach ( $floor['rooms'] as $room ) {
-					$rows[] = array(
-						$type['name'],
-						$floor['floor'],
-						$room['number'],
-						self::statusLabel( $room['status'] ),
-						count( $room['bookings'] ),
-						implode( ', ', array_column( $room['bookings'], 'reference' ) ),
-					);
-				}
-			}
-		}
-		return array(
-			array(
-				/* translators: 1: window start, 2: window end. */
-				'title'   => sprintf( __( 'Room availability, %1$s to %2$s', 'radius-hotel-booking' ), substr( str_replace( 'T', ' ', $report['window']['start'] ), 0, 16 ), substr( str_replace( 'T', ' ', $report['window']['end'] ), 0, 16 ) ),
-				'columns' => array( __( 'Room type', 'radius-hotel-booking' ), __( 'Floor', 'radius-hotel-booking' ), __( 'Room', 'radius-hotel-booking' ), __( 'Status', 'radius-hotel-booking' ), __( 'Bookings', 'radius-hotel-booking' ), __( 'References', 'radius-hotel-booking' ) ),
-				'rows'    => $rows,
-			),
-		);
-	}
-
-	/**
 	 * A status in words, for exports (the same words as the screen's badges,
 	 * `src/lib/status.js`); an unknown value is written as it is.
 	 *
@@ -474,7 +362,7 @@ class ReportService {
 	 * @param ReportRange $range Period.
 	 * @return string
 	 */
-	private static function periodTitle( string $name, ReportRange $range ): string {
+	public static function periodTitle( string $name, ReportRange $range ): string {
 		return sprintf(
 			/* translators: 1: report name, 2: first day, 3: last day, 4: "by arrival date", "by departure date" or "by booking date". */
 			__( '%1$s, %2$s to %3$s, %4$s', 'radius-hotel-booking' ),
@@ -591,278 +479,6 @@ class ReportService {
 			'chart'   => $this->chart( $range, $unit, $by_bucket ),
 			'methods' => $method_rows,
 		);
-	}
-
-	/**
-	 * The rooms still taken in the period, one tile per room, floor by
-	 * floor: the stay shown is the guest in the room, else the next one to
-	 * arrive; `more` counts the room's other stays in the period.
-	 *
-	 * @param ReportRange $range Period.
-	 * @param callable    $local Local DB time → ISO (null when empty).
-	 * @return array[] `[ { floor, rooms: [ { id, number, room_type, status, booking_id, reference, guest, start_at, end_at, more } ] } ]`.
-	 */
-	private function bookedFloors( ReportRange $range, callable $local ): array {
-		$floors = array();
-		foreach ( $this->reports->takenRooms( $range ) as $row ) {
-			$key = (string) $row['floor_id'];
-			if ( ! isset( $floors[ $key ] ) ) {
-				$floors[ $key ] = array(
-					'floor' => '' !== $row['floor'] ? $row['floor'] : __( 'No floor', 'radius-hotel-booking' ),
-					'rooms' => array(),
-				);
-			}
-			$room = $row['room_id'] > 0 ? 'r' . $row['room_id'] : 'n' . $row['number'];
-			$tile = array(
-				'id'         => $row['room_id'],
-				'number'     => $row['number'],
-				'room_type'  => $row['room_type'],
-				'status'     => $row['status'],
-				'booking_id' => $row['booking_id'],
-				'reference'  => $row['reference'],
-				'guest'      => $row['guest'],
-				'start_at'   => $local( $row['start_at'] ),
-				'end_at'     => $local( $row['end_at'] ),
-				'more'       => 0,
-			);
-			if ( ! isset( $floors[ $key ]['rooms'][ $room ] ) ) {
-				$floors[ $key ]['rooms'][ $room ] = $tile;
-				continue;
-			}
-			// Several stays in one room: the guest in the room wins, else the first arrival (rows come in arrival order).
-			$more = $floors[ $key ]['rooms'][ $room ]['more'] + 1;
-			if ( 'checked_in' === $row['status'] && 'checked_in' !== $floors[ $key ]['rooms'][ $room ]['status'] ) {
-				$floors[ $key ]['rooms'][ $room ] = $tile;
-			}
-			$floors[ $key ]['rooms'][ $room ]['more'] = $more;
-		}
-		return array_values(
-			array_map(
-				static function ( $floor ) {
-					$floor['rooms'] = array_values( $floor['rooms'] );
-					return $floor;
-				},
-				$floors
-			)
-		);
-	}
-
-	/**
-	 * The rooms report.
-	 *
-	 * @param ReportRange $range Period.
-	 * @param array       $input `page`, `per_page` (the bookings table).
-	 * @return array `{ cards, empty_floors, booked_floors, bookings: { total, page, per_page, rows } }`.
-	 */
-	public function rooms( ReportRange $range, array $input = array() ): array {
-		$states    = $this->reports->roomStates();
-		$available = $this->reports->availableRooms( $range );
-
-		$floors = array();
-		$rented = 0;
-		foreach ( $available as $room ) {
-			if ( $room['rented'] ) {
-				++$rented;
-				continue;
-			}
-			$key = (string) $room['floor_id'];
-			if ( ! isset( $floors[ $key ] ) ) {
-				$floors[ $key ] = array(
-					'floor' => '' !== $room['floor'] ? $room['floor'] : __( 'No floor', 'radius-hotel-booking' ),
-					'rooms' => array(),
-				);
-			}
-			$floors[ $key ]['rooms'][] = array(
-				'id'        => $room['id'],
-				'number'    => $room['number'],
-				'room_type' => $room['room_type'],
-			);
-		}
-
-		$per_page = max( 1, min( 100, (int) ( $input['per_page'] ?? 25 ) ) );
-		$page     = max( 1, (int) ( $input['page'] ?? 1 ) );
-		$booked   = $this->reports->bookedRooms( $range, $page, $per_page );
-		$local    = static fn( $value ) => '' !== (string) $value ? Dates::to_iso( Dates::local( (string) $value ) ) : null;
-
-		return array(
-			'cards'        => array(
-				'total'          => array_sum( $states ),
-				'available'      => (int) ( $states['available'] ?? 0 ),
-				'rented'         => $rented,
-				'empty'          => count( $available ) - $rented,
-				'maintenance'    => (int) ( $states['maintenance'] ?? 0 ),
-				'out_of_service' => (int) ( $states['out_of_service'] ?? 0 ),
-			),
-			'empty_floors'  => array_values( $floors ),
-			'booked_floors' => $this->bookedFloors( $range, $local ),
-			'bookings'     => array(
-				'total'    => $booked['total'],
-				'page'     => $page,
-				'per_page' => $per_page,
-				'rows'     => array_map(
-					static fn( $row ) => array_merge(
-						$row,
-						array(
-							'created_at' => $local( $row['created_at'] ),
-							'start_at'   => $local( $row['start_at'] ),
-							'end_at'     => $local( $row['end_at'] ),
-							'total'      => Money::round( $row['total'] ),
-						)
-					),
-					$booked['rows']
-				),
-			),
-		);
-	}
-
-	/**
-	 * The room availability grid (10.12, 10.13): every room, by room type then
-	 * floor, as it stands for a window — `from` + `from_time` to `to` +
-	 * `to_time` (times `HH:MM`, site time; defaults: the whole days).
-	 *
-	 * A room is **booked** when a stay occupies it at some moment of the
-	 * window (overlap, the engine's own busy read: lines, unexpired holds and
-	 * blocks in one query), else **held** or **blocked**; a room not in the
-	 * `available` state shows that state. *Bookings* lists each room's booked
-	 * rooms of the window by the date mode (overlapping it, or taken in it).
-	 *
-	 * @param ReportRange $range Period (days and mode).
-	 * @param array       $input `from_time`, `to_time`.
-	 * @return array `{ window, counters, room_types }`.
-	 * @throws DomainException 422 on a bad time or an empty window.
-	 */
-	public function availability( ReportRange $range, array $input = array() ): array {
-		$from_time = (string) ( $input['from_time'] ?? '' );
-		$to_time   = (string) ( $input['to_time'] ?? '' );
-		$errors    = array();
-		foreach ( array(
-			'from_time' => $from_time,
-			'to_time'   => $to_time,
-		) as $field => $value ) {
-			if ( '' !== $value && ! preg_match( '/^([01]\d|2[0-3]):[0-5]\d$/', $value ) ) {
-				$errors[ $field ] = __( 'Enter a time as HH:MM.', 'radius-hotel-booking' );
-			}
-		}
-		if ( ! $errors ) {
-			$start = '' !== $from_time ? Dates::at( $range->from, $from_time ) : Dates::start_of_day( $range->from );
-			$end   = '' !== $to_time ? Dates::at( $range->to, $to_time ) : Dates::end_of_day( $range->to );
-			if ( $end <= $start ) {
-				$errors['to_time'] = __( 'The window must end after it starts.', 'radius-hotel-booking' );
-			}
-		}
-		if ( $errors ) {
-			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
-			throw DomainException::invalid( $errors );
-		}
-		$start_gmt = Dates::to_gmt_db( $start );
-		$end_gmt   = Dates::to_gmt_db( $end );
-
-		$types = $this->reports->roomTypes();
-		$avail = new AvailabilityRepository();
-		$rooms = $avail->rooms( array_column( $types, 'id' ) );
-		$busy  = $avail->busy( array_column( $rooms, 'id' ), $start_gmt, $end_gmt );
-		$lines = array();
-		foreach ( $this->reports->windowLines( $start_gmt, $end_gmt, $range->mode ) as $line ) {
-			$lines[ $line['room_id'] ][] = array(
-				'line_id'    => $line['line_id'],
-				'booking_id' => $line['booking_id'],
-				'reference'  => $line['reference'],
-				'guest'      => $line['guest'],
-				'start_at'   => Dates::to_iso( Dates::local( $line['start_at'] ) ),
-				'end_at'     => Dates::to_iso( Dates::local( $line['end_at'] ) ),
-				'status'     => $line['status'],
-			);
-		}
-
-		$counters = array(
-			'rooms'     => 0,
-			'occupied'  => 0,
-			'available' => 0,
-			'bookings'  => 0,
-		);
-		$by_type  = array();
-		$from_ts  = $start->getTimestamp();
-		$to_ts    = $end->getTimestamp();
-		foreach ( $rooms as $room ) {
-			$id     = (int) $room['id'];
-			$status = self::gridStatus( (string) $room['state'], $busy[ $id ] ?? array(), $from_ts, $to_ts );
-			$listed = $lines[ $id ] ?? array();
-
-			++$counters['rooms'];
-			$counters['occupied']  += 'booked' === $status ? 1 : 0;
-			$counters['available'] += 'free' === $status ? 1 : 0;
-			$counters['bookings']  += count( $listed );
-
-			$type  = (int) $room['room_type_id'];
-			$floor = (string) $room['floor_id'];
-			if ( ! isset( $by_type[ $type ][ $floor ] ) ) {
-				$by_type[ $type ][ $floor ] = array(
-					'floor' => '' !== (string) $room['floor_name'] ? (string) $room['floor_name'] : __( 'No floor', 'radius-hotel-booking' ),
-					'rooms' => array(),
-				);
-			}
-			$by_type[ $type ][ $floor ]['rooms'][] = array(
-				'id'       => $id,
-				'number'   => (string) $room['number'],
-				'state'    => (string) $room['state'],
-				'status'   => $status,
-				'bookings' => $listed,
-			);
-		}
-
-		$out = array();
-		foreach ( $types as $type ) {
-			$floors   = array_values( $by_type[ $type['id'] ] ?? array() );
-			$all      = array_merge( array(), ...array_map( static fn( $floor ) => $floor['rooms'], $floors ) );
-			$out[]    = array(
-				'id'        => $type['id'],
-				'name'      => $type['name'],
-				'is_active' => $type['is_active'],
-				'rooms'     => count( $all ),
-				'occupied'  => count( array_filter( $all, static fn( $room ) => 'booked' === $room['status'] ) ),
-				'floors'    => $floors,
-			);
-		}
-
-		return array(
-			'window'     => array(
-				'start' => Dates::to_iso( $start ),
-				'end'   => Dates::to_iso( $end ),
-			),
-			'counters'   => $counters,
-			'room_types' => $out,
-		);
-	}
-
-	/**
-	 * One room's place on the grid for a window: its state when not
-	 * available, else what occupies it — a stay, a hold or a block — or free.
-	 *
-	 * @param string $state Room state.
-	 * @param array  $busy  The room's busy intervals (`AvailabilityRepository::busy()`).
-	 * @param int    $from  Window start (timestamp).
-	 * @param int    $to    Window end, excluded (timestamp).
-	 * @return string `free` | `booked` | `held` | `blocked` | a room state.
-	 */
-	private static function gridStatus( string $state, array $busy, int $from, int $to ): string {
-		if ( Room::AVAILABLE !== $state ) {
-			return $state;
-		}
-		$kinds = array();
-		foreach ( $busy as $interval ) {
-			$s = strtotime( $interval['s'] . ' UTC' );
-			$e = strtotime( $interval['e'] . ' UTC' );
-			if ( $s < $to && $e > $from ) {
-				$kinds[ $interval['kind'] ] = true;
-			}
-		}
-		if ( isset( $kinds[ Overlap::LINE ] ) ) {
-			return 'booked';
-		}
-		if ( isset( $kinds[ Overlap::BLOCK ] ) ) {
-			return 'blocked';
-		}
-		return isset( $kinds[ Overlap::HOLD ] ) ? 'held' : 'free';
 	}
 
 	/**

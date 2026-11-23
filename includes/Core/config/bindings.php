@@ -38,8 +38,6 @@ use RadiusTheme\RadiusHotelBooking\Services\Notes\NoteService;
 use RadiusTheme\RadiusHotelBooking\Services\Inventory\AmenityService;
 use RadiusTheme\RadiusHotelBooking\Services\Inventory\FloorService;
 use RadiusTheme\RadiusHotelBooking\Services\Availability\AvailabilityService;
-use RadiusTheme\RadiusHotelBooking\Services\Availability\BlockService;
-use RadiusTheme\RadiusHotelBooking\Services\Availability\CalendarService;
 use RadiusTheme\RadiusHotelBooking\Services\Availability\HoldService;
 use RadiusTheme\RadiusHotelBooking\Services\Booking\BookingService;
 use RadiusTheme\RadiusHotelBooking\Services\Booking\BookingWriter;
@@ -84,10 +82,8 @@ return array(
 	OccupancyCalculator::class => fn() => new OccupancyCalculator( Container::resolve( RoomRepository::class ) ),
 	AvailabilityService::class => fn() => new AvailabilityService( Container::resolve( AvailabilityRepository::class ), Container::resolve( PriceResolver::class ) ),
 	BookingWriter::class       => fn() => new BookingWriter( Container::resolve( AvailabilityRepository::class ), Container::resolve( RatePlanRepository::class ), Container::resolve( PriceResolver::class ) ),
-	CalendarService::class     => fn() => new CalendarService( Container::resolve( AvailabilityRepository::class ), Container::resolve( RateCalendarRepository::class ), Container::resolve( RoomTypeRepository::class ), Container::resolve( PriceResolver::class ), Container::resolve( BlockRepository::class ) ),
 	NoteService::class         => fn() => new NoteService( Container::resolve( NoteRepository::class ) ),
 	GuestService::class        => fn() => new GuestService( Container::resolve( GuestRepository::class ) ),
-	BlockService::class        => fn() => new BlockService( Container::resolve( BlockRepository::class ) ),
 	HoldService::class         => fn() => new HoldService( Container::resolve( HoldRepository::class ), Container::resolve( BookingWriter::class ) ),
 	BookingService::class      => fn() => new BookingService( Container::resolve( BookingWriter::class ), Container::resolve( GuestService::class ), Container::resolve( HoldService::class ), Container::resolve( BookingRepository::class ), Container::resolve( BookingRoomRepository::class ) ),
 	RoomTypeRateService::class => fn() => new RoomTypeRateService( Container::resolve( RoomTypeRateRepository::class ), Container::resolve( RatePlanRepository::class ), Container::resolve( RoomTypeRepository::class ) ),

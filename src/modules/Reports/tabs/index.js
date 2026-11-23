@@ -1,5 +1,6 @@
 /**
- * The reports the free plugin ships, in order. Add-ons append theirs with the
+ * The reports the free plugin ships (Sales; the rooms and availability
+ * reports are Pro's, `rtbp.reports.tabs`). Add-ons append theirs with the
  * `rtbp.reports.tabs` filter (same shape): `{ key, label, icon, accessKey,
  * Component, range = true, mode = true, export = true, report }` — `range` /
  * `mode` false hide the date picker or its arrival / booking-date switch for
@@ -9,7 +10,7 @@
  */
 import { lazy } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Banknote, BedDouble, LayoutGrid } from 'lucide-react';
+import { Banknote } from 'lucide-react';
 
 /**
  * Core tabs.
@@ -24,23 +25,6 @@ export default function coreTabs() {
 			icon: Banknote,
 			accessKey: 'page.reports_sales',
 			Component: lazy( () => import( './Sales' ) ),
-		},
-		{
-			key: 'rooms',
-			label: __( 'Rooms', 'radius-hotel-booking' ),
-			icon: BedDouble,
-			accessKey: 'page.reports_rooms',
-			Component: lazy( () => import( './Rooms' ) ),
-		},
-		{
-			key: 'availability',
-			label: __( 'Room availability', 'radius-hotel-booking' ),
-			icon: LayoutGrid,
-			accessKey: 'page.reports_rooms',
-			// The grid has its own window times; a check-out filter means nothing for it (R1-T12).
-			time: false,
-			modes: [ 'arrival', 'created' ],
-			Component: lazy( () => import( './Availability' ) ),
 		},
 	];
 }

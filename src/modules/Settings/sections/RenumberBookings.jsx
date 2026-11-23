@@ -190,7 +190,7 @@ export default function RenumberBookings( { dirty } ) {
 						{ preview?.changes ? (
 							<Button
 								type="button"
-								disabled={ busy }
+								loading={ busy }
 								onClick={ apply }
 							>
 								{ sprintf(

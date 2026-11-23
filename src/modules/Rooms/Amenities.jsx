@@ -961,7 +961,7 @@ function AddAmenity( { sections } ) {
 				<Button
 					type="submit"
 					className="h-[45px] shrink-0"
-					disabled={ add.isPending }
+					loading={ add.isPending }
 				>
 					{ __( 'Add amenity', 'radius-hotel-booking' ) }
 				</Button>

@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-22T10:38:58+00:00",
+    "translation-revision-date": "2026-11-23T10:19:31+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/admin\/routes.js",
     "domain": "messages",
@@ -19,20 +19,11 @@
             "Dashboard": [
                 "Tableau de bord"
             ],
-            "Availability": [
-                "Disponibilit\u00e9s"
-            ],
-            "Rooms report": [
-                "Rapport des chambres"
-            ],
             "Exports": [
                 "Exports"
             ],
             "Settings": [
                 "R\u00e9glages"
-            ],
-            "Blocked dates": [
-                "Dates bloqu\u00e9es"
             ],
             "Payments": [
                 "Paiements"
@@ -49,23 +40,14 @@
             "Amenities": [
                 "\u00c9quipements"
             ],
-            "Floors": [
-                "\u00c9tages"
-            ],
-            "Room availability": [
-                "Disponibilit\u00e9 des chambres"
-            ],
-            "All rooms": [
-                "Toutes les chambres"
-            ],
-            "Room type": [
-                "Type de chambre"
+            "Guest": [
+                "Client"
             ],
             "Booking": [
                 "R\u00e9servation"
             ],
-            "Guest": [
-                "Client"
+            "Floors": [
+                "\u00c9tages"
             ],
             "Overview": [
                 "Vue d'ensemble"
@@ -93,12 +75,6 @@
             ],
             "Today at your hotel, at a glance": [
                 "Aujourd'hui dans votre h\u00f4tel, en un coup d'\u0153il"
-            ],
-            "Open, close and price your rooms by date": [
-                "Ouvrez, fermez et tarifez vos chambres par date"
-            ],
-            "Close the hotel, a floor, a room type or a room for a while": [
-                "Fermer l'h\u00f4tel, un \u00e9tage, un type de chambre ou une chambre pour un temps"
             ],
             "phone tab bar: new booking, keep it short\u0004New": [
                 "Nouvelle"
@@ -130,14 +106,17 @@
             "Add room type": [
                 "Ajouter un type de chambre"
             ],
+            "All rooms": [
+                "Toutes les chambres"
+            ],
             "Every room of the hotel; select rooms to change them together": [
                 "Toutes les chambres de l'h\u00f4tel ; s\u00e9lectionnez des chambres pour les modifier ensemble"
             ],
-            "The floors of the hotel, in order": [
-                "Les \u00e9tages de l'h\u00f4tel, dans l'ordre"
-            ],
             "The amenities room types pick from": [
                 "Les \u00e9quipements propos\u00e9s pour les types de chambre"
+            ],
+            "Room type": [
+                "Type de chambre"
             ],
             "Rate plans": [
                 "Formules tarifaires"
@@ -148,14 +127,8 @@
             "Reports": [
                 "Rapports"
             ],
-            "Sales, rooms and availability reports": [
-                "Rapports de ventes, de chambres et de disponibilit\u00e9s"
-            ],
-            "Rented and empty rooms in a period, by floor": [
-                "Chambres occup\u00e9es et libres sur une p\u00e9riode, par \u00e9tage"
-            ],
-            "Which rooms are free for each stay window": [
-                "Les chambres libres pour chaque cr\u00e9neau de s\u00e9jour"
+            "Sales and other reports": [
+                "Rapport des ventes"
             ],
             "Export bookings and guests to a spreadsheet": [
                 "Exportez les r\u00e9servations et les clients vers un tableur"

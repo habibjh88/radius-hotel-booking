@@ -97,7 +97,7 @@ export default function RoomStatusPanel( { counts = {}, loading } ) {
 					icon={ DoorOpen }
 					title={ __( 'No rooms yet', 'radius-hotel-booking' ) }
 					description={ __(
-						'Add your floors and rooms to start selling them.',
+						'Add your rooms to start selling them.',
 						'radius-hotel-booking'
 					) }
 					action={

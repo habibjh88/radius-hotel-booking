@@ -120,6 +120,92 @@ class GuestBookingView {
 	}
 
 	/**
+	 * Whether public pages show guest contact details masked (Settings → Accounts).
+	 *
+	 * @return bool
+	 */
+	public static function masksContact(): bool {
+		return (bool) rtbp_setting( 'accounts', 'maskGuestContact' );
+	}
+
+	/**
+	 * `alice@gmail.com` → `a•••@gmail.com`.
+	 *
+	 * @param string $email E-mail.
+	 * @return string
+	 */
+	public static function maskEmail( string $email ): string {
+		$at = strrpos( $email, '@' );
+		if ( '' === $email || false === $at ) {
+			return '' === $email ? '' : '•••';
+		}
+		return mb_substr( $email, 0, 1 ) . '•••' . substr( $email, $at );
+	}
+
+	/**
+	 * `+225 07 07 12 34 56` → `•••• 56`.
+	 *
+	 * @param string $phone Phone.
+	 * @return string
+	 */
+	public static function maskPhone( string $phone ): string {
+		$digits = preg_replace( '/\D+/', '', $phone );
+		return '' === $digits ? '' : '•••• ' . substr( $digits, -2 );
+	}
+
+	/**
+	 * `Alice Durand` → `Alice D.` (the first name and the last name's initial).
+	 *
+	 * @param string $name Full name.
+	 * @return string
+	 */
+	public static function maskName( string $name ): string {
+		$parts = preg_split( '/\s+/', trim( $name ) );
+		$first = (string) array_shift( $parts );
+		$last  = $parts ? (string) end( $parts ) : '';
+		return trim( $first . ( '' !== $last ? ' ' . mb_strtoupper( mb_substr( $last, 0, 1 ) ) . '.' : '' ) );
+	}
+
+	/**
+	 * Mask the `phone` / `email` of a contact block when the setting asks for it.
+	 *
+	 * @param array|null $contact `{ phone?, email? }`.
+	 * @return array|null
+	 */
+	public static function maskContact( ?array $contact ): ?array {
+		if ( ! $contact || ! self::masksContact() ) {
+			return $contact;
+		}
+		if ( isset( $contact['phone'] ) ) {
+			$contact['phone'] = self::maskPhone( (string) $contact['phone'] );
+		}
+		if ( isset( $contact['email'] ) ) {
+			$contact['email'] = self::maskEmail( (string) $contact['email'] );
+		}
+		if ( isset( $contact['name'] ) ) {
+			$contact['name'] = self::maskName( (string) $contact['name'] );
+		}
+		return $contact;
+	}
+
+	/**
+	 * Everything the guest sees on a public page (the token is the only key, so
+	 * contact details are masked when Settings → Accounts asks for it).
+	 *
+	 * @param Booking $booking Booking.
+	 * @return array
+	 */
+	public static function publicData( Booking $booking ): array {
+		$data = self::data( $booking );
+		if ( self::masksContact() ) {
+			$data['guest_phone'] = self::maskPhone( (string) $data['guest_phone'] );
+			$data['guest_email'] = self::maskEmail( (string) $data['guest_email'] );
+			$data['guest_name']  = self::maskName( (string) $data['guest_name'] );
+		}
+		return $data;
+	}
+
+	/**
 	 * Everything the guest sees.
 	 *
 	 * @param Booking $booking Booking.

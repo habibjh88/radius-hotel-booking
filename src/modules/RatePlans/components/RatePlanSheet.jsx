@@ -477,7 +477,7 @@ export default function RatePlanSheet( { plan, readOnly = false, onClose } ) {
 								</Button>
 								<Button
 									type="submit"
-									disabled={ save.isPending }
+									loading={ save.isPending }
 								>
 									{ plan
 										? __( 'Save', 'radius-hotel-booking' )

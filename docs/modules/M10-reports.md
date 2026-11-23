@@ -57,6 +57,13 @@ stored booking lines and payments. Nothing is re-priced.**
 `mode`. One aggregate SQL pass per report over `booking_rooms` (+ `payments`): no per-row loads.
 Access: `page.reports_sales`, `page.reports_rooms`, `reports.export`.
 
+**Tier change (2026-11-23, owner's decision):** the Rooms (10.8–10.11) and Room availability
+(10.12–10.13) reports moved to Pro (feature `room_reports`: `Reports\RoomsReport`,
+`Reports\AvailabilityReport`, `Reports\RoomReportsRepository`, tabs `src/admin/reports/`).
+Free keeps Sales, the `page.reports_rooms` key and the shared helpers they reuse
+(`ReportRepository::periodCondition()`, `ReportService::periodTitle()` / `statusLabel()`), and
+lists both as locked menu items while Pro is not active.
+
 ## Performance
 
 Indexes used: `booking_rooms (start_at_gmt)`, `(room_id, start_at_gmt, end_at_gmt)`,

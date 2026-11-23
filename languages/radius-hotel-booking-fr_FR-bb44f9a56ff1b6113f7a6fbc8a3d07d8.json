@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-22T10:38:58+00:00",
+    "translation-revision-date": "2026-11-23T10:19:31+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/modules\/Rooms\/components\/BulkAddDialog.jsx",
     "domain": "messages",
@@ -10,20 +10,20 @@
                 "lang": "fr_FR",
                 "plural-forms": "nplurals=2; plural=(n > 1);"
             },
-            "Choose a room type.": [
-                "Choisissez un type de chambre."
-            ],
             "Floor": [
                 "\u00c9tage"
+            ],
+            "No floor": [
+                "Aucun \u00e9tage"
+            ],
+            "Choose a room type.": [
+                "Choisissez un type de chambre."
             ],
             "From": [
                 "\u00c0 partir de"
             ],
             "Cancel": [
                 "Annuler"
-            ],
-            "Choose a floor": [
-                "Choisir un \u00e9tage"
             ],
             "Add rooms": [
                 "Ajouter des chambres"
@@ -37,8 +37,11 @@
             "Add rooms to %s": [
                 "Ajouter des chambres \u00e0 %s"
             ],
-            "A range of numbers on one floor, e.g. A1 to A12. Numbers that already exist are skipped.": [
+            "A range of numbers, e.g. A1 to A12. Numbers that already exist are skipped.": [
                 "Une plage de num\u00e9ros sur un m\u00eame \u00e9tage, p. ex. A1 \u00e0 A12. Les num\u00e9ros qui existent d\u00e9j\u00e0 sont ignor\u00e9s."
+            ],
+            "Choose a floor": [
+                "Choisir un \u00e9tage"
             ],
             "Prefix": [
                 "Pr\u00e9fixe"

@@ -1,0 +1,234 @@
+{
+    "translation-revision-date": "2026-11-23T10:19:31+00:00",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "src\/admin\/proCatalog.js",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Availability": [
+                "Disponibilit\u00e9s"
+            ],
+            "Rooms report": [
+                "Rapport des chambres"
+            ],
+            "Blocked dates": [
+                "Dates bloqu\u00e9es"
+            ],
+            "Staff": [
+                "Personnel"
+            ],
+            "Close the hotel, a floor, a room type or a room for a while": [
+                "Fermer l'h\u00f4tel, un \u00e9tage, un type de chambre ou une chambre pour un temps"
+            ],
+            "Close the whole hotel, a floor, a room type or one room for any dates": [
+                "Fermer l'h\u00f4tel, un \u00e9tage, un type de chambre ou une chambre pour un temps"
+            ],
+            "Imported calendar blocks from Booking.com or Airbnb listed in one place": [
+                ""
+            ],
+            "Floors": [
+                "\u00c9tages"
+            ],
+            "Name the floors of the hotel and group its rooms by floor": [
+                "Les \u00e9tages de l'h\u00f4tel, dans l'ordre"
+            ],
+            "Add, rename and order floors; rooms are listed floor by floor": [
+                ""
+            ],
+            "Block a whole floor for works or an event": [
+                ""
+            ],
+            "Open, close and price your rooms by date": [
+                "Ouvrez, fermez et tarifez vos chambres par date"
+            ],
+            "A month calendar per room type: price, open or close each date": [
+                ""
+            ],
+            "Change a whole season at once with the bulk editor": [
+                ""
+            ],
+            "Room availability": [
+                "Disponibilit\u00e9 des chambres"
+            ],
+            "Which rooms are free for each stay window": [
+                "Les chambres libres pour chaque cr\u00e9neau de s\u00e9jour"
+            ],
+            "Every room by type and floor: free, booked, held or blocked": [
+                ""
+            ],
+            "Pick any window, or see right now, and export it": [
+                ""
+            ],
+            "Rented and empty rooms in a period, by floor": [
+                "Chambres occup\u00e9es et libres sur une p\u00e9riode, par \u00e9tage"
+            ],
+            "Rented, empty, maintenance and out-of-service rooms for any period": [
+                ""
+            ],
+            "Booked rooms floor by floor, with every booking listed": [
+                "Chambres r\u00e9serv\u00e9es sur des r\u00e9servations enti\u00e8rement pay\u00e9es"
+            ],
+            "Calendar sync": [
+                "Synchro calendrier"
+            ],
+            "Share and read room calendars with channels": [
+                ""
+            ],
+            "Export each room type as an iCal feed for Booking.com, Airbnb or Expedia": [
+                ""
+            ],
+            "Import their bookings so rooms are never double-booked": [
+                ""
+            ],
+            "Cash register": [
+                ""
+            ],
+            "Open and close your register; what came in per payment method": [
+                ""
+            ],
+            "Open and close the register for each shift": [
+                ""
+            ],
+            "Totals per payment method, and the difference at closing": [
+                ""
+            ],
+            "Activity log": [
+                "A archiv\u00e9 le journal d'activit\u00e9"
+            ],
+            "Who did what, when and from which device": [
+                ""
+            ],
+            "Every booking, payment and setting change, with the person and the time": [
+                ""
+            ],
+            "Filter by person, action or date, and archive old entries": [
+                ""
+            ],
+            "Pricing rules": [
+                "R\u00e8gles de r\u00e9servation"
+            ],
+            "Seasonal, occupancy and booking-window prices": [
+                ""
+            ],
+            "Higher prices for busy seasons and weekends": [
+                ""
+            ],
+            "Early-booking and last-minute prices, and long-stay discounts": [
+                ""
+            ],
+            "Staff files, contracts and documents": [
+                ""
+            ],
+            "A file for each employee: contract, documents and shifts": [
+                ""
+            ],
+            "Staff see their own profile and payslips": [
+                ""
+            ],
+            "Payroll": [
+                ""
+            ],
+            "Pay runs, payslips, taxes and contributions, and time off": [
+                ""
+            ],
+            "Monthly pay runs with payslips": [
+                ""
+            ],
+            "Deductions, contributions and time off": [
+                ""
+            ],
+            "Access roles": [
+                ""
+            ],
+            "Named roles such as Receptionist, with their permissions": [
+                ""
+            ],
+            "Create your own roles and choose what each may do": [
+                ""
+            ],
+            "Ask for a PIN before sensitive actions": [
+                ""
+            ],
+            "Staff access": [
+                "Personnel et acc\u00e8s"
+            ],
+            "Each person\u2019s access role, PIN and personal overrides": [
+                ""
+            ],
+            "Give each person a role and a personal PIN": [
+                ""
+            ],
+            "Allow or block single actions for one person": [
+                ""
+            ],
+            "Add a room": [
+                "Ajouter une chambre"
+            ],
+            "Add another room to a booking already made, from its booking screen.": [
+                ""
+            ],
+            "Only rooms free for the stay are offered": [
+                "Aucune chambre libre \u00e0 ces dates"
+            ],
+            "The booking total and the invoice are updated": [
+                "La r\u00e9servation n'a pas pu \u00eatre charg\u00e9e"
+            ],
+            "Extend stay": [
+                "Prolonger le s\u00e9jour"
+            ],
+            "Let a guest in the room stay on for another slot, in the same room.": [
+                ""
+            ],
+            "Only the slots the room is free for are offered": [
+                ""
+            ],
+            "The price is added to the booking and the invoice": [
+                "La barre de recherche, la page de r\u00e9servation et le formulaire de r\u00e9servation"
+            ],
+            "Move to another room": [
+                "Changer de chambre"
+            ],
+            "Move a checked-in guest to another room of the same type during the stay.": [
+                "D\u00e9placez le client dans une autre chambre libre du m\u00eame type si besoin. Le prix reste le m\u00eame."
+            ],
+            "The stay is split at the move; the booking total stays the same": [
+                ""
+            ],
+            "Put the room left in maintenance, with the reason": [
+                "Mettre la chambre %s en maintenance, avec ce motif"
+            ],
+            "Lists the bookings still to come in that room": [
+                ""
+            ],
+            "Departments and job titles": [
+                "Paiements et factures"
+            ],
+            "Taxes and contributions, and the vacation quota": [
+                ""
+            ],
+            "Passcodes": [
+                "Mot de passe"
+            ],
+            "PIN confirmation, the fallback PIN and the locked message": [
+                ""
+            ],
+            "Whether payments need an open register": [
+                ""
+            ],
+            "Automatic release": [
+                ""
+            ],
+            "Free the room when a booking stays unpaid past its deadline": [
+                "Envoy\u00e9 au client lorsqu'une r\u00e9servation impay\u00e9e est lib\u00e9r\u00e9e apr\u00e8s l'\u00e9ch\u00e9ance de paiement."
+            ],
+            "Archiving, removing archived entries and page views": [
+                ""
+            ]
+        }
+    }
+}

@@ -636,6 +636,8 @@ class Embeds {
 			'bookingWindowDays' => max( 0, (int) rtbp_setting( 'booking', 'bookingWindowDays', 0 ) ),
 			'sameDayEnabled'    => (bool) rtbp_setting( 'booking', 'sameDayEnabled', false ),
 			'sameDayCutoff'     => (string) rtbp_setting( 'booking', 'sameDayCutoff', '14:00' ),
+			// Started same-day slots stay on sale past the cut-off (until their own stop time).
+			'startedSlots'      => \RadiusTheme\RadiusHotelBooking\Services\Availability\AvailabilityService::sellsStarted( 'public' ),
 			// The booking form (M04 T2b).
 			'guestPicksRoom'    => (bool) rtbp_setting( 'website', 'guestPicksRoom', true ),
 			'privacyConsent'    => (bool) rtbp_setting( 'website', 'privacyConsent', true ),

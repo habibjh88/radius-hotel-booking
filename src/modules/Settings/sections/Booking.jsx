@@ -80,7 +80,7 @@ export default function Booking( {
 					<Field
 						label={ __( 'Cut-off time', 'radius-hotel-booking' ) }
 						description={ __(
-							'The last time of day guests can book a stay that starts today on the website. After it, the calendar starts from tomorrow. Rates that have already started are never offered, so a late cut-off (such as your last check-in time) is safe. Staff can always book today at the desk.',
+							'The last time of day guests can book a stay that starts today on the website. After it, only slots that have already started stay on sale, when Slots that have already started allows it (below), until their own stop time. Staff can always book today at the desk.',
 							'radius-hotel-booking'
 						) }
 						error={ errors.sameDayCutoff }
@@ -218,25 +218,70 @@ export default function Booking( {
 			</SettingsSection>
 
 			<SettingsSection
-				title={ __( 'At the front desk', 'radius-hotel-booking' ) }
+				title={ __(
+					'Slots that have already started',
+					'radius-hotel-booking'
+				) }
 				description={ __(
-					'What staff can sell. Online bookings never offer a slot that has already started.',
+					'A slot that has already started is sold at the full price while a room is free from now until the slot ends, up to the stop time below.',
 					'radius-hotel-booking'
 				) }
 			>
 				<ToggleRow
 					label={ __(
-						'Sell slots that have already started',
+						'Sell them at the front desk',
 						'radius-hotel-booking'
 					) }
 					description={ __(
-						'A walk-in at 14:00 can still take a Half Day 08:30–17:00, at its full price, until the slot ends, when a room is free now. Off: only within 30 minutes of the start.',
+						'Any slot, overnight too: a walk-in at 15:00 can take a Half Day 08:30–17:00, one at 22:00 an Overnight 20:00–08:00. Off: only within 30 minutes of the start.',
 						'radius-hotel-booking'
 					) }
 					checked={ value.deskStartedSlots }
 					onChange={ setField( 'deskStartedSlots' ) }
 					error={ errors.deskStartedSlots }
 				/>
+				<ToggleRow
+					label={ __(
+						'Sell them on the website',
+						'radius-hotel-booking'
+					) }
+					description={ __(
+						'Same-day slots only, such as Half Day: overnight and multi-day stays are never sold online after they start. Same-day bookings (above) must be on; its cut-off time does not apply to started slots.',
+						'radius-hotel-booking'
+					) }
+					checked={ value.startedSlotsWebsite }
+					onChange={ setField( 'startedSlotsWebsite' ) }
+					error={ errors.startedSlotsWebsite }
+				/>
+				{ value.deskStartedSlots || value.startedSlotsWebsite ? (
+					<Field
+						label={ __(
+							'Stop selling before the slot ends',
+							'radius-hotel-booking'
+						) }
+						description={ __(
+							'With 30 minutes, a Half Day ending at 17:00 can be booked until 16:30.',
+							'radius-hotel-booking'
+						) }
+						error={ errors.startedSlotsStopMinutes }
+					>
+						<NumberInput
+							value={ value.startedSlotsStopMinutes }
+							onChange={ setField( 'startedSlotsStopMinutes' ) }
+							unit={ minutes }
+							limits={ schema.startedSlotsStopMinutes }
+						/>
+					</Field>
+				) : null }
+			</SettingsSection>
+
+			<SettingsSection
+				title={ __( 'At the front desk', 'radius-hotel-booking' ) }
+				description={ __(
+					'How the New booking screen works for staff.',
+					'radius-hotel-booking'
+				) }
+			>
 				<Field
 					label={ __(
 						'New booking layout (front desk)',

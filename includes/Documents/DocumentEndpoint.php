@@ -75,6 +75,10 @@ class DocumentEndpoint {
 				}
 				$data = $service->receipt( $id );
 			}
+			// The guest link is public (its token is the only key): mask contact details.
+			if ( isset( $data['guest'] ) && is_array( $data['guest'] ) ) {
+				$data['guest'] = GuestBookingView::maskContact( $data['guest'] );
+			}
 			$out = DocumentService::render( $type, $data, $format );
 		} catch ( DomainException $e ) {
 			self::fail( $e->getMessage(), $e->getStatus() );

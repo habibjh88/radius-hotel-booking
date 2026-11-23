@@ -67,7 +67,8 @@ export default function BulkAddDialog( {
 		type || types.find( ( option ) => String( option.id ) === typeId );
 	const create = useBulkAddRooms( Number( typeId ) );
 	const [ values, setValues ] = useState( {
-		floor_id: String( floorId || floors[ 0 ]?.id || '' ),
+		// '0' = no floor (a hotel on one level, or no floors set up).
+		floor_id: String( floorId || floors[ 0 ]?.id || 0 ),
 		prefix: '',
 		from: '1',
 		to: '10',
@@ -177,7 +178,7 @@ export default function BulkAddDialog( {
 						</DialogTitle>
 						<DialogDescription>
 							{ __(
-								'A range of numbers on one floor, e.g. A1 to A12. Numbers that already exist are skipped.',
+								'A range of numbers, e.g. A1 to A12. Numbers that already exist are skipped.',
 								'radius-hotel-booking'
 							) }
 						</DialogDescription>
@@ -201,33 +202,42 @@ export default function BulkAddDialog( {
 						/>
 					) : null }
 
-					{ field(
-						'floor_id',
-						__( 'Floor', 'radius-hotel-booking' ),
-						<Select
-							value={ values.floor_id }
-							onValueChange={ set( 'floor_id' ) }
-						>
-							<SelectTrigger id="rtbp-bulk-floor_id">
-								<SelectValue
-									placeholder={ __(
-										'Choose a floor',
-										'radius-hotel-booking'
-									) }
-								/>
-							</SelectTrigger>
-							<SelectContent>
-								{ floors.map( ( option ) => (
-									<SelectItem
-										key={ option.id }
-										value={ String( option.id ) }
-									>
-										{ option.name }
-									</SelectItem>
-								) ) }
-							</SelectContent>
-						</Select>
-					) }
+					{ /* The floor is optional; hidden while the hotel has none. */ }
+					{ floors.length
+						? field(
+								'floor_id',
+								__( 'Floor', 'radius-hotel-booking' ),
+								<Select
+									value={ values.floor_id }
+									onValueChange={ set( 'floor_id' ) }
+								>
+									<SelectTrigger id="rtbp-bulk-floor_id">
+										<SelectValue
+											placeholder={ __(
+												'Choose a floor',
+												'radius-hotel-booking'
+											) }
+										/>
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="0">
+											{ __(
+												'No floor',
+												'radius-hotel-booking'
+											) }
+										</SelectItem>
+										{ floors.map( ( option ) => (
+											<SelectItem
+												key={ option.id }
+												value={ String( option.id ) }
+											>
+												{ option.name }
+											</SelectItem>
+										) ) }
+									</SelectContent>
+								</Select>
+						  )
+						: null }
 
 					<div className="grid grid-cols-3 gap-3">
 						{ field(

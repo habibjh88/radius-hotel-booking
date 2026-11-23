@@ -457,6 +457,29 @@ Booking page: "Express checkout" is now a large "Express booking" button with si
 Booking page: the Select button shows a spinner while a room is being held.
 French translation completed for every new text, including Express booking and house rules.
 Room type page: content now sits in a centred 1200px container instead of full width.
+Security: guest name, e-mail and phone are masked on public booking pages (new setting).
+New setting: choose whether code-free express checkout fills details from the guest's record.
+Security: a booking links a guest record to an account only when proven theirs.
+Security: API requests are accepted only from the site's exact address.
+Security: exports that need a PIN can no longer be downloaded without it.
+Security: restoring bookings from a file now needs create-booking and create-guest permissions.
+Security: guest sign-in lockout now counts per account, whatever way the phone is typed.
+New: without Pro, the dashboard lists Pro pages and settings with a lock and PRO badge.
+Changed: the Rooms and Room availability reports are now part of Pro.
+Changed: the Availability calendar and Blocked dates screens are now part of Pro.
+Changed: Move to another room and Extend stay are now Pro, shown with a Pro badge without it.
+Changed: Add a room on the booking screen is now Pro, shown with a Pro badge.
+Changed: a room no longer needs a floor; hotels on one level can skip floors.
+Changed: the Floors screen is now Pro; existing floors still group rooms.
+Improved: Save buttons show a spinner while saving, so slow saves are clear.
+Improved: "Use express booking" on the guest form is now a button.
+Improved: express booking steps say the room is chosen automatically when guests cannot pick.
+Changed: "Express checkout" is now called "Express booking" everywhere, matching the booking form.
+New: search box on the Settings screen finds any setting and jumps to it.
+New: started same-day slots can be sold on the website too, until 30 minutes before the end.
+Changed: started slots stop selling a set number of minutes before they end (default 30).
+Changed: the same-day cut-off no longer stops started slots the website still sells.
+Changed: the front desk can sell any started slot, overnight too; the website only same-day ones.
 
 = 1.0.0 =
 Initial release.

@@ -111,15 +111,24 @@ export default function CheckInDialog( { line, onClose, onConfirm } ) {
 									key={ option.id }
 									value={ String( option.id ) }
 								>
-									{ sprintf(
-										/* translators: 1: room number, 2: floor name. */
-										__(
-											'Room %1$s · %2$s',
-											'radius-hotel-booking'
-										),
-										option.number,
-										option.floor
-									) }
+									{ option.floor
+										? sprintf(
+												/* translators: 1: room number, 2: floor name. */
+												__(
+													'Room %1$s · %2$s',
+													'radius-hotel-booking'
+												),
+												option.number,
+												option.floor
+										  )
+										: sprintf(
+												/* translators: %s: room number. */
+												__(
+													'Room %s',
+													'radius-hotel-booking'
+												),
+												option.number
+										  ) }
 								</SelectItem>
 							) ) }
 						</SelectContent>
@@ -147,7 +156,7 @@ export default function CheckInDialog( { line, onClose, onConfirm } ) {
 					<Button type="button" variant="ghost" onClick={ onClose }>
 						{ __( 'Cancel', 'radius-hotel-booking' ) }
 					</Button>
-					<Button type="button" disabled={ busy } onClick={ confirm }>
+					<Button type="button" loading={ busy } onClick={ confirm }>
 						{ __( 'Check in', 'radius-hotel-booking' ) }
 					</Button>
 				</DialogFooter>

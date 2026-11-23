@@ -46,10 +46,6 @@ class FloorController extends BaseController {
 			array(
 				'index'   => 'page.rooms',
 				'show'    => 'page.rooms',
-				'store'   => 'rooms.manage',
-				'update'  => 'rooms.manage',
-				'destroy' => 'rooms.manage',
-				'order'   => 'rooms.manage',
 			)
 		);
 	}
@@ -74,82 +70,6 @@ class FloorController extends BaseController {
 		return $this->respond(
 			$request,
 			fn( $request ) => ApiResponse::success( array( 'floor' => $this->transformItem( $this->service->get( (int) $request->get_param( 'id' ) ) ) ) )
-		);
-	}
-
-	/**
-	 * POST /floors: `{ name }`, added last.
-	 *
-	 * @param WP_REST_Request $request Request.
-	 * @return mixed
-	 */
-	public function store( WP_REST_Request $request ) {
-		return $this->respond(
-			$request,
-			function ( $request ) {
-				$floor = $this->service->create( (array) $request->get_json_params() );
-				return ApiResponse::created(
-					array(
-						'floor'  => $this->transformItem( $floor ),
-						'floors' => $this->service->all(),
-					),
-					__( 'Floor added.', 'radius-hotel-booking' )
-				);
-			}
-		);
-	}
-
-	/**
-	 * PUT /floors/{id}: `{ name }`.
-	 *
-	 * @param WP_REST_Request $request Request.
-	 * @return mixed
-	 */
-	public function update( WP_REST_Request $request ) {
-		return $this->respond(
-			$request,
-			function ( $request ) {
-				$floor = $this->service->update( (int) $request->get_param( 'id' ), (array) $request->get_json_params() );
-				return ApiResponse::success(
-					array(
-						'floor'  => $this->transformItem( $floor ),
-						'floors' => $this->service->all(),
-					),
-					__( 'Floor renamed.', 'radius-hotel-booking' )
-				);
-			}
-		);
-	}
-
-	/**
-	 * PUT /floors/order: `{ ids: [ … ] }`, every floor once, first to last.
-	 *
-	 * @param WP_REST_Request $request Request.
-	 * @return mixed
-	 */
-	public function order( WP_REST_Request $request ) {
-		return $this->respond(
-			$request,
-			fn( $request ) => ApiResponse::success(
-				array( 'floors' => $this->service->reorder( (array) ( $request->get_json_params()['ids'] ?? array() ) ) ),
-				__( 'Floor order saved.', 'radius-hotel-booking' )
-			)
-		);
-	}
-
-	/**
-	 * DELETE /floors/{id}: refused while the floor holds rooms.
-	 *
-	 * @param WP_REST_Request $request Request.
-	 * @return mixed
-	 */
-	public function destroy( WP_REST_Request $request ) {
-		return $this->respond(
-			$request,
-			function ( $request ) {
-				$this->service->delete( (int) $request->get_param( 'id' ) );
-				return ApiResponse::success( array( 'floors' => $this->service->all() ), __( 'Floor deleted.', 'radius-hotel-booking' ) );
-			}
 		);
 	}
 

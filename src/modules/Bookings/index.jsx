@@ -11,13 +11,11 @@
  * its tab and a filtered list can be bookmarked or shared. A table on a
  * desktop, cards on a phone (DataTable). Row actions come in T3.
  */
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import {
-	ArrowRightLeft,
 	Ban,
-	CalendarPlus,
 	CalendarSearch,
 	Check,
 	Eye,
@@ -59,8 +57,14 @@ import {
 	usePaymentAction,
 	usePayments,
 } from './api';
-import ExtendStayDialog from './components/ExtendStayDialog';
-import MoveGuestDialog from './components/MoveGuestDialog';
+import {
+	canUseExtra,
+	extraLineAction,
+	extraLineActions,
+	lockedLineActions,
+} from './lineActions';
+import ProBadge from '@/modules/ProLocked/ProBadge';
+import ProLockedDialog from '@/modules/ProLocked/ProLockedDialog';
 import RecordPaymentDialog from './components/RecordPaymentDialog';
 import { actionLabel, lineQuestion } from './moves';
 
@@ -150,16 +154,19 @@ export function BookingList( { withPageActions = true } ) {
 		check_out: useAccess( 'bookings.check_out' ),
 		record_payment: useAccess( 'payments.record' ),
 		line_edit: useAccess( 'bookings.line_edit' ),
-		move_room: useAccess( 'bookings.move_room' ),
 		undo_check_in: useAccess( 'bookings.undo_check_in' ),
-		extend_stay: useAccess( 'bookings.extend_stay' ),
 	};
 	const allowed = ( action ) =>
-		access[ action ] && access[ action ] !== 'locked';
+		// An add-on's action (Pro: move, extend) by its own access key.
+		extraLineAction( action )
+			? canUseExtra( action )
+			: access[ action ] && access[ action ] !== 'locked';
 	const move = useLineAction();
 	const client = useQueryClient();
 	// `{ action, line }` while a move waits for its confirmation; `paying` = the row recording money.
 	const [ dialog, setDialog ] = useState( null );
+	// A locked Pro action opened from a row's menu (Pro not active).
+	const [ lockedItem, setLockedItem ] = useState( null );
 	// A check-out recorded late: when the guest really left ('' = now).
 	const [ actualAt, setActualAt ] = useState( '' );
 	useEffect( () => setActualAt( '' ), [ dialog ] );
@@ -449,24 +456,21 @@ export function BookingList( { withPageActions = true } ) {
 		return [
 			primary ? moveAction( primary, { primary: true } ) : null,
 			can( 'approve' ) ? moveAction( 'approve' ) : null,
-			// A guest in the room stays on for another slot, in the same room.
-			can( 'extend_stay' )
-				? {
-						label: actionLabel( 'extend_stay' ),
-						icon: CalendarPlus,
-						onSelect: () =>
-							setDialog( { action: 'extend_stay', line } ),
-				  }
-				: null,
-			// A guest in the room: move them to another one (a fault in the room).
-			can( 'move_room' )
-				? {
-						label: actionLabel( 'move_room' ),
-						icon: ArrowRightLeft,
-						onSelect: () =>
-							setDialog( { action: 'move_room', line } ),
-				  }
-				: null,
+			// Add-on actions on the room (Pro: Extend stay, Move to another room).
+			...extraLineActions()
+				.filter( ( item ) => can( item.action ) )
+				.map( ( item ) => ( {
+					label: item.label,
+					icon: item.icon,
+					onSelect: () => setDialog( { action: item.action, line } ),
+				} ) ),
+			// Pro's room actions, locked while Pro is not active (PRO badge).
+			...lockedLineActions( line ).map( ( item ) => ( {
+				label: item.label,
+				icon: item.icon,
+				badge: <ProBadge />,
+				onSelect: () => setLockedItem( item ),
+			} ) ),
 			{
 				label: __( 'View booking', 'radius-hotel-booking' ),
 				icon: Eye,
@@ -609,59 +613,44 @@ export function BookingList( { withPageActions = true } ) {
 				</div>
 			</Panel>
 
-			<ExtendStayDialog
-				line={
-					'extend_stay' === dialog?.action
-						? { ...dialog.line, room_number: dialog.line.room }
-						: null
-				}
-				onClose={ () => setDialog( null ) }
-				onConfirm={ ( { ratePlanId, expectedTotal } ) =>
-					move
-						.mutateAsync( {
-							bookingId: dialog.line.booking_id,
-							lineId: dialog.line.id,
-							action: 'extend_stay',
-							ratePlanId,
-							expectedTotal,
-						} )
-						.then( ( result ) => {
-							toast.success( result.message );
-							return result;
-						} )
-						.catch( ( err ) => {
-							toastError( err );
-							throw err;
-						} )
-				}
+			<ProLockedDialog
+				item={ lockedItem }
+				onClose={ () => setLockedItem( null ) }
 			/>
-			<MoveGuestDialog
-				line={
-					'move_room' === dialog?.action
-						? { ...dialog.line, room_number: dialog.line.room }
-						: null
-				}
-				onClose={ () => setDialog( null ) }
-				onConfirm={ ( { roomId, reason, maintenance } ) =>
-					move
-						.mutateAsync( {
-							bookingId: dialog.line.booking_id,
-							lineId: dialog.line.id,
-							action: 'move_room',
-							roomId,
-							reason,
-							maintenance,
-						} )
-						.then( ( result ) => {
-							toast.success( result.message );
-							return result;
-						} )
-						.catch( ( err ) => {
-							toastError( err );
-							throw err;
-						} )
-				}
-			/>
+			{ /* Add-on actions on a room (Pro: Extend stay, Move to another room). */ }
+			<Suspense fallback={ null }>
+				{ extraLineActions().map( ( { action, Dialog } ) => (
+					<Dialog
+						key={ action }
+						line={
+							action === dialog?.action
+								? {
+										...dialog.line,
+										room_number: dialog.line.room,
+								  }
+								: null
+						}
+						onClose={ () => setDialog( null ) }
+						onConfirm={ ( values ) =>
+							move
+								.mutateAsync( {
+									...values,
+									bookingId: dialog.line.booking_id,
+									lineId: dialog.line.id,
+									action,
+								} )
+								.then( ( result ) => {
+									toast.success( result.message );
+									return result;
+								} )
+								.catch( ( err ) => {
+									toastError( err );
+									throw err;
+								} )
+						}
+					/>
+				) ) }
+			</Suspense>
 			<ConfirmDialog
 				open={ [ 'decline', 'cancel' ].includes( dialog?.action ) }
 				onOpenChange={ ( open ) => ! open && setDialog( null ) }

@@ -604,7 +604,7 @@ export default function LineEditor( { booking, line, open, onClose } ) {
 							</p>
 							<Button
 								type="button"
-								disabled={ change.isPending }
+								loading={ change.isPending }
 								onClick={ () => save( true ) }
 							>
 								{ __(

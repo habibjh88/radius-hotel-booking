@@ -186,12 +186,18 @@ export default function AllRooms() {
 				</Link>
 			),
 		},
-		{
-			id: 'floor',
-			header: __( 'Floor', 'radius-hotel-booking' ),
-			cell: ( room ) =>
-				room.floor_name || __( 'No floor', 'radius-hotel-booking' ),
-		},
+		// The floor column and filter only for a hotel with floors.
+		...( floors.length
+			? [
+					{
+						id: 'floor',
+						header: __( 'Floor', 'radius-hotel-booking' ),
+						cell: ( room ) =>
+							room.floor_name ||
+							__( 'No floor', 'radius-hotel-booking' ),
+					},
+			  ]
+			: [] ),
 		{
 			id: 'state',
 			header: __( 'State', 'radius-hotel-booking' ),
@@ -462,19 +468,21 @@ export default function AllRooms() {
 									onChange={ setType }
 									options={ types }
 								/>
-								<FilterSelect
-									label={ __(
-										'Floor',
-										'radius-hotel-booking'
-									) }
-									anyLabel={ __(
-										'All floors',
-										'radius-hotel-booking'
-									) }
-									value={ floor }
-									onChange={ setFloor }
-									options={ floors }
-								/>
+								{ floors.length ? (
+									<FilterSelect
+										label={ __(
+											'Floor',
+											'radius-hotel-booking'
+										) }
+										anyLabel={ __(
+											'All floors',
+											'radius-hotel-booking'
+										) }
+										value={ floor }
+										onChange={ setFloor }
+										options={ floors }
+									/>
+								) : null }
 								{ filtered ? (
 									<Button
 										variant="ghost"
@@ -847,7 +855,7 @@ function BulkStateDialog( { count, room, busy, onClose, onSave } ) {
 						>
 							{ __( 'Cancel', 'radius-hotel-booking' ) }
 						</Button>
-						<Button type="submit" disabled={ busy }>
+						<Button type="submit" loading={ busy }>
 							{ __( 'Save', 'radius-hotel-booking' ) }
 						</Button>
 					</DialogFooter>
@@ -970,7 +978,7 @@ function BulkMoveDialog( { count, types, busy, onClose, onSave } ) {
 						>
 							{ __( 'Cancel', 'radius-hotel-booking' ) }
 						</Button>
-						<Button type="submit" disabled={ busy }>
+						<Button type="submit" loading={ busy }>
 							{ __( 'Move rooms', 'radius-hotel-booking' ) }
 						</Button>
 					</DialogFooter>

@@ -4,6 +4,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { del, get, post, put } from '@/api/client';
+import { extraLineAction } from './lineActions';
 
 export const BOOKINGS_KEY = [ 'bookings' ];
 
@@ -40,52 +41,23 @@ export function useBookingAction( id ) {
 
 /**
  * One status move: check in / out and no-show on the room, the rest on the
- * booking (`line_id` narrows it to one room). `move_room` moves a
- * checked-in guest (`roomId`, `reason`, `maintenance`); its answer also
- * lists the bookings still to come in the room put in maintenance
- * (`upcoming`).
+ * booking (`line_id` narrows it to one room). An add-on's action
+ * (`rtbp.booking.lineActions`, `./lineActions`) runs its own `request`.
  *
  * @param {number} id        Booking id.
- * `extend_stay` adds a slot to a checked-in stay (`ratePlanId`, `expectedTotal`).
  *
  * Check-in and check-out take `at`: the local time it really happened
  * (`YYYY-MM-DDTHH:MM`, `bookings.set_time`), for one recorded late.
  *
- * @param {Object} variables `{ action, lineId?, reason?, roomId?, maintenance?, ratePlanId?, expectedTotal?, at? }`.
+ * @param {Object} variables `{ action, lineId?, reason?, roomId?, at?, … }` (an add-on action's own fields too).
  * @return {Promise<Object>} `{ booking, message, upcoming? }`.
  */
-function moveRequest(
-	id,
-	{
-		action,
-		lineId,
-		reason,
-		roomId,
-		maintenance,
-		ratePlanId,
-		expectedTotal,
-		at,
-	}
-) {
-	if ( 'extend_stay' === action ) {
-		return post( `booking-lines/${ lineId }/extend`, {
-			rate_plan_id: ratePlanId,
-			expected_total: expectedTotal,
-		} ).then( ( { data, message } ) => ( {
-			booking: data.booking,
-			message,
-		} ) );
-	}
-	if ( 'move_room' === action ) {
-		return post( `booking-lines/${ lineId }/move`, {
-			room_id: roomId,
-			reason,
-			maintenance: false !== maintenance,
-		} ).then( ( { data, message } ) => ( {
-			booking: data.booking,
-			message,
-			upcoming: data.upcoming || [],
-		} ) );
+function moveRequest( id, variables ) {
+	const { action, lineId, reason, roomId, at } = variables;
+	// An add-on's action on the room (Pro: move_room, extend_stay).
+	const extra = extraLineAction( action );
+	if ( extra ) {
+		return extra.request( { id: lineId, booking_id: id }, variables );
 	}
 	const lineActions = {
 		check_in: 'check-in',
@@ -231,26 +203,6 @@ export function useFreeRoomsFor( line, purpose = 'check_in' ) {
 				`booking-lines/${ line.id }/rooms`,
 				'move' === purpose ? { for: 'move' } : undefined
 			).then( ( { data } ) => data.rooms ),
-		enabled: Boolean( line ),
-		staleTime: 0,
-	} );
-}
-
-/**
- * The slots a checked-in stay can be extended with, in the same room
- * (`{ rate_plan_id, name, start, end, gap_minutes, total, free, blocked_by }`).
- * Always fresh: the server checks again when extending.
- *
- * @param {Object|null} line The checked-in line (null = no query).
- * @return {Object} React Query result.
- */
-export function useExtendOptions( line ) {
-	return useQuery( {
-		queryKey: [ 'availability', 'extend', line?.id ],
-		queryFn: () =>
-			get( `booking-lines/${ line.id }/extend` ).then(
-				( { data } ) => data.options
-			),
 		enabled: Boolean( line ),
 		staleTime: 0,
 	} );

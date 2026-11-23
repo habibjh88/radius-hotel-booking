@@ -139,7 +139,7 @@ export default function AppShell( { children } ) {
 					<main
 						className={
 							isDesktop
-								? 'min-w-0 flex-1 p-4 md:p-8'
+								? 'min-w-0 flex-1 p-4 md:p-6'
 								: 'min-w-0 flex-1 p-4 pb-24'
 						}
 					>

@@ -225,7 +225,8 @@ export default function ConfirmDialog( {
 					<Button
 						variant={ destructive ? 'destructive' : 'default' }
 						onClick={ confirm }
-						disabled={ ! reasonOk || busy }
+						disabled={ ! reasonOk }
+						loading={ busy }
 						className={ cn( busy && 'cursor-wait' ) }
 					>
 						{ busy

@@ -246,7 +246,7 @@ export default function DiscountDialog( { open, money, onClose, onSubmit } ) {
 							>
 								{ __( 'Cancel', 'radius-hotel-booking' ) }
 							</Button>
-							<Button type="submit" disabled={ busy }>
+							<Button type="submit" loading={ busy }>
 								{ __(
 									'Save discount',
 									'radius-hotel-booking'

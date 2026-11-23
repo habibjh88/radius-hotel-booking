@@ -45,7 +45,11 @@ import { canAccess, useAccessMap } from '@/lib/access';
 import { applyPrimaryColor, isHexColor } from '@/lib/theme';
 import { cn } from '@/lib/utils';
 import coreSections from './sections';
+import { proSettings, showsProLocked } from '@/admin/proCatalog';
+import ProBadge from '@/modules/ProLocked/ProBadge';
+import ProLockedPanel from '@/modules/ProLocked/ProLockedPanel';
 import LeaveGuard from '@/components/common/LeaveGuard';
+import SettingsSearch, { fold } from './SettingsSearch';
 import UpgradeNotice from './UpgradeNotice';
 import useSettingsDrafts from './useSettingsDrafts';
 
@@ -65,11 +69,29 @@ function useSections() {
 				( section.Component || typeof section.render === 'function' ) &&
 				! core.some( ( { key } ) => key === section.key )
 		);
+		// Pro not active: its tabs show locked, after everything else.
+		const locked = showsProLocked()
+			? proSettings()
+					.filter(
+						( tab ) =>
+							! [ ...core, ...extra ].some(
+								( { key } ) => key === tab.key
+							)
+					)
+					.map( ( tab ) => ( {
+						...tab,
+						tool: true,
+						locked: true,
+						accessKey: 'page.settings',
+						Component: () => <ProLockedPanel item={ tab } />,
+					} ) )
+			: [];
 		// Tool tabs (Import / Export) after every settings tab, add-ons' too.
 		const all = [ ...core, ...extra ];
 		return [
 			...all.filter( ( section ) => ! section.tool ),
 			...all.filter( ( section ) => section.tool ),
+			...locked,
 		];
 	}, [] );
 }
@@ -104,6 +126,12 @@ function SectionNav( { sections, active, onSelect, isDirty } ) {
 								value={ section.key }
 							>
 								{ section.label }
+								{ section.locked
+									? ` (${ __(
+											'Pro',
+											'radius-hotel-booking'
+									  ) })`
+									: '' }
 								{ isDirty( section.key ) ? ' •' : '' }
 							</SelectItem>
 						) ) }
@@ -111,10 +139,10 @@ function SectionNav( { sections, active, onSelect, isDirty } ) {
 				</Select>
 			</div>
 			<nav
-				className="hidden md:block"
+				className="hidden border-t border-border pt-2 md:block"
 				aria-label={ __( 'Settings sections', 'radius-hotel-booking' ) }
 			>
-				<ul className="m-0 list-none space-y-1 p-0">
+				<ul className="m-0 list-none space-y-0.5 p-0">
 					{ sections.map( ( section ) => {
 						const Icon = section.icon || SettingsIcon;
 						const selected = section.key === active;
@@ -140,6 +168,7 @@ function SectionNav( { sections, active, onSelect, isDirty } ) {
 									<span className="min-w-0 flex-1 truncate">
 										{ section.label }
 									</span>
+									{ section.locked ? <ProBadge /> : null }
 									{ isDirty( section.key ) ? (
 										<span
 											className="h-2 w-2 shrink-0 rounded-full bg-warning"
@@ -186,7 +215,7 @@ function UnsavedBar( { saving, onSave, onDiscard } ) {
 				>
 					{ __( 'Discard', 'radius-hotel-booking' ) }
 				</Button>
-				<Button onClick={ onSave } disabled={ saving }>
+				<Button onClick={ onSave } loading={ saving }>
 					{ saving
 						? __( 'Saving…', 'radius-hotel-booking' )
 						: __( 'Save changes', 'radius-hotel-booking' ) }
@@ -197,13 +226,91 @@ function UnsavedBar( { saving, onSave, onDiscard } ) {
 }
 
 /**
+ * Scroll to a setting on the tab now on screen and flash it, then put the
+ * cursor in its control. Tries for a moment, as a lazy tab renders late.
+ *
+ * @param {Function} getRoot Returns the tab's content element.
+ * @param {Object}   target  `{ section, label, isTab }` from the search.
+ * @return {Function} Cancels the wait.
+ */
+function revealSetting( getRoot, target ) {
+	let tries = 0;
+	let timer = 0;
+	const find = ( root ) => {
+		const label = fold( target.label );
+		const cards = [ ...root.querySelectorAll( 'section' ) ];
+		const card = target.section
+			? cards.find(
+					( el ) =>
+						fold( el.querySelector( 'header h2' )?.textContent ) ===
+						fold( target.section )
+			  )
+			: cards.find(
+					( el ) =>
+						fold( el.querySelector( 'header h2' )?.textContent ) ===
+						label
+			  );
+		if ( ! target.section ) {
+			return card ? { row: card, control: null } : null;
+		}
+		const el = [ ...( card || root ).querySelectorAll( 'label, h4' ) ].find(
+			( item ) =>
+				fold( item.textContent ).replace( /\s*\*$/, '' ) === label
+		);
+		if ( ! el ) {
+			return null;
+		}
+		const control = el.htmlFor
+			? root.querySelector( `[id="${ CSS.escape( el.htmlFor ) }"]` )
+			: null;
+		return { row: el.parentElement || el, control };
+	};
+	const attempt = () => {
+		const root = getRoot();
+		const found = root && ! target.isTab ? find( root ) : null;
+		if ( ! found ) {
+			if ( target.isTab ) {
+				root?.scrollIntoView( { block: 'start', behavior: 'smooth' } );
+				return;
+			}
+			tries += 1;
+			if ( tries < 20 ) {
+				timer = window.setTimeout( attempt, 150 );
+			}
+			return;
+		}
+		found.row.scrollIntoView( { block: 'center', behavior: 'smooth' } );
+		found.row.animate?.(
+			[
+				{
+					backgroundColor:
+						'color-mix(in srgb, var(--primary) 16%, transparent)',
+					boxShadow:
+						'0 0 0 6px color-mix(in srgb, var(--primary) 16%, transparent)',
+				},
+				{
+					backgroundColor: 'transparent',
+					boxShadow: '0 0 0 6px transparent',
+				},
+			],
+			{ duration: 2400, easing: 'ease-out', delay: 250 }
+		);
+		if ( found.control && ! found.control.disabled ) {
+			found.control.focus( { preventScroll: true } );
+		}
+	};
+	timer = window.setTimeout( attempt, 50 );
+	return () => window.clearTimeout( timer );
+}
+
+/**
  * Loading placeholder.
  *
  * @return {JSX.Element} Skeleton.
  */
 function SettingsSkeleton() {
 	return (
-		<div className="grid gap-6 md:grid-cols-[13rem_minmax(0,1fr)]">
+		<div className="grid gap-6 md:grid-cols-[14rem_minmax(0,1fr)]">
 			<div className="hidden space-y-2 md:block">
 				{ [ 1, 2, 3 ].map( ( i ) => (
 					<Skeleton key={ i } className="h-9 w-full" />
@@ -224,6 +331,9 @@ export default function Settings( { only = '' } ) {
 	const state = useSettingsDrafts();
 	const [ params, setParams ] = useSearchParams();
 	const [ confirmReset, setConfirmReset ] = useState( false );
+	// The setting picked in the search, revealed once its tab is on screen.
+	const [ target, setTarget ] = useState( null );
+	const contentRef = useRef( null );
 
 	// Only tabs whose section the server knows (an add-on may be half-loaded)
 	// and whose access key is not locked (M13; the server refuses it anyway).
@@ -261,6 +371,17 @@ export default function Settings( { only = '' } ) {
 		  );
 
 	const select = ( key ) => setParams( { section: key } );
+
+	useEffect( () => {
+		if ( ! target || target.tab !== active?.key ) {
+			return undefined;
+		}
+		// Not cancelled when the target is cleared just below: the reveal
+		// gives up by itself within a few seconds.
+		revealSetting( () => contentRef.current, target );
+		setTarget( null );
+		return undefined;
+	}, [ target, active?.key ] );
 
 	// Warned before leaving with unsaved changes (LeaveGuard, below).
 	const anyDirty = state.dirtySections.length > 0;
@@ -368,6 +489,24 @@ export default function Settings( { only = '' } ) {
 		  };
 	const { Component } = active;
 
+	// What a tab gets when the search reads it in the background: its values,
+	// but nothing it does there is kept or saved.
+	const noop = () => {};
+	const readOnlyProps = ( section ) =>
+		sections.find( ( item ) => item.key === section )?.tool
+			? { ...toolProps, onImported: noop, blocked: true }
+			: {
+					value: state.drafts[ section ] ?? {},
+					setField: () => noop,
+					errors: {},
+					schema: state.schema[ section ] ?? {},
+					saved: state.saved?.[ section ] ?? {},
+					drafts: state.drafts ?? {},
+					save: () => Promise.resolve( null ),
+					saving: false,
+					accept: noop,
+			  };
+
 	return (
 		<>
 			{ /* Other screens: ask before unsaved settings are lost (tabs keep their drafts). */ }
@@ -376,16 +515,28 @@ export default function Settings( { only = '' } ) {
 			<div
 				className={ cn(
 					'grid gap-6',
-					! only && 'md:grid-cols-[13rem_minmax(0,1fr)]'
+					! only && 'md:grid-cols-[14rem_minmax(0,1fr)]'
 				) }
 			>
 				{ only ? null : (
-					<SectionNav
-						sections={ available }
-						active={ key }
-						onSelect={ select }
-						isDirty={ state.isDirty }
-					/>
+					<div className="min-w-0 space-y-2 self-start rounded-xl border border-border bg-card p-2 shadow-sm">
+						<SettingsSearch
+							tabs={ available }
+							active={ key }
+							activeRoot={ () => contentRef.current }
+							propsFor={ readOnlyProps }
+							onPick={ ( item ) => {
+								select( item.tab );
+								setTarget( item );
+							} }
+						/>
+						<SectionNav
+							sections={ available }
+							active={ key }
+							onSelect={ select }
+							isDirty={ state.isDirty }
+						/>
+					</div>
 				) }
 
 				<div className="min-w-0">
@@ -421,7 +572,7 @@ export default function Settings( { only = '' } ) {
 						) }
 					</div>
 
-					<div className="space-y-4">
+					<div ref={ contentRef } className="space-y-4">
 						<Suspense
 							fallback={ <Skeleton className="h-48 w-full" /> }
 						>

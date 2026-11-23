@@ -58,9 +58,9 @@ final class ActionCatalog {
 			'security.passcode_failed'    => array( self::SECURITY, __( 'Entered a wrong PIN', 'radius-hotel-booking' ) ),
 			'security.pin_locked'         => array( self::SECURITY, __( 'Locked out after wrong PINs', 'radius-hotel-booking' ) ),
 			'security.pin_changed'        => array( self::SECURITY, __( 'Changed a PIN', 'radius-hotel-booking' ) ),
-			'security.express_code_sent'  => array( self::SECURITY, __( 'Sent an express checkout code', 'radius-hotel-booking' ) ),
-			'security.express_locked'     => array( self::SECURITY, __( 'Express checkout code locked after wrong tries', 'radius-hotel-booking' ) ),
-			'security.express_recognised' => array( self::SECURITY, __( 'Recognised a guest at express checkout without a code', 'radius-hotel-booking' ) ),
+			'security.express_code_sent'  => array( self::SECURITY, __( 'Sent an express booking code', 'radius-hotel-booking' ) ),
+			'security.express_locked'     => array( self::SECURITY, __( 'Express booking code locked after wrong tries', 'radius-hotel-booking' ) ),
+			'security.express_recognised' => array( self::SECURITY, __( 'Recognised a guest at express booking without a code', 'radius-hotel-booking' ) ),
 			// M04: a banned guest tried to book on the website (refused with a generic message).
 			'security.booking_refused'    => array( self::SECURITY, __( 'Refused a website booking from a banned guest', 'radius-hotel-booking' ) ),
 

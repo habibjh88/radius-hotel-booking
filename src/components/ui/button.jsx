@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { cva } from 'class-variance-authority';
+import { Loader2 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
@@ -34,17 +35,51 @@ const buttonVariants = cva(
 	}
 );
 
+/**
+ * Button. `loading` disables it and puts a spinner before its label, so a
+ * slow save visibly works instead of only fading out.
+ */
 const Button = React.forwardRef(
-	( { className, variant, size, asChild = false, ...props }, ref ) => {
+	(
+		{
+			className,
+			variant,
+			size,
+			asChild = false,
+			loading = false,
+			disabled,
+			children,
+			...props
+		},
+		ref
+	) => {
 		const Comp = asChild ? Slot : 'button';
 		return (
 			<Comp
 				className={ cn(
-					buttonVariants( { variant, size, className } )
+					buttonVariants( { variant, size, className } ),
+					loading && 'disabled:opacity-75'
 				) }
 				ref={ ref }
+				disabled={ disabled || loading }
+				aria-busy={ loading || undefined }
 				{ ...props }
-			/>
+			>
+				{ /* Slot (asChild) needs exactly one child: pass it untouched. */ }
+				{ asChild ? (
+					children
+				) : (
+					<>
+						{ loading ? (
+							<Loader2
+								className="animate-spin"
+								aria-hidden="true"
+							/>
+						) : null }
+						{ children }
+					</>
+				) }
+			</Comp>
 		);
 	}
 );

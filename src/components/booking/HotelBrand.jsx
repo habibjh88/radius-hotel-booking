@@ -1,6 +1,6 @@
 /**
  * The hotel's logo and name (Settings → General → Logo / Hotel name) at the
- * top of the website's popups (sign-in, Express checkout). Renders nothing
+ * top of the website's popups (sign-in, Express booking). Renders nothing
  * when neither is set; `hasHotelBrand()` lets a popup keep its own header then.
  */
 import { __ } from '@wordpress/i18n';

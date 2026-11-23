@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-11-22T10:38:58+00:00",
+    "translation-revision-date": "2026-11-23T10:19:31+00:00",
     "generator": "WP-CLI\/2.12.0",
     "source": "src\/modules\/Rooms\/index.jsx",
     "domain": "messages",
@@ -13,12 +13,6 @@
             "Amenities": [
                 "\u00c9quipements"
             ],
-            "Floors": [
-                "\u00c9tages"
-            ],
-            "All rooms": [
-                "Toutes les chambres"
-            ],
             "%d child": [
                 "%d enfant",
                 "%d enfants"
@@ -31,8 +25,14 @@
                 "%d chambre",
                 "%d chambres"
             ],
+            "Floors": [
+                "\u00c9tages"
+            ],
             "Add room type": [
                 "Ajouter un type de chambre"
+            ],
+            "All rooms": [
+                "Toutes les chambres"
             ],
             "Try again": [
                 "R\u00e9essayer"
@@ -46,11 +46,11 @@
             "View": [
                 "Voir"
             ],
-            "No room types yet": [
-                "Aucun type de chambre pour le moment"
-            ],
             "The room types could not be loaded": [
                 "Les types de chambre n\u2019ont pas pu \u00eatre charg\u00e9s"
+            ],
+            "No room types yet": [
+                "Aucun type de chambre pour le moment"
             ],
             "Add your first room type, such as Standard Room or Suite, then add its rooms.": [
                 "Ajoutez votre premier type de chambre, comme Chambre standard ou Suite, puis ajoutez ses chambres."

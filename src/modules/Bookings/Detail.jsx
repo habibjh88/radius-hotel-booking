@@ -9,7 +9,7 @@
  * room) or check out as a button, the rest in a menu; each shown only when
  * the status allows it and the viewer holds the key.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { applyFilters } from '@wordpress/hooks';
 import { __, _n, sprintf } from '@wordpress/i18n';
@@ -57,8 +57,15 @@ import { toast, toastError } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import { useBooking, useBookingAction, useLineChange } from './api';
 import CheckInDialog from './components/CheckInDialog';
-import ExtendStayDialog from './components/ExtendStayDialog';
-import MoveGuestDialog from './components/MoveGuestDialog';
+import {
+	canUseExtra,
+	extraLineAction,
+	extraLineActions,
+	lockedLineActions,
+} from './lineActions';
+import ProBadge from '@/modules/ProLocked/ProBadge';
+import { proAddRoom, showsProLocked } from '@/admin/proCatalog';
+import ProLockedDialog from '@/modules/ProLocked/ProLockedDialog';
 import EditBookingGuest from './components/EditBookingGuest';
 import PaymentDue from '@/components/booking/PaymentDue';
 import LineEditor from './components/LineEditor';
@@ -108,6 +115,17 @@ const guestsLabel = ( line ) =>
 		.join( ' · ' );
 
 /**
+ * Whether *Add a room* shows locked (PRO badge): Pro not active, for the site
+ * owner, on a booking still going ahead.
+ *
+ * @param {Object} booking Booking.
+ * @return {boolean} Locked button shown.
+ */
+const lockedAddRoom = ( booking ) =>
+	showsProLocked() &&
+	[ 'pending', 'confirmed', 'checked_in' ].includes( booking?.status );
+
+/**
  * One room line.
  *
  * @param {Object}   props          Props.
@@ -116,7 +134,9 @@ const guestsLabel = ( line ) =>
  * @param {Function} props.onAction Called with `( action, line )`.
  * @return {JSX.Element} Line.
  */
-function Line( { line, actions = [], onAction } ) {
+function Line( { line, actions = [], onAction, onLocked } ) {
+	// Pro's actions, locked while Pro is not active (PRO badge).
+	const locked = lockedLineActions( line );
 	// The main move of the stay as a button; the rest in a menu.
 	const primary = [ 'check_in', 'check_out' ].find( ( a ) =>
 		actions.includes( a )
@@ -316,7 +336,7 @@ function Line( { line, actions = [], onAction } ) {
 					) ) }
 				</ul>
 			) : null }
-			{ primary || others.length || canEdit ? (
+			{ primary || others.length || locked.length || canEdit ? (
 				<div className="flex flex-wrap justify-end gap-2 pl-8">
 					{ canEdit ? (
 						<Button
@@ -329,7 +349,7 @@ function Line( { line, actions = [], onAction } ) {
 							{ __( 'Edit', 'radius-hotel-booking' ) }
 						</Button>
 					) : null }
-					{ others.length ? (
+					{ others.length || locked.length ? (
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button
@@ -400,6 +420,15 @@ function Line( { line, actions = [], onAction } ) {
 											: actionLabel( action ) }
 									</DropdownMenuItem>
 								) ) }
+								{ locked.map( ( item ) => (
+									<DropdownMenuItem
+										key={ item.action }
+										onSelect={ () => onLocked( item ) }
+									>
+										{ item.label }
+										<ProBadge className="ml-auto" />
+									</DropdownMenuItem>
+								) ) }
 							</DropdownMenuContent>
 						</DropdownMenu>
 					) : null }
@@ -448,9 +477,7 @@ export default function BookingDetail() {
 		check_in: useAccess( 'bookings.check_in' ),
 		check_out: useAccess( 'bookings.check_out' ),
 		no_show: useAccess( 'bookings.no_show' ),
-		move_room: useAccess( 'bookings.move_room' ),
 		undo_check_in: useAccess( 'bookings.undo_check_in' ),
-		extend_stay: useAccess( 'bookings.extend_stay' ),
 		line_add: useAccess( 'bookings.line_add' ),
 		line_edit: useAccess( 'bookings.line_edit' ),
 		line_remove: useAccess( 'bookings.line_remove' ),
@@ -458,7 +485,12 @@ export default function BookingDetail() {
 		release: useAccess( 'bookings.cancel' ),
 	};
 	const allowed = ( list ) =>
-		( list || [] ).filter( ( action ) => 'locked' !== levels[ action ] );
+		( list || [] ).filter( ( action ) =>
+			// An add-on's action (Pro: move, extend) by its own access key.
+			extraLineAction( action )
+				? canUseExtra( action )
+				: 'locked' !== levels[ action ]
+		);
 	// The dialog open: `{ action, line? }`.
 	const [ dialog, setDialog ] = useState( null );
 	// A check-out recorded late: when the guest really left ('' = now).
@@ -466,6 +498,8 @@ export default function BookingDetail() {
 	useEffect( () => setActualAt( '' ), [ dialog ] );
 	// The room editor: `{ line }` (line null = add a room).
 	const [ editor, setEditor ] = useState( null );
+	// A locked Pro action opened from a room's menu (Pro not active).
+	const [ lockedItem, setLockedItem ] = useState( null );
 	const lineChange = useLineChange( id );
 
 	// `?edit=<line id>` (the list's Edit button, R1-T8): open that room's editor once.
@@ -493,15 +527,7 @@ export default function BookingDetail() {
 
 	const run = (
 		action,
-		{
-			line = null,
-			reason = '',
-			roomId = 0,
-			maintenance,
-			ratePlanId,
-			expectedTotal,
-			at = '',
-		} = {}
+		{ line = null, reason = '', roomId = 0, at = '' } = {}
 	) =>
 		act
 			.mutateAsync( {
@@ -509,9 +535,6 @@ export default function BookingDetail() {
 				lineId: line?.id,
 				reason,
 				roomId,
-				maintenance,
-				ratePlanId,
-				expectedTotal,
 				at,
 			} )
 			.then( ( result ) => {
@@ -837,6 +860,26 @@ export default function BookingDetail() {
 										'radius-hotel-booking'
 									) }
 								</Button>
+							) : lockedAddRoom( booking ) ? (
+								// Pro's Add a room, locked while Pro is not active.
+								<Button
+									type="button"
+									variant="outline"
+									size="sm"
+									onClick={ () =>
+										setLockedItem( proAddRoom() )
+									}
+								>
+									<Plus
+										className="h-4 w-4"
+										aria-hidden="true"
+									/>
+									{ __(
+										'Add a room',
+										'radius-hotel-booking'
+									) }
+									<ProBadge />
+								</Button>
 							) : null
 						}
 					>
@@ -847,6 +890,7 @@ export default function BookingDetail() {
 									line={ line }
 									actions={ allowed( line.actions ) }
 									onAction={ onLineAction }
+									onLocked={ setLockedItem }
 								/>
 							) ) }
 						</ul>
@@ -1063,29 +1107,36 @@ export default function BookingDetail() {
 						} )
 				}
 			/>
-			<ExtendStayDialog
-				line={ 'extend_stay' === dialog?.action ? dialog.line : null }
-				onClose={ () => setDialog( null ) }
-				onConfirm={ ( { ratePlanId, expectedTotal } ) =>
-					run( 'extend_stay', {
-						line: dialog.line,
-						ratePlanId,
-						expectedTotal,
-					} )
-				}
+			<ProLockedDialog
+				item={ lockedItem }
+				onClose={ () => setLockedItem( null ) }
 			/>
-			<MoveGuestDialog
-				line={ 'move_room' === dialog?.action ? dialog.line : null }
-				onClose={ () => setDialog( null ) }
-				onConfirm={ ( { roomId, reason, maintenance } ) =>
-					run( 'move_room', {
-						line: dialog.line,
-						roomId,
-						reason,
-						maintenance,
-					} )
-				}
-			/>
+			{ /* Add-on actions on a room (Pro: Extend stay, Move to another room). */ }
+			<Suspense fallback={ null }>
+				{ extraLineActions().map( ( { action, Dialog } ) => (
+					<Dialog
+						key={ action }
+						line={ action === dialog?.action ? dialog.line : null }
+						onClose={ () => setDialog( null ) }
+						onConfirm={ ( values ) =>
+							act
+								.mutateAsync( {
+									...values,
+									action,
+									lineId: dialog.line.id,
+								} )
+								.then( ( result ) => {
+									toast.success( result.message );
+									return result;
+								} )
+								.catch( ( err ) => {
+									toastError( err );
+									throw err;
+								} )
+						}
+					/>
+				) ) }
+			</Suspense>
 			<CheckInDialog
 				line={ 'check_in' === dialog?.action ? dialog.line : null }
 				onClose={ () => setDialog( null ) }

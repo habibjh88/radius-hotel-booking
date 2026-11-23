@@ -691,7 +691,12 @@ class GuestAccount {
 			throw DomainException::invalid( $errors, reset( $errors ) );
 		}
 
-		$name = md5( strtolower( preg_replace( '/\s+/', '', $login ) ) );
+		// Count failures per account, not per spelling: `+225 07…`, `0707…` and
+		// `07-07-…` all reach the same user, so each must not get its own counter.
+		$owner = get_user_by( 'login', $login );
+		$owner = $owner ? $owner : ( is_email( $login ) ? get_user_by( 'email', $login ) : false );
+		$owner = $owner ? (int) $owner->ID : self::findUserByPhone( $login, true );
+		$name  = $owner > 0 ? 'u' . $owner : md5( strtolower( preg_replace( '/\s+/', '', $login ) ) );
 		$mine = 'rtbp_lf_' . md5( $name . '|' . RateLimitMiddleware::clientKey() );
 		$all  = 'rtbp_lf_' . $name;
 		if ( (int) get_transient( $mine ) >= self::MAX_FAILS || (int) get_transient( $all ) >= self::MAX_FAILS_ALL ) {

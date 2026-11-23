@@ -1,5 +1,5 @@
 /**
- * Express checkout (Settings → Guest accounts): a returning guest enters
+ * Express booking (Settings → Guest accounts): a returning guest enters
  * their phone number and, when the hotel knows it, the 6-digit code sent to
  * them; their details then fill the form (Frontend\ExpressCheckout). A new
  * number only fills the phone field. Nothing personal is shown before the
@@ -201,7 +201,7 @@ export default function ExpressCheckout( {
 							<Button
 								type="submit"
 								className="h-11 w-full"
-								disabled={ busy }
+								loading={ busy }
 							>
 								{ __( 'Continue', 'radius-hotel-booking' ) }
 							</Button>
@@ -261,7 +261,7 @@ export default function ExpressCheckout( {
 							<Button
 								type="submit"
 								className="h-11 w-full"
-								disabled={ busy }
+								loading={ busy }
 							>
 								{ __(
 									'Fill in my details',

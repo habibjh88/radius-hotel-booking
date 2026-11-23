@@ -45,20 +45,39 @@ class AvailabilityService {
 	public const STAFF_GRACE_MINUTES = 30;
 
 	/**
-	 * Whether the front desk may sell a slot that has already started, until
-	 * it ends (Settings → Booking rules, `deskStartedSlots`; §10 #49).
+	 * Whether a slot that has already started may still be sold, until
+	 * `startedStopMinutes()` before it ends (Settings → Booking rules →
+	 * Slots that have already started; §10 #49). The front desk, with
+	 * `deskStartedSlots`: any slot, overnight too (a walk-in at 22:00 takes
+	 * the Overnight 20:00→08:00). The website, with `startedSlotsWebsite`:
+	 * only a stay that starts and ends on the same day (Half Day, Day use).
 	 *
-	 * @param string $audience Audience.
+	 * @param string          $audience Audience.
+	 * @param StayWindow|null $window   The slot; null asks only whether the audience may.
 	 * @return bool
 	 */
-	public static function sellsStarted( string $audience ): bool {
-		return self::STAFF === $audience && (bool) rtbp_setting( 'booking', 'deskStartedSlots', false );
+	public static function sellsStarted( string $audience, ?StayWindow $window = null ): bool {
+		if ( self::STAFF === $audience ) {
+			return (bool) rtbp_setting( 'booking', 'deskStartedSlots', false );
+		}
+		return self::PUBLIC === $audience
+			&& (bool) rtbp_setting( 'booking', 'startedSlotsWebsite', false )
+			&& ( null === $window || ! $window->crossesMidnight() );
 	}
 
 	/**
-	 * Whether a window can no longer be sold (`past`): it started (staff:
-	 * more than the grace ago) or, when the desk sells started slots, it
-	 * has ended.
+	 * Minutes before its end a started slot stops being sold.
+	 *
+	 * @return int
+	 */
+	public static function startedStopMinutes(): int {
+		return max( 0, min( 720, (int) rtbp_setting( 'booking', 'startedSlotsStopMinutes', 30 ) ) );
+	}
+
+	/**
+	 * Whether a window can no longer be sold (`past`). A same-day slot that
+	 * may be sold started: from `startedStopMinutes()` before its end. Else
+	 * once it started (staff: more than the grace ago).
 	 *
 	 * @param StayWindow        $window   Window.
 	 * @param string            $audience Audience.
@@ -66,15 +85,15 @@ class AvailabilityService {
 	 * @return bool
 	 */
 	public static function tooLate( StayWindow $window, string $audience, DateTimeImmutable $now ): bool {
-		if ( self::sellsStarted( $audience ) ) {
-			return $window->endGmt()->getTimestamp() <= $now->getTimestamp();
+		if ( self::sellsStarted( $audience, $window ) ) {
+			return $window->endGmt()->getTimestamp() - self::startedStopMinutes() * MINUTE_IN_SECONDS <= $now->getTimestamp();
 		}
 		$grace = self::STAFF === $audience ? self::STAFF_GRACE_MINUTES * MINUTE_IN_SECONDS : 0;
 		return $window->startGmt()->getTimestamp() < $now->getTimestamp() - $grace;
 	}
 
 	/**
-	 * The window as sold now: a started slot the desk sells runs from now
+	 * The window as sold now: a started slot that may be sold runs from now
 	 * (to the minute), so the room only has to be free from now on and the
 	 * stay never overlaps the guest who left this morning. Else unchanged.
 	 *
@@ -85,7 +104,7 @@ class AvailabilityService {
 	 */
 	public static function soldFrom( StayWindow $window, string $audience, DateTimeImmutable $now ): StayWindow {
 		$minute = $now->setTimestamp( $now->getTimestamp() - $now->getTimestamp() % MINUTE_IN_SECONDS );
-		if ( self::sellsStarted( $audience ) && $window->startGmt()->getTimestamp() < $minute->getTimestamp() && $minute->getTimestamp() < $window->endGmt()->getTimestamp() ) {
+		if ( self::sellsStarted( $audience, $window ) && $window->startGmt()->getTimestamp() < $minute->getTimestamp() && $minute->getTimestamp() < $window->endGmt()->getTimestamp() ) {
 			return $window->from( $minute );
 		}
 		return $window;
@@ -250,7 +269,7 @@ class AvailabilityService {
 
 				// Room by room (only the type's own rooms).
 				if ( ! $reason && $window ) {
-					// A started slot the desk sells: the room must be free from now.
+					// A started slot that may be sold: the room must be free from now.
 					$start = self::soldFrom( $window, $audience, $now )->startGmt()->getTimestamp();
 					$end   = $window->endGmt()->getTimestamp();
 					foreach ( $rooms as $room ) {
@@ -294,12 +313,18 @@ class AvailabilityService {
 	 * cut-off. Staff are not bound by them. Shared by the search and the
 	 * write path, so a guest cannot skip them by posting directly.
 	 *
+	 * The cut-off closes today for stays that have not started yet. A
+	 * same-day slot that has already started and that the website may still
+	 * sell (`sellsStarted()`) is left to its own stop time instead, so the
+	 * two settings never have to be lined up.
+	 *
 	 * @param string            $arrival  Local arrival date.
 	 * @param string            $audience `staff` or `public`.
 	 * @param DateTimeImmutable $now      Now.
+	 * @param StayWindow|null   $window   The slot asked for, when known.
 	 * @return array|null Reason, or null when allowed.
 	 */
-	public static function dateRuleReason( string $arrival, string $audience, DateTimeImmutable $now ): ?array {
+	public static function dateRuleReason( string $arrival, string $audience, DateTimeImmutable $now, ?StayWindow $window = null ): ?array {
 		if ( self::PUBLIC !== $audience ) {
 			return null;
 		}
@@ -309,8 +334,12 @@ class AvailabilityService {
 			return self::reason( 'booking_window' );
 		}
 		if ( $arrival === $today ) {
-			$cutoff = (string) rtbp_setting( 'booking', 'sameDayCutoff', '14:00' );
-			if ( ! rtbp_setting( 'booking', 'sameDayEnabled', false ) || $now->setTimezone( Dates::timezone() )->format( 'H:i' ) >= $cutoff ) {
+			if ( ! rtbp_setting( 'booking', 'sameDayEnabled', false ) ) {
+				return self::reason( 'same_day_cutoff' );
+			}
+			$cutoff  = (string) rtbp_setting( 'booking', 'sameDayCutoff', '14:00' );
+			$started = $window && self::sellsStarted( $audience, $window ) && $window->startGmt()->getTimestamp() <= $now->getTimestamp();
+			if ( ! $started && $now->setTimezone( Dates::timezone() )->format( 'H:i' ) >= $cutoff ) {
 				return self::reason( 'same_day_cutoff' );
 			}
 		}
@@ -600,7 +629,7 @@ class AvailabilityService {
 			return self::reason( 'past' );
 		}
 
-		$date_rule = self::dateRuleReason( $request['arrival'], $audience, $now );
+		$date_rule = self::dateRuleReason( $request['arrival'], $audience, $now, $window );
 		if ( $date_rule ) {
 			return $date_rule;
 		}

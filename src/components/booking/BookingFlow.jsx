@@ -559,7 +559,7 @@ export default function BookingFlow( {
 						expected_total: line.total,
 					} ) ),
 					guest: {
-						// Express checkout's masked details are not sent back:
+						// Express booking's masked details are not sent back:
 						// the server takes them from the record.
 						first_name: guestForm.express_hint?.first_name
 							? ''
@@ -581,7 +581,7 @@ export default function BookingFlow( {
 					consent,
 					house_rules: rulesAccepted,
 					company_website: guestForm.company_website,
-					// Express checkout's proof: the server fills the rest from the record.
+					// Express booking's proof: the server fills the rest from the record.
 					...( guestForm.express_token
 						? { express_token: guestForm.express_token }
 						: {} ),
@@ -816,6 +816,7 @@ export default function BookingFlow( {
 					onGuestForm={ ( patch ) =>
 						setGuestForm( ( prev ) => ( { ...prev, ...patch } ) )
 					}
+					picksRoom={ false !== rules.guestPicksRoom }
 				/>
 				<Face
 					visible={ visible }

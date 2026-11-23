@@ -65,10 +65,9 @@ class PermissionMiddleware implements MiddlewareInterface {
 		/**
 		 * 2. Check the referer to confirm the request originates from this domain.
 		 */
-		$referer        = $request->get_header( 'referer' );
-		$allowed_domain = home_url();
+		$referer = (string) $request->get_header( 'referer' );
 
-		if ( empty( $referer ) || strpos( $referer, $allowed_domain ) !== 0 ) {
+		if ( '' === $referer || ! self::sameOrigin( $referer ) ) {
 			return ApiResponse::forbidden( __( 'Invalid request source', 'radius-hotel-booking' ) )->send();
 		}
 
@@ -115,6 +114,25 @@ class PermissionMiddleware implements MiddlewareInterface {
 	 */
 	public function byPassRequest( WP_REST_Request $request, callable $next ) {
 		return $next( $request );
+	}
+
+	/**
+	 * Whether a URL is on the site's own origin: same scheme, host and port as
+	 * home_url(). A prefix test would also accept `https://site.com.evil.example/`.
+	 *
+	 * @param string $url URL (a Referer).
+	 * @return bool
+	 */
+	protected static function sameOrigin( string $url ): bool {
+		$home = wp_parse_url( home_url() );
+		$from = wp_parse_url( $url );
+		if ( ! is_array( $home ) || ! is_array( $from ) || empty( $from['host'] ) ) {
+			return false;
+		}
+		$port = static fn( array $u ) => (int) ( $u['port'] ?? ( 'https' === strtolower( (string) ( $u['scheme'] ?? '' ) ) ? 443 : 80 ) );
+		return strtolower( (string) ( $from['scheme'] ?? '' ) ) === strtolower( (string) ( $home['scheme'] ?? '' ) )
+			&& strtolower( $from['host'] ) === strtolower( (string) ( $home['host'] ?? '' ) )
+			&& $port( $from ) === $port( $home );
 	}
 
 	/**

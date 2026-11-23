@@ -4,12 +4,10 @@
  * it or put it on another floor, set its state with a reason, remove it.
  */
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import {
 	DoorOpen,
 	ArrowRightLeft,
-	Layers,
 	ListPlus,
 	MoreHorizontal,
 	Pencil,
@@ -96,66 +94,40 @@ export default function RoomsTab( { type } ) {
 		);
 	}
 
-	if ( ! floors.length && ! groups.some( ( group ) => group.rooms.length ) ) {
-		return (
-			<Panel>
-				<EmptyState
-					icon={ Layers }
-					title={ __(
-						'Add your floors first',
-						'radius-hotel-booking'
-					) }
-					description={ __(
-						'Every room sits on a floor. Create the floors, then add rooms here.',
-						'radius-hotel-booking'
-					) }
-					action={
-						<Button asChild>
-							<Link to="/rooms/floors">
-								{ __( 'Go to floors', 'radius-hotel-booking' ) }
-							</Link>
-						</Button>
-					}
-					className="border-0"
-				/>
-			</Panel>
-		);
-	}
-
 	const withRooms = groups.filter( ( group ) => group.rooms.length );
 	const total = withRooms.reduce(
 		( sum, group ) => sum + group.rooms.length,
 		0
+	);
+	// A hotel without floors (one level): no floor headings or counts.
+	const noFloors = ! floors.length;
+	const roomCount = sprintf(
+		/* translators: %d: number of rooms. */
+		_n( '%d room', '%d rooms', total, 'radius-hotel-booking' ),
+		total
 	);
 
 	return (
 		<div className="space-y-4">
 			<div className="flex flex-wrap items-center justify-between gap-3">
 				<p className="m-0 text-sm text-muted-foreground">
-					{ sprintf(
-						/* translators: 1: number of rooms, 2: number of floors. */
-						__( '%1$s on %2$s', 'radius-hotel-booking' ),
-						sprintf(
-							/* translators: %d: number of rooms. */
-							_n(
-								'%d room',
-								'%d rooms',
-								total,
-								'radius-hotel-booking'
-							),
-							total
-						),
-						sprintf(
-							/* translators: %d: number of floors. */
-							_n(
-								'%d floor',
-								'%d floors',
-								withRooms.length,
-								'radius-hotel-booking'
-							),
-							withRooms.length
-						)
-					) }
+					{ noFloors
+						? roomCount
+						: sprintf(
+								/* translators: 1: number of rooms, 2: number of floors. */
+								__( '%1$s on %2$s', 'radius-hotel-booking' ),
+								roomCount,
+								sprintf(
+									/* translators: %d: number of floors. */
+									_n(
+										'%d floor',
+										'%d floors',
+										withRooms.length,
+										'radius-hotel-booking'
+									),
+									withRooms.length
+								)
+						  ) }
 				</p>
 				{ canManage ? (
 					<div className="flex flex-wrap gap-2">
@@ -181,7 +153,7 @@ export default function RoomsTab( { type } ) {
 						title={ sprintf(
 							/* translators: 1: floor name, 2: number of rooms. */
 							__( '%1$s (%2$d)', 'radius-hotel-booking' ),
-							group.name,
+							group.name || __( 'Rooms', 'radius-hotel-booking' ),
 							group.rooms.length
 						) }
 						actions={
@@ -578,7 +550,7 @@ function StateDialog( { type, room, onClose } ) {
 						>
 							{ __( 'Cancel', 'radius-hotel-booking' ) }
 						</Button>
-						<Button type="submit" disabled={ save.isPending }>
+						<Button type="submit" loading={ save.isPending }>
 							{ __( 'Save', 'radius-hotel-booking' ) }
 						</Button>
 					</DialogFooter>

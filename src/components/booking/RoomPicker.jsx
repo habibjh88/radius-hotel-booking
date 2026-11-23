@@ -235,7 +235,10 @@ export default function RoomPicker( {
 						<section
 							key={ floor.id }
 							className="overflow-hidden rounded-xl border border-border bg-card"
-							aria-label={ floor.name }
+							aria-label={
+								floor.name ||
+								__( 'Rooms', 'radius-hotel-booking' )
+							}
 						>
 							<header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-border bg-muted/40 px-4 py-2.5">
 								<span className="inline-flex items-center gap-2 text-sm font-semibold text-heading">
@@ -243,7 +246,9 @@ export default function RoomPicker( {
 										className="h-4 w-4 text-muted-foreground"
 										aria-hidden="true"
 									/>
-									{ floor.name }
+									{ /* No floors: one group, headed "Rooms". */ }
+									{ floor.name ||
+										__( 'Rooms', 'radius-hotel-booking' ) }
 									{ chosen && onToggle ? (
 										<span className="rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-semibold text-primary">
 											{ sprintf(

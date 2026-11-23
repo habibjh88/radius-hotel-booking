@@ -137,65 +137,6 @@ export function useFloors() {
 	} );
 }
 
-/**
- * A floor write. Every floor endpoint answers with the whole list, which
- * replaces the cache.
- *
- * @param {Function} send Called with the mutation variables; returns the request.
- * @return {Object} Mutation.
- */
-function useFloorMutation( send ) {
-	const client = useQueryClient();
-	return useMutation( {
-		mutationFn: ( variables ) =>
-			send( variables ).then( ( { data } ) => data.floors ),
-		onSuccess: ( floors ) => client.setQueryData( FLOORS_KEY, floors ),
-	} );
-}
-
-export const useAddFloor = () =>
-	useFloorMutation( ( name ) => post( 'floors', { name } ) );
-
-export const useRenameFloor = () =>
-	useFloorMutation( ( { id, name } ) => put( `floors/${ id }`, { name } ) );
-
-export const useDeleteFloor = () =>
-	useFloorMutation( ( id ) => del( `floors/${ id }` ) );
-
-/**
- * Save a new floor order. Optimistic: the list moves at once and goes back
- * if the server refuses.
- *
- * @return {Object} Mutation; `mutate( ids )`.
- */
-export function useReorderFloors() {
-	const client = useQueryClient();
-	return useMutation( {
-		mutationFn: ( ids ) =>
-			put( 'floors/order', { ids } ).then( ( { data } ) => data.floors ),
-		onMutate: async ( ids ) => {
-			await client.cancelQueries( { queryKey: FLOORS_KEY } );
-			const previous = client.getQueryData( FLOORS_KEY );
-			if ( previous ) {
-				const byId = new Map(
-					previous.map( ( floor ) => [ floor.id, floor ] )
-				);
-				client.setQueryData(
-					FLOORS_KEY,
-					ids.map( ( id ) => byId.get( id ) ).filter( Boolean )
-				);
-			}
-			return { previous };
-		},
-		onError: ( _error, _ids, context ) => {
-			if ( context?.previous ) {
-				client.setQueryData( FLOORS_KEY, context.previous );
-			}
-		},
-		onSuccess: ( floors ) => client.setQueryData( FLOORS_KEY, floors ),
-	} );
-}
-
 export const AMENITIES_KEY = [ 'amenities' ];
 
 /**
