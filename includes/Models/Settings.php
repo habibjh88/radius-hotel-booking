@@ -161,6 +161,7 @@ class Settings extends BaseModel {
 
 		$pattern = $wpdb->esc_like( $this->prefix ) . '%';
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- lists the plugin's own option names.
 		$results = $wpdb->get_col(
 			$wpdb->prepare(
 				"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",

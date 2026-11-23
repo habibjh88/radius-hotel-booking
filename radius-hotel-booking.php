@@ -319,7 +319,7 @@ final class RadiusHotelBooking {
 	 * @return void
 	 */
 	public function load_textdomain() {
-		load_plugin_textdomain( 'radius-hotel-booking', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+		load_plugin_textdomain( 'radius-hotel-booking', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' ); // phpcs:ignore PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound -- loads the bundled translations in languages/.
 	}
 
 	/**

@@ -381,8 +381,8 @@ class StayExtension {
 	 */
 	private function soldPlans( int $room_type_id ): array {
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the desk's option list, live.
-		return array_map(
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the desk's option list, live.
+		$ids = array_map(
 			'intval',
 			(array) $wpdb->get_col(
 				$wpdb->prepare(
@@ -394,6 +394,8 @@ class StayExtension {
 				)
 			)
 		);
+		// phpcs:enable
+		return $ids;
 	}
 
 	/**

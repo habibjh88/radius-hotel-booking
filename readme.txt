@@ -127,6 +127,9 @@ Fixed admin screens failing when another plugin changes WordPress's shared REST 
 Added extension points so add-ons can add settings tabs and reuse the admin interface.
 New admin dashboard with a grouped sidebar, today's arrivals and departures, and a setup checklist.
 The brand colour chosen in Settings now restyles the whole dashboard, including the logo.
+New Settings → Display option sets the room type page's content width.
+Security: list sorting, search and filter parameters can no longer inject SQL.
+Fixed Plugin Check errors and warnings in shipped code.
 Removed the example Items screen, shortcode, block, widget and e-mail.
 Now requires PHP 8.0 or later.
 New Hotel Dashboard page: staff use the dashboard on your website, with a sign-in screen.

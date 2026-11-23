@@ -46,16 +46,16 @@ class BookingQuery {
 		$rooms      = array();
 		if ( $type_ids ) {
 			$in = implode( ',', array_fill( 0, count( $type_ids ), '%d' ) );
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- placeholders built above.
-			$rows = $wpdb->get_results( $wpdb->prepare( "SELECT id, name FROM %i WHERE id IN ( $in )", array_merge( array( rtbp_table( 'room_types' ) ), $type_ids ) ), ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- placeholders built above.
+			$rows = $wpdb->get_results( $wpdb->prepare( "SELECT id, name FROM %i WHERE id IN ( $in )", array_merge( array( rtbp_table( 'room_types' ) ), $type_ids ) ), ARRAY_A );
 			foreach ( (array) $rows as $row ) {
 				$room_types[ (int) $row['id'] ] = (string) $row['name'];
 			}
 		}
 		if ( $room_ids ) {
 			$in = implode( ',', array_fill( 0, count( $room_ids ), '%d' ) );
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- placeholders built above.
-			$rows = $wpdb->get_results( $wpdb->prepare( "SELECT id, number, state, deleted_at FROM %i WHERE id IN ( $in )", array_merge( array( rtbp_table( 'rooms' ) ), $room_ids ) ), ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- placeholders built above.
+			$rows = $wpdb->get_results( $wpdb->prepare( "SELECT id, number, state, deleted_at FROM %i WHERE id IN ( $in )", array_merge( array( rtbp_table( 'rooms' ) ), $room_ids ) ), ARRAY_A );
 			foreach ( (array) $rows as $row ) {
 				$rooms[ (int) $row['id'] ] = array(
 					'number'  => (string) $row['number'],

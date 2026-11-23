@@ -145,7 +145,7 @@ class GuestRepository extends BaseRepository {
 		list( $where, $args ) = $this->filterSql( $filters );
 		$table                = rtbp_table( 'guests' );
 		// Recently seen first; guests who never stayed by newest record.
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $where holds only fixed conditions with placeholders.
+		// phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $where holds only fixed conditions with placeholders.
 		$total = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM %i WHERE $where", array_merge( array( $table ), $args ) ) );
 		$rows  = $wpdb->get_results(
 			$wpdb->prepare(
@@ -173,7 +173,7 @@ class GuestRepository extends BaseRepository {
 		global $wpdb;
 		list( $where, $args ) = $this->filterSql( array( 'q' => $terms ) );
 		$tail                 = $terms['tail'] ?? '';
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $where holds only fixed conditions with placeholders.
+		// phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $where holds only fixed conditions with placeholders.
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT * FROM %i WHERE $where ORDER BY ( %s <> '' AND phone_tail = %s ) DESC, name_search, id LIMIT %d",
@@ -196,7 +196,7 @@ class GuestRepository extends BaseRepository {
 	public function stays( int $guest_id, int $limit = 100 ): array {
 		global $wpdb;
 		// No GROUP BY: MariaDB with ONLY_FULL_GROUP_BY refuses non-grouped columns, which left the list empty.
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the guest's history, index guest_id.
+		// phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the guest's history, index guest_id.
 		$bookings = $wpdb->get_results(
 			$wpdb->prepare(
 				'SELECT b.id, b.reference, b.status, b.payment_status, b.total, b.balance_due, b.source,
@@ -221,7 +221,7 @@ class GuestRepository extends BaseRepository {
 		}
 		$ids          = array_map( static fn( $row ) => (int) $row['id'], $bookings );
 		$placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- $placeholders is only "%d,…".
+		// phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- $placeholders is only "%d,…".
 		$lines = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT id, booking_id, room_number, rate_plan_name, start_at, end_at, status, total FROM %i WHERE booking_id IN ( $placeholders ) ORDER BY start_at, id",
@@ -253,7 +253,7 @@ class GuestRepository extends BaseRepository {
 		global $wpdb;
 		$in    = "'" . implode( "','", ReportRepository::OCCUPYING_STATUSES ) . "'";
 		$where = null === $guest_id ? '1 = 1' : $wpdb->prepare( 'g.id = %d', $guest_id );
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $in holds fixed status names, $where is prepared above.
+		// phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $in holds fixed status names, $where is prepared above.
 		$wpdb->query(
 			$wpdb->prepare(
 				"UPDATE %i g SET

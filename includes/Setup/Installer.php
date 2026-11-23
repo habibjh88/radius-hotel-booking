@@ -201,12 +201,11 @@ class Installer {
 
 		$current_prefix = RADIUS_HOTEL_BOOKING_DB_VERSION . '_';
 
-		// The table name is built from $wpdb->prefix, not from request data, and
-		// a table name cannot be a prepare() placeholder.
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- one-off clean-up on upgrade.
 		$wpdb->query(
 			$wpdb->prepare(
-				"DELETE FROM `{$table}` WHERE migration NOT LIKE %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				'DELETE FROM %i WHERE migration NOT LIKE %s',
+				$table,
 				$current_prefix . '%'
 			)
 		);

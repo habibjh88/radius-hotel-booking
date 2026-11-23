@@ -74,7 +74,8 @@ function rtbp_get_template( $template_name, $args = array(), $template_path = ''
 			);
 			unset( $args['action_args'] );
 		}
-		extract( $args ); // @codingStandardsIgnoreLine
+		// EXTR_SKIP: an argument can never overwrite $template (the file included below) or $action_args.
+		extract( $args, EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract -- template variables, the WooCommerce convention.
 	}
 
 	do_action( 'rtbp_before_template_part', $action_args['template_name'], $action_args['template_path'], $action_args['located'], $action_args['args'] );

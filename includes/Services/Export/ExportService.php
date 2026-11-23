@@ -296,7 +296,7 @@ class ExportService {
 		if ( '' !== $token ) {
 			ProtectedFiles::delete( $token );
 		}
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- plugin table.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- plugin table; a write, nothing to cache.
 		$wpdb->update(
 			rtbp_table( 'exports' ),
 			array(

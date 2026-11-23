@@ -48,7 +48,8 @@ class Sequence {
 
 		$increment = static fn() => $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$wpdb->prepare(
-				"UPDATE {$table} SET value = LAST_INSERT_ID( value + 1 ), updated_at = %s WHERE name = %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				'UPDATE %i SET value = LAST_INSERT_ID( value + 1 ), updated_at = %s WHERE name = %s',
+				$table,
 				$now,
 				$name
 			)
@@ -64,7 +65,8 @@ class Sequence {
 			// First use of this counter: create it one below the first number.
 			$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 				$wpdb->prepare(
-					"INSERT IGNORE INTO {$table} (name, value, updated_at) VALUES (%s, %d, %s)", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					'INSERT IGNORE INTO %i (name, value, updated_at) VALUES (%s, %d, %s)',
+					$table,
 					$name,
 					max( 0, $start - 1 ),
 					$now
@@ -94,7 +96,7 @@ class Sequence {
 		$table = self::table();
 
 		return (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-			$wpdb->prepare( "SELECT value FROM {$table} WHERE name = %s", $name ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->prepare( 'SELECT value FROM %i WHERE name = %s', $table, $name )
 		);
 	}
 
@@ -113,9 +115,9 @@ class Sequence {
 		self::assert_name( $name );
 		$table = self::table();
 		$now   = Dates::to_gmt_db( Dates::now() );
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- the table name is the plugin's own.
-		$wpdb->query( $wpdb->prepare( "INSERT IGNORE INTO {$table} (name, value, updated_at) VALUES (%s, %d, %s)", $name, max( 0, $value ), $now ) );
-		$wpdb->query( $wpdb->prepare( "UPDATE {$table} SET value = GREATEST( value, %d ), updated_at = %s WHERE name = %s", max( 0, $value ), $now, $name ) );
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery -- a counter row, never cached.
+		$wpdb->query( $wpdb->prepare( 'INSERT IGNORE INTO %i (name, value, updated_at) VALUES (%s, %d, %s)', $table, $name, max( 0, $value ), $now ) );
+		$wpdb->query( $wpdb->prepare( 'UPDATE %i SET value = GREATEST( value, %d ), updated_at = %s WHERE name = %s', $table, max( 0, $value ), $now, $name ) );
 		// phpcs:enable
 	}
 

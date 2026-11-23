@@ -87,7 +87,7 @@ class BookingLineList {
 			$cargs   = array_merge( $cargs, $sql[1] );
 		}
 		$from = self::fromSql();
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the fragments hold placeholders only; every value is bound. A live list.
+		// phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the fragments hold placeholders only; every value is bound. A live list.
 		$counts = (array) $wpdb->get_row(
 			$wpdb->prepare( 'SELECT ' . implode( ', ', $cases ) . " FROM {$from[0]} WHERE {$where}", array_merge( $cargs, $from[1], $args ) ),
 			ARRAY_A

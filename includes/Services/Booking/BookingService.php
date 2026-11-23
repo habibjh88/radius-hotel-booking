@@ -388,6 +388,7 @@ class BookingService {
 				// critical review): that would show their details to the visitor.
 				// Say what to change, never whose details these are.
 				$kind = (string) ( $match['match'] ?? '' );
+				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- fixed translated messages, sent as JSON; React escapes them.
 				throw PublicBookingService::mismatch( 'name', in_array( $kind, array( 'phone', 'email' ), true ) ? array( $kind ) : array() );
 			}
 			$existing = $this->guests->get( (int) $match['id'] );

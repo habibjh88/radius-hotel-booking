@@ -64,7 +64,7 @@ class ReportRepository {
 		$column = $range->column();
 		$where  = "{$column} >= %s AND {$column} < %s";
 
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $bucket and $where are fixed SQL fragments chosen above (two %s in $where); $sql is prepared; the report caches its result.
+		// phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $bucket and $where are fixed SQL fragments chosen above (two %s in $where); $sql is prepared; the report caches its result.
 		// `line_count`: a stay split by a room move counts once, on its first part (its arrival).
 		$sql = $wpdb->prepare(
 			"SELECT {$bucket} AS bucket,
@@ -98,7 +98,7 @@ class ReportRepository {
 			$range->to_gmt
 		);
 		$rows = (array) $wpdb->get_results( $sql, ARRAY_A );
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:enable
 
 		$groups = array();
 		foreach ( (array) $rows as $row ) {
@@ -139,7 +139,7 @@ class ReportRepository {
 		$column = $range->column();
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $column is a fixed column name from ReportRange::column().
 		$where = $wpdb->prepare( "{$column} >= %s AND {$column} < %s", $range->from_gmt, $range->to_gmt );
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $where is prepared above; the report caches its result.
+		// phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $where is prepared above; the report caches its result.
 		$totals = $wpdb->get_col(
 			$wpdb->prepare(
 				"SELECT SUM( br.total ) FROM %i br
@@ -150,7 +150,7 @@ class ReportRepository {
 				rtbp_table( 'bookings' )
 			)
 		);
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:enable
 		return array_map( 'floatval', (array) $totals );
 	}
 
@@ -167,7 +167,7 @@ class ReportRepository {
 	public function collected( ReportRange $range ): array {
 		global $wpdb;
 		$payments = rtbp_table( 'payments' );
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- an aggregate; the report caches its result.
+		// phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- an aggregate; the report caches its result.
 		if ( 'created' === $range->mode ) {
 			$rows = $wpdb->get_results(
 				$wpdb->prepare(
@@ -184,7 +184,7 @@ class ReportRepository {
 			);
 		} else {
 			$column = $range->column();
-			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $column is a fixed column name from ReportRange::column().
+			// phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $column is a fixed column name from ReportRange::column().
 			$rows = $wpdb->get_results(
 				$wpdb->prepare(
 					"SELECT p.method, SUM( p.amount ) AS amount FROM %i p
@@ -199,9 +199,9 @@ class ReportRepository {
 				),
 				ARRAY_A
 			);
-			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			// phpcs:enable
 		}
-		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:enable
 
 		$out = array();
 		foreach ( (array) $rows as $row ) {
@@ -280,7 +280,7 @@ class ReportRepository {
 		global $wpdb;
 		$period = $this->periodCondition( $range );
 		$states = "'" . implode( "','", self::OCCUPYING_STATUSES ) . "'";
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $period is prepared above, $states is constant; the report caches its result.
+		// phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $period is prepared above, $states is constant; the report caches its result.
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT r.id, r.number, r.floor_id, COALESCE( f.name, '' ) AS floor, t.name AS room_type,
@@ -301,7 +301,7 @@ class ReportRepository {
 			),
 			ARRAY_A
 		);
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:enable
 		return array_map(
 			static fn( $row ) => array(
 				'id'        => (int) $row['id'],
@@ -327,7 +327,7 @@ class ReportRepository {
 	public function takenRooms( ReportRange $range ): array {
 		global $wpdb;
 		$period = $this->periodCondition( $range );
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $period is prepared above; the report caches its result.
+		// phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $period is prepared above; the report caches its result.
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT br.id AS line_id, b.id AS booking_id, b.reference, r.id AS room_id, COALESCE( r.number, br.room_number ) AS number,
@@ -351,7 +351,7 @@ class ReportRepository {
 			),
 			ARRAY_A
 		);
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:enable
 		return array_map(
 			static fn( $row ) => array(
 				'line_id'    => (int) $row['line_id'],
@@ -396,7 +396,7 @@ class ReportRepository {
 			rtbp_table( 'room_types' ),
 			rtbp_table( 'guests' )
 		);
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $from and $period are prepared above, $states is constant; the report caches its result.
+		// phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $from and $period are prepared above, $states is constant; the report caches its result.
 		$total = (int) $wpdb->get_var( "SELECT COUNT(*) {$from} WHERE br.status IN ( {$states} ) AND {$period}" );
 		$rows  = $wpdb->get_results(
 			$wpdb->prepare(
@@ -413,7 +413,7 @@ class ReportRepository {
 			),
 			ARRAY_A
 		);
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:enable
 		return array(
 			'total' => $total,
 			'rows'  => array_map(
@@ -473,7 +473,7 @@ class ReportRepository {
 			? $wpdb->prepare( 'b.created_at_gmt >= %s AND b.created_at_gmt < %s', $start_gmt, $end_gmt )
 			: $wpdb->prepare( 'br.start_at_gmt < %s AND br.occupied_until_gmt > %s', $end_gmt, $start_gmt );
 		$states = "'" . implode( "','", self::LIVE_STATUSES ) . "'";
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $period is prepared above, $states is constant; live data.
+		// phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $period is prepared above, $states is constant; live data.
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT br.id AS line_id, br.room_id, b.id AS booking_id, b.reference, br.start_at, br.end_at, br.status,
@@ -489,7 +489,7 @@ class ReportRepository {
 			),
 			ARRAY_A
 		);
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:enable
 		return array_map(
 			static fn( $row ) => array(
 				'line_id'    => (int) $row['line_id'],

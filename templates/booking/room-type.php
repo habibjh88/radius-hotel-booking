@@ -16,14 +16,16 @@ use RadiusTheme\RadiusHotelBooking\Support\Icons;
 
 defined( 'ABSPATH' ) || exit;
 
-$rtbp_type = RoomTypePage::current();
+$rtbp_type  = RoomTypePage::current();
+$rtbp_width = (int) rtbp_setting( 'display', 'roomPageWidth' );
+$rtbp_width = $rtbp_width > 0 ? $rtbp_width : 1200;
 
 get_header();
 ?>
 <main id="primary" class="site-main">
 	<?php // Utilities only reach elements inside .rtbp-root (Tailwind `important`), so the container is an inner div. ?>
 	<div class="rtbp-root rtbp-room-type">
-	<div class="mx-auto w-full max-w-[1200px] space-y-8 px-4 py-8 text-foreground">
+	<div class="mx-auto w-full space-y-8 px-4 py-8 text-foreground" style="max-width: <?php echo (int) $rtbp_width; ?>px">
 		<header class="space-y-2">
 			<h1 class="text-3xl font-bold text-heading"><?php echo esc_html( $rtbp_type['name'] ); ?></h1>
 			<?php if ( '' !== $rtbp_type['short_description'] ) : ?>
@@ -67,7 +69,7 @@ get_header();
 								array(
 									'class'   => 'm-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]',
 									'loading' => 0 === $rtbp_index ? 'eager' : 'lazy',
-									'sizes'   => 0 === $rtbp_index ? '(min-width: 1200px) 1200px, 100vw' : '(min-width: 1200px) 400px, 33vw',
+									'sizes'   => 0 === $rtbp_index ? sprintf( '(min-width: %1$dpx) %1$dpx, 100vw', $rtbp_width ) : sprintf( '(min-width: %1$dpx) %2$dpx, 33vw', $rtbp_width, (int) ceil( $rtbp_width / 3 ) ),
 								)
 							);
 							?>

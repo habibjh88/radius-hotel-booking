@@ -22,6 +22,31 @@ if ( ! defined( 'ABSPATH' ) ) {
 class QueryBuilder {
 
 	/**
+	 * A column name, optionally with its table alias (`name`, `b.created_at`).
+	 * Identifiers are inlined into the SQL, so anything else is refused.
+	 */
+	private const IDENTIFIER = '/^[A-Za-z_][A-Za-z0-9_]{0,63}(\.[A-Za-z_][A-Za-z0-9_]{0,63})?$/';
+
+	/**
+	 * Comparison operators paginate() accepts in a `condition` (they are inlined too).
+	 */
+	private const CONDITION_OPERATORS = array( '=', '!=', '<>', '<', '<=', '>', '>=', 'LIKE', 'NOT LIKE' );
+
+	/**
+	 * Whether a column name is safe to inline into SQL.
+	 *
+	 * @param mixed $name      Column name.
+	 * @param bool  $qualified Allow a `table.` alias in front.
+	 * @return bool
+	 */
+	public static function isSafeIdentifier( $name, bool $qualified = true ): bool {
+		if ( ! is_string( $name ) || 1 !== preg_match( self::IDENTIFIER, $name ) ) {
+			return false;
+		}
+		return $qualified || false === strpos( $name, '.' );
+	}
+
+	/**
 	 * The database connection instance.
 	 * This is used to execute queries and interact with the database.
 	 *
@@ -776,9 +801,14 @@ class QueryBuilder {
 	 * @return self Returns the current instance for method chaining.
 	 */
 	public function orderBy( string $column, string $direction = 'ASC' ): self {
+		// The column and direction are inlined into the SQL: refuse anything that is not a plain name.
+		if ( ! self::isSafeIdentifier( $column ) ) {
+			throw new \InvalidArgumentException( 'orderBy() expects a column name.' );
+		}
+		$direction      = strtoupper( $direction );
 		$this->orders[] = array(
 			'column'    => $column,
-			'direction' => strtoupper( $direction ),
+			'direction' => 'DESC' === $direction ? 'DESC' : 'ASC',
 		);
 
 		return $this;
@@ -795,10 +825,11 @@ class QueryBuilder {
 	 * @return self
 	 */
 	public function orderByRaw( string $expression, string $direction = 'ASC' ): self {
+		$direction      = strtoupper( $direction );
 		$this->orders[] = array(
 			'type'       => 'raw',
 			'expression' => $expression,
-			'direction'  => strtoupper( $direction ),
+			'direction'  => 'DESC' === $direction ? 'DESC' : 'ASC',
 		);
 		return $this;
 	}
@@ -996,17 +1027,27 @@ class QueryBuilder {
 	 * @param string|null $searchData The data to search for within the specified column. Default is null.
 	 * @param array $where Additional conditions to apply as an array of column, operator, and value. Default is an empty array.
 	 *
+	 * The order, columns and operators may come straight from a REST request
+	 * (BaseController::index()) and are inlined into the SQL, so each one is
+	 * checked here: a bad direction becomes DESC, and an unsafe column, operator
+	 * or value is dropped. Values are always bound.
+	 *
 	 * @return PaginationResult Returns a PaginationResult instance containing the paginated items and metadata.
 	 */
 	public function paginate( int $perPage = 10, int $page = 1, $order = 'DESC', $orderBy = 'created_at', $searchColumn = null, $searchData = null, $where = array() ): PaginationResult {
 		$total   = $this->count();
 		$offset  = ( $page - 1 ) * $perPage;
 		$isWhere = '';
-		if ( $where ) {
-			if ( is_array( $where ) ) {
-				foreach ( $where as $value ) {
-					$isWhere = $this->where( $value['column'], $value['operator'], $value['value'] );
+		if ( $where && is_array( $where ) ) {
+			foreach ( $where as $value ) {
+				$operator = is_array( $value ) ? strtoupper( trim( (string) ( $value['operator'] ?? '=' ) ) ) : '';
+				if ( ! is_array( $value )
+					|| ! self::isSafeIdentifier( $value['column'] ?? null )
+					|| ! in_array( $operator, self::CONDITION_OPERATORS, true )
+					|| ! is_scalar( $value['value'] ?? null ) ) {
+					continue;
 				}
+				$isWhere = $this->where( $value['column'], $operator, $value['value'] );
 			}
 			$total = $this->count();
 		}
@@ -1016,25 +1057,29 @@ class QueryBuilder {
 			$query = $this;
 		}
 		$query = $query->limit( $perPage )->offset( $offset );
-		if ( $order ) {
-			$query = $query->orderBy( $orderBy, $order );
+		$order = strtoupper( is_string( $order ) ? $order : '' );
+		if ( $order && self::isSafeIdentifier( $orderBy ) ) {
+			$query = $query->orderBy( $orderBy, 'ASC' === $order ? 'ASC' : 'DESC' );
 		}
 
-		if ( $searchColumn && $searchData ) {
+		if ( $searchColumn && $searchData && is_string( $searchColumn ) && is_scalar( $searchData ) ) {
 			global $wpdb;
-			$columns    = array_map( 'trim', explode( ',', $searchColumn ) );
-			$like_value = '%' . $wpdb->esc_like( $searchData ) . '%';
+			$columns    = array_filter(
+				array_map( 'trim', explode( ',', $searchColumn ) ),
+				static fn( $col ) => self::isSafeIdentifier( $col, false )
+			);
+			$like_value = '%' . $wpdb->esc_like( (string) $searchData ) . '%';
 			$conditions = array();
 
 			foreach ( $columns as $col ) {
-				// $col is a column name, which cannot be a prepare() placeholder;
-				// it comes from the caller's column list, never from request data.
-				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				$conditions[] = $wpdb->prepare( "`{$col}` LIKE %s", $like_value );
+				// A column name cannot be a prepare() placeholder; isSafeIdentifier() allows only [A-Za-z0-9_].
+				$conditions[] = $wpdb->prepare( '%i LIKE %s', $col, $like_value );
 			}
 
-			$query = $query->whereRaw( '(' . implode( ' OR ', $conditions ) . ')' );
-			$total = $query->count();
+			if ( $conditions ) {
+				$query = $query->whereRaw( '(' . implode( ' OR ', $conditions ) . ')' );
+				$total = $query->count();
+			}
 		}
 		$items = $query->get();
 		return new PaginationResult( $items, $total, $perPage, $page );

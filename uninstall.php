@@ -60,7 +60,7 @@ function rtbp_uninstall_site(): void {
 			'post_status' => 'any',
 			'numberposts' => -1,
 			'fields'      => 'ids',
-			'meta_key'    => '_rtbp_page', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_query_meta_key
+			'meta_key'    => '_rtbp_page', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- runs once, on uninstall.
 		)
 	);
 	foreach ( $pages as $page_id ) {

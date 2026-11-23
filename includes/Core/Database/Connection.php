@@ -112,7 +112,7 @@ class Connection {
 	 */
 	public function get_results( string $query, string $output = OBJECT, $args = null ): array {
 		$prepared_query = $this->maybe_prepare( $query, $args );
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Query is prepared via maybe_prepare() when args provided.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Query is prepared via maybe_prepare() when args provided; identifiers are checked by QueryBuilder.
 		return $this->wpdb->get_results( $prepared_query, $output ) ?? array();
 	}
 
@@ -127,7 +127,7 @@ class Connection {
 	 */
 	public function get_row( string $query, string $output = OBJECT, $args = null ) {
 		$prepared_query = $this->maybe_prepare( $query, $args );
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Query is prepared via maybe_prepare() when args provided.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Query is prepared via maybe_prepare() when args provided; identifiers are checked by QueryBuilder.
 		return $this->wpdb->get_row( $prepared_query, $output );
 	}
 
@@ -141,7 +141,7 @@ class Connection {
 	 */
 	public function query( string $query, $args = null ): int|false {
 		$prepared_query = $this->maybe_prepare( $query, $args );
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Query is prepared via maybe_prepare() when args provided.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Query is prepared via maybe_prepare() when args provided; identifiers are checked by QueryBuilder.
 		return $this->wpdb->query( $prepared_query );
 	}
 
@@ -168,7 +168,7 @@ class Connection {
 	 */
 	public function get_var( string $query, $args = null ): ?string {
 		$prepared_query = $this->maybe_prepare( $query, $args );
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Query is prepared via maybe_prepare() when args provided.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Query is prepared via maybe_prepare() when args provided; identifiers are checked by QueryBuilder.
 		return $this->wpdb->get_var( $prepared_query );
 	}
 

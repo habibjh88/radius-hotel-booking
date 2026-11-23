@@ -575,7 +575,7 @@ class GuestAccount {
 		wp_set_current_user( $user_id );
 		wp_set_auth_cookie( $user_id, rest_sanitize_boolean( $input['remember'] ?? false ), is_ssl() );
 		/** This action is documented in wp-includes/user.php */
-		do_action( 'wp_login', $login, $user );
+		do_action( 'wp_login', $login, $user ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WordPress's own hook, fired as wp_signon() does.
 
 		rtbp_activity(
 			'guests.account_registered',

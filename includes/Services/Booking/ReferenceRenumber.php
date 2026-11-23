@@ -115,11 +115,11 @@ class ReferenceRenumber {
 	 */
 	private function plan( bool $lock = false ): array {
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- every booking, read once (soft-deleted ones too: the column is UNIQUE).
-		$rows = $wpdb->get_results(
-			$wpdb->prepare( 'SELECT id, reference, created_at FROM %i ORDER BY id' . ( $lock ? ' FOR UPDATE' : '' ), rtbp_table( 'bookings' ) ),
-			ARRAY_A
-		);
+		// Every booking, read once (soft-deleted ones too: the column is UNIQUE).
+		$sql  = $lock
+			? $wpdb->prepare( 'SELECT id, reference, created_at FROM %i ORDER BY id FOR UPDATE', rtbp_table( 'bookings' ) )
+			: $wpdb->prepare( 'SELECT id, reference, created_at FROM %i ORDER BY id', rtbp_table( 'bookings' ) );
+		$rows = $wpdb->get_results( $sql, ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared -- $sql is prepared just above.
 
 		$current  = array();
 		$wanted   = array();

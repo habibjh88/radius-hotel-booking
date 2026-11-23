@@ -27,6 +27,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- the template's documented variables, local to rtbp_get_template(); renaming them would break theme overrides.
+
 $layout      = $layout ?? \RadiusTheme\RadiusHotelBooking\Frontend\Embeds::BOOKING_DEFAULTS['layout'];
 $display     = $display ?? 'inline';
 $button_text = $button_text ?? __( 'Book now', 'radius-hotel-booking' );

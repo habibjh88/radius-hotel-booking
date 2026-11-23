@@ -509,7 +509,7 @@ class PublicBookingService {
 			throw DomainException::conflict( 'booking_refused', __( 'We could not take this booking online. Please contact the hotel.', 'radius-hotel-booking' ) );
 		}
 
-		throw self::mismatch( $reason, $matched );
+		throw self::mismatch( $reason, $matched ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- fixed translated messages, sent as JSON; React escapes them.
 	}
 
 	/**

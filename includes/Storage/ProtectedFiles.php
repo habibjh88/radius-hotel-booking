@@ -305,7 +305,7 @@ class ProtectedFiles {
 			$from      = trailingslashit( self::base_dir() ) . $path;
 			$to        = trailingslashit( self::base_dir() ) . $relative;
 			if ( is_file( $from ) && rename( $from, $to ) ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename -- inside our own protected folder.
-				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- our own index.
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- our own index; a write.
 				$wpdb->update( rtbp_table( 'files' ), array( 'path' => $relative ), array( 'id' => (int) $row['id'] ) );
 				++$renamed;
 			}

@@ -324,9 +324,16 @@ final class CoreSettings {
 	 */
 	private static function display(): array {
 		return array(
-			'primaryColor' => array(
+			'primaryColor'  => array(
 				'type'    => 'color',
 				'default' => '#0040ff',
+			),
+			// Max width of a room type's page content, in px (the theme may be narrower).
+			'roomPageWidth' => array(
+				'type'    => 'int',
+				'default' => 1200,
+				'min'     => 600,
+				'max'     => 2560,
 			),
 		);
 	}

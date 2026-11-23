@@ -129,14 +129,12 @@ class RoomsWidget extends \Elementor\Widget_Base {
 	 */
 	protected function render() {
 		$settings = $this->get_settings_for_display();
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the template escapes every value.
-		echo Embeds::rooms(
-			array(
-				'layout'     => $settings['layout'] ?? 'grid',
-				'columns'    => $settings['columns'] ?? 3,
-				'limit'      => $settings['limit'] ?? 0,
-				'show_count' => 'yes' === ( $settings['show_count'] ?? '' ) ? 'yes' : 'no',
-			)
+		$atts     = array(
+			'layout'     => sanitize_key( (string) ( $settings['layout'] ?? 'grid' ) ),
+			'columns'    => absint( $settings['columns'] ?? 3 ),
+			'limit'      => absint( $settings['limit'] ?? 0 ),
+			'show_count' => 'yes' === ( $settings['show_count'] ?? '' ) ? 'yes' : 'no',
 		);
+		echo Embeds::rooms( $atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the rooms template escapes every value.
 	}
 }

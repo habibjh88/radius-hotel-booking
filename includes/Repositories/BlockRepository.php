@@ -55,7 +55,7 @@ class BlockRepository extends BaseRepository {
 		// Coming blocks soonest first; finished ones latest first.
 		$order = 'upcoming' === $when ? 'b.start_at_gmt ASC, b.id ASC' : 'b.start_at_gmt DESC, b.id DESC';
 
-		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $where holds only fixed conditions with placeholders; $order and select() are fixed SQL. Live inventory: never cached.
+		// phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $where holds only fixed conditions with placeholders; $order and select() are fixed SQL. Live inventory: never cached.
 		$total = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM %i b WHERE $where", array_merge( array( rtbp_table( 'blocks' ) ), $args ) ) );
 		$rows  = $wpdb->get_results(
 			$wpdb->prepare(
@@ -85,7 +85,7 @@ class BlockRepository extends BaseRepository {
 			return array();
 		}
 		$placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
-		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $placeholders is only "%d,…"; select() is fixed SQL. Live inventory.
+		// phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $placeholders is only "%d,…"; select() is fixed SQL. Live inventory.
 		$rows = $wpdb->get_results(
 			$wpdb->prepare( $this->select() . " WHERE b.id IN ( $placeholders ) ORDER BY b.start_at_gmt, b.id", array_merge( $this->tables(), $ids ) ),
 			ARRAY_A
@@ -130,7 +130,7 @@ class BlockRepository extends BaseRepository {
 	public function linesInside( string $scope, int $scope_id, string $start_gmt, string $end_gmt ): int {
 		global $wpdb;
 		$statuses = implode( ',', array_fill( 0, count( AvailabilityRepository::OCCUPYING ), '%s' ) );
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $statuses is only "%s,…". Live count.
+		// phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $statuses is only "%s,…". Live count.
 		return (int) $wpdb->get_var(
 			$wpdb->prepare(
 				"SELECT COUNT(*) FROM %i br INNER JOIN %i r ON r.id = br.room_id
@@ -202,7 +202,7 @@ class BlockRepository extends BaseRepository {
 			return false;
 		}
 		list( $table, $soft ) = $tables[ $scope ];
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- existence check.
+		// phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- existence check.
 		return (bool) ( $soft
 			? $wpdb->get_var( $wpdb->prepare( 'SELECT id FROM %i WHERE id = %d AND deleted_at IS NULL', rtbp_table( $table ), $scope_id ) )
 			: $wpdb->get_var( $wpdb->prepare( 'SELECT id FROM %i WHERE id = %d', rtbp_table( $table ), $scope_id ) ) );

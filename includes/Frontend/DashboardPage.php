@@ -86,7 +86,7 @@ class DashboardPage {
 
 		foreach ( array( 'DONOTCACHEPAGE', 'DONOTCACHEOBJECT', 'DONOTCACHEDB', 'DONOTMINIFY' ) as $constant ) {
 			if ( ! defined( $constant ) ) {
-				define( $constant, true );
+				define( $constant, true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.VariableConstantNameFound -- the standard cache plugins' do-not-cache flags.
 			}
 		}
 
