@@ -108,7 +108,7 @@ class PublicBookingController extends BaseController {
 			10,
 			'public_holds',
 			static function ( $request ) {
-				$input = self::scalars( $request, array( 'room_type_id', 'rate_plan_id', 'arrival', 'departure', 'units', 'checkin_time', 'adults', 'children', 'room_id', 'token' ) );
+				$input = self::scalars( $request, array( 'room_type_id', 'rate_plan_id', 'arrival', 'departure', 'units', 'checkin_time', 'adults', 'children', 'room_id', 'quantity', 'token' ) );
 				$ages  = self::ages( $request->get_param( 'child_ages' ) );
 				if ( $ages ) {
 					$input['child_ages'] = $ages;

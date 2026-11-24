@@ -480,6 +480,7 @@ New: started same-day slots can be sold on the website too, until 30 minutes bef
 Changed: started slots stop selling a set number of minutes before they end (default 30).
 Changed: the same-day cut-off no longer stops started slots the website still sells.
 Changed: the front desk can sell any started slot, overnight too; the website only same-day ones.
+New: when guests do not choose their room, a popup asks how many rooms to book.
 
 = 1.0.0 =
 Initial release.

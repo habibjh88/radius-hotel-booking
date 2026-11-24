@@ -78,13 +78,16 @@ export function useHolds( base = 'holds' ) {
 	 * Hold several rooms of one rate at once (all or none).
 	 *
 	 * @param {Object}   request `{ room_type_id, rate_plan_id, arrival, units, checkin_time? }`.
-	 * @param {number[]} roomIds The rooms.
+	 * @param {number[]|number} roomIds The rooms, or how many free rooms to assign (website).
 	 * @return {Promise<Object[]>} The holds.
 	 */
 	const placeMany = useCallback( async ( request, roomIds ) => {
 		const { data } = await post( base, {
 			...request,
-			room_ids: roomIds,
+			// A number: the website assigns that many free rooms (no choice of room).
+			...( Array.isArray( roomIds )
+				? { room_ids: roomIds }
+				: { quantity: roomIds } ),
 			...( tokenRef.current ? { token: tokenRef.current } : {} ),
 		} );
 		setToken( data.token );

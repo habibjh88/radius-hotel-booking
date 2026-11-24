@@ -3,7 +3,7 @@
  * GuestBookingOnePage): the stay being booked, the way back, and the prompt
  * before the browser's Back leaves a booking in progress.
  */
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import {
 	AlertTriangle,
@@ -12,7 +12,10 @@ import {
 	CalendarDays,
 	Clock,
 	Loader2,
+	Minus,
+	Plus,
 	Users,
+	X,
 } from 'lucide-react';
 
 import { TimePicker } from '@/components/common/DatePicker';
@@ -46,6 +49,41 @@ function arrivalHelp( checkin, rateName ) {
 }
 
 /**
+ * The party in words: "2 adults · 1 child".
+ *
+ * @param {Object} search `{ adults, children }`.
+ * @return {string} Label.
+ */
+export function partyLabel( search ) {
+	return [
+		sprintf(
+			/* translators: %d: number of adults. */
+			_n(
+				'%d adult',
+				'%d adults',
+				Number( search.adults ),
+				'radius-hotel-booking'
+			),
+			Number( search.adults )
+		),
+		Number( search.children )
+			? sprintf(
+					/* translators: %d: number of children. */
+					_n(
+						'%d child',
+						'%d children',
+						Number( search.children ),
+						'radius-hotel-booking'
+					),
+					Number( search.children )
+			  )
+			: null,
+	]
+		.filter( Boolean )
+		.join( ' · ' );
+}
+
+/**
  * The stay being booked, at the top of the Room step: check-in and check-out
  * (date and time), the rate and the party, and a way back to change them.
  * A flexible rate also asks its arrival time here, first, highlighted and
@@ -74,32 +112,7 @@ export function StaySummary( { rate, search, onChange, onCheckinTime } ) {
 		}, 450 );
 		return () => window.clearTimeout( timer );
 	}, [ asksTime, rate.rate_plan_id ] );
-	const party = [
-		sprintf(
-			/* translators: %d: number of adults. */
-			_n(
-				'%d adult',
-				'%d adults',
-				search.adults,
-				'radius-hotel-booking'
-			),
-			search.adults
-		),
-		Number( search.children )
-			? sprintf(
-					/* translators: %d: number of children. */
-					_n(
-						'%d child',
-						'%d children',
-						search.children,
-						'radius-hotel-booking'
-					),
-					search.children
-			  )
-			: null,
-	]
-		.filter( Boolean )
-		.join( ' · ' );
+	const party = partyLabel( search );
 	const end = ( label, value ) => (
 		<div className="min-w-0">
 			<span className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -337,6 +350,188 @@ export function LeavePrompt( { onStay, onLeave } ) {
 					</Button>
 				</div>
 			</div>
+		</div>
+	);
+}
+
+/**
+ * How many rooms (Settings → Website → Guests choose their room off): asked
+ * when a rate is chosen, so a guest booking several rooms enters the number
+ * once instead of coming back to the rates for each room. Light on purpose,
+ * like LeavePrompt: an overlay, focus on the number, Escape closes.
+ *
+ * @param {Object}   props           Props.
+ * @param {Object}   props.type      The room type (`name`).
+ * @param {Object}   props.rate      The rate (`name`).
+ * @param {number}   props.most      Most rooms that can be taken (free and allowed).
+ * @param {Object}   props.search    `{ adults, children }`: the party of each room.
+ * @param {Function} props.onConfirm Called with the number of rooms.
+ * @param {Function} props.onCancel  Close without holding.
+ * @return {JSX.Element} Prompt.
+ */
+export function RoomCountPrompt( {
+	type,
+	rate,
+	most,
+	search,
+	onConfirm,
+	onCancel,
+} ) {
+	const [ count, setCount ] = useState( 1 );
+	const inputRef = useRef( null );
+	// The latest onCancel, so the flow re-rendering (hold timer, refetch)
+	// does not refocus the number while the guest types.
+	const cancelRef = useRef( onCancel );
+	cancelRef.current = onCancel;
+	useEffect( () => {
+		inputRef.current?.focus();
+		inputRef.current?.select();
+		const onKey = ( event ) => {
+			if ( 'Escape' === event.key ) {
+				cancelRef.current();
+			}
+		};
+		document.addEventListener( 'keydown', onKey );
+		return () => document.removeEventListener( 'keydown', onKey );
+	}, [] );
+
+	const fit = ( value ) =>
+		Math.min( most, Math.max( 1, Math.floor( Number( value ) || 1 ) ) );
+	// Not a submit button: themes restyle `button[type=submit]` (size, corners)
+	// over the plugin's classes. Enter in the number still books (form submit).
+	const submit = ( event ) => {
+		event.preventDefault();
+		onConfirm( fit( count ) );
+	};
+	const stepClass =
+		'flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-border bg-white p-0 text-heading shadow-none transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
+
+	return (
+		<div
+			className="fixed inset-0 z-[100001] flex items-center justify-center bg-black/50 p-4"
+			onClick={ ( event ) => {
+				if ( event.target === event.currentTarget ) {
+					onCancel();
+				}
+			} }
+			role="presentation"
+		>
+			<form
+				role="dialog"
+				aria-modal="true"
+				aria-labelledby="rtbp-count-title"
+				aria-describedby="rtbp-count-text"
+				className="relative w-full max-w-sm rounded-2xl bg-card p-6 shadow-xl"
+				onSubmit={ submit }
+			>
+				<button
+					type="button"
+					className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full border-0 bg-transparent p-0 text-muted-foreground shadow-none hover:bg-muted hover:text-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+					onClick={ onCancel }
+					aria-label={ __( 'Close', 'radius-hotel-booking' ) }
+				>
+					<X className="h-4 w-4" aria-hidden="true" />
+				</button>
+				<div className="space-y-1.5 pr-8">
+					<h2
+						id="rtbp-count-title"
+						className="m-0 text-lg font-bold text-heading"
+					>
+						{ __( 'How many rooms?', 'radius-hotel-booking' ) }
+					</h2>
+					<p
+						id="rtbp-count-text"
+						className="m-0 text-sm text-muted-foreground"
+					>
+						{ type.name } · { rate.name }
+					</p>
+				</div>
+				<div className="mt-5 flex items-center justify-center gap-3">
+					<button
+						type="button"
+						className={ stepClass }
+						onClick={ () => setCount( fit( Number( count ) - 1 ) ) }
+						disabled={ fit( count ) <= 1 }
+						aria-label={ __(
+							'One room less',
+							'radius-hotel-booking'
+						) }
+					>
+						<Minus className="h-4 w-4" aria-hidden="true" />
+					</button>
+					<label htmlFor="rtbp-room-count" className="sr-only">
+						{ __( 'Number of rooms', 'radius-hotel-booking' ) }
+					</label>
+					<input
+						ref={ inputRef }
+						id="rtbp-room-count"
+						type="number"
+						inputMode="numeric"
+						min={ 1 }
+						max={ most }
+						step={ 1 }
+						value={ count }
+						onChange={ ( event ) => setCount( event.target.value ) }
+						onBlur={ () => setCount( fit( count ) ) }
+						className="h-12 w-20 rounded-lg border border-border bg-white px-2 text-center text-xl font-bold text-heading [appearance:textfield] focus-visible:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none focus-visible:ring-2 focus-visible:ring-ring"
+					/>
+					<button
+						type="button"
+						className={ stepClass }
+						onClick={ () => setCount( fit( Number( count ) + 1 ) ) }
+						disabled={ fit( count ) >= most }
+						aria-label={ __(
+							'One room more',
+							'radius-hotel-booking'
+						) }
+					>
+						<Plus className="h-4 w-4" aria-hidden="true" />
+					</button>
+				</div>
+				<p className="m-0 mt-3 text-center text-sm text-muted-foreground">
+					{ sprintf(
+						/* translators: %d: most rooms the guest can take. */
+						_n(
+							'Up to %d room.',
+							'Up to %d rooms.',
+							most,
+							'radius-hotel-booking'
+						),
+						most
+					) }{ ' ' }
+					{ sprintf(
+						/* translators: %s: the party, e.g. 2 adults · 1 child. */
+						__( 'Each room: %s.', 'radius-hotel-booking' ),
+						partyLabel( search )
+					) }
+				</p>
+				<div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+					<Button
+						type="button"
+						variant="outline"
+						className="h-11 rounded-lg text-sm font-semibold"
+						onClick={ onCancel }
+					>
+						{ __( 'Cancel', 'radius-hotel-booking' ) }
+					</Button>
+					<Button
+						type="button"
+						onClick={ submit }
+						className="h-11 min-w-[9rem] rounded-lg text-sm font-semibold normal-case tracking-normal"
+					>
+						{ sprintf(
+							/* translators: %d: number of rooms. */
+							_n(
+								'Book %d room',
+								'Book %d rooms',
+								fit( count ),
+								'radius-hotel-booking'
+							),
+							fit( count )
+						) }
+					</Button>
+				</div>
+			</form>
 		</div>
 	);
 }

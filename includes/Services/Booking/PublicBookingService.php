@@ -86,10 +86,10 @@ class PublicBookingService {
 	 * Hold a room for the visitor.
 	 *
 	 * @param array                  $input   `room_type_id`, `rate_plan_id`, `arrival`, `departure`, `units`, `checkin_time`,
-	 *                                        `adults`, `children`, `child_ages`, `room_id?`, `room_ids?`, `token?`.
+	 *                                        `adults`, `children`, `child_ages`, `room_id?`, `room_ids?`, `quantity?`, `token?`.
 	 * @param string                 $session The visitor's session key.
 	 * @param DateTimeImmutable|null $now     Now.
-	 * @return array `{ token, expires_at, hold }`, or `{ token, expires_at, holds }` for `room_ids`.
+	 * @return array `{ token, expires_at, hold }`, or `{ token, expires_at, holds }` for `room_ids` / `quantity`.
 	 * @throws DomainException 422 input, 409 `room_unavailable` / engine rules.
 	 */
 	public function hold( array $input, string $session, ?DateTimeImmutable $now = null ): array {
@@ -120,6 +120,10 @@ class PublicBookingService {
 			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 			throw DomainException::conflict( (string) $free['reason']['code'], (string) $free['reason']['message'] );
 		}
+		// Several rooms at once (the guest entered how many): all or none.
+		if ( isset( $input['quantity'] ) ) {
+			return $this->holdCount( $base, $free['rooms'], (int) $input['quantity'], $actor, $now );
+		}
 		$last = null;
 		foreach ( array_slice( $free['rooms'], 0, self::ASSIGN_TRIES ) as $room_id ) {
 			try {
@@ -134,6 +138,54 @@ class PublicBookingService {
 		}
 		// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
 		throw $last ? $last : DomainException::conflict( 'room_unavailable', __( 'This room was just taken. Please choose another option.', 'radius-hotel-booking' ) );
+	}
+
+	/**
+	 * Hold the first `$quantity` free rooms of a rate, all or none. A room
+	 * taken a moment ago is swapped for the next free one (a few tries).
+	 *
+	 * @param array             $base     The hold request (no room).
+	 * @param int[]             $free     Free room ids, lowest number first.
+	 * @param int               $quantity Rooms wanted.
+	 * @param array             $actor    The visitor as hold owner.
+	 * @param DateTimeImmutable $now      Now.
+	 * @return array `{ token, expires_at, holds }`.
+	 * @throws DomainException 422 quantity, 409 `room_unavailable` / `too_many_holds` / engine rules.
+	 */
+	private function holdCount( array $base, array $free, int $quantity, array $actor, DateTimeImmutable $now ): array {
+		$most = BookingService::maxRooms( AvailabilityService::PUBLIC );
+		if ( $quantity < 1 || $quantity > $most ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw DomainException::invalid( array( 'quantity' => sprintf( /* translators: %d: most rooms per booking. */ __( 'Choose between 1 and %d rooms.', 'radius-hotel-booking' ), $most ) ) );
+		}
+		$holds = Container::resolve( HoldService::class );
+		$last  = null;
+		for ( $try = 0; $try < self::ASSIGN_TRIES; $try++ ) {
+			if ( count( $free ) < $quantity ) {
+				break;
+			}
+			try {
+				return $holds->createMany( $base, array_slice( $free, 0, $quantity ), $actor, $now );
+			} catch ( DomainException $e ) {
+				$lost = (int) ( $e->getContext()['room_id'] ?? 0 );
+				// Taken a moment ago: swap that room for the next free one; anything else is final.
+				if ( 'room_unavailable' !== $e->getErrorCode() || ! $lost ) {
+					throw $e;
+				}
+				$free = array_values( array_diff( $free, array( $lost ) ) );
+				$last = $e;
+			}
+		}
+		if ( count( $free ) < $quantity ) {
+			$message = $free
+				/* translators: %d: rooms still free at this rate. */
+				? sprintf( _n( 'Only %d room is free at this rate.', 'Only %d rooms are free at this rate.', count( $free ), 'radius-hotel-booking' ), count( $free ) )
+				: __( 'This rate is fully booked. Please choose another option.', 'radius-hotel-booking' );
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+			throw DomainException::conflict( 'room_unavailable', $message, array( 'free' => count( $free ) ) );
+		}
+		// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- sent as JSON; React escapes it (phpcs.xml).
+		throw $last ? $last : DomainException::conflict( 'room_unavailable', __( 'These rooms were just taken. Please choose another option.', 'radius-hotel-booking' ) );
 	}
 
 	/**

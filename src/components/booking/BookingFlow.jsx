@@ -45,6 +45,7 @@ import {
 	searchFromUrl,
 	siteBookingRules,
 } from './guestLimits';
+import { RoomCountPrompt } from './GuestParts';
 import { useHolds } from './holds';
 import { allowLeave } from './leaveGuard';
 import { checkinRange, defaultCheckin } from './rates';
@@ -270,15 +271,7 @@ export default function BookingFlow( {
 		// On the website without a choice of room, choosing a fixed rate holds a
 		// room at once; a flexible one first asks its arrival time with the rate.
 		if ( guestMode && false === rules.guestPicksRoom && ! rate.checkin ) {
-			if ( pending ) {
-				return; // A room is already being held: no second hold.
-			}
-			// The clicked Select shows a spinner until the room is held.
-			setHolding( {
-				room_type_id: type.id,
-				rate_plan_id: rate.rate_plan_id,
-			} );
-			holdRoom( type, rate, null ).finally( () => setHolding( null ) );
+			assign( type, rate );
 			return;
 		}
 		setChoice( {
@@ -321,6 +314,33 @@ export default function BookingFlow( {
 	const [ lastChoice, setLastChoice ] = useState( null );
 	// The desk's room numbers, under the rates.
 	const roomRef = useRef( null );
+
+	// Without a choice of room: how many rooms, asked in a popup when more
+	// than one can be taken; one room is held at once.
+	const [ askCount, setAskCount ] = useState( null );
+	const assign = ( type, rate ) => {
+		if ( pending ) {
+			return; // A room is already being held: no second hold.
+		}
+		const most = Math.min( left, Number( rate.free_count ) || 1 );
+		if ( most > 1 ) {
+			setAskCount( { type, rate, most } );
+			return;
+		}
+		assignCount( type, rate, 1 );
+	};
+	const assignCount = ( type, rate, count ) => {
+		setAskCount( null );
+		// The clicked Select shows a spinner until the rooms are held.
+		setHolding( {
+			room_type_id: type.id,
+			rate_plan_id: rate.rate_plan_id,
+		} );
+		( count > 1
+			? holdRooms( count, { type, rate } )
+			: holdRoom( type, rate, null )
+		).finally( () => setHolding( null ) );
+	};
 
 	// What every hold of this rate sends.
 	const holdRequest = ( type, rate ) => ( {
@@ -421,19 +441,23 @@ export default function BookingFlow( {
 	};
 
 	/**
-	 * Hold the ticked rooms of the chosen rate, all or none.
+	 * Hold the ticked rooms of the chosen rate, all or none; or, on the
+	 * website without a choice of room, that many free rooms.
 	 *
-	 * @param {Object[]} rooms The rooms.
+	 * @param {Object[]|number} rooms The rooms, or how many to assign.
+	 * @param {Object}          at    `{ type, rate }` (default: the chosen rate).
 	 * @return {Promise<number[]>} Room ids to keep ticked (none after a success).
 	 */
-	const holdRooms = async ( rooms ) => {
-		const { type, rate } = chosen;
-		const ids = rooms.map( ( room ) => room.id );
+	const holdRooms = async ( rooms, at = chosen ) => {
+		const { type, rate } = at;
+		const ids = Array.isArray( rooms )
+			? rooms.map( ( room ) => room.id )
+			: [];
 		setPending( -1 );
 		try {
 			const placed = await holds.placeMany(
 				holdRequest( type, rate ),
-				ids
+				Array.isArray( rooms ) ? ids : rooms
 			);
 			setLines( ( prev ) => [
 				...prev,
@@ -840,7 +864,7 @@ export default function BookingFlow( {
 					pending={ pending }
 					onHoldRooms={ holdRooms }
 					onHoldFirstFree={ () =>
-						chosen && holdRoom( chosen.type, chosen.rate, null )
+						chosen && assign( chosen.type, chosen.rate )
 					}
 					left={ left }
 					onAddAnother={ () => setChoice( lastChoice ) }
@@ -863,6 +887,18 @@ export default function BookingFlow( {
 					submitting={ submitting }
 					onConfirm={ confirmGuest }
 				/>
+				{ askCount ? (
+					<RoomCountPrompt
+						type={ askCount.type }
+						rate={ askCount.rate }
+						most={ askCount.most }
+						search={ search }
+						onConfirm={ ( count ) =>
+							assignCount( askCount.type, askCount.rate, count )
+						}
+						onCancel={ () => setAskCount( null ) }
+					/>
+				) : null }
 			</div>
 		);
 	}
