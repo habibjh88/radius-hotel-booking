@@ -481,6 +481,7 @@ Changed: started slots stop selling a set number of minutes before they end (def
 Changed: the same-day cut-off no longer stops started slots the website still sells.
 Changed: the front desk can sell any started slot, overnight too; the website only same-day ones.
 New: when guests do not choose their room, a popup asks how many rooms to book.
+Add-ons can now show a panel in the account menu, such as a check-in card.
 
 = 1.0.0 =
 Initial release.

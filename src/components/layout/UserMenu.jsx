@@ -2,7 +2,9 @@
  * The account menu at the top right (R1-T6): the signed-in user's name and
  * role, the items add-ons register on `rtbp.user.menu` (`{ key, label, icon,
  * to }`, `to` a dashboard route — My profile, My payroll), Language, and
- * *Sign out*.
+ * *Sign out*. Add-ons put a panel under the name on `rtbp.user.menu.panels`
+ * (`{ key, Component }`; the component gets `{ user, close }`, e.g. Pro's
+ * check-in card).
  */
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -70,6 +72,9 @@ export default function UserMenu() {
 	const items = (
 		applyFilters( 'rtbp.user.menu', [], { user } ) || []
 	).filter( ( item ) => item && item.key && item.label && item.to );
+	const panels = (
+		applyFilters( 'rtbp.user.menu.panels', [], { user } ) || []
+	).filter( ( panel ) => panel && panel.key && panel.Component );
 	const languages = Array.isArray( user.languages ) ? user.languages : [];
 	const current = languages.find( ( row ) => row.locale === user.locale );
 
@@ -173,6 +178,14 @@ export default function UserMenu() {
 						) : null }
 					</span>
 				</DropdownMenuLabel>
+				{ panels.map( ( { key, Component } ) => (
+					<div key={ key } className="px-2 pb-2">
+						<Component
+							user={ user }
+							close={ () => setOpen( false ) }
+						/>
+					</div>
+				) ) }
 				{ items.length ? <DropdownMenuSeparator /> : null }
 				{ items.map( ( item ) => {
 					const Icon = item.icon;

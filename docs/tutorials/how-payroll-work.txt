@@ -35,7 +35,7 @@ A pay run moves through these stages:
 │ Draft     │ Every active employee on that schedule gets one line, with gross pay, taxes and net pay calculated. You can open a line to change hours,  │  
 │           │ add extra pay (overtime, bonus) or a deduction, and it recalculates. You can also delete a draft completely.                              │  
 ├───────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤  
-│ Finalised │ Locks the lines. This is only possible once the period's last day has passed, and no one's net pay can be negative. Payslips become       │  
+│ Finalised │ Locks the lines. This is only possible once the period's last day has passed. A net below zero is kept (red) and taken from the next pay. │  
 │           │ available here. If you spot a mistake, Revert the run to Draft, fix it, and run it again.                                                 │  
 ├───────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤  
 │ Settled   │ For each person you record how they were paid (cash, bank transfer, mobile money…) and an optional reference. Settling also records what  │  

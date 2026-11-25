@@ -76,6 +76,7 @@ The commands read and update this table. Keep the columns.
 | 16 | M16 | [Staff self-service](../modules/M16-staff-self-service.md) | **Pro** | M12 | done | module/m16-self-service | 2026-10-01 | 2026-10-04 |
 | 17 | M15 | [Payroll and HR](../modules/M15-payroll-hr.md) | **Client** | M12, D1 | done | module/m15-payroll | 2026-10-04 | 2026-10-04 |
 | 18 | M18 | [Language, currency, migration and go-live](../modules/M18-foundations-migration.md) | Free + Client | all | done | module/m18-go-live | 2026-10-04 | 2026-10-04 |
+| 19 | M19 | [Attendance](../modules/M19-attendance.md) (R4, new scope) | **Pro** (+ Client default) | M12, M15, M16 | done | main | 2026-11-25 | 2026-11-25 |
 
 ## Why this order
 

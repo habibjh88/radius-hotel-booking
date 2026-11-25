@@ -257,7 +257,7 @@ framework:
   and `rtbp_email_after_content` (now in every guest e-mail template).
 - **JS seams:** the `window.rtbp` runtime (`ui`, `lib`, `React`, `hooks`) and the filters
   `rtbp.admin.routes`, `rtbp.settings.sections`, `rtbp.booking.panels`, `rtbp.guest.panels`,
-  `rtbp.api.error`, `rtbp.dashboard.widgets`, `rtbp.reports.tabs`, `rtbp.topbar.actions`
+  `rtbp.api.error`, `rtbp.dashboard.widgets`, `rtbp.reports.tabs`, `rtbp.topbar.actions`, `rtbp.user.menu.panels`
   (`{ key, Component }` next to the bell).
 - **Adding a seam** is a free-plugin task. It lands in the free repo *before* the Pro task that
   uses it, and it is documented in ADR-015 in the same task.
