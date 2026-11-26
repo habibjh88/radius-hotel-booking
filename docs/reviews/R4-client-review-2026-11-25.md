@@ -87,3 +87,26 @@ is what the employee is paid; it may be below zero (the employee owes the hotel)
   signature line?). **Waiting for the answer — do not build yet.** Likely shape: Pro "Last
   statement" document + per-pay-type legal reference + a document-language setting; TATA turns
   on French and supplies the Ivorian law references.
+- 2026-11-26, final settlement confirmed by the client (used when a worker resigns, is dismissed
+  or reaches the end of the contract; no answers to the five questions, so built to the video).
+  Built as Pro feature `final_settlement` (group Staff, needs payroll), on by default for TATA:
+  - **Menu** *Final settlements* (`#/final-settlements`): list by status, editor per worker.
+  - **Editor:** pick the worker → contract, start date, service length, monthly/daily/hourly pay,
+    balance still owed and open loans load from the file. Pick items from a catalogue (pay,
+    leaving indemnities, deductions, the hotel's bonus rules, plus free "other" lines); each item
+    is an amount, quantity × rate, or a percentage of a base. Totals are worked out on the server
+    and may be negative ("Balance owed by the employee").
+  - **Lifecycle:** draft → finalised (locked; legal references frozen; optionally ends the
+    contract in the same transaction) → voided with a reason. One live settlement per worker.
+    Access keys `page.final_settlements`, `settlement.edit|finalize|void`; every step is logged.
+  - **Document:** "Solde de tout compte" in the *document language* (Settings → Payroll → Payroll
+    documents; TATA: French), each item with its legal reference, total in words, the receipt
+    sentence (Code du travail art. 32.6 / 33.5), "Fait en deux exemplaires… à Abidjan", and the
+    handwritten "Lu et approuvé, pour solde de tout compte" signature box. Print or PDF.
+  - **Legal references** (Settings → Payroll → Legal references) are global and empty in Pro;
+    TATA fills the Ivorian Labour Code (Loi 2015-532), Convention collective interprofessionnelle
+    1977, Décret 96-203, Décret 2017-210, CGI (ITS) and CNPS references. Payslips print them too.
+    **The accountant should check them** — transport (Arrêté 2020-012) and ITS article numbers are
+    the least certain.
+  - Not done: the settlement does not write back to the payroll ledger (`balance_recovered`), so
+    a balance owed it settles must be cleared by hand on the next pay run if any.
